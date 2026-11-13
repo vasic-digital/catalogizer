@@ -2789,7 +2789,11 @@ Get a specific conversion job by ID.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
-**Errors:** 400 (invalid ID), 403 (another user's job), 404 (not found)
+**Errors:** 400 (invalid ID), 404 (not found, or the job belongs to another user: see the ownership rule below)
+
+---
+
+**Ownership rule (all five job-by-id routes: `GET /jobs/:id`, `POST /jobs/:id/cancel`, `DELETE /jobs/:id`, `POST /jobs/:id/retry`, `GET /jobs/:id/download`).** Only the job's owner and an administrator (a role holding `manage:users`, which includes the admin role) get the real answer. Any other authenticated user asking for a job id that exists receives exactly the response a nonexistent id gets: status `404`, body `{"error":"Job not found"}` and the same headers, so the API does not reveal whether another user's job id exists. A `403` is never returned for a job id. (A caller that lacks the route's own `conversion.manage` permission still gets `403 Insufficient permissions` on cancel, delete and retry; that check does not look at the job and is the same for existing and nonexistent ids.) Holding `view:media` no longer lets a user read another user's job or download its output (earlier versions allowed that on `GET /jobs/:id` and the download route).
 
 ---
 
@@ -2797,7 +2801,7 @@ Get a specific conversion job by ID.
 
 Cancel a running conversion job.
 
-**Description:** Cancels a pending or running conversion. A running job's converter process group is killed; the job ends as `cancelled` and stays so. Errors: 403 (another user's job), 404, 409 (job already finished).
+**Description:** Cancels a pending or running conversion. A running job's converter process group is killed; the job ends as `cancelled` and stays so. Errors: 404 (not found or another user's job), 409 (job already finished).
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
@@ -2815,7 +2819,7 @@ Cancel a running conversion job.
 
 Delete a conversion job record.
 
-**Description:** Same as cancel (the row is kept with status `cancelled`). Errors: 403, 404, 409 (job not pending or running).
+**Description:** Same as cancel (the row is kept with status `cancelled`). Errors: 404 (not found or another user's job), 409 (job not pending or running). (The 409 wording for a running job is unchanged; this edit only corrects the ownership status.)
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
@@ -2831,7 +2835,7 @@ Retry a failed conversion job.
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
-**Response:** 200 OK (`{"message": "Job retry started"}`; the job is back in `pending` and the worker runs it again). 409 if the job is not in status `failed`, 403 if it belongs to another user without manage permission, 404 if unknown.
+**Response:** 200 OK (`{"message": "Job retry started"}`; the job is back in `pending` and the worker runs it again). 409 if the job is not in status `failed`, 404 if unknown or if it belongs to another user and the caller is not an administrator.
 
 ---
 
@@ -2845,7 +2849,7 @@ Download the output file of a completed conversion job.
 
 **Response:** Binary file download with appropriate Content-Type.
 
-**Errors:** 400 (job not completed), 404 (not found)
+**Errors:** 400 (job not completed), 404 (not found, or the job belongs to another user)
 
 ---
 

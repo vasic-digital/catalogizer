@@ -974,32 +974,32 @@ func (s *ConversionService) GetUserJobs(userID int, status *string, limit, offse
 }
 
 func (s *ConversionService) GetJob(jobID int, userID int) (*models.ConversionJob, error) {
+	return s.authorizedJob(jobID, userID)
+}
+
+// authorizedJob is the ONE ownership gate for every job-by-id operation (get, download, cancel,
+// delete, retry; CAT-JOB-404-1). The owner and an administrator (manage:users) get the job;
+// anybody else gets models.ErrConversionJobNotFound, exactly what a nonexistent id yields, so
+// the API is no existence oracle for another user's job ids. A failed permission lookup also
+// reads as not found (conservative: never grant on an error).
+func (s *ConversionService) authorizedJob(jobID int, userID int) (*models.ConversionJob, error) {
 	job, err := s.conversionRepo.GetJob(jobID)
 	if err != nil {
 		return nil, err
 	}
-
 	if job.UserID != userID {
-		hasPermission, err := s.authService.CheckPermission(userID, auth.PermissionViewMedia)
-		if err != nil || !hasPermission {
+		isAdmin, err := s.authService.CheckPermission(userID, auth.PermissionManageUsers)
+		if err != nil || !isAdmin {
 			return nil, fmt.Errorf("%w", models.ErrConversionJobNotFound)
 		}
 	}
-
 	return job, nil
 }
 
 func (s *ConversionService) CancelJob(jobID int, userID int) error {
-	job, err := s.conversionRepo.GetJob(jobID)
+	job, err := s.authorizedJob(jobID, userID)
 	if err != nil {
 		return err
-	}
-
-	if job.UserID != userID {
-		hasPermission, err := s.authService.CheckPermission(userID, auth.PermissionManageUsers)
-		if err != nil || !hasPermission {
-			return fmt.Errorf("%w", models.ErrConversionJobNotFound)
-		}
 	}
 
 	if job.Status != models.ConversionStatusPending && job.Status != models.ConversionStatusRunning {
@@ -1029,16 +1029,9 @@ func (s *ConversionService) CancelJob(jobID int, userID int) error {
 // first. The output file of a completed job is removed too, but only when it is a regular file
 // inside the conversion write roots (never a symlink, never the job's own source).
 func (s *ConversionService) DeleteJob(jobID int, userID int) error {
-	job, err := s.conversionRepo.GetJob(jobID)
+	job, err := s.authorizedJob(jobID, userID)
 	if err != nil {
 		return err
-	}
-
-	if job.UserID != userID {
-		hasPermission, err := s.authService.CheckPermission(userID, auth.PermissionManageUsers)
-		if err != nil || !hasPermission {
-			return fmt.Errorf("%w", models.ErrConversionJobNotFound)
-		}
 	}
 
 	if job.Status == models.ConversionStatusRunning {
@@ -1092,16 +1085,9 @@ func removeConversionOutput(job *models.ConversionJob) {
 }
 
 func (s *ConversionService) RetryJob(jobID int, userID int) error {
-	job, err := s.conversionRepo.GetJob(jobID)
+	job, err := s.authorizedJob(jobID, userID)
 	if err != nil {
 		return err
-	}
-
-	if job.UserID != userID {
-		hasPermission, err := s.authService.CheckPermission(userID, auth.PermissionManageUsers)
-		if err != nil || !hasPermission {
-			return fmt.Errorf("%w", models.ErrConversionJobNotFound)
-		}
 	}
 
 	if job.Status != models.ConversionStatusFailed {

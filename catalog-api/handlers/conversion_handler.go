@@ -336,10 +336,11 @@ func (h *ConversionHandler) DownloadJobFile(c *gin.Context) {
 // writeJobError maps a service error to its HTTP status; anything unclassified stays 500.
 func writeJobError(c *gin.Context, err error, fallback string) {
 	switch {
-	case errors.Is(err, models.ErrConversionJobNotFound), strings.Contains(err.Error(), "not found"):
+	case errors.Is(err, models.ErrConversionJobNotFound), strings.Contains(err.Error(), "not found"),
+		errors.Is(err, models.ErrConversionForbidden):
+		// another user's job answers exactly like a nonexistent id (no existence oracle,
+		// CAT-JOB-404-1): never 403 for a job id
 		c.JSON(http.StatusNotFound, gin.H{"error": "Job not found"})
-	case errors.Is(err, models.ErrConversionForbidden):
-		c.JSON(http.StatusForbidden, gin.H{"error": "Insufficient permissions"})
 	case errors.Is(err, models.ErrConversionJobState):
 		c.JSON(http.StatusConflict, gin.H{"error": models.ErrConversionJobState.Error()})
 	default:
