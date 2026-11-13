@@ -281,3 +281,49 @@ func TestPruneBoundaryDroppedFailureDoesNotCountTowardsNext(t *testing.T) {
 	require.Equal(t, 401, g.do("1", "a").Code) // counted: 2
 	require.Equal(t, 429, g.do("1", "a").Code)
 }
+
+// M1: failures spread over two sessions reach the user bucket's size of 5 but
+// no single session's budget: nobody may be revoked.
+func TestUserBucketReachingSessionSizeDoesNotRevokeAnySession(t *testing.T) {
+	g := newRig(5, 25, 15*time.Minute)
+	g.fails("1", "A", 3)
+	g.fails("1", "B", 2)
+	require.Empty(t, g.limited, "no session budget exhausted: no revoke")
+	require.Equal(t, 401, g.do("1", "A").Code)
+	require.Equal(t, 401, g.do("1", "B").Code)
+}
+
+// M2: a success resets the USER bucket too (fresh session admitted afterwards).
+func TestSuccessResetsUserCeilingBucket(t *testing.T) {
+	g := newRig(5, 6, 15*time.Minute)
+	g.fails("1", "s1", 4)
+	g.fails("1", "s2", 1) // user bucket at 5 of 6
+	require.Equal(t, 200, g.do("1", "s3", "X-Status", "200").Code)
+	require.Equal(t, 401, g.do("1", "s4").Code)
+	require.Equal(t, 401, g.do("1", "s4").Code) // 2 of 6, not 6 of 6
+	require.Equal(t, 401, g.do("1", "s4").Code)
+}
+
+// M5: Retry-After is the CEILING of the remaining time, never 0 while locked.
+func TestRetryAfterRoundsUpFractionalSeconds(t *testing.T) {
+	g := newRig(1, 25, 10*time.Minute)
+	g.fails("1", "a", 1)
+	g.adv(10*time.Minute - 100*time.Millisecond)
+	w := g.do("1", "a")
+	require.Equal(t, 429, w.Code)
+	require.Equal(t, "1", w.Header().Get("Retry-After"))
+	g.adv(-(10*time.Minute - 100*time.Millisecond) + 100*time.Second + 500*time.Millisecond)
+	require.Equal(t, "500", g.do("1", "a").Header().Get("Retry-After")) // 499.5 s remaining -> 500
+}
+
+// Buckets of revoked/idle sessions are swept by a later acquire of ANOTHER user.
+func TestIdleBucketsOfOtherUsersAreSwept(t *testing.T) {
+	g := newRig(3, 25, time.Minute)
+	for u := 1; u <= 50; u++ {
+		g.fails(strconv.Itoa(u), "dead", 1)
+	}
+	require.Len(t, g.lim.buckets, 100)
+	g.adv(2 * time.Minute)
+	require.Equal(t, 401, g.do("999", "x").Code)
+	require.Len(t, g.lim.buckets, 2, "only the live user's session+user buckets remain")
+}

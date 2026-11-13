@@ -43,6 +43,7 @@ type FailedAttemptLimiter struct {
 	window     time.Duration
 	now        func() time.Time
 	buckets    map[string]*attemptBucket
+	lastSweep  time.Time
 
 	// OnSessionLimit, when set, is called (outside the lock) the moment a
 	// failure exhausts one session's budget, so the caller can revoke that
@@ -81,6 +82,19 @@ func (l *FailedAttemptLimiter) bucket(key string, now time.Time) *attemptBucket 
 	return b
 }
 
+// sweep drops every expired, idle bucket (revoked or abandoned sessions never
+// call acquire again, so their buckets would otherwise stay for ever). It runs
+// at most once per window, from acquire. Caller holds mu.
+func (l *FailedAttemptLimiter) sweep(now time.Time) {
+	if now.Sub(l.lastSweep) < l.window {
+		return
+	}
+	l.lastSweep = now
+	for key := range l.buckets {
+		l.bucket(key, now) // prunes and deletes when empty
+	}
+}
+
 // wait returns how long until bucket b admits one more attempt (0 = admits now).
 // Budget held only by in-flight attempts is reported as 1 s: those attempts
 // resolve within a request, not within the window.
@@ -111,6 +125,7 @@ func (l *FailedAttemptLimiter) acquire(uid int, sid string) time.Duration {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	now := l.now()
+	l.sweep(now)
 	sk, uk := sessKey(uid, sid), userKey(uid)
 	w := l.wait(l.bucket(sk, now), l.maxSession, now)
 	if uw := l.wait(l.bucket(uk, now), l.maxUser, now); uw > w {

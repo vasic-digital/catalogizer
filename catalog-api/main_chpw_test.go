@@ -19,14 +19,18 @@ import (
 	"go.uber.org/zap"
 )
 
-// Production route registration + REAL RequireAuth + REAL session check + real
-// session revocation on a migrated sqlite DB (CAT-CHPW-RL-1). The handler is a
-// stub that answers 401 (wrong password) unless X-Right is set.
-func TestRegisterChangePasswordRoute_LockRevokesAttackerSessionOwnerSurvives(t *testing.T) {
+type chpwRig struct {
+	db            *database.DB
+	call          func(tok string, right bool) int
+	attacker, own string
+	reached       *int
+	close         func()
+}
+
+func newChpwRig(t *testing.T) *chpwRig {
 	gin.SetMode(gin.TestMode)
 	sqlDB, err := sql.Open("sqlite3", ":memory:")
 	require.NoError(t, err)
-	defer sqlDB.Close()
 	sqlDB.SetMaxOpenConns(1)
 	db := database.WrapDB(sqlDB, database.DialectSQLite)
 	require.NoError(t, db.RunMigrations(context.Background()))
@@ -64,26 +68,91 @@ func TestRegisterChangePasswordRoute_LockRevokesAttackerSessionOwnerSurvives(t *
 		r.ServeHTTP(w, req)
 		return w.Code
 	}
+	return &chpwRig{db: db, call: call, attacker: attacker, own: owner, reached: &reached, close: func() { sqlDB.Close() }}
+}
+
+// Production route registration + REAL RequireAuth + REAL session check + real
+// session revocation on a migrated sqlite DB (CAT-CHPW-RL-1). The handler is a
+// stub that answers 401 (wrong password) unless X-Right is set.
+func TestRegisterChangePasswordRoute_LockRevokesAttackerSessionOwnerSurvives(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	rg := newChpwRig(t)
+	defer rg.close()
+	db, call, attacker, owner := rg.db, rg.call, rg.attacker, rg.own
+	reached := rg.reached
 	for i := 0; i < 5; i++ {
 		require.Equal(t, http.StatusUnauthorized, call(attacker, false))
 	}
-	reachedAfterFive := reached
+	reachedAfterFive := *reached
 	// The 5th failure exhausted the session's budget: the session is revoked,
 	// so RequireAuth rejects the attacker's token before the limiter or handler.
 	require.Equal(t, http.StatusUnauthorized, call(attacker, true), "attacker session revoked, even with the right password")
-	require.Equal(t, reachedAfterFive, reached, "handler not reached by the revoked session")
+	require.Equal(t, reachedAfterFive, *reached, "handler not reached by the revoked session")
 	var active bool
 	require.NoError(t, db.QueryRow(`SELECT is_active FROM user_sessions WHERE id = 1`).Scan(&active))
 	require.False(t, active)
 	require.Equal(t, http.StatusOK, call(owner, true), "owner's own session unaffected")
 }
 
+// Failures spread over two sessions of one user (3+2) exhaust neither session's
+// budget: neither session may be revoked (end to end, real RequireAuth + DB).
+func TestRegisterChangePasswordRoute_SpreadFailuresRevokeNobody(t *testing.T) {
+	rg := newChpwRig(t)
+	defer rg.close()
+	for i := 0; i < 3; i++ {
+		require.Equal(t, http.StatusUnauthorized, rg.call(rg.attacker, false))
+	}
+	for i := 0; i < 2; i++ {
+		require.Equal(t, http.StatusUnauthorized, rg.call(rg.own, false))
+	}
+	var n int
+	require.NoError(t, rg.db.QueryRow(`SELECT COUNT(*) FROM user_sessions WHERE is_active = 1`).Scan(&n))
+	require.Equal(t, 2, n, "no session revoked")
+	require.Equal(t, http.StatusOK, rg.call(rg.own, true))
+}
+
 // main.go must register /change-password only through registerChangePasswordRoute:
-// no direct `.POST("/change-password", ...)` call and at least one call of the helper.
+// no registration call (POST/Handle/Any/...) whose arguments carry the change-password
+// path, as a literal or through a const/var, and exactly one call of the helper.
 func TestMainGoRegistersChangePasswordOnlyViaHelper(t *testing.T) {
 	f, err := parser.ParseFile(token.NewFileSet(), "main.go", nil, 0)
 	require.NoError(t, err)
-	helperCalls, directPosts := 0, 0
+	strs := map[string]string{} // package-level and local const/var string bindings
+	ast.Inspect(f, func(n ast.Node) bool {
+		if vs, ok := n.(*ast.ValueSpec); ok {
+			for i, name := range vs.Names {
+				if i < len(vs.Values) {
+					if lit, ok := vs.Values[i].(*ast.BasicLit); ok && lit.Kind == token.STRING {
+						strs[name.Name], _ = strconv.Unquote(lit.Value)
+					}
+				}
+			}
+		}
+		if as, ok := n.(*ast.AssignStmt); ok && len(as.Lhs) == len(as.Rhs) {
+			for i, l := range as.Lhs {
+				if id, ok := l.(*ast.Ident); ok {
+					if lit, ok := as.Rhs[i].(*ast.BasicLit); ok && lit.Kind == token.STRING {
+						strs[id.Name], _ = strconv.Unquote(lit.Value)
+					}
+				}
+			}
+		}
+		return true
+	})
+	isPath := func(e ast.Expr) bool {
+		var s string
+		switch v := e.(type) {
+		case *ast.BasicLit:
+			if v.Kind != token.STRING {
+				return false
+			}
+			s, _ = strconv.Unquote(v.Value)
+		case *ast.Ident:
+			s = strs[v.Name]
+		}
+		return s == "/change-password" || s == "/api/v1/auth/change-password"
+	}
+	helperCalls, direct := 0, 0
 	ast.Inspect(f, func(n ast.Node) bool {
 		call, ok := n.(*ast.CallExpr)
 		if !ok {
@@ -94,17 +163,15 @@ func TestMainGoRegistersChangePasswordOnlyViaHelper(t *testing.T) {
 			if fn.Name == "registerChangePasswordRoute" {
 				helperCalls++
 			}
-		case *ast.SelectorExpr:
-			if len(call.Args) > 0 {
-				if lit, ok := call.Args[0].(*ast.BasicLit); ok && lit.Kind == token.STRING {
-					if s, _ := strconv.Unquote(lit.Value); s == "/change-password" || s == "/api/v1/auth/change-password" {
-						directPosts++
-					}
+		case *ast.SelectorExpr: // .POST(path,...), .Handle("POST", path,...), .Any(path,...)
+			for _, a := range call.Args {
+				if isPath(a) {
+					direct++
 				}
 			}
 		}
 		return true
 	})
 	require.Equal(t, 1, helperCalls, "main.go must call registerChangePasswordRoute exactly once")
-	require.Zero(t, directPosts, "no route registration with the literal change-password path outside the helper")
+	require.Zero(t, direct, "no route registration carrying the change-password path outside the helper")
 }
