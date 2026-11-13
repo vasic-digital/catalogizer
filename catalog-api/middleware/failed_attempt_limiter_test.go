@@ -397,3 +397,64 @@ func TestSweepRunsAtMostOncePerWindow(t *testing.T) {
 	require.Equal(t, 401, g.do("1", "p").Code)
 	require.NotContains(t, g.lim.buckets, "s:5:D")
 }
+
+// F1 (review round 4 probe, adopted): a fast non-401 answer finishing while a 401
+// guess of the same session is still in flight must not drop that guess's
+// failure nor its in-flight hold (kills mutant M2: dropping `&& b.inflight == 0`
+// from the delete condition in release()).
+func TestReview4InflightFailureSurvivesConcurrentNon401(t *testing.T) {
+	g := newRig(2, 25, 15*time.Minute)
+	g.block = make(chan struct{})
+	done := make(chan struct{})
+	go func() { g.do("1", "a", "X-Block", "1"); close(done) }()
+	for {
+		g.mu.Lock()
+		n := g.reached
+		g.mu.Unlock()
+		if n == 1 {
+			break
+		}
+		time.Sleep(time.Millisecond)
+	}
+	require.Equal(t, 400, g.do("1", "a", "X-Status", "400").Code)
+	close(g.block)
+	<-done
+	require.Equal(t, 401, g.do("1", "a").Code)
+	require.Equal(t, 429, g.do("1", "a").Code, "the blocked guess must have been counted")
+	require.Len(t, g.limited, 1, "session limit reached after 2 counted failures")
+}
+
+// F3 (kills M3): when both buckets are locked, Retry-After is the MAX of the
+// session wait and the user wait; and when only the user bucket is locked it is
+// the user wait.
+func TestRetryAfterIsMaxOfSessionAndUserWait(t *testing.T) {
+	g := newRig(2, 3, 600*time.Second)
+	require.Equal(t, 401, g.do("1", "b").Code) // t=0 (user only)
+	g.adv(100 * time.Second)
+	require.Equal(t, 401, g.do("1", "a").Code)
+	require.Equal(t, 401, g.do("1", "a").Code) // session a locked (oldest t=100), user locked (3, oldest t=0)
+	w := g.do("1", "a")
+	require.Equal(t, 429, w.Code)
+	// session wait 600 (oldest 100 + 600 - 100), user wait 500 (oldest 0): max is 600
+	require.Equal(t, "600", w.Header().Get("Retry-After"))
+
+	h := newRig(3, 2, 600*time.Second)
+	require.Equal(t, 401, h.do("1", "b").Code) // t=0
+	h.adv(100 * time.Second)
+	require.Equal(t, 401, h.do("1", "a").Code) // user locked (2), session a has 1 of 3
+	w = h.do("1", "a")
+	require.Equal(t, 429, w.Code)
+	require.Equal(t, "500", w.Header().Get("Retry-After"), "user wait only")
+}
+
+// F4 boundary: a 3xx answer neither counts as a failure nor resets the counters
+// (the production handler never answers 3xx; this pins the contract so a change
+// to st>=200&&st<300 is caught: M1 is an equivalent mutant in production but not
+// against this test).
+func TestRedirectStatusNeitherCountsNorResets(t *testing.T) {
+	g := newRig(2, 25, 15*time.Minute)
+	require.Equal(t, 401, g.do("1", "a").Code)
+	require.Equal(t, 302, g.do("1", "a", "X-Status", "302").Code)
+	require.Equal(t, 401, g.do("1", "a").Code, "the earlier failure was not reset by the 3xx")
+	require.Equal(t, 429, g.do("1", "a").Code, "2 counted failures lock the session")
+}

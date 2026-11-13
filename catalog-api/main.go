@@ -1169,27 +1169,26 @@ func main() {
 	router.GET("/api/v1/cover/url/:id", root_middleware.CacheHeaders(300), coverHandler.GetCoverURL)
 	router.GET("/api/v1/cover/:id", root_middleware.CacheHeaders(86400), coverHandler.ServeCover)
 
-	// Authentication routes (no auth required)
+	// Authentication routes (registered by registerAuthRoutes, main_chpw.go; the
+	// route table is pinned by TestRegisterAuthRoutes_*, CAT-CHPW-RL-1).
 	authGroup := router.Group("/api/v1/auth")
-	{
-	// Strict rate limiting for brute-force-prone write operations
-	// (30 rpm per IP). Applied ONLY to login/register.
-	authGroup.POST("/login", loginRateLimiter, authHandler.LoginGin)
-	authGroup.POST("/register", loginRateLimiter, func(c *gin.Context) {
-			authHandler.RegisterGin(c, userRepo)
+	registerAuthRoutes(authGroup, authRoutesDeps{
+		LoginRate:      loginRateLimiter,
+		AuthRate:       authRateLimiter,
+		DefaultRate:    defaultRateLimiter,
+		RequireAuth:    jwtMiddleware.RequireAuth,
+		Login:          authHandler.LoginGin,
+		Register:       func(c *gin.Context) { authHandler.RegisterGin(c, userRepo) },
+		Refresh:        authHandler.RefreshTokenGin,
+		Logout:         authHandler.LogoutGin,
+		Me:             authHandler.GetCurrentUserGin,
+		Status:         authHandler.GetAuthStatusGin,
+		Permissions:    authHandler.GetPermissionsGin,
+		InitStatus:     mediaQueryHandler.GetInitStatus,
+		ChangePassword: mediaQueryHandler.ChangePassword,
+		Sessions:       userRepo,
+		Logger:         logger,
 	})
-	// Medium rate limiting for token operations (600 rpm)
-	authGroup.POST("/refresh", authRateLimiter, authHandler.RefreshTokenGin)
-	authGroup.POST("/logout", authRateLimiter, authHandler.LogoutGin)
-	authGroup.GET("/me", authRateLimiter, jwtMiddleware.RequireAuth(), authHandler.GetCurrentUserGin)
-	authGroup.GET("/status", authRateLimiter, authHandler.GetAuthStatusGin)
-	authGroup.GET("/permissions", authRateLimiter, jwtMiddleware.RequireAuth(), authHandler.GetPermissionsGin)
-	authGroup.GET("/profile", authRateLimiter, jwtMiddleware.RequireAuth(), authHandler.GetCurrentUserGin)
-	authGroup.GET("/init-status", defaultRateLimiter, mediaQueryHandler.GetInitStatus)
-	// change-password verifies the current password (bcrypt compare) behind a
-	// JWT: failed verifications are limited per session/user (CAT-CHPW-RL-1).
-	registerChangePasswordRoute(authGroup, defaultRateLimiter, jwtMiddleware.RequireAuth(), mediaQueryHandler.ChangePassword, userRepo, logger)
-	}
 
 	// API routes
 	api := router.Group("/api/v1")
