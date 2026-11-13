@@ -340,29 +340,46 @@ func TestMainPackageChangePasswordWiringSource(t *testing.T) {
 	require.Len(t, helperCalls, 1)
 	args := helperCalls[0].Args
 	require.Len(t, args, 6)
-	require.Equal(t, "g", args[0].(*ast.Ident).Name)
+	if id, ok := args[0].(*ast.Ident); !ok || id.Name != "g" {
+		t.Fatalf("1st argument of registerChangePasswordRoute must be the identifier g")
+	}
 	require.True(t, isSel(args[1], "d", "DefaultRate"), "2nd argument (rate limiter) must be d.DefaultRate")
-	rq, ok := args[2].(*ast.CallExpr)
-	require.True(t, ok, "3rd argument must be the d.RequireAuth() call")
-	rqs, ok := rq.Fun.(*ast.SelectorExpr)
-	require.True(t, ok && rqs.Sel.Name == "RequireAuth" && rqs.X.(*ast.Ident).Name == "d")
-	cp, ok := args[3].(*ast.SelectorExpr)
-	require.True(t, ok && cp.Sel.Name == "ChangePassword" && cp.X.(*ast.Ident).Name == "d")
+	if rq, ok := isCallSel(args[2], "d", "RequireAuth"); !ok || len(rq.Args) != 0 {
+		t.Fatalf("3rd argument must be the d.RequireAuth() call")
+	}
+	if !isSel(args[3], "d", "ChangePassword") {
+		t.Fatalf("4th argument must be d.ChangePassword")
+	}
 
 	require.Len(t, authCalls, 1, "registerAuthRoutes called exactly once")
+	if len(authCalls[0].Args) != 2 {
+		t.Fatalf("registerAuthRoutes must take exactly 2 arguments, got %d", len(authCalls[0].Args))
+	}
 	lit, ok := authCalls[0].Args[1].(*ast.CompositeLit)
-	require.True(t, ok)
+	if !ok {
+		t.Fatalf("2nd argument of registerAuthRoutes must be a composite literal")
+	}
 	found := false
 	for _, el := range lit.Elts {
-		kv := el.(*ast.KeyValueExpr)
-		if kv.Key.(*ast.Ident).Name == "RequireAuth" {
-			sel, ok := kv.Value.(*ast.SelectorExpr)
-			require.True(t, ok && sel.Sel.Name == "RequireAuth" && sel.X.(*ast.Ident).Name == "jwtMiddleware", "RequireAuth must be jwtMiddleware.RequireAuth")
+		kv, ok := el.(*ast.KeyValueExpr)
+		if !ok {
+			t.Fatalf("authRoutesDeps literal must use keyed fields")
+		}
+		key, ok := kv.Key.(*ast.Ident)
+		if !ok {
+			t.Fatalf("authRoutesDeps literal key must be an identifier")
+		}
+		if key.Name == "RequireAuth" {
+			if !isSel(kv.Value, "jwtMiddleware", "RequireAuth") {
+				t.Fatalf("RequireAuth must be jwtMiddleware.RequireAuth")
+			}
 			found = true
 		}
 	}
 	require.True(t, found)
-	require.Equal(t, "authGroup", authCalls[0].Args[0].(*ast.Ident).Name)
+	if id, ok := authCalls[0].Args[0].(*ast.Ident); !ok || id.Name != "authGroup" {
+		t.Fatalf("1st argument of registerAuthRoutes must be authGroup")
+	}
 }
 
 // isSel reports whether e is the selector expression x.sel.
@@ -396,8 +413,8 @@ func intLit(e ast.Expr) (int, bool) {
 // Pins, in main.go, (1) which REAL limiter feeds each limiter-bearing field of
 // authRoutesDeps and how each limiter is constructed, and (2) the exact shape of
 // the auth group (CAT-CHPW-RL-1-FU). The limiter-bearing fields of authRoutesDeps
-// are LoginRate, AuthRate and DefaultRate (the only fields of that struct typed as
-// middleware that is not RequireAuth; the test fails if a new *Rate* field appears
+// are LoginRate, AuthRate and DefaultRate (fields are matched by NAME containing
+// "Rate" or "Limit", not by type; the test fails if a new such field appears
 // without a pinned mapping). Pinned construction (tolerant of formatting, not of
 // values): loginRateLimiter := authMiddleware.RateLimitByUser(30, "1m"),
 // authRateLimiter ... (600, "1m"), defaultRateLimiter ... (2000, "1m"); each
@@ -553,26 +570,29 @@ func TestMainGoAuthLimiterAndGroupWiringSource(t *testing.T) {
 	require.Len(t, groupCall.Args, 1, "router.Group for auth must have no middleware argument")
 	p, ok := foldString(groupCall.Args[0], map[string]string{})
 	require.True(t, ok && p == "/api/v1/auth", "authGroup prefix must be /api/v1/auth, got %q", p)
-	// every use of the ident authGroup other than its definition must be the
-	// first argument of registerAuthRoutes.
-	uses := 0
+	// EVERY identifier named authGroup in main.go: exactly two, the `:=`
+	// definition and the first argument of registerAuthRoutes. This closes alias
+	// (ag := authGroup), deref, slice/struct-field storage, helper-call and
+	// closure uses, whatever the syntactic form.
+	idents := 0
 	ast.Inspect(f, func(n ast.Node) bool {
-		switch v := n.(type) {
-		case *ast.SelectorExpr:
-			if id, ok := v.X.(*ast.Ident); ok && id.Name == "authGroup" {
-				t.Fatalf("method/field %q used on authGroup: no middleware may be added to the auth group", v.Sel.Name)
-			}
-		case *ast.CallExpr:
-			for _, a := range v.Args {
-				if id, ok := a.(*ast.Ident); ok && id.Name == "authGroup" {
-					if fn, ok := v.Fun.(*ast.Ident); !ok || fn.Name != "registerAuthRoutes" {
-						t.Fatalf("authGroup passed to something other than registerAuthRoutes")
-					}
-					uses++
-				}
+		if id, ok := n.(*ast.Ident); ok && id.Name == "authGroup" {
+			idents++
+		}
+		return true
+	})
+	require.Equal(t, 2, idents, "authGroup must occur exactly twice in main.go: its definition and the registerAuthRoutes argument")
+	ac := 0
+	ast.Inspect(f, func(n ast.Node) bool {
+		if c, ok := n.(*ast.CallExpr); ok {
+			if fn, ok := c.Fun.(*ast.Ident); ok && fn.Name == "registerAuthRoutes" {
+				ac++
+				require.True(t, len(c.Args) >= 1, "registerAuthRoutes call without arguments")
+				id, ok := c.Args[0].(*ast.Ident)
+				require.True(t, ok && id.Name == "authGroup", "registerAuthRoutes first argument must be authGroup")
 			}
 		}
 		return true
 	})
-	require.Equal(t, 1, uses, "authGroup used exactly once, as the registerAuthRoutes argument")
+	require.Equal(t, 1, ac, "registerAuthRoutes called exactly once in main.go")
 }
