@@ -171,13 +171,18 @@ func TestCAT_OPB_FU_I1_RelativeFilePathResolvedAgainstConfigPath(t *testing.T) {
 // The basic template's own step must not target the CWD-relative tracked file.
 func TestCAT_OPB_FU_I1_FinalizeBasicLeavesCWDUntouched(t *testing.T) {
 	s := newTemplateTestService(t)
-	cwd, _ := os.Getwd()
+	// Run from an empty temp dir so the result does not depend on test order or
+	// on the package directory's own ./config (CAT-OPB-FU2 T3).
+	cwd := t.TempDir()
+	t.Chdir(cwd)
 	tracked := filepath.Join(cwd, "config", "config.json")
 	before, _ := os.ReadFile(tracked)
 	sess := &models.WizardSession{UserID: 1, ConfigType: "basic", Configuration: map[string]interface{}{"server_port": 8080}}
 	require.NoError(t, s.finalizeConfiguration(sess))
 	after, _ := os.ReadFile(tracked)
 	assert.Equal(t, string(before), string(after), "tracked ./config/config.json unchanged")
+	_, cfgErr := os.Stat(filepath.Join(cwd, "config"))
+	assert.True(t, os.IsNotExist(cfgErr), "nothing written under CWD ./config")
 	_, err := os.Stat(filepath.Join(s.configPath, "config.json"))
 	assert.NoError(t, err)
 }
@@ -217,4 +222,78 @@ func TestCAT_OPB_FU_M1_RequiredStepFailureRollsBackConfig(t *testing.T) {
 		_, statErr := os.Stat(filepath.Join(s.configPath, "config.json"))
 		assert.NoError(t, statErr)
 	})
+}
+
+// CAT-OPB-FU2 (S1): an unreadable pre-existing config.json must fail finalize
+// BEFORE writing, and must never be removed by the rollback.
+func TestCAT_OPB_FU2_S1_UnreadableExistingConfigFailsBeforeWrite(t *testing.T) {
+	s := newTemplateTestService(t)
+	require.NoError(t, os.MkdirAll(s.configPath, 0o755))
+	p := filepath.Join(s.configPath, "config.json")
+	require.NoError(t, os.WriteFile(p, []byte(`{"old":true}`), 0o200))
+	t.Cleanup(func() { _ = os.Chmod(p, 0o600) })
+	err := s.finalizeConfiguration(&models.WizardSession{ConfigType: "basic", Configuration: map[string]interface{}{}})
+	require.Error(t, err)
+	require.NoError(t, os.Chmod(p, 0o600))
+	got, rerr := os.ReadFile(p)
+	require.NoError(t, rerr, "existing file must still exist")
+	assert.Equal(t, `{"old":true}`, string(got), "existing file untouched")
+}
+
+// CAT-OPB-FU2 (S1): rollback restores the original file mode.
+func TestCAT_OPB_FU2_S1_RollbackPreservesMode(t *testing.T) {
+	s := newTemplateTestService(t)
+	s.configTemplates["failing"] = ConfigTemplate{TemplateID: "failing", PostInstall: []PostInstallAction{
+		{ActionType: "file_create", Required: true, Parameters: map[string]interface{}{"file_path": "x.json", "template": "missing_template.json"}},
+	}}
+	require.NoError(t, os.MkdirAll(s.configPath, 0o755))
+	p := filepath.Join(s.configPath, "config.json")
+	require.NoError(t, os.WriteFile(p, []byte(`{"old":true}`), 0o600))
+	require.NoError(t, os.Chmod(p, 0o600))
+	require.Error(t, s.finalizeConfiguration(&models.WizardSession{ConfigType: "failing", Configuration: map[string]interface{}{}}))
+	fi, err := os.Stat(p)
+	require.NoError(t, err)
+	assert.Equal(t, os.FileMode(0o600), fi.Mode().Perm())
+}
+
+// CAT-OPB-FU2 (S1): rollback failures are reported in the returned error.
+func TestCAT_OPB_FU2_S1_RollbackErrorsAreWrapped(t *testing.T) {
+	s := newTemplateTestService(t)
+	dir := t.TempDir()
+	require.NoError(t, os.Chmod(dir, 0o500))
+	t.Cleanup(func() { _ = os.Chmod(dir, 0o700) })
+	f := filepath.Join(dir, "config.json")
+	require.NoError(t, os.Chmod(dir, 0o700))
+	require.NoError(t, os.WriteFile(f, []byte("new"), 0o644))
+	require.NoError(t, os.Chmod(dir, 0o500))
+	err := s.rollbackConfig(f, nil, 0, false)
+	require.Error(t, err, "remove in a read-only dir must surface")
+	err = s.rollbackConfig(f, []byte("old"), 0o644, true)
+	assert.NoError(t, err, "rewriting an existing writable file in a read-only dir succeeds")
+}
+
+// CAT-OPB-FU2 (T1): templates dir reached through a symlinked parent is accepted.
+func TestCAT_OPB_FU2_T1_SymlinkedTemplatesParentAllowed(t *testing.T) {
+	s := newTemplateTestService(t)
+	real := t.TempDir()
+	realTpl := filepath.Join(real, "tpl")
+	require.NoError(t, os.Mkdir(realTpl, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(realTpl, "t.json"), []byte(`{"a":1}`), 0o644))
+	linkParent := filepath.Join(t.TempDir(), "lnk")
+	require.NoError(t, os.Symlink(real, linkParent))
+	s.templatesPath = filepath.Join(linkParent, "tpl")
+	doc, err := s.loadConfigTemplate("t.json")
+	require.NoError(t, err)
+	assert.Equal(t, float64(1), doc["a"])
+}
+
+// CAT-OPB-FU2 (T2): an empty-object template is valid.
+func TestCAT_OPB_FU2_T2_EmptyObjectTemplateLoads(t *testing.T) {
+	s := newTemplateTestService(t)
+	require.NoError(t, os.MkdirAll(s.templatesPath, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(s.templatesPath, "e.json"), []byte(`{}`), 0o644))
+	doc, err := s.loadConfigTemplate("e.json")
+	require.NoError(t, err)
+	assert.NotNil(t, doc)
+	assert.Empty(t, doc)
 }
