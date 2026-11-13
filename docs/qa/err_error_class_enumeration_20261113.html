@@ -1,0 +1,3961 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.11" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>err.Error() to HTTP response enumeration (PX-F18, §11.4.276(C)
+class enumeration), rework 3 (2026-11-13)</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+<h1
+id="errerror-to-http-response-enumeration-px-f18-114276c-class-enumeration-rework-3-2026-11-13">err.Error()
+to HTTP response enumeration (PX-F18, §11.4.276(C) class enumeration),
+rework 3 (2026-11-13)</h1>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Date</td>
+<td>2026-11-13</td>
+</tr>
+<tr>
+<td>Roadmap item</td>
+<td>PX-F18 (CAT-PREEXIST-3)</td>
+</tr>
+<tr>
+<td>Review base</td>
+<td>main @ 9ed6577b (the base the NO-GO review of 2026-11-12 read)</td>
+</tr>
+<tr>
+<td>Current base</td>
+<td>main @ 713a4f380 (every "HEAD" below)</td>
+</tr>
+<tr>
+<td>Scope</td>
+<td>every non-test .go file under catalog-api (all packages,
+<code>main.go</code> included) plus the other Go modules of the
+repository that serve HTTP (OCU-CUDA-Sidecar;
+<code>scripts/test-infra/nas_clients</code> scanned: 0 hits)</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>enumeration only; no source file changed. Replaces the doc the
+review rejected (it was never landed)</td>
+</tr>
+<tr>
+<td>Verdict labels</td>
+<td>PROVISIONAL, review owed. Nothing here is a review GO</td>
+</tr>
+</tbody>
+</table>
+<h2 id="why-this-is-a-rework">Why this is a rework</h2>
+<p>The NO-GO review (docs/FOLLOW_UPS_NEXT_PHASE.md, "PX-F18 enumeration
+doc review: NO-GO") found one unlisted class and five defects of the
+instrument and the wording. Each is closed in this document as follows
+(evidence is in the sections named).</p>
+<table>
+<thead>
+<tr>
+<th>Review finding</th>
+<th>Closure</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F1: <code>utils.SendErrorResponse(c,status,msg,err)</code> puts
+<code>err.Error()</code> into <code>details</code>; 109 call sites in 11
+files (media_entity 35, collection 15, comic_pages 14, stats 10, media
+10, search 6, recommendation 6, challenge 5, browse 5, media_browse 2,
+middleware/auth.go 1; auth.go:167 sends JWT parse text on 401)</td>
+<td>The scanner now matches a bare <code>err</code> argument. At the
+review base it reproduces the review's numbers exactly: 109 bare-err
+call sites in the same 11 files with the same per-file counts, plus one
+more SendErrorResponse site that passes <code>err.Error()</code> as the
+<em>message</em> (collection_handler.go:335). The class is enumerated
+per site (rows B1..B226) and the mechanism is verified: base
+<code>utils/response.go:31</code> has
+<code>response.Details = err.Error()</code>; HEAD has no assignment to
+<code>Details</code> anywhere in <code>utils/</code></td>
+<td>"Class 1" and the per-site table</td>
+</tr>
+<tr>
+<td>F2: internal/metrics/health.go:157 (unauthenticated /health/deep
+leaked the DB ping error); monitoring.go:251 (unwired)</td>
+<td>Both are rows H1, H2. They are struct/map-literal flows that a
+sink-call scanner cannot see, so a second instrument (every
+zero-argument <code>.Error()</code> call, any context) was added.
+health.go:157 is closed at HEAD (fixed text, error logged).
+monitoring.go:251 is still present at HEAD and is unwired (no non-test
+importer of <code>catalogizer/internal/monitoring</code>)</td>
+<td>"Class 2", rows H1/H2, "HEAD residual" R1</td>
+</tr>
+<tr>
+<td>F3: auth rows should be LEAK</td>
+<td>Reclassified. At the review base <code>AuthService.Login</code>
+returns <code>fmt.Errorf("failed to get user: %w", err)</code> and
+similar chains (auth_service.go:105,147,170,177,183,189) and the handler
+sends <code>err.Error()</code> on 401, so the rows are LEAK, with
+authored sentinels (locked, disabled, pending) mixed in. The 20 former
+UNKNOWN rows were each resolved by reading the producer (rule list in
+"Classification rules")</td>
+<td>per-site table, column Class</td>
+</tr>
+<tr>
+<td>F4: middleware rows are latent</td>
+<td>Reclassified LATENT (rows with
+<code>internal/middleware/middleware.go</code>). ErrorHandler is wired
+(<code>main.go:1038</code> at base, <code>:1045</code> at HEAD), but its
+two leaking branches need gin <code>ErrorTypeBind</code> or
+<code>ErrorTypePublic</code> errors, and no non-test code produces
+either (grep for <code>.Bind(</code>, <code>BindJSON</code>,
+<code>MustBindWith</code>, <code>AbortWithError(</code>,
+<code>ErrorTypePublic</code>: 0 hits outside the middleware file;
+<code>ShouldBind*</code> does not append to <code>c.Errors</code>).
+Third-party middleware that might append such errors was not enumerated:
+UNCONFIRMED</td>
+<td>per-site table</td>
+</tr>
+<tr>
+<td>F5: limits text wrong</td>
+<td>The old text said "no such helper found by name search";
+SendErrorResponse is exactly such a helper and 109 sites used it.
+"Limits of the instruments" is rewritten from what was measured</td>
+<td>last section</td>
+</tr>
+<tr>
+<td>F6: tool/main.go errSite misses bare <code>err</code> arguments</td>
+<td>Fixed in instrument 1 (kind <code>BARE</code>). The control needle
+below fails on the old logic (bare err not reported) and passes on the
+new</td>
+<td>"Control needles"</td>
+</tr>
+</tbody>
+</table>
+<h3
+id="round-2-review-findings-no-go-on-rework-2-closure-in-this-rework">Round-2
+review findings (NO-GO on rework 2), closure in this rework</h3>
+<table>
+<thead>
+<tr>
+<th>Finding</th>
+<th>Closure</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>N1: "class complete / no unclosed LEAK" false: class excluded state
+persisted and later served; sink scan missed an err inside a helper in a
+sink (fixture f) and a non-err-named variable in <code>%v</code>
+(fixture g)</td>
+<td>Class redefined as error-derived text that can reach a client by ANY
+path. Instrument 1 gained kind <code>H:</code> (any call with an
+err-like identifier argument inside a sink argument) and err-like
+detection by type/nil-comparison; reviewer fixtures f and g are now
+found. New instrument 3 (flow scan) lists error-derived text stored in
+struct fields, map/kv entries, channels and call arguments. New section
+"Class 4" traces each stored field to its writer, route, gate and scrub.
+The "no LEAK row remains unclosed" sentence is withdrawn</td>
+<td>Class definition, Instruments, Class 4, Control needles</td>
+</tr>
+<tr>
+<td>N1 specific rows (GetStorageRootStatus, ListStoragePath,
+SyncSession.ErrorMessage, ScanStatus.Reason + event bus, scrubSecrets
+and sync_service.go:1057 census rows)</td>
+<td>Rows S1 to S5 in Class 4; the census sentence "none reach a
+response" is corrected</td>
+<td>Class 4, Census</td>
+</tr>
+<tr>
+<td>N2: unrouted net/http variants counted as live</td>
+<td>B7 to B10, B12 to B14, B80 to B83, B213, B214 reclassified LATENT
+with the routing evidence; totals recounted</td>
+<td>Per-site table, Review-base totals</td>
+</tr>
+<tr>
+<td>N3: validationText/paramRequiredText rows wrongly "CLOSED"; claim "0
+SendErrorResponse sites carry error text"</td>
+<td>HEAD status of VALIDATION rows reworded to "NOT CLOSED";
+collection_handler.go:335,351, playlist_handler.go:95,188,
+service_handlers.go:258,298 and input_validation.go:403 added to R4; the
+claim is replaced</td>
+<td>R4, Class 1</td>
+</tr>
+<tr>
+<td>N4: configuration_service.go:430,443,
+localization_service.go:849-904, recovery/retry.go:401,
+webdav_client.go:340-502</td>
+<td>Traced in Class 4 rows S6 to S10</td>
+<td>Class 4</td>
+</tr>
+<tr>
+<td>N5: B2 reason, B3 "(unresolved in review base)",
+ErrRecommendationsNotImplemented</td>
+<td>B2 now VALIDATION with the producer cited; B3 reason cites
+auth_service.go:132; the sentinel text is noted in Class 1</td>
+<td>Per-site table, Class 1</td>
+</tr>
+</tbody>
+</table>
+<h2 id="instruments">Instruments</h2>
+<p>Both are Go AST programs (go/parser, go/ast), built in a scratch
+directory; the sources are committed next to this doc as
+<code>docs/qa/err_error_class_scan/astscan_sinks.go.txt</code> and
+<code>all_error_calls.go.txt</code> (<code>.txt</code> so no Go tool
+picks them up). They were run on a clean clone at both bases, with each
+tree checked out without recursive submodule init.</p>
+<ol start="0" type="1">
+<li><strong>Rework 3 changes to the sink scan.</strong> Err-like
+identifiers are now found by type (<code>error</code> in parameters,
+results and <code>var</code> declarations) or by comparison with nil, so
+a variable named <code>failure</code> or <code>cause</code> counts. Kind
+<code>H:</code> reports any non-<code>fmt</code> call that takes an
+err-like identifier inside a sink argument. Kind <code>F:</code> matches
+any err-like identifier argument of <code>fmt.Sprint*</code>.</li>
+<li><strong>Sink scan.</strong> For every non-test function it finds
+calls whose callee name looks like a response sink (names containing
+json, abortwith, string, write, send, respond, errorresponse,
+badrequest, servererror, encode, <code>http.Error</code>, html, data,
+emit, broadcast, notify, plus
+<code>c.Error</code>/<code>AbortWithError</code>); logger,
+<code>fmt.*</code>, <code>errors.*</code>, <code>strings.*</code>
+callees are excluded. An argument is reported when its subtree holds (E)
+a zero-argument <code>.Error()</code> call, (F)
+<code>fmt.Sprint*</code>/<code>Errorf</code> with an err-named
+identifier argument, (T) an identifier that the same function assigned
+from such an expression (taint, flow-insensitive), or (BARE) an
+err-named identifier passed as an argument.</li>
+<li><strong>Flow scan</strong>
+(<code>docs/qa/err_error_class_scan/flows_assign.go.txt</code>, skips
+<code>challenges/</code>). Lists error-derived text
+(<code>err.Error()</code>, <code>%v</code> of an err-like identifier, a
+variable assigned from either) assigned to a struct field, an index or
+map key, a key-value pair, a channel send or a call argument, with file,
+line, function and kind. Its rows are leads for Class 4, not
+verdicts.</li>
+<li><strong>Census.</strong> Every zero-argument <code>.Error()</code>
+call in every non-test file, with its syntactic context (argument of a
+named call, assignment, return, composite literal / key-value, branch,
+other). It catches flows instrument 1 cannot see (struct literals
+returned to a handler, helpers with unusual names).</li>
+</ol>
+<h3 id="control-needles-1142017b-114273">Control needles
+(§11.4.201(7)(b), §11.4.273)</h3>
+<ul>
+<li>Known positive on the review base:
+<code>handlers/error_reporting_handler.go:85</code>
+(<code>http.Error(w, err.Error(), 500)</code>): found, 1 row, instrument
+1. On HEAD that file has 0 rows (closed by CAT-PXF23-R5B).</li>
+<li>Synthetic fixture with four functions (bare err to
+<code>SendErrorResponse</code>; <code>fmt.Sprintf</code> into a variable
+then <code>c.JSON</code>; direct <code>err.Error()</code> in a map;
+<code>err.Error()</code> only in a log call and an <code>==</code>
+test): instrument 1 reported exactly the first three (kinds BARE,
+TEXT-via-taint, TEXT) and nothing for the fourth; instrument 2 reported
+the direct call (context <code>kv</code>), the log argument
+(<code>arg-of:log.Printf</code>) and the comparison
+(<code>branch</code>).</li>
+<li>Reviewer fixtures (round 2): <code>fixF</code>
+(<code>c.JSON(500, gin.H{"e": scrub(err)})</code>, helper nested in a
+sink) and <code>fixG</code>
+(<code>fmt.Sprintf("failed: %v", failure)</code> where
+<code>failure</code> is a non-err-named <code>error</code>) are both
+reported by the rebuilt instrument 1 (kinds <code>H:</code> and
+<code>F:</code>); good1 to good3 are still reported and bad1 is still
+silent. The previous build reported neither fixF nor fixG.</li>
+<li>Re-run of instrument 1 on a fresh checkout of each base reproduces
+the stored outputs: raw 432 rows (review base) and 371 rows (HEAD); 310
+and 250 after removing the <code>strings.</code>, <code>sort.</code>,
+<code>bytes.</code> callee noise. New HEAD rows of kind <code>H:</code>
+are the helpers listed in Class 3 and R4 plus nil-comparison noise
+(<code>len(playlists)</code>, <code>[]string(p)</code> and similar, read
+and discarded as false positives).</li>
+<li>Fabricated token <code>ZZNEEDLE_NOPE</code>: 0 hits in all output
+files (instruments 1, 2 and 3, both bases).</li>
+<li>Cross-check of instrument 2 against
+<code>grep -rE '\.Error\(\)'</code> (non-test .go, catalog-api): review
+base AST 333 calls vs 329 grep lines; HEAD AST 255 vs 254. Line-set
+comparison (LC_ALL=C): AST-only lines 0 at both bases; grep-only lines
+are 1 at the review base and 4 at HEAD (universal_scanner.go:188 in
+both), and every one was read: they are comments that quote
+<code>err.Error()</code> (universal_scanner.go:188, auth_handler.go:36,
+client_errors.go:67, utils/response.go:31). The AST count exceeds the
+grep line count because several lines hold more than one call (5 such
+lines at each base).</li>
+<li>Taint is flow-insensitive: on HEAD
+<code>handlers/user_handler.go:122</code> is reported as
+<code>T:msg</code> because <code>msg</code> is assigned from
+<code>err.Error()</code> later in the function (line 168); at line 122
+<code>msg</code> comes from <code>authClientMessage</code> (authored
+text). Read and confirmed a false positive; it is not counted
+below.</li>
+</ul>
+<h2 id="class-definition">Class definition</h2>
+<p>A site is in the class when text derived from an <code>error</code>
+value can reach a client (HTTP, WebSocket or SSE response body or
+header) by ANY path. Routes (rework 3 widens this; the earlier
+definition excluded server-side state that is persisted and later
+served): (1) <code>err.Error()</code> or <code>%v/%w/%s</code> of an
+error inside a response call; (2) a bare error passed to a helper that
+serialises it; (3) error text stored in a struct or map that a handler
+later serialises; (4) error text kept in a variable and used in a
+response; (5) error text returned from a helper into a response; (6) a
+helper called inside a sink argument
+(<code>gin.H{"e": scrub(err)}</code>); (7)
+<code>%v</code>/<code>%s</code> of an error-typed identifier without
+<code>.Error()</code>, whatever the identifier is called; (8) error text
+stored in a struct field, map, database row, session or status object
+and served later by another route (Class 4); (9) error text published on
+the event bus and forwarded to WebSocket or SSE clients. Sites that only
+log or branch on text are outside the class; sites that record text in
+server-side state are IN the class when a route serves it, and are
+traced in Class 4.</p>
+<p>Classes used in the tables: <strong>LEAK</strong> (internal detail
+can reach the client: SQL/driver text, wrapped <code>%w</code> chains,
+paths, upstream or JWT parse text; "can include", not a demonstrated
+leak for every row: service and repository strings were read only where
+stated); <strong>VALIDATION</strong> (authored text that tells the
+caller which input to fix, or a sentinel's own text; may echo the
+caller's own input); <strong>LATENT</strong> (leaking code that no
+non-test caller can reach); <strong>SAFE</strong> (the err value does
+not reach the client: log-only, fixed-text helper, or a non-client
+sink); <strong>CLOSED-BY-HELPER</strong> and <strong>CLOSED</strong> are
+HEAD statuses, not classes.</p>
+<h3
+id="classification-rules-how-the-20-old-unknown-rows-were-resolved">Classification
+rules (how the 20 old UNKNOWN rows were resolved)</h3>
+<p>Rule 1: a 4xx/5xx text produced by a service chain that contains
+<code>fmt.Errorf("...: %w", repoErr)</code> is LEAK (configuration
+GetWizardProgress, error_reporting GetErrorReport/GetCrashReport, auth
+Login/Refresh/ChangePassword via auth_service.go wraps, localization
+Import/Edit). Rule 2: text from a package-level sentinel or a
+<code>smartrules.ValidationError</code> is VALIDATION (playlist,
+service_handlers, conversion). Rule 3:
+<code>ErrLocalRootNotAllowed</code> text from
+<code>ResolveLocalRoot</code>/<code>CheckLocalRoot</code> is LEAK (it
+embeds <code>cannot resolve path: &lt;OS error&gt;</code>,
+local_policy.go:54). Rule 4: a binder (ShouldBindJSON) error on 400 is
+VALIDATION (mild: names Go struct fields). Rule 5: any other text on a
+5xx or a variable status is LEAK.</p>
+<h2
+id="class-1-senderrorresponse-family-the-reviews-unlisted-class">Class
+1: SendErrorResponse family (the review's unlisted class)</h2>
+<p><code>utils.SendErrorResponse(c, status, message, err)</code> at the
+review base (<code>utils/response.go:25-39</code>): if
+<code>err != nil</code>, <code>response.Details = err.Error()</code>,
+for every status. Bare-err call sites by file (review base):</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Sites</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>catalog-api/handlers/media_entity_handler.go</td>
+<td>35</td>
+</tr>
+<tr>
+<td>catalog-api/handlers/collection_handler.go</td>
+<td>15</td>
+</tr>
+<tr>
+<td>catalog-api/handlers/comic_pages_handler.go</td>
+<td>14</td>
+</tr>
+<tr>
+<td>catalog-api/handlers/media_handler.go</td>
+<td>10</td>
+</tr>
+<tr>
+<td>catalog-api/handlers/stats.go</td>
+<td>10</td>
+</tr>
+<tr>
+<td>catalog-api/handlers/recommendation_handler.go</td>
+<td>6</td>
+</tr>
+<tr>
+<td>catalog-api/handlers/search.go</td>
+<td>6</td>
+</tr>
+<tr>
+<td>catalog-api/handlers/browse.go</td>
+<td>5</td>
+</tr>
+<tr>
+<td>catalog-api/handlers/challenge.go</td>
+<td>5</td>
+</tr>
+<tr>
+<td>catalog-api/handlers/media_browse_handler.go</td>
+<td>2</td>
+</tr>
+<tr>
+<td>catalog-api/middleware/auth.go</td>
+<td>1</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>109</strong> in 11 files</td>
+</tr>
+</tbody>
+</table>
+<p>The review base has 167 SendErrorResponse call sites in non-test
+code: 109 pass a bare err variable (the table above;
+<code>nerr</code>/<code>rerr</code> at comic_pages_handler.go:582,592
+are included), 1 passes <code>err.Error()</code> as the message
+(collection_handler.go:335), and 57 pass <code>nil</code> or a sentinel
+(<code>ErrRecommendationsNotImplemented</code>,
+recommendation_handler.go:115,152). The 57 carry no error text and are
+not rows.</p>
+<p>HEAD: <code>SendErrorResponse</code> logs err (status, request id)
+and never sets <code>Details</code>; <code>ErrorResponse.Details</code>
+is no longer assigned in <code>utils/</code> (grep
+<code>Details =</code>: base 1 hit at response.go:31, HEAD 0), with
+<code>TestSendErrorResponse_DoesNotLeakInternalErrorText</code> and
+<code>..._HeadersDoNotLeakErrorText</code> in
+<code>utils/response_test.go</code>. All 109 rows are therefore
+CLOSED-BY-HELPER. Residual risk: the helper's <code>message</code>
+argument. At HEAD the <code>message</code> argument carries
+error-derived text at 2 SendErrorResponse sites:
+collection_handler.go:335 and :351, both
+<code>validationText(err)</code> (authored
+<code>ValidationError.Msg</code>, VALIDATION, listed in R4). The earlier
+sentence "0 TEXT rows" described only kinds
+<code>E:</code>/<code>F:</code>/<code>T:</code> and missed the helper
+kind <code>H:</code>; it is withdrawn. The 57 sites that pass
+<code>nil</code> or a sentinel include
+<code>ErrRecommendationsNotImplemented</code>
+(recommendation_handler.go:115,152): at the review base its own text
+"recommendation source not implemented" went into <code>details</code>;
+it is authored text, not internal detail (not counted as a row).</p>
+<h2
+id="class-2-error-text-in-structmap-literals-and-indirect-flows">Class
+2: error text in struct/map literals and indirect flows</h2>
+<p>Found only by instrument 2 or by taint, not by the sink scan:</p>
+<table>
+<thead>
+<tr>
+<th>Row</th>
+<th>File:line (review base)</th>
+<th>Flow</th>
+<th>Class</th>
+<th>HEAD</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H1</td>
+<td>catalog-api/internal/metrics/health.go:157</td>
+<td><code>Message: "Database ping failed: " + err.Error()</code> in a
+<code>ComponentHealth</code> returned by <code>checkDatabase</code>,
+serialised by the unauthenticated <code>/health/deep</code> route
+(registered at <code>main.go:1107</code> at base; the comment at
+<code>main.go:1052</code> says "/health and /health/deep stay
+public")</td>
+<td>LEAK</td>
+<td>CLOSED (fixed text "Database ping failed", error logged;
+CAT-PXF23)</td>
+</tr>
+<tr>
+<td>H2</td>
+<td>catalog-api/internal/monitoring/monitoring.go:251</td>
+<td><code>"error": err.Error()</code> in the map built by
+<code>HealthChecker.Check</code>, served by
+<code>GinHealthHandler</code></td>
+<td>LEAK, LATENT (package unwired)</td>
+<td>STILL PRESENT, unchanged (see R1)</td>
+</tr>
+</tbody>
+</table>
+<p>H1 note: this is the only base instance of the "struct literal" route
+in <code>internal/metrics</code>. Instrument 2 lists exactly two
+<code>.Error()</code> calls in <code>internal/metrics</code> and
+<code>internal/monitoring</code> together at the review base (H1, H2),
+so the route is exhausted for those packages. user_handler.go:171,176
+(<code>msg := err.Error()</code> echoed in <code>details</code>) are the
+"variable" route and appear in the per-site table as taint rows.</p>
+<h2 id="class-3-helpers-that-take-an-error-class-complete-list">Class 3:
+helpers that take an error (class-complete list)</h2>
+<p>Every non-test function in handlers, middleware, internal/handlers,
+internal/middleware, utils, internal/metrics and internal/monitoring
+with an error parameter was read (grep of
+<code>func ...(err error</code>). Result at HEAD:</p>
+<table>
+<thead>
+<tr>
+<th>Helper</th>
+<th>Does err text reach the client</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>utils.SendErrorResponse</td>
+<td>no (log only)</td>
+<td>SAFE</td>
+</tr>
+<tr>
+<td>handlers.respondInternal / respondBadBody / stdError
+(client_errors.go)</td>
+<td>no (fixed message / status text)</td>
+<td>SAFE</td>
+</tr>
+<tr>
+<td>handlers.syncFail (client_errors.go:85)</td>
+<td>fixed class text in <code>details</code> (syncDetails)</td>
+<td>SAFE</td>
+</tr>
+<tr>
+<td>handlers.validationText / sentinelText / paramRequiredText</td>
+<td>authored text only (ValidationError.Msg, sentinel's own text, "<key>
+parameter required")</td>
+<td>VALIDATION</td>
+</tr>
+<tr>
+<td>handlers.authClientMessage (auth_handler.go:39)</td>
+<td>sentinel text only</td>
+<td>VALIDATION</td>
+</tr>
+<tr>
+<td>handlers.respondPDFError, writeLogServiceError,
+writeFixedLogError</td>
+<td>fixed generic texts (already so at the review base)</td>
+<td>SAFE</td>
+</tr>
+<tr>
+<td>handlers.writeJobError (conversion_handler.go:337)</td>
+<td>only <code>ErrConversionJobState</code> text</td>
+<td>VALIDATION</td>
+</tr>
+<tr>
+<td>handlers.rootURLMessage / localRootMessage / rootSpecMessage
+(scan_handler.go:553-578)</td>
+<td>authored policy text; the caller's own path is echoed; OS error
+after "cannot resolve path" is dropped; URL refusal text is generic</td>
+<td>VALIDATION (intentional)</td>
+</tr>
+<tr>
+<td>handlers.AliasHandler.fail, middleware.useFallback,
+internal/handlers.smbErrorStatus</td>
+<td>no (log only / fixed text)</td>
+<td>SAFE</td>
+</tr>
+<tr>
+<td>middleware.clientValidationDetails (input_validation.go:184)</td>
+<td>only <code>validationError.public</code></td>
+<td>VALIDATION</td>
+</tr>
+<tr>
+<td>smartrules.jsonErrText</td>
+<td>authored ValidationError message built from the caller's own JSON
+decode error</td>
+<td>VALIDATION</td>
+</tr>
+<tr>
+<td>services notifyUser (conversion_service.go:958,
+sync_service.go:1084)</td>
+<td>debug log only; <code>conversionNotifyHook</code> has no non-test
+setter</td>
+<td>SAFE (not a client sink)</td>
+</tr>
+</tbody>
+</table>
+<p>At the review base the helpers that differed:
+<code>writeJobError</code> sent <code>err.Error()</code> for
+<code>ErrConversionJobState</code> (same authored text, VALIDATION),
+<code>authClientMessage</code> and the <code>client_errors.go</code>
+helpers did not exist (grep at the review base: 0 hits for
+<code>func authClientMessage</code> and no
+<code>client_errors.go</code>).</p>
+<h2
+id="class-4-error-text-stored-in-state-and-served-by-another-route">Class
+4: error text stored in state and served by another route</h2>
+<p>Found by instrument 3 (flow scan, below) and then traced by reading
+the writer, the model's JSON tag, the route registration and the gate.
+All routes are under the <code>/api/v1</code> group of
+<code>main.go</code> (authenticated unless a row says otherwise). Line
+numbers are HEAD (713a4f380) unless marked.</p>
+<table>
+<thead>
+<tr>
+<th>Row</th>
+<th>Field and writer</th>
+<th>Served by (route, gate)</th>
+<th>Scrub</th>
+<th>Class</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1</td>
+<td><code>ScanStatus.Reason</code>:
+<code>fail</code>/<code>cancel</code> in universal_scanner.go:505-522
+store <code>scrubSecrets(err.Error(), secrets)</code></td>
+<td><code>GET /scans</code>, <code>GET /scans/:job_id</code>
+(<code>scan_handler.go:539</code> <code>"reason": s.Reason</code>;
+<code>RegisterScanRoutes</code>, storage_routes.go:25-26): any
+authenticated user. Also <code>publishScanEvent</code>
+(universal_scanner.go:161-194, payload
+<code>error</code>/<code>reason</code>) -&gt;
+<code>EventBusBridge</code>
+(internal/handlers/eventbus_bridge.go:74,96,189-190; wired
+main.go:681,725) -&gt; a <code>notification</code> message broadcast to
+all WebSocket clients (<code>BroadcastToClients</code>; the websocket
+route is authenticated, main.go:1151)</td>
+<td>credentials and URL userinfo only (scan_redact.go); paths, host
+names and OS error text remain</td>
+<td>LEAK (partly scrubbed), open</td>
+</tr>
+<tr>
+<td>S2</td>
+<td><code>GetStorageRootStatus</code> (scan_handler.go:332,339,345):
+<code>resp["error"] = services.ScrubErrorFor(err, root)</code>, HTTP
+200</td>
+<td><code>/storage-roots/:id/status</code>, no <code>RequireAdmin</code>
+(storage_routes.go:18): any authenticated user</td>
+<td><code>ScrubErrorFor</code> (same scrubber, plus the root's own
+secrets)</td>
+<td>LEAK (partly scrubbed), open</td>
+</tr>
+<tr>
+<td>S3</td>
+<td><code>ListStoragePath</code> (scan_handler.go:378,384,401): same
+call</td>
+<td><code>/storage-roots/:id/list</code>, admin only
+(storage_routes.go:14)</td>
+<td>same</td>
+<td>LEAK to admins (partly scrubbed), accepted by role</td>
+</tr>
+<tr>
+<td>S4</td>
+<td><code>SyncSession.ErrorMessage</code>: <code>handleSyncError</code>
+(sync_service.go:1053-1066) stores raw <code>syncError.Error()</code>;
+chains such as "failed to get WebDAV client / scan local files / list
+remote files: %w" (models/user.go:1229, json
+<code>error_message,omitempty</code>)</td>
+<td><code>GET /sync/sessions</code>,
+<code>GET /sync/sessions/:id</code>, <code>GET /sync/history</code>
+(main.go:1657,1658,1715): the caller's own sessions, no admin gate</td>
+<td>none. Measured: Go's net/http masks the password in a client error
+(<code>Get "http://usr:***@127.0.0.1:1/x": dial tcp ...</code>), so a
+password in the endpoint URL is masked by the standard client; other
+userinfo and transport routes are UNCONFIRMED. Host, path and OS text
+remain</td>
+<td>LEAK, open</td>
+</tr>
+<tr>
+<td>S5</td>
+<td><code>ConversionJob.ErrorMessage</code> (models/file.go:158):
+conversion_service.go:884-885 stores
+<code>sanitizeConversionError(err.Error())</code> (reduces paths to base
+names)</td>
+<td><code>GET /conversion/jobs</code>,
+<code>GET /conversion/jobs/:id</code> (main.go:1410-1411): any
+authenticated user</td>
+<td>paths reduced to base names; other text (driver, ffmpeg stderr)
+remains</td>
+<td>LEAK (reduced), open</td>
+</tr>
+<tr>
+<td>S6</td>
+<td><code>WizardStepValidation.Errors[...]</code>
+(configuration_service.go:420,430,443): the three validators that can
+return an error return fixed authored texts ("path must be absolute",
+"invalid email format"), the database and network validators return nil;
+"%s is required" uses the field label</td>
+<td><code>POST /configuration/wizard/step/:step_id/validate</code> -&gt;
+<code>ConfigurationServiceAdapter.ValidateWizardStep</code>
+(handlers/service_adapters.go:76) -&gt; JSON (main.go:1495), gated by
+<code>system.configure</code></td>
+<td>none needed</td>
+<td>VALIDATION</td>
+</tr>
+<tr>
+<td>S7</td>
+<td><code>ConfigurationImportResult.ValidationErrors/SkippedSettings</code>
+(internal/services/localization_service.go:849,857,877,886,895,904)</td>
+<td>no route: <code>LocalizationHandlers</code> is constructed only in
+tests (<code>NewLocalizationHandlers</code> has 0 non-test callers;
+main.go registers no <code>/wizard/configuration</code> path)</td>
+<td>n/a</td>
+<td>LATENT</td>
+</tr>
+<tr>
+<td>S8</td>
+<td><code>BatchResult.Errors</code>, <code>SyncResult.Errors</code>
+(services/webdav_client.go:340,361,429,450,482,502)</td>
+<td>no non-test caller of <code>UploadBatch</code>,
+<code>DownloadBatch</code>, <code>SyncDirectory</code> outside the file
+(grep: only webdav_client_test.go)</td>
+<td>n/a</td>
+<td>LATENT</td>
+</tr>
+<tr>
+<td>S9</td>
+<td><code>retry</code> result <code>Error</code>
+(internal/recovery/retry.go:401)</td>
+<td><code>internal/recovery</code> has no non-test importer (grep
+<code>internal/recovery"</code>: 0 hits; "digital.vasic.recovery" in
+internal/modules/registry.go is a name string)</td>
+<td>n/a</td>
+<td>LATENT</td>
+</tr>
+<tr>
+<td>S10</td>
+<td><code>liveevidence.Record.ResolveError</code>
+(internal/liveevidence/liveevidence.go:158)</td>
+<td>written to evidence files by Go tests; no non-test importer</td>
+<td>n/a</td>
+<td>SAFE (not a client sink)</td>
+</tr>
+<tr>
+<td>S11</td>
+<td><code>log_management_service.logError</code>
+(log_management_service.go:170,194,204): <code>message</code> is
+formatted from <code>%v</code> of errors</td>
+<td>the function only calls the structured logger (lines 724-732)</td>
+<td>n/a</td>
+<td>SAFE</td>
+</tr>
+<tr>
+<td>S12</td>
+<td><code>notifyUser</code> (conversion_service.go, sync_service.go),
+<code>logSyncError</code>/<code>logSkippedFile</code></td>
+<td>log or debug output only</td>
+<td>n/a</td>
+<td>SAFE</td>
+</tr>
+</tbody>
+</table>
+<p>Instrument 3 reports 362 flow rows at HEAD (402 at the review base;
+<code>challenges/</code> is skipped, see R3). The field, key-value and
+call-argument rows of the files named in S1 to S12 were each traced
+above. The remaining rows (mostly constant or authored text assigned to
+fields, and calls into logging helpers) were NOT each traced one by one:
+UNCONFIRMED whether any of them reaches a client through a route this
+document did not look at (see Limits).</p>
+<h2 id="head-residual-everything-still-in-the-class-at-713a4f380">HEAD
+residual (everything still in the class at 713a4f380)</h2>
+<table>
+<thead>
+<tr>
+<th>Id</th>
+<th>Site</th>
+<th>Class</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1</td>
+<td>catalog-api/internal/monitoring/monitoring.go:251
+<code>"error": err.Error()</code> (GinHealthHandler)</td>
+<td>LATENT-OPEN</td>
+<td>the package has no non-test importer; the leak becomes real the
+moment it is wired. Decide: sanitise or delete (delete needs operator
+confirmation, §11.4.122 / §11.4.124)</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>OCU-CUDA-Sidecar/internal/server/server.go:110,115,128,133,150,154,159,172,176,180,185,198,203,216,221
+(15 sites, <code>http.Error(w, err.Error()...)</code> and
+<code>"bad request: "+err.Error()</code>)</td>
+<td>LEAK</td>
+<td>a separate Go module, same 15 sites at both bases, outside the
+catalog-api scan the old doc used. No in-module caller of
+<code>ListenAndServe</code> and no auth in <code>server.go</code>;
+whether the process is reachable by untrusted clients is
+UNCONFIRMED</td>
+</tr>
+<tr>
+<td>R3</td>
+<td>catalog-api/handlers/challenge.go and the <code>challenges/</code>
+package: 155 <code>.Error()</code> calls (74 <code>CreateResult</code>,
+20 <code>image_quality_final.go</code>, 16
+<code>image_quality.go</code>, 13
+<code>ch131_middleware_challenges.go</code>, ...) feed challenge result
+records that <code>ChallengeHandler.GetResults</code>,
+<code>RunChallenge</code> and <code>RunAll</code> return as JSON
+(<code>handlers/challenge.go:115,185</code>); <code>POST</code> run
+routes are admin-gated (<code>main.go:1670-1672</code>), the gating of
+<code>GET /api/v1/challenges/results</code> was not established</td>
+<td>UNCONFIRMED</td>
+<td>not classified per site; decide whether result text is
+operator-only</td>
+</tr>
+<tr>
+<td>R4</td>
+<td>VALIDATION sentinel/authored sites:
+playlist_handler.go:95,99,188,273,320; collection_handler.go:335,351
+(<code>validationText(err)</code> as the SendErrorResponse message);
+service_handlers.go:199,258,298 (<code>paramRequiredText(err)</code>);
+conversion_handler.go:344; scan_handler.go:178,186,194,448;
+middleware/input_validation.go:403
+(<code>clientValidationDetails(err)</code>)</td>
+<td>VALIDATION</td>
+<td>authored text; scan rows echo the caller's own path; these rows are
+NOT closed, the text still reaches the client</td>
+</tr>
+<tr>
+<td>R5</td>
+<td><code>handlers/scan_handler.go</code> localRootMessage keeps
+<code>msg[:i] + ": cannot resolve path"</code></td>
+<td>VALIDATION</td>
+<td>reads: the prefix of an authored policy sentence plus the path the
+caller sent</td>
+</tr>
+<tr>
+<td>R6</td>
+<td>Class 4 rows S1, S2, S4, S5: <code>ScanStatus.Reason</code> (also on
+the WebSocket broadcast), <code>GetStorageRootStatus</code>
+<code>error</code>, <code>SyncSession.ErrorMessage</code>,
+<code>ConversionJob.ErrorMessage</code></td>
+<td>LEAK (partly scrubbed)</td>
+<td>open; each is served to authenticated users. Decision owed per
+field: fixed class text for non-admin routes and the full text only for
+admins or the log. Not changed by this document</td>
+</tr>
+</tbody>
+</table>
+<p>Everything else the sink scan reports at HEAD is SAFE by the helper
+table (111 <code>SendErrorResponse</code> + 16
+<code>respondInternal/respondBadBody</code> + 5
+<code>respondPDFError</code> + 5 <code>writeLogServiceError</code> + 5
+<code>writeJobError</code> + 2 <code>c.Error</code> bare-err rows; the
+<code>c.Error</code> rows are ErrorTypePrivate, which ErrorHandler
+answers with a fixed message at HEAD:
+<code>internal/middleware/middleware.go:97-100</code>).</p>
+<h2 id="census-instrument-2-all-non-test-code-under-catalog-api">Census
+(instrument 2, all non-test code under catalog-api)</h2>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Review base</th>
+<th>HEAD</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>production code</td>
+<td>175</td>
+<td>97</td>
+</tr>
+<tr>
+<td>challenges/ (harness, see R3)</td>
+<td>155</td>
+<td>155</td>
+</tr>
+<tr>
+<td>internal/tests (test helpers)</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>total</td>
+<td>333</td>
+<td>255</td>
+</tr>
+</tbody>
+</table>
+<p>HEAD production-code contexts (97): branching on text
+(<code>strings.Contains</code> 42, <code>strings.ToLower</code> 7,
+<code>strings.TrimPrefix</code> 2, <code>branch</code> 6) = 57, read at
+the branch: the compared text does not itself go to a response
+(stored-then-served flows are in Class 4); assignment 14, return 9,
+key-value 6, scrub/log helpers (<code>scrubSecrets</code> 5,
+<code>logSkippedFile</code> 2, <code>sanitizeConversionError</code> 1,
+<code>panic</code> 1, <code>paramRequiredRE.FindString</code> 1),
+<code>fmt.Sprintf</code> 1 (sync_service.go:1066, notifyUser, SAFE).
+<code>scrubSecrets</code> at universal_scanner.go:510,520 stores the
+scrubbed text in <code>ScanStatus.Reason</code>, which IS served (row
+S1); sync_service.go:1057-1058 <code>handleSyncError</code> stores the
+raw text in <code>SyncSession.ErrorMessage</code>, which IS served (row
+S4). The earlier sentences that none of these reach a response are
+withdrawn. The 14 assign + 9 return + 6 kv rows were read with the
+helper table above; the two that carry text to a body are the sentinel
+rows in R4 and the unwired R1.</p>
+<h2
+id="review-base-totals-instrument-1-226-rows-after-removing-strings-callee-noise-plus-h1h2">Review-base
+totals (instrument 1, 226 rows after removing <code>strings.*</code>
+callee noise) plus H1/H2</h2>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>SendErrorResponse family</th>
+<th>other sinks</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LEAK</td>
+<td>109</td>
+<td>49</td>
+</tr>
+<tr>
+<td>VALIDATION</td>
+<td>1</td>
+<td>33</td>
+</tr>
+<tr>
+<td>LATENT</td>
+<td>0</td>
+<td>15</td>
+</tr>
+<tr>
+<td>SAFE</td>
+<td>0</td>
+<td>19</td>
+</tr>
+<tr>
+<td>total</td>
+<td>110</td>
+<td>116</td>
+</tr>
+</tbody>
+</table>
+<p>HEAD status of the 226 rows: CLOSED-BY-HELPER 109; CLOSED (err text
+no longer sent) 64 (49 LEAK + 15 LATENT); VALIDATION rows where
+<code>err.Error()</code> is no longer sent but authored text still is
+(NOT CLOSED) 32; unchanged (SAFE 19, VALIDATION 2) 21. This count covers
+the direct-sink rows only. It is NOT a claim that no leak remains: Class
+4 rows S1 to S5 are still served at HEAD with credential-only or
+path-only scrubbing, and R1 to R3 are open.</p>
+<h2 id="per-site-table-review-base-9ed6577b-with-head-status">Per-site
+table (review base 9ed6577b, with HEAD status)</h2>
+<p>Row ids B1.. are sorted by file and line. <code>st</code> is the
+status argument when the call has one.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>File:line</th>
+<th>Function</th>
+<th>Sink</th>
+<th>st</th>
+<th>Expression</th>
+<th>Class</th>
+<th>Reason</th>
+<th>HEAD</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B1</td>
+<td>catalog-api/handlers/asset_handler.go:91</td>
+<td>RequestAsset</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>binding/JSON-decode error; names Go struct fields/types, echoes
+malformed input</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B2</td>
+<td>catalog-api/handlers/auth_handler.go:36</td>
+<td>LoginGin</td>
+<td>c.JSON</td>
+<td>http.StatusForbidden</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>branch runs only when errors.Is(err, ErrAccountPending); Login
+returns the bare sentinel (auth_service.go:152 at base), so the body is
+its authored text "account pending approval"</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B3</td>
+<td>catalog-api/handlers/auth_handler.go:39</td>
+<td>LoginGin</td>
+<td>c.JSON</td>
+<td>http.StatusUnauthorized</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>401 branch: Login returns sentinels (invalid credentials, locked,
+disabled; authored) and also "failed to get user: %w" wrapping
+repository text (auth_service.go:132 at base); the repository text
+reaches the body</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B4</td>
+<td>catalog-api/handlers/auth_handler.go:59</td>
+<td>RefreshTokenGin</td>
+<td>c.JSON</td>
+<td>http.StatusUnauthorized</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>(unresolved in review base) auth failure text; wording decides
+user-enumeration exposure</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B5</td>
+<td>catalog-api/handlers/auth_handler.go:76</td>
+<td>LogoutGin</td>
+<td>c.JSON</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B6</td>
+<td>catalog-api/handlers/auth_handler.go:203</td>
+<td>RegisterGin</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>binding/JSON-decode error; names Go struct fields/types, echoes
+malformed input</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B7</td>
+<td>catalog-api/handlers/auth_handler.go:321</td>
+<td>Login</td>
+<td>http.Error</td>
+<td>http.StatusUnauthorized</td>
+<td><code>E:err.Error()</code></td>
+<td>LATENT</td>
+<td>(unresolved in review base) auth failure text; wording decides
+user-enumeration exposure. UNROUTED: net/http variant; main.go:1210-1220
+registers only the Gin variants (LoginGin, RefreshTokenGin, LogoutGin,
+...)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B8</td>
+<td>catalog-api/handlers/auth_handler.go:346</td>
+<td>RefreshToken</td>
+<td>http.Error</td>
+<td>http.StatusUnauthorized</td>
+<td><code>E:err.Error()</code></td>
+<td>LATENT</td>
+<td>(unresolved in review base) auth failure text; wording decides
+user-enumeration exposure. UNROUTED: net/http variant; main.go:1210-1220
+registers only the Gin variants (LoginGin, RefreshTokenGin, LogoutGin,
+...)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B9</td>
+<td>catalog-api/handlers/auth_handler.go:368</td>
+<td>Logout</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LATENT</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic status.
+UNROUTED: net/http variant; main.go:1210-1220 registers only the Gin
+variants (LoginGin, RefreshTokenGin, LogoutGin, ...)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B10</td>
+<td>catalog-api/handlers/auth_handler.go:390</td>
+<td>LogoutAll</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LATENT</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic status.
+UNROUTED: net/http variant; main.go:1210-1220 registers only the Gin
+variants (LoginGin, RefreshTokenGin, LogoutGin, ...)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B11</td>
+<td>catalog-api/handlers/auth_handler.go:440</td>
+<td>ChangePassword</td>
+<td>http.Error</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>deliberate validation text (may echo user input). The net/http
+<code>AuthHandler.ChangePassword</code> is also unrouted (main.go:1222
+uses <code>mediaQueryHandler.ChangePassword</code>); kept VALIDATION
+(authored text), not recounted as LATENT</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B12</td>
+<td>catalog-api/handlers/auth_handler.go:446</td>
+<td>ChangePassword</td>
+<td>http.Error</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>LATENT</td>
+<td>ChangePassword returns wrapped "failed to get user/update password:
+%w" chains (auth_service.go:326,348,372) on 400. UNROUTED: net/http
+variant; main.go:1210-1220 registers only the Gin variants (LoginGin,
+RefreshTokenGin, LogoutGin, ...)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B13</td>
+<td>catalog-api/handlers/auth_handler.go:468</td>
+<td>GetActiveSessions</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LATENT</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic status.
+UNROUTED: net/http variant; main.go:1210-1220 registers only the Gin
+variants (LoginGin, RefreshTokenGin, LogoutGin, ...)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B14</td>
+<td>catalog-api/handlers/auth_handler.go:507</td>
+<td>DeactivateSession</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LATENT</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic status.
+UNROUTED: net/http variant; main.go:1210-1220 registers only the Gin
+variants (LoginGin, RefreshTokenGin, LogoutGin, ...)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B15</td>
+<td>catalog-api/handlers/browse.go:41</td>
+<td>GetStorageRoots</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B16</td>
+<td>catalog-api/handlers/browse.go:120</td>
+<td>BrowseDirectory</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B17</td>
+<td>catalog-api/handlers/browse.go:164</td>
+<td>GetFileInfo</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B18</td>
+<td>catalog-api/handlers/browse.go:217</td>
+<td>GetDirectorySizes</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B19</td>
+<td>catalog-api/handlers/browse.go:270</td>
+<td>GetDirectoryDuplicates</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B20</td>
+<td>catalog-api/handlers/challenge.go:103</td>
+<td>RunChallenge</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusNotFound</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B21</td>
+<td>catalog-api/handlers/challenge.go:106</td>
+<td>RunChallenge</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B22</td>
+<td>catalog-api/handlers/challenge.go:166</td>
+<td>RunAll</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B23</td>
+<td>catalog-api/handlers/challenge.go:234</td>
+<td>RunByCategory</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusNotFound</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B24</td>
+<td>catalog-api/handlers/challenge.go:237</td>
+<td>RunByCategory</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B25</td>
+<td>catalog-api/handlers/collection_handler.go:100</td>
+<td>loadAccessible</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B26</td>
+<td>catalog-api/handlers/collection_handler.go:105</td>
+<td>loadAccessible</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusNotFound</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B27</td>
+<td>catalog-api/handlers/collection_handler.go:160</td>
+<td>ListCollections</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B28</td>
+<td>catalog-api/handlers/collection_handler.go:269</td>
+<td>GetCollection</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B29</td>
+<td>catalog-api/handlers/collection_handler.go:315</td>
+<td>ListCollectionItems</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B30</td>
+<td>catalog-api/handlers/collection_handler.go:335</td>
+<td>parseSmartRules</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>parseSmartRules: smartrules.ValidationError text passed as message
+(authored); non-validation errors take the 500 row at :337</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B31</td>
+<td>catalog-api/handlers/collection_handler.go:337</td>
+<td>parseSmartRules</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B32</td>
+<td>catalog-api/handlers/collection_handler.go:353</td>
+<td>verifyRules</td>
+<td>utils.SendErrorResponse</td>
+<td>-</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B33</td>
+<td>catalog-api/handlers/collection_handler.go:374</td>
+<td>CreateCollection</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B34</td>
+<td>catalog-api/handlers/collection_handler.go:429</td>
+<td>CreateCollection</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B35</td>
+<td>catalog-api/handlers/collection_handler.go:452</td>
+<td>CreateCollection</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B36</td>
+<td>catalog-api/handlers/collection_handler.go:476</td>
+<td>UpdateCollection</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B37</td>
+<td>catalog-api/handlers/collection_handler.go:480</td>
+<td>UpdateCollection</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B38</td>
+<td>catalog-api/handlers/collection_handler.go:539</td>
+<td>UpdateCollection</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B39</td>
+<td>catalog-api/handlers/collection_handler.go:561</td>
+<td>DeleteCollection</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusNotFound</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B40</td>
+<td>catalog-api/handlers/collection_handler.go:564</td>
+<td>DeleteCollection</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B41</td>
+<td>catalog-api/handlers/comic_pages_handler.go:106</td>
+<td>resolveArchive</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B42</td>
+<td>catalog-api/handlers/comic_pages_handler.go:113</td>
+<td>resolveArchive</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusNotFound</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B43</td>
+<td>catalog-api/handlers/comic_pages_handler.go:116</td>
+<td>resolveArchive</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B44</td>
+<td>catalog-api/handlers/comic_pages_handler.go:434</td>
+<td>ListComicPages</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B45</td>
+<td>catalog-api/handlers/comic_pages_handler.go:467</td>
+<td>GetComicPage</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B46</td>
+<td>catalog-api/handlers/comic_pages_handler.go:478</td>
+<td>GetComicPage</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B47</td>
+<td>catalog-api/handlers/comic_pages_handler.go:492</td>
+<td>GetComicPage</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B48</td>
+<td>catalog-api/handlers/comic_pages_handler.go:515</td>
+<td>listCBRPages</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B49</td>
+<td>catalog-api/handlers/comic_pages_handler.go:522</td>
+<td>listCBRPages</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B50</td>
+<td>catalog-api/handlers/comic_pages_handler.go:552</td>
+<td>getCBRPage</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B51</td>
+<td>catalog-api/handlers/comic_pages_handler.go:559</td>
+<td>getCBRPage</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B52</td>
+<td>catalog-api/handlers/comic_pages_handler.go:570</td>
+<td>getCBRPage</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B53</td>
+<td>catalog-api/handlers/comic_pages_handler.go:582</td>
+<td>getCBRPage</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>nerr</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B54</td>
+<td>catalog-api/handlers/comic_pages_handler.go:592</td>
+<td>getCBRPage</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>rerr</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B55</td>
+<td>catalog-api/handlers/configuration_handler.go:57</td>
+<td>GetWizardStep</td>
+<td>http.Error</td>
+<td>http.StatusNotFound</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>"wizard step not found: <id>" authored, echoes the caller step
+id</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B56</td>
+<td>catalog-api/handlers/configuration_handler.go:77</td>
+<td>ValidateWizardStep</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B57</td>
+<td>catalog-api/handlers/configuration_handler.go:102</td>
+<td>SaveWizardProgress</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B58</td>
+<td>catalog-api/handlers/configuration_handler.go:121</td>
+<td>GetWizardProgress</td>
+<td>http.Error</td>
+<td>http.StatusNotFound</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>GetWizardProgress returns repo text unchanged (driver / sql: no
+rows) on 404</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B59</td>
+<td>catalog-api/handlers/configuration_handler.go:145</td>
+<td>CompleteWizard</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B60</td>
+<td>catalog-api/handlers/configuration_handler.go:173</td>
+<td>GetConfiguration</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B61</td>
+<td>catalog-api/handlers/configuration_handler.go:203</td>
+<td>TestConfiguration</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B62</td>
+<td>catalog-api/handlers/conversion_handler.go:73</td>
+<td>CreateJob</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>T:reason&lt;-strings.TrimPrefix(strings.TrimPrefix(err.Error(), models.ErrInvalidConversionRe</code></td>
+<td>VALIDATION</td>
+<td>INDIRECT: reason is the text after ErrInvalidConversionRequest
+(authored)</td>
+<td>unchanged; class unchanged (VALIDATION)</td>
+</tr>
+<tr>
+<td>B63</td>
+<td>catalog-api/handlers/conversion_handler.go:99</td>
+<td>GetJob</td>
+<td>writeJobError</td>
+<td>-</td>
+<td><code>err</code></td>
+<td>SAFE</td>
+<td>helper answers fixed texts; only the ErrConversionJobState text is
+sent (row :344)</td>
+<td>unchanged; class unchanged (SAFE)</td>
+</tr>
+<tr>
+<td>B64</td>
+<td>catalog-api/handlers/conversion_handler.go:185</td>
+<td>CancelJob</td>
+<td>writeJobError</td>
+<td>-</td>
+<td><code>err</code></td>
+<td>SAFE</td>
+<td>helper answers fixed texts; only the ErrConversionJobState text is
+sent (row :344)</td>
+<td>unchanged; class unchanged (SAFE)</td>
+</tr>
+<tr>
+<td>B65</td>
+<td>catalog-api/handlers/conversion_handler.go:246</td>
+<td>DeleteJob</td>
+<td>writeJobError</td>
+<td>-</td>
+<td><code>err</code></td>
+<td>SAFE</td>
+<td>helper answers fixed texts; only the ErrConversionJobState text is
+sent (row :344)</td>
+<td>unchanged; class unchanged (SAFE)</td>
+</tr>
+<tr>
+<td>B66</td>
+<td>catalog-api/handlers/conversion_handler.go:282</td>
+<td>RetryJob</td>
+<td>writeJobError</td>
+<td>-</td>
+<td><code>err</code></td>
+<td>SAFE</td>
+<td>helper answers fixed texts; only the ErrConversionJobState text is
+sent (row :344)</td>
+<td>unchanged; class unchanged (SAFE)</td>
+</tr>
+<tr>
+<td>B67</td>
+<td>catalog-api/handlers/conversion_handler.go:307</td>
+<td>DownloadJobFile</td>
+<td>writeJobError</td>
+<td>-</td>
+<td><code>err</code></td>
+<td>SAFE</td>
+<td>helper answers fixed texts; only the ErrConversionJobState text is
+sent (row :344)</td>
+<td>unchanged; class unchanged (SAFE)</td>
+</tr>
+<tr>
+<td>B68</td>
+<td>catalog-api/handlers/conversion_handler.go:344</td>
+<td>writeJobError</td>
+<td>c.JSON</td>
+<td>http.StatusConflict</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>ErrConversionJobState sentinel text, authored</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B69</td>
+<td>catalog-api/handlers/error_reporting_handler.go:85</td>
+<td>ReportError</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B70</td>
+<td>catalog-api/handlers/error_reporting_handler.go:123</td>
+<td>ReportCrash</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B71</td>
+<td>catalog-api/handlers/error_reporting_handler.go:152</td>
+<td>GetErrorReport</td>
+<td>http.Error</td>
+<td>http.StatusNotFound</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>"failed to get error report: %w" wraps the repository error (driver
+text)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B72</td>
+<td>catalog-api/handlers/error_reporting_handler.go:181</td>
+<td>GetCrashReport</td>
+<td>http.Error</td>
+<td>http.StatusNotFound</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>"failed to get crash report: %w" wraps the repository error (driver
+text)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B73</td>
+<td>catalog-api/handlers/error_reporting_handler.go:205</td>
+<td>ListErrorReports</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B74</td>
+<td>catalog-api/handlers/error_reporting_handler.go:232</td>
+<td>ListCrashReports</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B75</td>
+<td>catalog-api/handlers/error_reporting_handler.go:273</td>
+<td>UpdateErrorStatus</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B76</td>
+<td>catalog-api/handlers/error_reporting_handler.go:310</td>
+<td>UpdateCrashStatus</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B77</td>
+<td>catalog-api/handlers/error_reporting_handler.go:332</td>
+<td>GetErrorStatistics</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B78</td>
+<td>catalog-api/handlers/error_reporting_handler.go:355</td>
+<td>GetCrashStatistics</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B79</td>
+<td>catalog-api/handlers/error_reporting_handler.go:378</td>
+<td>GetSystemHealth</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B80</td>
+<td>catalog-api/handlers/error_reporting_handler.go:407</td>
+<td>UpdateConfiguration</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LATENT</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic status.
+UNROUTED: main.go registers none of
+UpdateConfiguration/GetConfiguration/CleanupOldReports/ExportReports of
+ErrorReportingHandler (grep main.go: 0 hits)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B81</td>
+<td>catalog-api/handlers/error_reporting_handler.go:432</td>
+<td>GetConfiguration</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LATENT</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic status.
+UNROUTED: main.go registers none of
+UpdateConfiguration/GetConfiguration/CleanupOldReports/ExportReports of
+ErrorReportingHandler (grep main.go: 0 hits)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B82</td>
+<td>catalog-api/handlers/error_reporting_handler.go:469</td>
+<td>CleanupOldReports</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LATENT</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic status.
+UNROUTED: main.go registers none of
+UpdateConfiguration/GetConfiguration/CleanupOldReports/ExportReports of
+ErrorReportingHandler (grep main.go: 0 hits)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B83</td>
+<td>catalog-api/handlers/error_reporting_handler.go:495</td>
+<td>ExportReports</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LATENT</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic status.
+UNROUTED: main.go registers none of
+UpdateConfiguration/GetConfiguration/CleanupOldReports/ExportReports of
+ErrorReportingHandler (grep main.go: 0 hits)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B84</td>
+<td>catalog-api/handlers/log_management_handler.go:222</td>
+<td>GetLogEntries</td>
+<td>writeLogServiceError</td>
+<td>-</td>
+<td><code>err</code></td>
+<td>SAFE</td>
+<td>helper maps errors to a fixed, generic body at base
+(pdf_pages_handler.go:230-258, log_management_handler.go:35-49); bare
+err argument is not serialised</td>
+<td>unchanged; class unchanged (SAFE)</td>
+</tr>
+<tr>
+<td>B85</td>
+<td>catalog-api/handlers/log_management_handler.go:254</td>
+<td>CreateLogShare</td>
+<td>writeLogServiceError</td>
+<td>-</td>
+<td><code>err</code></td>
+<td>SAFE</td>
+<td>helper maps errors to a fixed, generic body at base
+(pdf_pages_handler.go:230-258, log_management_handler.go:35-49); bare
+err argument is not serialised</td>
+<td>unchanged; class unchanged (SAFE)</td>
+</tr>
+<tr>
+<td>B86</td>
+<td>catalog-api/handlers/log_management_handler.go:322</td>
+<td>RevokeLogShare</td>
+<td>writeLogServiceError</td>
+<td>-</td>
+<td><code>err</code></td>
+<td>SAFE</td>
+<td>helper maps errors to a fixed, generic body at base
+(pdf_pages_handler.go:230-258, log_management_handler.go:35-49); bare
+err argument is not serialised</td>
+<td>unchanged; class unchanged (SAFE)</td>
+</tr>
+<tr>
+<td>B87</td>
+<td>catalog-api/handlers/log_management_handler.go:355</td>
+<td>ExportLogs</td>
+<td>writeLogServiceError</td>
+<td>-</td>
+<td><code>err</code></td>
+<td>SAFE</td>
+<td>helper maps errors to a fixed, generic body at base
+(pdf_pages_handler.go:230-258, log_management_handler.go:35-49); bare
+err argument is not serialised</td>
+<td>unchanged; class unchanged (SAFE)</td>
+</tr>
+<tr>
+<td>B88</td>
+<td>catalog-api/handlers/log_management_handler.go:475</td>
+<td>AnalyzeLogs</td>
+<td>writeLogServiceError</td>
+<td>-</td>
+<td><code>err</code></td>
+<td>SAFE</td>
+<td>helper maps errors to a fixed, generic body at base
+(pdf_pages_handler.go:230-258, log_management_handler.go:35-49); bare
+err argument is not serialised</td>
+<td>unchanged; class unchanged (SAFE)</td>
+</tr>
+<tr>
+<td>B89</td>
+<td>catalog-api/handlers/media_browse_handler.go:83</td>
+<td>SearchMedia</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B90</td>
+<td>catalog-api/handlers/media_browse_handler.go:106</td>
+<td>GetMediaStats</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B91</td>
+<td>catalog-api/handlers/media_browse_handler.go:127</td>
+<td>GetMediaStats</td>
+<td>c.Error</td>
+<td>-</td>
+<td><code>rowsErr</code></td>
+<td>SAFE</td>
+<td>c.Error(rowsErr) is ErrorTypePrivate: ErrorHandler default branch
+answers a fixed message</td>
+<td>unchanged; class unchanged (SAFE)</td>
+</tr>
+<tr>
+<td>B92</td>
+<td>catalog-api/handlers/media_browse_handler.go:158</td>
+<td>GetMediaStats</td>
+<td>c.Error</td>
+<td>-</td>
+<td><code>rowsErr</code></td>
+<td>SAFE</td>
+<td>same as :127</td>
+<td>unchanged; class unchanged (SAFE)</td>
+</tr>
+<tr>
+<td>B93</td>
+<td>catalog-api/handlers/media_entity_handler.go:77</td>
+<td>SearchEntities</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B94</td>
+<td>catalog-api/handlers/media_entity_handler.go:85</td>
+<td>SearchEntities</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B95</td>
+<td>catalog-api/handlers/media_entity_handler.go:227</td>
+<td>ListEntities</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B96</td>
+<td>catalog-api/handlers/media_entity_handler.go:239</td>
+<td>ListEntities</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B97</td>
+<td>catalog-api/handlers/media_entity_handler.go:260</td>
+<td>GetEntity</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B98</td>
+<td>catalog-api/handlers/media_entity_handler.go:266</td>
+<td>GetEntity</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusNotFound</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B99</td>
+<td>catalog-api/handlers/media_entity_handler.go:306</td>
+<td>GetEntityChildren</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B100</td>
+<td>catalog-api/handlers/media_entity_handler.go:315</td>
+<td>GetEntityChildren</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B101</td>
+<td>catalog-api/handlers/media_entity_handler.go:336</td>
+<td>GetEntityFiles</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B102</td>
+<td>catalog-api/handlers/media_entity_handler.go:342</td>
+<td>GetEntityFiles</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B103</td>
+<td>catalog-api/handlers/media_entity_handler.go:358</td>
+<td>GetEntityMetadata</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B104</td>
+<td>catalog-api/handlers/media_entity_handler.go:364</td>
+<td>GetEntityMetadata</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B105</td>
+<td>catalog-api/handlers/media_entity_handler.go:379</td>
+<td>GetEntityDuplicates</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B106</td>
+<td>catalog-api/handlers/media_entity_handler.go:385</td>
+<td>GetEntityDuplicates</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusNotFound</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B107</td>
+<td>catalog-api/handlers/media_entity_handler.go:391</td>
+<td>GetEntityDuplicates</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B108</td>
+<td>catalog-api/handlers/media_entity_handler.go:415</td>
+<td>GetEntityTypes</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B109</td>
+<td>catalog-api/handlers/media_entity_handler.go:457</td>
+<td>BrowseByType</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B110</td>
+<td>catalog-api/handlers/media_entity_handler.go:463</td>
+<td>BrowseByType</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B111</td>
+<td>catalog-api/handlers/media_entity_handler.go:496</td>
+<td>RefreshEntityMetadata</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B112</td>
+<td>catalog-api/handlers/media_entity_handler.go:1158</td>
+<td>entityMustExist</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusNotFound</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B113</td>
+<td>catalog-api/handlers/media_entity_handler.go:1160</td>
+<td>entityMustExist</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B114</td>
+<td>catalog-api/handlers/media_entity_handler.go:1173</td>
+<td>UpdateUserMetadata</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B115</td>
+<td>catalog-api/handlers/media_entity_handler.go:1186</td>
+<td>UpdateUserMetadata</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B116</td>
+<td>catalog-api/handlers/media_entity_handler.go:1217</td>
+<td>UpdateUserMetadata</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B117</td>
+<td>catalog-api/handlers/media_entity_handler.go:1246</td>
+<td>StreamEntity</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B118</td>
+<td>catalog-api/handlers/media_entity_handler.go:1260</td>
+<td>StreamEntity</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusNotFound</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B119</td>
+<td>catalog-api/handlers/media_entity_handler.go:1263</td>
+<td>StreamEntity</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B120</td>
+<td>catalog-api/handlers/media_entity_handler.go:1283</td>
+<td>DownloadEntity</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B121</td>
+<td>catalog-api/handlers/media_entity_handler.go:1291</td>
+<td>DownloadEntity</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusNotFound</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B122</td>
+<td>catalog-api/handlers/media_entity_handler.go:1320</td>
+<td>DownloadEntity</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusNotFound</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B123</td>
+<td>catalog-api/handlers/media_entity_handler.go:1323</td>
+<td>DownloadEntity</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B124</td>
+<td>catalog-api/handlers/media_entity_handler.go:1343</td>
+<td>GetInstallInfo</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B125</td>
+<td>catalog-api/handlers/media_entity_handler.go:1349</td>
+<td>GetInstallInfo</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusNotFound</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B126</td>
+<td>catalog-api/handlers/media_entity_handler.go:1369</td>
+<td>GetInstallInfo</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusNotFound</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B127</td>
+<td>catalog-api/handlers/media_entity_handler.go:1402</td>
+<td>ListDuplicateGroups</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B128</td>
+<td>catalog-api/handlers/media_handler.go:46</td>
+<td>GetMediaByID</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B129</td>
+<td>catalog-api/handlers/media_handler.go:87</td>
+<td>GetMediaByID</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusNotFound</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B130</td>
+<td>catalog-api/handlers/media_handler.go:89</td>
+<td>GetMediaByID</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B131</td>
+<td>catalog-api/handlers/media_handler.go:148</td>
+<td>UpdateWatchProgress</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B132</td>
+<td>catalog-api/handlers/media_handler.go:155</td>
+<td>UpdateWatchProgress</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B133</td>
+<td>catalog-api/handlers/media_handler.go:205</td>
+<td>UpdateWatchProgress</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B134</td>
+<td>catalog-api/handlers/media_handler.go:238</td>
+<td>UpdateFavoriteStatus</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B135</td>
+<td>catalog-api/handlers/media_handler.go:245</td>
+<td>UpdateFavoriteStatus</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B136</td>
+<td>catalog-api/handlers/media_handler.go:267</td>
+<td>UpdateFavoriteStatus</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B137</td>
+<td>catalog-api/handlers/media_handler.go:274</td>
+<td>UpdateFavoriteStatus</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B138</td>
+<td>catalog-api/handlers/pdf_pages_handler.go:101</td>
+<td>resolvePDF</td>
+<td>respondPDFError</td>
+<td>-</td>
+<td><code>err</code></td>
+<td>SAFE</td>
+<td>helper maps errors to a fixed, generic body at base
+(pdf_pages_handler.go:230-258, log_management_handler.go:35-49); bare
+err argument is not serialised</td>
+<td>unchanged; class unchanged (SAFE)</td>
+</tr>
+<tr>
+<td>B139</td>
+<td>catalog-api/handlers/pdf_pages_handler.go:282</td>
+<td>ListPdfPages</td>
+<td>respondPDFError</td>
+<td>-</td>
+<td><code>err</code></td>
+<td>SAFE</td>
+<td>helper maps errors to a fixed, generic body at base
+(pdf_pages_handler.go:230-258, log_management_handler.go:35-49); bare
+err argument is not serialised</td>
+<td>unchanged; class unchanged (SAFE)</td>
+</tr>
+<tr>
+<td>B140</td>
+<td>catalog-api/handlers/pdf_pages_handler.go:289</td>
+<td>ListPdfPages</td>
+<td>respondPDFError</td>
+<td>-</td>
+<td><code>err</code></td>
+<td>SAFE</td>
+<td>helper maps errors to a fixed, generic body at base
+(pdf_pages_handler.go:230-258, log_management_handler.go:35-49); bare
+err argument is not serialised</td>
+<td>unchanged; class unchanged (SAFE)</td>
+</tr>
+<tr>
+<td>B141</td>
+<td>catalog-api/handlers/pdf_pages_handler.go:322</td>
+<td>GetPdfPage</td>
+<td>respondPDFError</td>
+<td>-</td>
+<td><code>err</code></td>
+<td>SAFE</td>
+<td>helper maps errors to a fixed, generic body at base
+(pdf_pages_handler.go:230-258, log_management_handler.go:35-49); bare
+err argument is not serialised</td>
+<td>unchanged; class unchanged (SAFE)</td>
+</tr>
+<tr>
+<td>B142</td>
+<td>catalog-api/handlers/pdf_pages_handler.go:329</td>
+<td>GetPdfPage</td>
+<td>respondPDFError</td>
+<td>-</td>
+<td><code>err</code></td>
+<td>SAFE</td>
+<td>helper maps errors to a fixed, generic body at base
+(pdf_pages_handler.go:230-258, log_management_handler.go:35-49); bare
+err argument is not serialised</td>
+<td>unchanged; class unchanged (SAFE)</td>
+</tr>
+<tr>
+<td>B143</td>
+<td>catalog-api/handlers/playback_handler.go:79</td>
+<td>StartSession</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>binding/JSON-decode error; names Go struct fields/types, echoes
+malformed input</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B144</td>
+<td>catalog-api/handlers/playback_handler.go:96</td>
+<td>StartSession</td>
+<td>c.JSON</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B145</td>
+<td>catalog-api/handlers/playback_handler.go:106</td>
+<td>ProgressSession</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>binding/JSON-decode error; names Go struct fields/types, echoes
+malformed input</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B146</td>
+<td>catalog-api/handlers/playback_handler.go:118</td>
+<td>ProgressSession</td>
+<td>c.JSON</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B147</td>
+<td>catalog-api/handlers/playback_handler.go:128</td>
+<td>EndSession</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>binding/JSON-decode error; names Go struct fields/types, echoes
+malformed input</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B148</td>
+<td>catalog-api/handlers/playback_handler.go:143</td>
+<td>EndSession</td>
+<td>c.JSON</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B149</td>
+<td>catalog-api/handlers/playback_handler.go:170</td>
+<td>GetProgressForEntity</td>
+<td>c.JSON</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B150</td>
+<td>catalog-api/handlers/playback_handler.go:193</td>
+<td>ListHistoryForEntity</td>
+<td>c.JSON</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B151</td>
+<td>catalog-api/handlers/playlist_handler.go:95</td>
+<td>CreatePlaylist</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>smartrules.IsValidation branch: authored ValidationError text (may
+echo caller JSON)</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B152</td>
+<td>catalog-api/handlers/playlist_handler.go:99</td>
+<td>CreatePlaylist</td>
+<td>c.JSON</td>
+<td>http.StatusConflict</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>ErrSmartLimit sentinel with authored count text</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B153</td>
+<td>catalog-api/handlers/playlist_handler.go:188</td>
+<td>UpdatePlaylist</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>smartrules.IsValidation branch: authored text</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B154</td>
+<td>catalog-api/handlers/playlist_handler.go:273</td>
+<td>AddItem</td>
+<td>c.JSON</td>
+<td>http.StatusConflict</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>ErrSmartPlaylistItems sentinel, authored</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B155</td>
+<td>catalog-api/handlers/playlist_handler.go:320</td>
+<td>RemoveItem</td>
+<td>c.JSON</td>
+<td>http.StatusConflict</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>ErrSmartPlaylistItems sentinel, authored</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B156</td>
+<td>catalog-api/handlers/recommendation_handler.go:54</td>
+<td>GetSimilarItems</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B157</td>
+<td>catalog-api/handlers/recommendation_handler.go:76</td>
+<td>GetSimilarItems</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B158</td>
+<td>catalog-api/handlers/recommendation_handler.go:93</td>
+<td>GetSimilarItems</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B159</td>
+<td>catalog-api/handlers/recommendation_handler.go:115</td>
+<td>GetTrendingItems</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusNotImplemented</td>
+<td><code>ErrRecommendationsNotImplemented</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B160</td>
+<td>catalog-api/handlers/recommendation_handler.go:135</td>
+<td>GetPersonalizedRecommendations</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B161</td>
+<td>catalog-api/handlers/recommendation_handler.go:152</td>
+<td>GetPersonalizedRecommendations</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusNotImplemented</td>
+<td><code>ErrRecommendationsNotImplemented</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B162</td>
+<td>catalog-api/handlers/scan_handler.go:153</td>
+<td>CreateStorageRoot</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>binding/JSON-decode error; names Go struct fields/types, echoes
+malformed input</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B163</td>
+<td>catalog-api/handlers/scan_handler.go:177</td>
+<td>CreateStorageRoot</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>deliberate validation text (may echo user input)</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B164</td>
+<td>catalog-api/handlers/scan_handler.go:185</td>
+<td>CreateStorageRoot</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>deliberate validation text (may echo user input)</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B165</td>
+<td>catalog-api/handlers/scan_handler.go:193</td>
+<td>CreateStorageRoot</td>
+<td>c.JSON</td>
+<td>http.StatusForbidden</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>ErrLocalRootNotAllowed text includes "cannot resolve path:
+<OS error>" and server-side policy detail
+(local_policy.go:54,48,63)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B166</td>
+<td>catalog-api/handlers/scan_handler.go:227</td>
+<td>CreateStorageRoot</td>
+<td>c.JSON</td>
+<td>http.StatusInternalServerError</td>
+<td><code>F:fmt.Sprintf("failed to create storage root: %v", insertErr)</code></td>
+<td>LEAK</td>
+<td>%v of DB/scanner error wrapped into body (SQL/driver detail)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B167</td>
+<td>catalog-api/handlers/scan_handler.go:247</td>
+<td>GetStorageRoots</td>
+<td>c.JSON</td>
+<td>http.StatusInternalServerError</td>
+<td><code>F:fmt.Sprintf("failed to query storage roots: %v", err)</code></td>
+<td>LEAK</td>
+<td>%v of DB/scanner error wrapped into body (SQL/driver detail)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B168</td>
+<td>catalog-api/handlers/scan_handler.go:427</td>
+<td>QueueScan</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>binding/JSON-decode error; names Go struct fields/types, echoes
+malformed input</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B169</td>
+<td>catalog-api/handlers/scan_handler.go:441</td>
+<td>QueueScan</td>
+<td>c.JSON</td>
+<td>http.StatusNotFound</td>
+<td><code>F:fmt.Sprintf("storage root not found: %v", err)</code></td>
+<td>LEAK</td>
+<td>%v of DB/scanner error wrapped into body (SQL/driver detail)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B170</td>
+<td>catalog-api/handlers/scan_handler.go:447</td>
+<td>QueueScan</td>
+<td>c.JSON</td>
+<td>http.StatusForbidden</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>same producer as :193 (CheckLocalRoot)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B171</td>
+<td>catalog-api/handlers/scan_handler.go:463</td>
+<td>QueueScan</td>
+<td>c.JSON</td>
+<td>http.StatusServiceUnavailable</td>
+<td><code>F:fmt.Sprintf("failed to queue scan: %v", err)</code></td>
+<td>LEAK</td>
+<td>%v of DB/scanner error wrapped into body (SQL/driver detail)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B172</td>
+<td>catalog-api/handlers/search.go:100</td>
+<td>SearchFiles</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B173</td>
+<td>catalog-api/handlers/search.go:108</td>
+<td>SearchFiles</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B174</td>
+<td>catalog-api/handlers/search.go:155</td>
+<td>SearchFiles</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B175</td>
+<td>catalog-api/handlers/search.go:258</td>
+<td>SearchDuplicates</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B176</td>
+<td>catalog-api/handlers/search.go:287</td>
+<td>AdvancedSearch</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusBadRequest</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B177</td>
+<td>catalog-api/handlers/search.go:328</td>
+<td>AdvancedSearch</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B178</td>
+<td>catalog-api/handlers/service_handlers.go:199</td>
+<td>CreateReport</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>ErrUnsupportedReportType sentinel, authored</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B179</td>
+<td>catalog-api/handlers/service_handlers.go:258</td>
+<td>GetUsageReport</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>body only reached when text matches "parameter required"
+(deliberate); other errors get generic 500</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B180</td>
+<td>catalog-api/handlers/service_handlers.go:298</td>
+<td>GetPerformanceReport</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>body only reached when text matches "parameter required"
+(deliberate); other errors get generic 500</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B181</td>
+<td>catalog-api/handlers/stats.go:42</td>
+<td>GetOverallStats</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B182</td>
+<td>catalog-api/handlers/stats.go:82</td>
+<td>GetSmbRootStats</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusNotFound</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B183</td>
+<td>catalog-api/handlers/stats.go:85</td>
+<td>GetSmbRootStats</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B184</td>
+<td>catalog-api/handlers/stats.go:119</td>
+<td>GetFileTypeStats</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B185</td>
+<td>catalog-api/handlers/stats.go:146</td>
+<td>GetSizeDistribution</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B186</td>
+<td>catalog-api/handlers/stats.go:173</td>
+<td>GetDuplicateStats</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B187</td>
+<td>catalog-api/handlers/stats.go:214</td>
+<td>GetTopDuplicateGroups</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B188</td>
+<td>catalog-api/handlers/stats.go:248</td>
+<td>GetAccessPatterns</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B189</td>
+<td>catalog-api/handlers/stats.go:282</td>
+<td>GetGrowthTrends</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B190</td>
+<td>catalog-api/handlers/stats.go:321</td>
+<td>GetScanHistory</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusInternalServerError</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>err.Error() copied into the response "details" field by
+utils.SendErrorResponse (response.go:31), any status</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B191</td>
+<td>catalog-api/handlers/sync_handler.go:40</td>
+<td>CreateEndpoint</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>binding/JSON-decode error; names Go struct fields/types, echoes
+malformed input</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B192</td>
+<td>catalog-api/handlers/sync_handler.go:52</td>
+<td>CreateEndpoint</td>
+<td>c.JSON</td>
+<td>-</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B193</td>
+<td>catalog-api/handlers/sync_handler.go:69</td>
+<td>GetUserEndpoints</td>
+<td>c.JSON</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B194</td>
+<td>catalog-api/handlers/sync_handler.go:103</td>
+<td>GetEndpoint</td>
+<td>c.JSON</td>
+<td>-</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B195</td>
+<td>catalog-api/handlers/sync_handler.go:126</td>
+<td>UpdateEndpoint</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>binding/JSON-decode error; names Go struct fields/types, echoes
+malformed input</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B196</td>
+<td>catalog-api/handlers/sync_handler.go:142</td>
+<td>UpdateEndpoint</td>
+<td>c.JSON</td>
+<td>-</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B197</td>
+<td>catalog-api/handlers/sync_handler.go:171</td>
+<td>DeleteEndpoint</td>
+<td>c.JSON</td>
+<td>-</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B198</td>
+<td>catalog-api/handlers/sync_handler.go:202</td>
+<td>StartSync</td>
+<td>c.JSON</td>
+<td>-</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B199</td>
+<td>catalog-api/handlers/sync_handler.go:234</td>
+<td>GetUserSessions</td>
+<td>c.JSON</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B200</td>
+<td>catalog-api/handlers/sync_handler.go:268</td>
+<td>GetSession</td>
+<td>c.JSON</td>
+<td>-</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B201</td>
+<td>catalog-api/handlers/sync_handler.go:288</td>
+<td>ScheduleSync</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>binding/JSON-decode error; names Go struct fields/types, echoes
+malformed input</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B202</td>
+<td>catalog-api/handlers/sync_handler.go:304</td>
+<td>ScheduleSync</td>
+<td>c.JSON</td>
+<td>-</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B203</td>
+<td>catalog-api/handlers/sync_handler.go:341</td>
+<td>GetSyncStatistics</td>
+<td>c.JSON</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B204</td>
+<td>catalog-api/handlers/sync_handler.go:371</td>
+<td>CleanupOldSessions</td>
+<td>c.JSON</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B205</td>
+<td>catalog-api/handlers/user_handler.go:121</td>
+<td>CreateUser</td>
+<td>http.Error</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>deliberate validation text (may echo user input)</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B206</td>
+<td>catalog-api/handlers/user_handler.go:171</td>
+<td>CreateUser</td>
+<td>http.Error</td>
+<td>http.StatusConflict</td>
+<td><code>T:msg&lt;-err.Error()</code></td>
+<td>LEAK</td>
+<td>INDIRECT: msg := err.Error() is sent as "details" on 409 and 500
+(user_handler.go:172,177 at base): UNIQUE/PG duplicate-key text and any
+repo error</td>
+<td>CLOSED (details now fixed text; msg only branches,
+user_handler.go:168-179)</td>
+</tr>
+<tr>
+<td>B207</td>
+<td>catalog-api/handlers/user_handler.go:176</td>
+<td>CreateUser</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>T:msg&lt;-err.Error()</code></td>
+<td>LEAK</td>
+<td>INDIRECT: same msg as :171 sent as details on 500</td>
+<td>CLOSED (details now fixed text; msg only branches,
+user_handler.go:168-179)</td>
+</tr>
+<tr>
+<td>B208</td>
+<td>catalog-api/handlers/user_handler.go:624</td>
+<td>ResetPassword</td>
+<td>http.Error</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>deliberate validation text (may echo user input)</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B209</td>
+<td>catalog-api/handlers/user_handler.go:630</td>
+<td>ResetPassword</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B210</td>
+<td>catalog-api/handlers/user_handler.go:694</td>
+<td>LockAccount</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B211</td>
+<td>catalog-api/handlers/user_handler.go:738</td>
+<td>UnlockAccount</td>
+<td>http.Error</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B212</td>
+<td>catalog-api/internal/handlers/copy.go:249</td>
+<td>CopyToStorage</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>binding/JSON-decode error; names Go struct fields/types, echoes
+malformed input</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B213</td>
+<td>catalog-api/internal/handlers/localization_handlers.go:301</td>
+<td>ImportConfiguration</td>
+<td>h.sendError</td>
+<td>http.StatusBadRequest</td>
+<td><code>F:fmt.Sprintf("Failed to import configuration: %v", err)</code></td>
+<td>LATENT</td>
+<td>mixed: "failed to parse configuration JSON: %w" plus service/DB
+wrapping, sent via %v. UNROUTED: <code>LocalizationHandlers</code> is
+constructed only in
+<code>internal/handlers/localization_handlers_test.go</code>; no
+non-test registration (grep NewLocalizationHandlers /
+wizard/configuration in main.go: 0 hits)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B214</td>
+<td>catalog-api/internal/handlers/localization_handlers.go:365</td>
+<td>EditConfiguration</td>
+<td>h.sendError</td>
+<td>http.StatusBadRequest</td>
+<td><code>F:fmt.Sprintf("Failed to edit configuration: %v", err)</code></td>
+<td>LATENT</td>
+<td>mixed: service error wrapped via %v into a 400 body. UNROUTED:
+<code>LocalizationHandlers</code> is constructed only in
+<code>internal/handlers/localization_handlers_test.go</code>; no
+non-test registration (grep NewLocalizationHandlers /
+wizard/configuration in main.go: 0 hits)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B215</td>
+<td>catalog-api/internal/handlers/smb_discovery.go:86</td>
+<td>DiscoverShares</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>binding/JSON-decode error; names Go struct fields/types, echoes
+malformed input</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B216</td>
+<td>catalog-api/internal/handlers/smb_discovery.go:124</td>
+<td>TestConnection</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>binding/JSON-decode error; names Go struct fields/types, echoes
+malformed input</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B217</td>
+<td>catalog-api/internal/handlers/smb_discovery.go:176</td>
+<td>BrowseShare</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>binding/JSON-decode error; names Go struct fields/types, echoes
+malformed input</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B218</td>
+<td>catalog-api/internal/middleware/middleware.go:81</td>
+<td>ErrorHandler</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>LATENT</td>
+<td>ErrorTypeBind branch; ErrorHandler is wired (main.go:1038) but no
+non-test code produces a gin bind error in c.Errors (no
+Bind/BindJSON/MustBindWith; ShouldBind* does not append)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B219</td>
+<td>catalog-api/internal/middleware/middleware.go:86</td>
+<td>ErrorHandler</td>
+<td>c.JSON</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LATENT</td>
+<td>ErrorTypePublic branch; no non-test code sets ErrorTypePublic (grep:
+0 hits outside middleware.go)</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B220</td>
+<td>catalog-api/internal/smartrules/smartrules.go:207</td>
+<td>parseList</td>
+<td>jsonErrText</td>
+<td>-</td>
+<td><code>err</code></td>
+<td>VALIDATION</td>
+<td>jsonErrText builds the authored ValidationError message from the
+caller own JSON decode error</td>
+<td>unchanged; class unchanged (VALIDATION)</td>
+</tr>
+<tr>
+<td>B221</td>
+<td>catalog-api/main.go:1306</td>
+<td>main</td>
+<td>c.JSON</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B222</td>
+<td>catalog-api/main.go:1337</td>
+<td>main</td>
+<td>c.JSON</td>
+<td>http.StatusInternalServerError</td>
+<td><code>E:err.Error()</code></td>
+<td>LEAK</td>
+<td>service/repo/DB error text sent verbatim on 5xx or generic
+status</td>
+<td>CLOSED (err text no longer sent)</td>
+</tr>
+<tr>
+<td>B223</td>
+<td>catalog-api/middleware/auth.go:167</td>
+<td>RequireAuth</td>
+<td>utils.SendErrorResponse</td>
+<td>http.StatusUnauthorized</td>
+<td><code>err</code></td>
+<td>LEAK</td>
+<td>JWT parse text (token, signing-method and claims detail) sent as
+details on 401</td>
+<td>CLOSED-BY-HELPER (details no longer set; err logged)</td>
+</tr>
+<tr>
+<td>B224</td>
+<td>catalog-api/middleware/input_validation.go:360</td>
+<td>InputValidation</td>
+<td>c.JSON</td>
+<td>http.StatusBadRequest</td>
+<td><code>E:err.Error()</code></td>
+<td>VALIDATION</td>
+<td>deliberate validation text (may echo user input)</td>
+<td>err.Error() no longer sent; NOT CLOSED: HEAD still sends authored
+text through a helper, or a fixed text (see R4)</td>
+</tr>
+<tr>
+<td>B225</td>
+<td>catalog-api/services/conversion_service.go:903</td>
+<td>handleConversionError</td>
+<td>s.notifyUser</td>
+<td>-</td>
+<td><code>F:fmt.Sprintf("Conversion failed: %s", errorMsg)</code></td>
+<td>SAFE</td>
+<td>notifyUser writes a debug log line and calls conversionNotifyHook
+(test-only setter; no production writer found); not a client sink</td>
+<td>unchanged; class unchanged (SAFE)</td>
+</tr>
+<tr>
+<td>B226</td>
+<td>catalog-api/services/sync_service.go:1066</td>
+<td>handleSyncError</td>
+<td>s.notifyUser</td>
+<td>-</td>
+<td><code>E:syncError.Error()</code></td>
+<td>SAFE</td>
+<td>notifyUser writes a debug log line only (sync_service.go:1084-1093);
+not a client sink</td>
+<td>unchanged; class unchanged (SAFE)</td>
+</tr>
+</tbody>
+</table>
+<p>| H1 | catalog-api/internal/metrics/health.go:157 | checkDatabase |
+struct literal | - | <code>"Database ping failed: " + err.Error()</code>
+| LEAK | unauthenticated /health/deep body | CLOSED (fixed text, error
+logged) | | H2 | catalog-api/internal/monitoring/monitoring.go:251 |
+Check | map literal | - | <code>err.Error()</code> | LEAK (latent) |
+package unwired | STILL PRESENT (R1) |</p>
+<h2
+id="limits-of-the-instruments-measured-unconfirmed-where-stated">Limits
+of the instruments (measured, UNCONFIRMED where stated)</h2>
+<ul>
+<li>Type information is heuristic: any zero-argument
+<code>.Error()</code> matches, including non-error types
+(<code>writer.Error()</code> of encoding/csv appears in the census;
+read, not a response); err-like identifiers are found by declared type
+<code>error</code> or a nil comparison, not by the type checker, so an
+<code>error</code> value obtained from a multi-value call and never
+compared with nil, a field of type <code>error</code>, or an interface
+method result is missed (round-2 blind spot, partly closed).</li>
+<li>Sink detection is by callee name; a response writer with a name
+outside the list is missed by instrument 1 and is caught only if
+instrument 2 sees an <code>.Error()</code> inside it. Error text built
+without <code>.Error()</code>, <code>%v</code> of an err-named
+identifier, or an err-named identifier argument (for instance a variable
+named <code>cause</code> or <code>e</code> passed to
+<code>fmt.Sprintf</code>) is not found by either instrument: UNCONFIRMED
+whether any exists.</li>
+<li>Blind spots found by the round-2 review and closed only as far as
+stated: helper-in-sink (<code>H:</code>), non-err-named variable in
+<code>%v</code> (<code>F:</code>). Still NOT covered: error text
+round-tripped through the database or a file and served by a different
+route than the writer's, event-bus consumers other than
+<code>EventBusBridge</code>, text built by
+<code>errors.Unwrap</code>/<code>errors.Join</code> chains and then
+formatted with <code>%s</code> of a non-error value,
+<code>fmt.Errorf</code> results returned to a handler that sends them
+(covered only when the handler's sink argument shows an err-like
+identifier), and routes registered through dynamic mux patterns. Class 4
+is a trace of the fields instrument 3 surfaced, not a proof that no
+other field is served.</li>
+<li>Taint is flow-insensitive within a function (one false positive
+found and read, user_handler.go:122 at HEAD). Taint through struct
+fields, other functions or channels is not followed; the census catches
+the <code>.Error()</code> call itself but not where the stored text is
+later sent.</li>
+<li>BARE reports any err-named identifier argument to a sink-named
+callee, including calls whose helper never serialises it (that is why
+111 SendErrorResponse rows are listed as CLOSED-BY-HELPER rather than as
+leaks).</li>
+<li>Producers: service and repository error strings were read only where
+a row says so (auth_service.go, configuration_service.go,
+error_reporting_service.go, local_policy.go, localization_service.go,
+playlist_service.go). Every other LEAK means "text can include internal
+detail", not a demonstrated leak.</li>
+<li>Not covered: Go modules other than catalog-api and OCU-CUDA-Sidecar
+(examples/, docs/qa/lib/ctrctl, catalog-api/tests/automation, tools/
+fixtures were not scanned), JavaScript/TypeScript backends, generated
+code, and HTTP responses produced by third-party middleware. WebSocket
+(<code>handlers/websocket_handler.go</code>) and SSE
+(<code>log_management_handler.go</code>) code was grepped: error values
+there go to <code>h.logger</code> only (UNCONFIRMED beyond that
+grep).</li>
+<li>HEAD status was produced by matching each review-base row to the
+HEAD scan by (file, function, sink, kind, expression) and then reading
+the helper and the changed line for the rows that moved; line numbers
+shift, so the match ignores them.</li>
+</ul>
+</body>
+</html>

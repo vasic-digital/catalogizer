@@ -2,6 +2,7 @@ package services
 
 import (
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -13,7 +14,17 @@ func TestMain(m *testing.M) {
 	os.Setenv("CATALOGIZER_OUTBOUND_ALLOW_CIDRS", "127.0.0.0/8,::1/128") // SECQ-1/W5: loopback WebDAV fixtures
 	os.Setenv("CATALOGIZER_SYNC_ROOTS", roots)
 	os.Setenv("CATALOGIZER_CONVERSION_ROOTS", roots)
+	// NewConfigurationWizardService(nil) creates its config dirs; keep them out of the package directory (OBF-FU).
+	cfgDir, mkErr := os.MkdirTemp("", "obf-wizard-config-")
+	if mkErr != nil {
+		panic(mkErr)
+	}
+	os.Setenv("CONFIG_PATH", cfgDir)
+	os.Setenv("OBF_TESTMAIN_CONFIG_PATH", cfgDir)
 	code := m.Run()
 	cleanupProdBinary()
+	if cfgDir != "" && filepath.IsAbs(cfgDir) {
+		os.RemoveAll(cfgDir)
+	}
 	os.Exit(code)
 }

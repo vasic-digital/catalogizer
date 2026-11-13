@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.11" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>BG-NASEMU-2026-11-13 — Research report (rev 2, primary-source
+pass)</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+<h1
+id="bg-nasemu-2026-11-13--research-report-rev-2-primary-source-pass">BG-NASEMU-2026-11-13
+— Research report (rev 2, primary-source pass)</h1>
+<p>Retrieval date: 2026-11-13. Rev 2 replaces the shallow rev 1. Method:
+GitHub REST API (<code>gh api</code>, authoritative for licence SPDX /
+pushed_at / latest release), primary README fetches (vdsm/virtual-dsm,
+dockur/windows, dockur/macos, drakkan/sftpgo, AuxXxilium/arc,
+samba-container, Garage S3-compat page), three extended web searches,
+local host probes, and a read of the Containers branch
+<code>fix/containers-g1-g2-g11</code> (clone
+<code>/home/milosvasic/.cache/claude-tmp/cg.XKZDrl/c</code>, read-only).
+No image pulled, no VM booted, no credentials touched. "Last push" =
+repo <code>pushed_at</code> (activity signal, not a release).
+UNCONFIRMED = not verified from a primary source.</p>
+<h2 id="0-host-facts-measured-2026-11-13">0. Host facts (measured
+2026-11-13)</h2>
+<ul>
+<li><code>id</code>: uid 1000, NOT in group <code>kvm</code>;
+<code>getfacl /dev/kvm</code> shows <code>user:milosvasic:rw-</code>;
+<code>[ -r -w /dev/kvm ]</code> =&gt; OK. <strong>KVM is usable by this
+user via ACL</strong> (the Containers <code>hostbudget.KVMUsable</code>
+doc confirms the pitfall: stat is not enough, open O_RDWR). Note: ACL
+grants can disappear on reboot/udev events — re-probe each run.</li>
+<li>16 CPUs, 30 GiB RAM (about 16 GiB available, 3 GiB free + 13 cache),
+<code>/</code> 1.8T 97% used, 57 GiB free (also /home); extra disks:
+<code>sda1</code> 7.3T (mountpoint not shown/mounted? UNCONFIRMED —
+candidate for VM disks, needs operator decision), <code>nvme0n1</code>
+931G (partitions unmounted per lsblk output, UNCONFIRMED purpose; do not
+touch). Load avg ~18-23 (other stacks: many
+<code>helixagent-*</code>/<code>helixcode-*</code> containers plus catqa
+stacks running).</li>
+<li>Podman 5.7.0 rootless, netavark; <code>pasta</code> present;
+<code>ip_unprivileged_port_start=1024</code> (rootless cannot bind
+445/21/22/2049/111 without remap or sysctl change). Tools present:
+smbclient, showmount, curl, sftp. Local images:
+<code>cat-testservers:1/2/3</code>, nginx:alpine, debian slim.</li>
+<li><strong>Key finding: Catalogizer already ships a lite tier.</strong>
+<code>docs/qa/test-servers/up.sh</code> (+ Containerfile, smb.conf,
+ftps_server.py, verify.sh, ports.env) runs rootless containers
+<code>cattsrv-smb</code> (smbd), <code>-ftp</code>, <code>-ftps</code>
+(python), <code>-sftp</code>, <code>-webdav</code>, <code>-http</code>,
+<code>-nfs</code> using
+<strong><code>rclone serve &lt;proto&gt;</code></strong> over a seeded
+corpus (<code>/home/milosvasic/Testing-servers/corpus</code>), with
+<code>--network host</code>, LAN-IP auto-detect, self-signed TLS,
+credentials from a 0600 env file. Gaps vs. the mandate: lives in the app
+repo (not reusable Containers code), <code>--network host</code> (port
+clash risk), no golden-manifest evidence JSON, no S3, no VM tier, no
+hostbudget admission. The new work therefore GENERALISES this into
+Containers rather than starting from zero.</li>
+</ul>
+<h2
+id="1-containers-submodule-facts-branch-fixcontainers-g1-g2-g11-not-yet-upstream">1.
+Containers submodule facts (branch fix/containers-g1-g2-g11, NOT yet
+upstream)</h2>
+<p>Commits on the branch: <code>a8e8c48</code> G1 typed run options,
+<code>cd782c0</code> G2 hostbudget + admission before emulator boot,
+<code>4db2931</code> G11 reachable-endpoint resolver with in-target
+probes.</p>
+<ul>
+<li><code>pkg/hostbudget</code> EXISTS only on this branch (~660 lines):
+closed verdicts <code>fits | does_not_fit | undetermined</code>;
+<code>Need{MemBytes,CPUs,Pids,NeedsKVM}</code>; <code>Policy</code>
+(defaults: 60% mem ceiling, reserve max(4 GiB,15%), load/CPU 0.75, mem
+PSI some&gt;10 / full&gt;2, cpu PSI some&gt;50); <code>Probe</code>
+injectable seams (ProcRoot, KVMPath, PidsLimit);
+<code>Admit(need,policy,probe) Evidence</code>;
+<code>Evidence.WriteJSON(dir,label)</code>;
+<code>KVMUsable(path)</code>. Docs say PROVISIONAL: thresholds not
+calibrated on a long real run. <strong>Gap: no disk-free axis</strong>
+(needed: host <code>/</code> is 97%).</li>
+<li><code>pkg/runtime</code> (branch): typed <code>RunOption</code>s
+<code>WithRunMemory/MemorySwap/CPUs/PidsLimit/Device/Userns("keep-id")/Publish(hostIP:hostPort:ctr/proto)/...</code>
+with digest and label options and refusal errors
+(<code>ErrRunForbiddenOption</code> for host-escalating forms,
+<code>ErrRunUnsupportedOption</code>, <code>ErrRunInvalidOption</code>).
+Runtimes: docker, podman, crio, nerdctl, lxd, kubernetes.
+Host-escalating options (privileged, host net) are refused by design —
+which conflicts with the current <code>--network host</code>
+test-servers; a nasemu design must use <code>Publish</code> or a
+pasta/macvlan path.</li>
+<li><code>pkg/emulator</code>: <code>Containerized</code>
+(Boot/WaitForBoot/Teardown, Android oriented),
+<code>buildContainerRunArgs[WithLimits]</code>,
+<code>defaultEmulatorLimits</code>, <code>kvmAvailable</code>.
+<code>pkg/vm</code>: <code>qemu.go</code>, <code>network.go</code>,
+<code>matrix.go</code>, <code>teardown.go</code>, <code>macos/</code>
+(<code>RunOptions</code>), <code>ios/</code>. <code>pkg/health</code>:
+http/tcp/grpc/custom checkers. <code>pkg/network</code>:
+ephemeral/overlay. These are reusable for the VM tier; a NAS profile
+layer would sit above runtime+health+hostbudget.</li>
+</ul>
+<h2 id="2-candidate-catalogue-primary-source-verified-unless-marked">2.
+Candidate catalogue (primary-source verified unless marked)</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>URL</th>
+<th>Licence (primary)</th>
+<th>Maintenance (GitHub API 2026-11-13)</th>
+<th>Resources</th>
+<th>Rootless podman</th>
+<th>Network</th>
+<th>Legal / pinning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Virtual DSM</td>
+<td><a
+href="https://github.com/vdsm/virtual-dsm">https://github.com/vdsm/virtual-dsm</a>
+; image <code>vdsm/virtual-dsm</code></td>
+<td>MIT (repo)</td>
+<td>latest release v7.67 published 2026-11-12; pushed 2026-11-12; not
+archived; ~4k stars</td>
+<td>readme: &gt;=1 GB RAM, &gt;=16 GB disk, defaults 2 CPU/2 GB
+(<code>CPU_CORES</code>,<code>RAM_SIZE</code>); Docker/Podman on Linux
+with KVM; not Docker Desktop</td>
+<td>Podman listed as supported; <strong>no rootless guidance in readme
+(UNCONFIRMED whether tun/<code>NET_ADMIN</code>/vhost-net work
+rootless)</strong></td>
+<td>bridge/NAT default (shares host IP), macvlan (own IP, host can't
+reach it without 2nd macvlan), DHCP mode needs
+<code>/dev/vhost-net</code> + device_cgroup_rules</td>
+<td>FAQ: code is open-source, no Synology material shipped; installing
+requires accepting Synology EULA which <strong>does not permit
+non-Synology hardware; "only run on an official Synology NAS"</strong>.
+DSM <code>.pat</code> auto-downloaded (default DSM 7.0.1) or supplied
+via <code>URL</code> / bind <code>/boot.pat</code> =&gt; supply a pinned
+local <code>.pat</code> for reproducibility; its sha256 can be recorded.
+Pin container by digest.</td>
+</tr>
+<tr>
+<td>XPEnology: Arc loader (AuxXxilium/arc), RR (RROrg/rr),
+redpill-lkm</td>
+<td><a
+href="https://github.com/AuxXxilium/arc">https://github.com/AuxXxilium/arc</a>
+; <a href="https://github.com/RROrg/rr">https://github.com/RROrg/rr</a>
+; <a
+href="https://github.com/RedPill-TTG/redpill-lkm">https://github.com/RedPill-TTG/redpill-lkm</a></td>
+<td>arc: GPL-3.0 (API) but README says "commercial use is not permitted
+and strictly forbidden"; RR GPL-3.0; redpill-lkm GPL-3.0</td>
+<td>arc 4.2.3 published 2026-11-01; RR pushed 2026-09-18; redpill-lkm
+last push 2022-10-22 (stale, not archived)</td>
+<td>x86-64 machine/VM you own, 4 GB loader disk; Docker alternative runs
+Arc in QEMU</td>
+<td>UNCONFIRMED</td>
+<td>VM-level</td>
+<td>README: DSM owned by Synology; educational use. Bootloader hack that
+boots DSM off non-Synology hardware: same EULA problem as vdsm plus
+circumvention connotation. <strong>Recommend exclude</strong>; vdsm is
+the cleaner path (same EULA issue, no loader hack).</td>
+</tr>
+<tr>
+<td>dockur/windows</td>
+<td><a
+href="https://github.com/dockur/windows">https://github.com/dockur/windows</a></td>
+<td>MIT</td>
+<td>v6.06 published 2026-10-05; pushed 2026-11-12; not archived; 54k
+stars</td>
+<td>&gt;=2 GB RAM, &gt;=32 GB disk, KVM; default 2 CPU/4 GB; compose
+uses <code>/dev/kvm</code>; readme suggests
+<code>privileged: true</code> only to debug</td>
+<td>Podman supported; no rootless guidance in readme (UNCONFIRMED)</td>
+<td>NAT default; macvlan; DHCP; ports 8006 (web viewer), 3389
+TCP/UDP</td>
+<td>Project ships no Windows; user must hold valid licence; keys in code
+are Microsoft generic trial keys.</td>
+</tr>
+<tr>
+<td>dockur/macos</td>
+<td><a
+href="https://github.com/dockur/macos">https://github.com/dockur/macos</a></td>
+<td>MIT</td>
+<td>v3.12 published 2026-08-21; pushed 2026-11-12; not archived</td>
+<td>AVX2 CPU, &gt;=4 GB RAM, &gt;=32 GB disk, default 64 GB disk, 2
+CPU/4 GB; AMD: &lt;=8 GB during install</td>
+<td>UNCONFIRMED</td>
+<td>ports 8006, 5900 (VNC)</td>
+<td>Readme: "Only run this container on Apple hardware, any other use is
+not permitted by their EULA." Highest legal risk. (Upstream OSX-KVM
+kholia GPL-3.0 push 2025-11-11; sickcodes/Docker-OSX GPL-3.0 push
+2026-01-26; not required.)</td>
+</tr>
+<tr>
+<td>Samba (samba-in-kubernetes)</td>
+<td><a
+href="https://github.com/samba-in-kubernetes/samba-container">https://github.com/samba-in-kubernetes/samba-container</a>
+; images <code>quay.io/samba.org/samba-server</code></td>
+<td>GPL-3.0</td>
+<td>v0.9 published 2026-06-18; pushed 2026-11-11; ~98 stars (small
+project, Samba-team backed)</td>
+<td>small</td>
+<td><strong>Documented</strong>: example maps host 10445-&gt;ctr 445
+when rootless; file-server image needs no special privilege; AD-DC image
+needs <code>--privileged</code> (irrelevant)</td>
+<td>publish only</td>
+<td>Config via <code>SAMBACC_CONFIG</code> JSON; default user
+<code>sambauser</code> / password <code>samba</code> (change it; never
+use default on LAN). Existing Catalogizer approach (smbd in alpine image
+with smb.conf) also works rootless. Pin by digest.</td>
+</tr>
+<tr>
+<td>ServerContainers/samba</td>
+<td><a
+href="https://github.com/ServerContainers/samba">https://github.com/ServerContainers/samba</a></td>
+<td>licence not reported by API</td>
+<td>pushed 2026-07-11, no releases</td>
+<td>small</td>
+<td>UNCONFIRMED</td>
+<td>—</td>
+<td>Alternative; lower priority. dperson/samba is stale (Docker Hub ~5
+y).</td>
+</tr>
+<tr>
+<td>rclone serve (ftp, sftp, webdav, http, s3, nfs, dlna)</td>
+<td><a
+href="https://github.com/rclone/rclone">https://github.com/rclone/rclone</a></td>
+<td>MIT</td>
+<td>v1.76.0 2026-11-06; pushed 2026-11-12</td>
+<td>tiny, single Go binary</td>
+<td>fine (high ports)</td>
+<td>publish</td>
+<td><strong>Already used by Catalogizer test-servers incl.
+<code>serve nfs</code>.</strong> Fidelity caveat: rclone is a
+faithful-enough protocol faker, not a real vsftpd/OpenSSH/Apache;
+real-server quirks are not exercised.</td>
+</tr>
+<tr>
+<td>SFTPGo</td>
+<td><a
+href="https://github.com/drakkan/sftpgo">https://github.com/drakkan/sftpgo</a></td>
+<td>AGPL-3.0 with additional terms in NOTICE; WebAdmin/WebClient theme
+proprietary (primary readme)</td>
+<td>v2.7.6 published 2026-09-19 (rev 1 said v2.7.5, superseded); pushed
+2026-11-09</td>
+<td>small</td>
+<td>fine</td>
+<td>SFTP, FTP/S, WebDAV, HTTP; S3 is only a storage backend, not a
+server protocol</td>
+<td>Community vs Enterprise split; Enterprise is faster-moving. OK as
+unmodified test infra; record in dependency register.</td>
+</tr>
+<tr>
+<td>vsftpd</td>
+<td>upstream is scarif.net/ security.appspot (not GitHub; GitHub path
+404)</td>
+<td>GPLv2 (general knowledge; UNCONFIRMED here)</td>
+<td>UNCONFIRMED</td>
+<td>tiny</td>
+<td>needs port remap; passive range</td>
+<td>—</td>
+<td>distro package; fidelity candidate for "real FTP server"</td>
+</tr>
+<tr>
+<td>ProFTPD</td>
+<td><a
+href="https://github.com/proftpd/proftpd">https://github.com/proftpd/proftpd</a></td>
+<td>GPL-2.0</td>
+<td>v1.3.9e 2026-10-26; pushed 2026-11-12</td>
+<td>small</td>
+<td>ok with remap</td>
+<td>—</td>
+<td>real FTP server alternative</td>
+</tr>
+<tr>
+<td>Garage (S3)</td>
+<td><a
+href="https://github.com/deuxfleurs-org/garage">https://github.com/deuxfleurs-org/garage</a>
+; docs <a
+href="https://garagehq.deuxfleurs.fr/documentation/reference-manual/s3-compatibility/">https://garagehq.deuxfleurs.fr/documentation/reference-manual/s3-compatibility/</a></td>
+<td>AGPL-3.0</td>
+<td>no GitHub Releases; tags v2.5.0/v2.4.1/v2.4.0; pushed 2026-11-07
+(git.deuxfleurs.fr itself blocked by bot-protection for fetch)</td>
+<td>small</td>
+<td>fine</td>
+<td>S3 3900</td>
+<td>S3 compat page: SigV4 yes, SigV2 no, ListObjectsV2 yes, all 7
+multipart ops yes, <strong>object versioning NOT supported</strong>
+(GetBucketVersioning stub). Operator memory notes Garage already chosen
+for S3.</td>
+</tr>
+<tr>
+<td>SeaweedFS</td>
+<td><a
+href="https://github.com/seaweedfs/seaweedfs">https://github.com/seaweedfs/seaweedfs</a></td>
+<td>Apache-2.0</td>
+<td>4.53 published 2026-11-08; pushed 2026-11-12; 36k stars</td>
+<td>moderate (master+volume+filer+s3 or
+<code>weed server -s3</code>)</td>
+<td>fine</td>
+<td>S3, WebDAV, FUSE, NFS-ish filer</td>
+<td>Permissive alternative to AGPL S3; versioning support
+UNCONFIRMED.</td>
+</tr>
+<tr>
+<td>MinIO</td>
+<td><a
+href="https://github.com/minio/minio">https://github.com/minio/minio</a></td>
+<td>AGPL-3.0</td>
+<td><strong>archived</strong>, last push 2026-04-24, last release
+RELEASE.2025-10-15 (no community binaries/images since); community fork
+pgsty/minio AGPL-3.0 with release 2026-11-12</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>Exclude (upstream dead). pgsty fork UNCONFIRMED quality/trust.</td>
+</tr>
+<tr>
+<td>Ceph RGW</td>
+<td><a
+href="https://github.com/ceph/ceph">https://github.com/ceph/ceph</a></td>
+<td>mixed (API NOASSERTION)</td>
+<td>active</td>
+<td>very heavy</td>
+<td>impractical</td>
+<td>—</td>
+<td>Exclude (overkill for the host).</td>
+</tr>
+<tr>
+<td>NFS-Ganesha</td>
+<td><a
+href="https://github.com/nfs-ganesha/nfs-ganesha">https://github.com/nfs-ganesha/nfs-ganesha</a></td>
+<td>LGPL (API NOASSERTION; UNCONFIRMED)</td>
+<td>V15.11 2026-11-07; active</td>
+<td>small</td>
+<td><strong>Support-list thread (2022): VFS FSAL under rootless Podman
+fails with <code>vfs_open_by_handle</code> EPERM; one participant said
+rootless VFS is "pretty much not possible"; no confirmed working
+setup.</strong> Treat as NOT feasible rootless; needs
+CAP_DAC_READ_SEARCH-class capabilities.</td>
+<td>2049 + rpcbind/mountd</td>
+<td>Do not plan on it.</td>
+</tr>
+<tr>
+<td>unfs3</td>
+<td><a
+href="https://github.com/unfs3/unfs3">https://github.com/unfs3/unfs3</a></td>
+<td>NOASSERTION (BSD-like, UNCONFIRMED)</td>
+<td>v0.11.0 2025-03-28; push 2025-07-03</td>
+<td>tiny</td>
+<td>userspace NFSv3; rootless plausible, UNCONFIRMED</td>
+<td>2049/mountd</td>
+<td>Backup NFS candidate; NFSv3 only.</td>
+</tr>
+<tr>
+<td><code>rclone serve nfs</code></td>
+<td>(rclone)</td>
+<td>MIT</td>
+<td>see rclone</td>
+<td>tiny</td>
+<td>works rootless (already in Catalogizer test servers)</td>
+<td>custom port + <code>mount -o port=,mountport=</code></td>
+<td>Best-evidenced NFS path for lite tier (NFSv3). Kernel nfsd needs
+privileged — excluded.</td>
+</tr>
+<tr>
+<td>dufs</td>
+<td><a
+href="https://github.com/sigoden/dufs">https://github.com/sigoden/dufs</a></td>
+<td>Apache-2.0</td>
+<td>v0.47.0 2026-10-17; push 2026-11-10</td>
+<td>tiny</td>
+<td>fine</td>
+<td>HTTP + WebDAV</td>
+<td>WebDAV alternative.</td>
+</tr>
+<tr>
+<td>hacdias/webdav</td>
+<td><a
+href="https://github.com/hacdias/webdav">https://github.com/hacdias/webdav</a></td>
+<td>MIT</td>
+<td>v5.17.3 2026-10-30; push 2026-11-11</td>
+<td>tiny</td>
+<td>fine</td>
+<td>WebDAV</td>
+<td>Alternative. Apache <code>mod_dav</code> / nginx-dav: well-known,
+not individually verified (UNCONFIRMED).</td>
+</tr>
+<tr>
+<td>OpenMediaVault</td>
+<td><a
+href="https://github.com/openmediavault/openmediavault">https://github.com/openmediavault/openmediavault</a></td>
+<td>GPL-3 (API NOASSERTION)</td>
+<td>pushed 2026-11-09</td>
+<td>full Debian NAS OS</td>
+<td>VM-only, no container</td>
+<td>—</td>
+<td>Heavy; optional VM-tier alternative, not needed.</td>
+</tr>
+<tr>
+<td>TrueNAS (truenas/middleware)</td>
+<td><a
+href="https://github.com/truenas/middleware">https://github.com/truenas/middleware</a></td>
+<td>LGPL-3.0</td>
+<td>pushed 2026-11-12; no GitHub Releases</td>
+<td>full OS, ZFS</td>
+<td>VM-only</td>
+<td>—</td>
+<td>Optional VM-tier alternative; not needed.</td>
+</tr>
+<tr>
+<td>CasaOS</td>
+<td><a
+href="https://github.com/IceWhaleTech/CasaOS">https://github.com/IceWhaleTech/CasaOS</a></td>
+<td>Apache-2.0</td>
+<td>v0.4.15 2024-12-19 (stale releases)</td>
+<td>home-server UI</td>
+<td>n/a</td>
+<td>—</td>
+<td>Not a NAS protocol emulator; exclude. Unraid: proprietary OS, not
+researched (UNCONFIRMED); exclude.</td>
+</tr>
+<tr>
+<td>Synology Web API docs</td>
+<td><a
+href="https://help.synology.com/developer-guide/integrate_dsm/web_authentication.html">https://help.synology.com/developer-guide/integrate_dsm/web_authentication.html</a>
+; File Station API Guide PDF
+<code>cndl.synology.cn/download/Document/Software/DeveloperGuide/Package/FileStation/All/enu/Synology_File_Station_API_Guide.pdf</code></td>
+<td>proprietary docs</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>URLs located; PDFs not opened this pass (UNCONFIRMED parameter
+details). Login via <code>SYNO.API.Auth</code>; 2FA error 406 reported
+by community only.</td>
+</tr>
+<tr>
+<td>Open-source Synology API mocks</td>
+<td>none found</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>Search found only clients (py-synologydsm-api, kwent/syno,
+ProtoThis/python-synology) and an MCP server whose tests use a "fake DSM
+over real HTTP" (joaomelorodrigues/synology-mcp, UNCONFIRMED coverage).
+<strong>No standalone reusable DSM mock exists</strong> =&gt; a
+FileStation/Auth shim would be our own work; real fidelity only from
+vdsm.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-conclusions">3. Conclusions</h2>
+<ol type="1">
+<li>Lite tier: reuse the proven Catalogizer approach (rclone serve
+ftp/sftp/webdav/http/nfs + real smbd) and generalise it into Containers;
+add Garage (or SeaweedFS, Apache-2.0) for S3; add a "real server"
+fidelity option (ProFTPD/vsftpd) later. Kernel NFS and NFS-Ganesha are
+not rootless-feasible; <code>rclone serve nfs</code> is the evidenced
+path.</li>
+<li>VM tier: vdsm (MIT, very active, v7.67 yesterday) is the only
+sensible DSM route; its EULA problem (Synology hardware only) is
+explicit in the project's own FAQ and cannot be mitigated technically —
+operator attestation is the only gate. XPEnology loaders add
+circumvention connotation: exclude. macOS: project itself restricts to
+Apple hardware: opt-in only. Windows: operator-supplied licence.</li>
+<li>Host: KVM works for this user via ACL, but RAM headroom (~16 GiB),
+57 GiB free disk, and load ~20 make the VM tier admit-or-refuse
+material; hostbudget lacks a disk axis.</li>
+<li>No open-source Synology API mock exists; a lightweight shim would be
+new code.</li>
+<li>Remaining UNCONFIRMED: rootless viability of vdsm/dockur (tun,
+<code>NET_ADMIN</code>, vhost-net), Synology API PDF parameter details,
+vsftpd/unfs3/Apache/nginx licences from primary pages, Unraid, whether
+/dev/sda1 (7.3T) is mounted and free.</li>
+</ol>
+</body>
+</html>

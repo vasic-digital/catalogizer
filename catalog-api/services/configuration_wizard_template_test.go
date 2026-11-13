@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"catalogizer/models"
 
@@ -358,4 +359,389 @@ func TestOBF4_SymlinkedConfigPathRollbackRestoresThroughLink(t *testing.T) {
 	raw, err := os.ReadFile(filepath.Join(real, "config.json"))
 	require.NoError(t, err)
 	assert.Contains(t, string(raw), `"user_id": 7`)
+}
+
+// OBF-5 (operator decision 2026-11-13): the basic template's file_create step
+// targets the same config.json finalize wrote; it must MERGE, never overwrite,
+// the finalize metadata (version, generated_at, generated_by, user_id,
+// configuration). Finalize keys win over template content.
+func TestOBF5_FileCreateMergesUnderFinalizeMetadata(t *testing.T) {
+	s := newTemplateTestService(t)
+	sess := &models.WizardSession{UserID: 42, ConfigType: "basic", Configuration: map[string]interface{}{"server_port": 8080}}
+	require.NoError(t, s.finalizeConfiguration(sess))
+	raw, err := os.ReadFile(filepath.Join(s.configPath, "config.json"))
+	require.NoError(t, err)
+	var doc map[string]interface{}
+	require.NoError(t, json.Unmarshal(raw, &doc))
+	for _, k := range []string{"version", "generated_at", "generated_by", "user_id", "configuration", "config"} {
+		assert.Contains(t, doc, k, "key %q present after finalize + file_create", k)
+	}
+	assert.Equal(t, float64(42), doc["user_id"])
+	assert.Equal(t, "3.0.0", doc["version"])
+	cfg, _ := doc["config"].(map[string]interface{})
+	assert.Equal(t, float64(8080), cfg["server_port"], "template/session content still written under config")
+}
+
+// OBF-5: when the existing file already holds a "config" key, the existing
+// (finalize-written) value wins over the freshly merged content.
+func TestOBF5_ExistingKeysWinOnDirectMerge(t *testing.T) {
+	s := newTemplateTestService(t)
+	require.NoError(t, os.MkdirAll(s.configPath, 0o755))
+	p := filepath.Join(s.configPath, "m.json")
+	require.NoError(t, os.WriteFile(p, []byte(`{"version":"3.0.0","user_id":7}`), 0o644))
+	require.NoError(t, s.createConfigurationFile(map[string]interface{}{"file_path": "m.json"},
+		&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}))
+	raw, err := os.ReadFile(p)
+	require.NoError(t, err)
+	var doc map[string]interface{}
+	require.NoError(t, json.Unmarshal(raw, &doc))
+	assert.Equal(t, "3.0.0", doc["version"])
+	assert.Equal(t, float64(7), doc["user_id"])
+	assert.Equal(t, "v", doc["config"].(map[string]interface{})["k"])
+}
+
+// OBF-5: an existing file that is not a JSON object is never clobbered.
+func TestOBF5_NonJSONExistingFileIsNotClobbered(t *testing.T) {
+	s := newTemplateTestService(t)
+	require.NoError(t, os.MkdirAll(s.configPath, 0o755))
+	p := filepath.Join(s.configPath, "n.json")
+	require.NoError(t, os.WriteFile(p, []byte("not json"), 0o644))
+	err := s.createConfigurationFile(map[string]interface{}{"file_path": "n.json"},
+		&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}})
+	require.Error(t, err)
+	got, _ := os.ReadFile(p)
+	assert.Equal(t, "not json", string(got))
+}
+
+// Nit: a relative file_path with ".." must stay inside configPath.
+func TestOBF_FU_RelativeFilePathCannotEscapeConfigPath(t *testing.T) {
+	s := newTemplateTestService(t)
+	parent := filepath.Dir(s.configPath)
+	for _, fp := range []string{"../escape.json", "a/../../escape.json"} {
+		err := s.createConfigurationFile(map[string]interface{}{"file_path": fp},
+			&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}})
+		require.Error(t, err, fp)
+		_, statErr := os.Stat(filepath.Join(parent, "escape.json"))
+		assert.True(t, os.IsNotExist(statErr), "nothing written outside configPath for %q", fp)
+	}
+	// control: an inner ".." that stays inside is fine
+	require.NoError(t, s.createConfigurationFile(map[string]interface{}{"file_path": "a/../ok.json"},
+		&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}))
+	_, statErr := os.Stat(filepath.Join(s.configPath, "ok.json"))
+	assert.NoError(t, statErr)
+}
+
+// Nit: constructing the service with the process defaults (tests pass nil)
+// must not create ./config. Robust to a pre-existing package-dir ./config: it
+// runs from an empty temp CWD and with CONFIG_PATH unset (the default path).
+func TestOBF_FU_NilServiceDoesNotCreateRelativeConfigDir(t *testing.T) {
+	cwd := t.TempDir()
+	t.Chdir(cwd)
+	t.Setenv("CONFIG_PATH", "")
+	s := NewConfigurationWizardService(nil)
+	require.NotNil(t, s)
+	// Control: with the default path the constructor DOES create ./config under
+	// the CWD, so the next assertion on the TestMain-configured path is meaningful.
+	_, err := os.Stat(filepath.Join(cwd, "config"))
+	require.NoError(t, err, "control: default CONFIG_PATH creates ./config in the CWD")
+	t.Setenv("CONFIG_PATH", os.Getenv("OBF_TESTMAIN_CONFIG_PATH"))
+	assert.NotEmpty(t, os.Getenv("OBF_TESTMAIN_CONFIG_PATH"), "TestMain exports its temp CONFIG_PATH")
+	cwd2 := t.TempDir()
+	t.Chdir(cwd2)
+	s2 := NewConfigurationWizardService(nil)
+	assert.NotEqual(t, "./config", s2.configPath)
+	_, err = os.Stat(filepath.Join(cwd2, "config"))
+	assert.True(t, os.IsNotExist(err), "no ./config created when CONFIG_PATH points at the temp dir")
+}
+
+// OBF-2: the I1 guard with a sentinel: a pre-existing ./config/config.json in
+// the CWD must be byte- and mtime-identical after finalize (works on a dirty tree).
+func TestOBF_FU_I2_SentinelCWDConfigUntouched(t *testing.T) {
+	s := newTemplateTestService(t)
+	cwd := t.TempDir()
+	t.Chdir(cwd)
+	require.NoError(t, os.MkdirAll("config", 0o755))
+	sentinel := filepath.Join(cwd, "config", "config.json")
+	require.NoError(t, os.WriteFile(sentinel, []byte(`{"sentinel":true}`), 0o644))
+	old := time.Unix(1_000_000_000, 0)
+	require.NoError(t, os.Chtimes(sentinel, old, old))
+	require.NoError(t, s.finalizeConfiguration(&models.WizardSession{UserID: 1, ConfigType: "basic", Configuration: map[string]interface{}{"server_port": 1}}))
+	fi, err := os.Stat(sentinel)
+	require.NoError(t, err)
+	got, _ := os.ReadFile(sentinel)
+	assert.Equal(t, `{"sentinel":true}`, string(got))
+	assert.True(t, fi.ModTime().Equal(old), "mtime untouched")
+}
+
+// OBF-5: on a key clash the EXISTING (finalize) value wins over the template
+// content, also for a clashing "config" key.
+func TestOBF5_ExistingValueWinsOnClash(t *testing.T) {
+	s := newTemplateTestService(t)
+	require.NoError(t, os.MkdirAll(s.configPath, 0o755))
+	p := filepath.Join(s.configPath, "c.json")
+	require.NoError(t, os.WriteFile(p, []byte(`{"config":{"k":"existing"}}`), 0o644))
+	require.NoError(t, s.createConfigurationFile(map[string]interface{}{"file_path": "c.json"},
+		&models.WizardSession{Configuration: map[string]interface{}{"k": "template", "extra": 1}}))
+	got := readWrittenConfig(t, p)
+	assert.Equal(t, "existing", got["k"], "existing value wins")
+	assert.Equal(t, float64(1), got["extra"], "new keys merge in")
+}
+
+// OBF-1: a failing restore must be surfaced, never discarded.
+func TestOBF1_RestoreWriteErrorIsSurfaced(t *testing.T) {
+	s := newTemplateTestService(t)
+	dir := t.TempDir()
+	f := filepath.Join(dir, "config.json")
+	require.NoError(t, os.WriteFile(f, []byte("new"), 0o400))
+	t.Cleanup(func() { _ = os.Chmod(f, 0o600) })
+	if err := os.WriteFile(f, []byte("probe"), 0o400); err == nil {
+		t.Skip("file writable despite mode 0400 (running as root?)")
+	}
+	err := s.rollbackConfig(f, []byte("old"), 0o400, true)
+	require.Error(t, err, "restore of a non-writable file must surface its error")
+	assert.Contains(t, err.Error(), "restore")
+}
+
+// F1: an existing file whose content is JSON `null` is not an object: refuse.
+func TestOBF_FU_ExistingNullFileIsNotClobbered(t *testing.T) {
+	s := newTemplateTestService(t)
+	require.NoError(t, os.MkdirAll(s.configPath, 0o755))
+	p := filepath.Join(s.configPath, "null.json")
+	require.NoError(t, os.WriteFile(p, []byte("null"), 0o644))
+	require.Error(t, s.createConfigurationFile(map[string]interface{}{"file_path": "null.json"},
+		&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}))
+	got, _ := os.ReadFile(p)
+	assert.Equal(t, "null", string(got))
+}
+
+// F2: an existing but unreadable file is refused, not overwritten.
+func TestOBF_FU_ExistingUnreadableFileIsNotClobbered(t *testing.T) {
+	s := newTemplateTestService(t)
+	require.NoError(t, os.MkdirAll(s.configPath, 0o755))
+	p := filepath.Join(s.configPath, "u.json")
+	require.NoError(t, os.WriteFile(p, []byte(`{"a":1}`), 0o200))
+	t.Cleanup(func() { _ = os.Chmod(p, 0o600) })
+	if _, err := os.ReadFile(p); err == nil {
+		t.Skip("file readable despite mode 0200 (running as root?)")
+	}
+	require.Error(t, s.createConfigurationFile(map[string]interface{}{"file_path": "u.json"},
+		&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}))
+	require.NoError(t, os.Chmod(p, 0o600))
+	got, _ := os.ReadFile(p)
+	assert.Equal(t, `{"a":1}`, string(got))
+}
+
+// F3: positive control: a name that merely starts with ".." is not an escape.
+func TestOBF_FU_DotDotPrefixedNameIsAllowed(t *testing.T) {
+	s := newTemplateTestService(t)
+	require.NoError(t, s.createConfigurationFile(map[string]interface{}{"file_path": "..foo/ok.json"},
+		&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}))
+	_, err := os.Stat(filepath.Join(s.configPath, "..foo", "ok.json"))
+	assert.NoError(t, err)
+}
+
+// F4: a symlink inside configPath that points outside must not be followed.
+func TestOBF_FU_SymlinkInsideConfigPathCannotEscape(t *testing.T) {
+	s := newTemplateTestService(t)
+	require.NoError(t, os.MkdirAll(s.configPath, 0o755))
+	outside := t.TempDir()
+	require.NoError(t, os.Symlink(outside, filepath.Join(s.configPath, "link")))
+	sess := &models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}
+	require.Error(t, s.createConfigurationFile(map[string]interface{}{"file_path": "link/escape.json"}, sess))
+	require.Error(t, s.createConfigurationFile(map[string]interface{}{"file_path": "link/newdir/escape.json"}, sess))
+	// a file symlink pointing outside is refused too
+	victim := filepath.Join(outside, "victim.json")
+	require.NoError(t, os.WriteFile(victim, []byte(`{"v":1}`), 0o644))
+	require.NoError(t, os.Symlink(victim, filepath.Join(s.configPath, "f.json")))
+	require.Error(t, s.createConfigurationFile(map[string]interface{}{"file_path": "f.json"}, sess))
+	entries, _ := os.ReadDir(outside)
+	assert.Len(t, entries, 1, "nothing created outside configPath")
+	got, _ := os.ReadFile(victim)
+	assert.Equal(t, `{"v":1}`, string(got))
+	// control: a symlink that stays inside is fine
+	require.NoError(t, os.MkdirAll(filepath.Join(s.configPath, "real"), 0o755))
+	require.NoError(t, os.Symlink(filepath.Join(s.configPath, "real"), filepath.Join(s.configPath, "inlink")))
+	require.NoError(t, s.createConfigurationFile(map[string]interface{}{"file_path": "inlink/ok.json"}, sess))
+}
+
+// F5: a non-object existing "config" value is refused, not silently replaced.
+func TestOBF_FU_NonObjectExistingConfigValueRefused(t *testing.T) {
+	s := newTemplateTestService(t)
+	require.NoError(t, os.MkdirAll(s.configPath, 0o755))
+	for i, content := range []string{`{"config":null}`, `{"config":"x"}`, `{"config":[1]}`} {
+		p := filepath.Join(s.configPath, "nc.json")
+		require.NoError(t, os.WriteFile(p, []byte(content), 0o644))
+		require.Error(t, s.createConfigurationFile(map[string]interface{}{"file_path": "nc.json"},
+			&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}), "case %d", i)
+		got, _ := os.ReadFile(p)
+		assert.Equal(t, content, string(got))
+	}
+}
+
+// F7: the writability probes never touch an existing test.tmp (file or symlink)
+// and leave no probe file behind.
+func TestOBF_FU_ProbesDoNotTouchExistingTestTmp(t *testing.T) {
+	s := newTemplateTestService(t)
+	dir := t.TempDir()
+	victim := filepath.Join(t.TempDir(), "victim")
+	require.NoError(t, os.WriteFile(victim, []byte("keep"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "test.tmp"), []byte("mine"), 0o644))
+	symDir := t.TempDir()
+	require.NoError(t, os.Symlink(victim, filepath.Join(symDir, "test.tmp"))) // real symlink named test.tmp
+	require.NoError(t, s.testSQLiteConnection(filepath.Join(dir, "db.sqlite")))
+	require.NoError(t, s.testMediaStorage(map[string]interface{}{"storage_type": "local", "media_path": dir}))
+	got, err := os.ReadFile(filepath.Join(dir, "test.tmp"))
+	require.NoError(t, err, "pre-existing test.tmp survives")
+	assert.Equal(t, "mine", string(got))
+	v, _ := os.ReadFile(victim)
+	assert.Equal(t, "keep", string(v))
+	entries, _ := os.ReadDir(dir)
+	assert.Len(t, entries, 1, "no probe file left behind")
+	// the symlink named test.tmp, in its own directory, is untouched by both probes
+	require.NoError(t, s.testSQLiteConnection(filepath.Join(symDir, "db.sqlite")))
+	require.NoError(t, s.testMediaStorage(map[string]interface{}{"storage_type": "local", "media_path": symDir}))
+	fi, err := os.Lstat(filepath.Join(symDir, "test.tmp"))
+	require.NoError(t, err)
+	assert.NotZero(t, fi.Mode()&os.ModeSymlink, "test.tmp is still a symlink")
+	v, _ = os.ReadFile(victim)
+	assert.Equal(t, "keep", string(v), "victim behind the symlink untouched")
+	entries, _ = os.ReadDir(symDir)
+	assert.Len(t, entries, 1, "no probe file left behind (symlink dir)")
+}
+
+// Probe error paths: an unwritable directory is reported, not swallowed.
+func TestOBF_FU_ProbesReportUnwritableDirectory(t *testing.T) {
+	s := newTemplateTestService(t)
+	dir := t.TempDir()
+	require.NoError(t, os.Chmod(dir, 0o500))
+	t.Cleanup(func() { _ = os.Chmod(dir, 0o700) })
+	if f, err := os.CreateTemp(dir, "x"); err == nil {
+		f.Close()
+		t.Skip("directory writable despite mode 0500 (running as root?)")
+	}
+	assert.Error(t, s.testSQLiteConnection(filepath.Join(dir, "db.sqlite")))
+	assert.Error(t, s.testMediaStorage(map[string]interface{}{"storage_type": "local", "media_path": dir}))
+}
+
+// Symlink class table (F4 round 3): every shape of link under configPath.
+func TestOBF_FU_SymlinkShapesTable(t *testing.T) {
+	sess := func() *models.WizardSession {
+		return &models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}
+	}
+	type tc struct {
+		name    string
+		setup   func(t *testing.T, cfg, outside string) string // returns file_path
+		wantErr bool
+	}
+	cases := []tc{
+		{"leaf file symlink outside (existing target)", func(t *testing.T, cfg, out string) string {
+			require.NoError(t, os.WriteFile(filepath.Join(out, "t.json"), []byte(`{}`), 0o644))
+			require.NoError(t, os.Symlink(filepath.Join(out, "t.json"), filepath.Join(cfg, "l.json")))
+			return "l.json"
+		}, true},
+		{"leaf DANGLING symlink outside", func(t *testing.T, cfg, out string) string {
+			require.NoError(t, os.Symlink(filepath.Join(out, "planted.json"), filepath.Join(cfg, "d.json")))
+			return "d.json"
+		}, true},
+		{"leaf DANGLING symlink inside", func(t *testing.T, cfg, out string) string {
+			require.NoError(t, os.Symlink(filepath.Join(cfg, "nowhere.json"), filepath.Join(cfg, "d.json")))
+			return "d.json"
+		}, true},
+		{"dangling intermediate dir link", func(t *testing.T, cfg, out string) string {
+			require.NoError(t, os.Symlink(filepath.Join(out, "nodir"), filepath.Join(cfg, "dd")))
+			return "dd/x.json"
+		}, true},
+		{"intermediate dir symlink outside", func(t *testing.T, cfg, out string) string {
+			require.NoError(t, os.Symlink(out, filepath.Join(cfg, "dl")))
+			return "dl/x.json"
+		}, true},
+		{"link loop", func(t *testing.T, cfg, out string) string {
+			require.NoError(t, os.Symlink(filepath.Join(cfg, "b"), filepath.Join(cfg, "a")))
+			require.NoError(t, os.Symlink(filepath.Join(cfg, "a"), filepath.Join(cfg, "b")))
+			return "a/x.json"
+		}, true},
+		{"chain of 2 links ending outside", func(t *testing.T, cfg, out string) string {
+			require.NoError(t, os.Symlink(out, filepath.Join(cfg, "c2")))
+			require.NoError(t, os.Symlink(filepath.Join(cfg, "c2"), filepath.Join(cfg, "c1")))
+			return "c1/x.json"
+		}, true},
+		{"relative-target link escaping", func(t *testing.T, cfg, out string) string {
+			rel, err := filepath.Rel(cfg, out)
+			require.NoError(t, err)
+			require.NoError(t, os.Symlink(rel, filepath.Join(cfg, "rl")))
+			return "rl/x.json"
+		}, true},
+		{"relative dangling leaf escaping", func(t *testing.T, cfg, out string) string {
+			rel, err := filepath.Rel(cfg, filepath.Join(out, "p.json"))
+			require.NoError(t, err)
+			require.NoError(t, os.Symlink(rel, filepath.Join(cfg, "rd.json")))
+			return "rd.json"
+		}, true},
+		{"link to config dir itself (inside)", func(t *testing.T, cfg, out string) string {
+			require.NoError(t, os.Symlink(cfg, filepath.Join(cfg, "self")))
+			return "self/x.json"
+		}, false},
+		{"link inside pointing inside", func(t *testing.T, cfg, out string) string {
+			require.NoError(t, os.MkdirAll(filepath.Join(cfg, "real"), 0o755))
+			require.NoError(t, os.Symlink(filepath.Join(cfg, "real"), filepath.Join(cfg, "in")))
+			return "in/x.json"
+		}, false},
+		{"leaf file symlink inside existing", func(t *testing.T, cfg, out string) string {
+			require.NoError(t, os.WriteFile(filepath.Join(cfg, "real.json"), []byte(`{}`), 0o644))
+			require.NoError(t, os.Symlink(filepath.Join(cfg, "real.json"), filepath.Join(cfg, "li.json")))
+			return "li.json"
+		}, false},
+		{"no links at all", func(t *testing.T, cfg, out string) string { return "plain/x.json" }, false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			s := newTemplateTestService(t)
+			outside := t.TempDir()
+			fp := c.setup(t, s.configPath, outside)
+			before, _ := os.ReadDir(outside)
+			err := s.createConfigurationFile(map[string]interface{}{"file_path": fp}, sess())
+			after, _ := os.ReadDir(outside)
+			if c.wantErr {
+				require.Error(t, err)
+				assert.Equal(t, len(before), len(after), "nothing created outside configPath")
+				for _, e := range after {
+					assert.NotEqual(t, "planted.json", e.Name())
+					assert.NotEqual(t, "x.json", e.Name())
+					assert.NotEqual(t, "p.json", e.Name())
+				}
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+// Reviewer probe (round 2), adopted: relative write through a symlinked CONFIG_PATH succeeds
+// and lands in the real directory.
+func TestOBF_FU_SymlinkedConfigPathRelativeWrite(t *testing.T) {
+	s := newTemplateTestService(t)
+	real := t.TempDir()
+	link := filepath.Join(t.TempDir(), "cfglink")
+	require.NoError(t, os.Symlink(real, link))
+	s.configPath = link
+	require.NoError(t, s.createConfigurationFile(map[string]interface{}{"file_path": "x.json"},
+		&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}))
+	_, err := os.Stat(filepath.Join(real, "x.json"))
+	assert.NoError(t, err, "written into the real directory behind the link")
+}
+
+// Symlinked CONFIG_PATH plus an in-config link that points into the REAL
+// directory: allowed (resolved against the resolved base, not the link name).
+func TestOBF_FU_SymlinkedConfigPathWithInternalLink(t *testing.T) {
+	s := newTemplateTestService(t)
+	real := t.TempDir()
+	require.NoError(t, os.MkdirAll(filepath.Join(real, "sub"), 0o755))
+	link := filepath.Join(t.TempDir(), "cfglink")
+	require.NoError(t, os.Symlink(real, link))
+	require.NoError(t, os.Symlink(filepath.Join(real, "sub"), filepath.Join(real, "in")))
+	s.configPath = link
+	require.NoError(t, s.createConfigurationFile(map[string]interface{}{"file_path": "in/x.json"},
+		&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}))
+	_, err := os.Stat(filepath.Join(real, "sub", "x.json"))
+	assert.NoError(t, err)
 }

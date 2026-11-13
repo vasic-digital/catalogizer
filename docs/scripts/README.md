@@ -87,6 +87,7 @@ One guide per script (constitution 11.4.18). Every page of this directory is lis
 | [check_doc_coverage.md](check_doc_coverage.md) | `scripts/docs/check_doc_coverage.py` |
 | [check_md_links.md](check_md_links.md) | `scripts/docs/check_md_links.py` |
 | [render_md_to_html.md](render_md_to_html.md) | `scripts/docs/render_md_to_html.sh` |
+| [render_md_to_pdf.md](render_md_to_pdf.md) | `scripts/docs/render_md_to_pdf.sh`, `scripts/docs/check_pdf_coverage.py`, `scripts/docs/check_twin_presence.py` |
 
 ## Related audit-remediation documents (linked here so they are reachable from the root README)
 
@@ -102,6 +103,7 @@ Descriptions are copied mechanically from each guide (first heading and first pr
 | Guide | Description |
 |---|---|
 | [anti_mess_sweep.md](anti_mess_sweep.md) | anti-mess sweep and invariant catalogue - Companion Guide - The level-triggered control plane of constitution 11.4.233 at project scale (docs/12 section 17, docs/16 section 13.3): it RE-DERIVES the actual persistent state and... |
+| [api_contract_live.md](api_contract_live.md) | api_contract_live.sh - Live (constitution 11.4.289: no mocks, stubs or fixture servers) contract sweep of every operation in `docs/api/openapi.yaml` against a real `catalog-api` binary built from the tree. |
 | [appendix_token_check.md](appendix_token_check.md) | appendix_token_check.py - Companion Guide - The Spec Kit appendix (`.specify/memory/constitution-appendix.md`, Part 1) says every digest states every `CM-*` gate name and every |
 | [blocked_external.md](blocked_external.md) | blocked_external.sh - Companion Guide - Records the legs of the real-service stack that need an external credential or device: `available`, or `blocked-unavailable` with the reason and the variable NAMES... |
 | [build_in_container.md](build_in_container.md) | scripts/build_in_container.sh - Builds `catalog-api` (Go) inside a container (CLAUDE.md section 11.4.173: no bare-host builds). |
@@ -128,6 +130,7 @@ Descriptions are copied mechanically from each guide (first heading and first pr
 | [evidence-wrappers.md](evidence-wrappers.md) | wrap-go.sh, wrap-bash.sh, wrap-vitest.sh, wrap-gradle.sh, wrap-cargo.sh, evparse.py: runner wrappers - Companion Guide - `$EV` means `specs/001-full-project-audit-remediation/evidence`. |
 | [ftps_fixture.md](ftps_fixture.md) | ftps_fixture.sh - Companion Guide - Runs the integration tests of `submodules/filesystem/pkg/ftp` (`-tags integration`) against a **real pure-ftpd** that accepts clear-text FTP and explicit FTPS... |
 | [gen_env.md](gen_env.md) | gen_env.sh - Companion Guide - Writes the per-run credentials and random host ports of ONE compose project of the test-infrastructure stack (docs/16 section 10.4), so that no credential and no |
+| [gen_media_fixtures.md](gen_media_fixtures.md) | gen_media_fixtures.sh - `scripts/test-infra/gen_media_fixtures.sh` generates the deterministic media and document corpus used by the live validation matrix (playback, conversions, documents, subtitles). |
 | [generic_scanner.md](generic_scanner.md) | generic_scanner - Companion Guide (PA-03, WP-12) - One breadth-first scanner over the `filesystem.FileSystemClient` interface. It replaces the FTP, NFS and WebDAV scanner bodies that were empty (`return nil`), which let... |
 | [import.md](import.md) | import.sh (import_tickets.py) - Companion Guide - `$EV` in this guide means the evidence root `specs/001-full-project-audit-remediation/evidence` (repository-relative). |
 | [import_plan.md](import_plan.md) | import_plan.sh (import_plan.py) - Companion Guide - `$EV` in this guide means the evidence root `specs/001-full-project-audit-remediation/evidence` (repository-relative). |
@@ -189,6 +192,7 @@ Descriptions are copied mechanically from each guide (first heading and first pr
 | [test_race_detector.md](test_race_detector.md) | test_race_detector.sh - Companion Guide - The Go race detector must run inside the pinned IMG-GO container through `run_go.sh`, and a seeded data race must make the run FAIL while the fixed copy |
 | [test_runners_hardening.md](test_runners_hardening.md) | test_runners_hardening.sh - RED-first oracle for the defects found by the independent review of the resource envelope and the runner wrappers (one block per finding) |
 | [validate_banks.md](validate_banks.md) | validate_banks.py - Companion Guide - The bank validator of doc12 section 6.6: rules R-1..R-8 over the HelixQA bank files, run before any bank executes. R-1 every step has a machine assertion; R-2 no... |
+| [verify_live_evidence.md](verify_live_evidence.md) | verify_live_evidence.sh - LIVE-EVIDENCE verifier (`scripts/test-infra/verify_live_evidence.sh`, constitution 11.4.289(D)): decides from machine fields whether a record claiming `class: LIVE` really proves a real target. |
 
 ## Scripts without a guide yet (owed, constitution 11.4.18; WF7 F7-5)
 

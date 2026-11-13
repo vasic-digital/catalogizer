@@ -68,7 +68,7 @@ These variables are read by the Go backend via `os.Getenv()` calls in the source
 | Variable | Description | Default | Required | Source File |
 |----------|-------------|---------|----------|-------------|
 | `CATALOG_CONFIG_PATH` | Path to `config.json` file | `config.json` | No | `internal/config/config.go` |
-| `CONFIG_PATH` | Configuration file path (wizard service) | (empty) | No | `services/configuration_wizard_service.go` |
+| `CONFIG_PATH` | Configuration DIRECTORY of the wizard service (holds config.json, backups/, templates/) | `./config` | No | `services/configuration_wizard_service.go` |
 
 ### Path confinement and outbound destinations
 

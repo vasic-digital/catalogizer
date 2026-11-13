@@ -150,7 +150,7 @@ EOF
 
 # Set environment variables
 export CATALOGIZER_ENV=development
-export CATALOGIZER_CONFIG_PATH=config/dev.json
+export CATALOG_CONFIG_PATH=config/dev.json
 export CATALOGIZER_LOG_LEVEL=debug
 ```
 

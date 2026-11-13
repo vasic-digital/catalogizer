@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.11" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Device-leg emulation plan (Catalogizer + Containers
+submodule)</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+<h1
+id="device-leg-emulation-plan-catalogizer--containers-submodule">Device-leg
+emulation plan (Catalogizer + Containers submodule)</h1>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Revision</td>
+<td>1 (draft, research + plan only)</td>
+</tr>
+<tr>
+<td>Created</td>
+<td>2026-11-12</td>
+</tr>
+<tr>
+<td>Proposed repo path</td>
+<td><code>docs/research/device_emulation_plan_20261112.md</code> (NOT
+written to the main checkout)</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>PROPOSAL, needs independent review (§11.4.142 / §11.4.209) and
+operator sight</td>
+</tr>
+<tr>
+<td>Operator decision cited</td>
+<td>2026-11-12 (relayed): no TV, phone or second machine connected; fan
+out emulators of all kinds for device legs via the Containers submodule
+and extend it upstream (§11.4.74, §11.4.76, §11.4.161)</td>
+</tr>
+<tr>
+<td>Author</td>
+<td>research subagent (Opus); no code, no image pull, no emulator
+started</td>
+</tr>
+</tbody>
+</table>
+<h2 id="table-of-contents">Table of contents</h2>
+<ol type="1">
+<li>Measured host facts</li>
+<li>Inventory: what the Containers submodule already does</li>
+<li>Catalogizer device legs: what emulation can and cannot prove</li>
+<li>Gap list for the Containers submodule (API, tests, size,
+host-safety)</li>
+<li>Ordered work plan (Sonnet authors, Opus review)</li>
+<li>Findings outside scope (pin hygiene) and UNCONFIRMED list</li>
+</ol>
+<p>All <code>file:line</code> references are into
+<code>constitution/submodules/containers</code> at commit
+<code>5ea870a</code> (equal to <code>origin/main</code>:
+<code>git ls-remote origin main</code> =
+<code>5ea870a5837097077abcf04caab29550dca2fa5f</code>, measured
+2026-11-12). The flat copy <code>submodules/containers</code> is at
+<code>22b4970</code>, an ancestor 9 commits behind
+(<code>git merge-base --is-ancestor</code> true,
+<code>git log 22b4970..5ea870a | wc -l</code> = 9). Upstream work starts
+from <code>5ea870a</code>.</p>
+<h2 id="1-measured-host-facts-2026-11-12-2348-cet-read-only-probes">1.
+Measured host facts (2026-11-12 ~23:48 CET, read-only probes)</h2>
+<table>
+<thead>
+<tr>
+<th>Fact</th>
+<th>Value</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU</td>
+<td>AMD Ryzen 7 2700X, 16 threads, <code>svm</code> present (16
+hits)</td>
+<td><code>/proc/cpuinfo</code>, <code>nproc</code></td>
+</tr>
+<tr>
+<td>KVM</td>
+<td><code>/dev/kvm</code> <code>crw-rw----+ root kvm</code>, ACL
+<code>user:milosvasic:rw-</code>; readable and writable by this user;
+module <code>kvm_amd</code>, nested = 1</td>
+<td><code>ls -l</code>, <code>getfacl</code>, <code>test -r/-w</code>,
+<code>/sys/module/kvm_amd/parameters/nested</code></td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>30 GiB total, ~17 GiB available; memory PSI some avg10 = 1.08</td>
+<td><code>free -g</code>, <code>/proc/pressure/memory</code></td>
+</tr>
+<tr>
+<td>Load</td>
+<td>26.4 / 26.7 / 25.4 on 16 threads</td>
+<td><code>uptime</code></td>
+</tr>
+<tr>
+<td>Disk</td>
+<td><code>/</code> 1.8T, 97% used, 58 GiB free</td>
+<td><code>df -h</code></td>
+</tr>
+<tr>
+<td>Process limit</td>
+<td><code>ulimit -u</code> = 123694</td>
+<td></td>
+</tr>
+<tr>
+<td>Rootless podman</td>
+<td>5.7.0, rootless = true, backend netavark, pasta present; 45
+containers running; rootless bridge networks exist
+(<code>podman network ls</code>)</td>
+<td><code>podman info</code>, <code>podman ps -q | wc -l</code></td>
+</tr>
+<tr>
+<td><code>/dev/net/tun</code></td>
+<td>present</td>
+<td></td>
+</tr>
+<tr>
+<td>Binder (redroid)</td>
+<td><code>/dev/binder*</code> and binderfs ABSENT; <code>binder</code>
+not in <code>/proc/filesystems</code></td>
+<td><code>ls</code>, <code>grep</code></td>
+</tr>
+<tr>
+<td>Host Android SDK</td>
+<td><code>~/Android/Sdk</code> with emulator 37.1.11,
+<code>system-images;android-34;android-tv;x86</code> (8.2 GiB, TagId
+android-tv, rev 3) and
+<code>system-images;android-34;default;x86_64</code> (1.7 GiB);
+<code>~/.android/avd</code> empty</td>
+<td><code>ls</code>, <code>source.properties</code>,
+<code>du -sh</code></td>
+</tr>
+<tr>
+<td>Host tools</td>
+<td><code>adb</code> (SDK), <code>scrcpy</code>
+(<code>/usr/bin/scrcpy</code>), <code>smbd</code>
+(<code>/sbin/smbd</code>), <code>rclone</code> present;
+<code>qemu-system-x86_64</code>, <code>qemu-img</code>,
+<code>swtpm</code>, <code>Xvfb</code>, <code>xvfb-run</code>,
+<code>weston</code> ABSENT</td>
+<td><code>command -v</code></td>
+</tr>
+<tr>
+<td>Local images</td>
+<td>53 <code>localhost/*</code> images; ZERO matching
+<code>tauri|android</code> (control: same pipeline lists
+<code>localhost/catqa3-*</code>); <code>dxflrs/garage:v1.0.1</code>,
+<code>atmoz/sftp</code>, <code>alpine:3.20</code>,
+<code>debian:bookworm-slim</code>, <code>debian:trixie-slim</code>
+present</td>
+<td><code>podman images</code></td>
+</tr>
+</tbody>
+</table>
+<p>Consequences: KVM works rootless for this user (named-user ACL, which
+is exactly the case <code>pkg/emulator/containerized.go:78-95</code>
+handles with <code>--userns=keep-id</code>). CPU is the scarce resource
+(load 26 on 16 threads); RAM allows at most two Android AVDs at a time
+inside the §12.6 60% ceiling (18 GiB) with the other sessions'
+footprint. Disk (58 GiB) rules out Windows images and new multi-GB
+emulator images until the operator prunes. The Tauri QA image
+<code>catalogizer-tauri:qa</code> is no longer on the host and must be
+rebuilt before any Tauri live run.</p>
+<h2 id="2-inventory-what-the-containers-submodule-already-does">2.
+Inventory: what the Containers submodule already does</h2>
+<table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>Evidence</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Android emulator orchestration, two runners (host-direct,
+containerized)</td>
+<td><code>pkg/emulator/android.go:151</code>
+(<code>AndroidEmulator</code>),
+<code>pkg/emulator/containerized.go:286</code>
+(<code>Containerized</code>), <code>:427</code> Boot, <code>:540</code>
+WaitForBoot, <code>:791</code> Install, <code>:815</code>
+RunInstrumentation, <code>:883</code> Teardown</td>
+<td><code>Emulator</code> interface
+<code>pkg/emulator/types.go:345</code></td>
+</tr>
+<tr>
+<td>Runner policy per OS</td>
+<td><code>pkg/emulator/accel.go:126</code>
+<code>AccelProfileForOS</code>, <code>:184</code>
+<code>ResolveRunner</code>, <code>:219</code>
+<code>GateEligibleForOS</code> (gate-eligible only when runner == OS
+profile runner)</td>
+<td>On Linux the gate-eligible runner is <code>containerized</code>; the
+host-direct run Catalogizer did in
+<code>docs/qa/android-boot-20261105</code> is NOT gate-eligible by this
+rule</td>
+</tr>
+<tr>
+<td>Form factor field incl. <code>tv</code></td>
+<td><code>pkg/emulator/types.go:31-44</code>
+(<code>AVD.FormFactor</code> "phone", "tablet", "tv", ...)</td>
+<td>Metadata only: no TV-specific code path (grep
+<code>"tv"|leanback|tv_1080p</code> in non-test emulator code: 0 hits
+apart from the comment)</td>
+</tr>
+<tr>
+<td>System-image cache incl. <code>android-tv</code> URL parsing</td>
+<td><code>pkg/emulator/android.go:274</code>
+<code>ensureSystemImageViaCache</code>, <code>:344</code>
+<code>parseSystemImageURL</code> (example
+<code>sys-img/android-tv/x86-30_r4.zip</code>, <code>:337</code>)</td>
+<td></td>
+</tr>
+<tr>
+<td>KVM passthrough + rootless KVM fix</td>
+<td><code>pkg/emulator/containerized.go:37</code>
+<code>kvmAvailable</code> (<code>os.Stat</code> only),
+<code>:93-102</code> <code>--userns=keep-id</code> +
+<code>--device /dev/kvm</code></td>
+<td>Stat does not prove the device is openable;
+<code>pkg/vm/qemu.go:163-164</code> opens <code>/dev/kvm</code> O_RDWR
+instead (the stronger check)</td>
+</tr>
+<tr>
+<td>Argv injection guard</td>
+<td><code>pkg/emulator/containerized.go:111-126</code> (<code>--</code>
+before image)</td>
+<td></td>
+</tr>
+<tr>
+<td>ADB hygiene, phantom TCP, boot diagnostics</td>
+<td><code>pkg/emulator/adb_hygiene.go:60</code>
+<code>ParseADBDevicesLine</code>, <code>:134</code>
+<code>ResetADBHygiene</code>, <code>:223</code>
+<code>CaptureBootDiagnostic</code></td>
+<td></td>
+</tr>
+<tr>
+<td>Zombie reaping by real cmdline</td>
+<td><code>pkg/emulator/cleanup.go:75</code> <code>Cleanup</code>,
+<code>:234</code> <code>KillByPort</code>,
+<code>pkg/emulator/cleanup_os.go:42-64</code> (<code>/proc</code>
+walker)</td>
+<td>Matches §11.4.196(D) discipline</td>
+</tr>
+<tr>
+<td>Network shaping (edge..ethernet)</td>
+<td><code>pkg/emulator/network.go:34</code>, <code>:93</code>
+<code>applyNetworkConditions</code>; <code>pkg/vm/network.go</code>
+(duplicate table)</td>
+<td>Emulator-console shaping only, not a second network host</td>
+</tr>
+<tr>
+<td>Screenshot</td>
+<td><code>pkg/emulator/screenshot.go:24</code>
+<code>CaptureScreenshot</code>; <code>pkg/vm/screenshot.go</code></td>
+<td>No screen recording: <code>screenrecord</code> 0 files,
+<code>scrcpy</code> 0 files (control <code>screencap</code> = 3
+files)</td>
+</tr>
+<tr>
+<td>Release cold-start canary</td>
+<td><code>pkg/emulator/canary.go:139</code> <code>RunCanary</code>
+(activity RESUMED + logcat FATAL-free),
+<code>cmd/emulator-canary</code></td>
+<td>Launch via <code>am start</code>; no leanback launcher intent</td>
+</tr>
+<tr>
+<td>Matrix runner + attestation</td>
+<td><code>pkg/emulator/matrix.go:525</code> <code>RunMatrix</code>,
+<code>:622</code> <code>writeAttestation</code>,
+<code>cmd/emulator-matrix</code></td>
+<td></td>
+</tr>
+<tr>
+<td>Baked emulator image</td>
+<td><code>pkg/emulator/Containerfile</code> (ARGs
+<code>API_LEVEL</code>, <code>ABI</code>, <code>TARGET_TYPE</code>,
+lines 36-39); <code>images/android-test/Dockerfile</code> (google_apis
+x86_64 API 28-36) +
+<code>images/android-test/avds/config_api*.ini</code>
+(<code>tag.id=google_apis</code>)</td>
+<td>No TV AVD config shipped; image base
+<code>ghcr.io/vasic-digital/android-emulator-base:latest</code> (mutable
+tag) not present locally</td>
+</tr>
+<tr>
+<td>QEMU Linux VMs (alpine/debian/fedora, x86_64/aarch64/riscv64)</td>
+<td><code>pkg/vm/qemu.go:189</code> Boot (<code>-m 2048 -smp 2</code>,
+user-net with SSH hostfwd <code>:201</code>, <code>-snapshot</code> on
+cold boot <code>:221</code>), <code>pkg/vm/types.go:25</code>
+<code>VMTarget</code>, <code>pkg/vm/clients.go</code> (real SSH/QMP),
+<code>cmd/vm-matrix</code></td>
+<td>Launches <code>qemu-system-*</code> ON THE HOST
+(<code>pkg/vm/qemu.go:173</code>); the host has no QEMU, so this path
+cannot run here today</td>
+</tr>
+<tr>
+<td>Image cache with sha256 manifest</td>
+<td><code>pkg/cache/manifest.go:28</code> <code>ImageEntry</code>
+(sha256 + size REQUIRED)</td>
+<td></td>
+</tr>
+<tr>
+<td>Cuttlefish</td>
+<td><code>pkg/cuttlefish/types.go:132-176</code>: requires ROOTFUL +
+<code>--privileged</code> + <code>--network host</code></td>
+<td>Excluded by the operator constraints (rootless, no privileged)</td>
+</tr>
+<tr>
+<td>macOS/iOS</td>
+<td><code>pkg/vm/macos/macos.go:1-29</code> (Tart, Apple-Silicon macOS
+host only), <code>pkg/vm/ios</code>, <code>pkg/applesim</code></td>
+<td>Not usable on this Linux host</td>
+</tr>
+<tr>
+<td>Genymotion</td>
+<td><code>pkg/genymotion/genymotion.go</code></td>
+<td>Commercial/cloud; not considered</td>
+</tr>
+<tr>
+<td>Windows</td>
+<td><code>pkg/crossbuild/windows_wine.go</code> +
+<code>windows_wine.Containerfile</code> (Wine + JDK + Gradle)</td>
+<td>BUILD backend only; no Windows runtime/VM target (grep
+<code>windows</code> in <code>pkg/vm/*.go</code> non-test: 0 hits)</td>
+</tr>
+<tr>
+<td>Generic run primitive</td>
+<td><code>pkg/runtime/run.go:77-88</code> <code>runOptions</code> (Name,
+Entrypoint, WorkDir, User, Network, Env, Volumes, ExtraArgs), With*
+options <code>:119-187</code></td>
+<td>No typed memory / cpus / pids / device / userns / publish / label /
+digest options; this is Catalogizer's recorded deviation (b) in
+<code>scripts/containers/run_pinned.sh:44-45</code></td>
+</tr>
+<tr>
+<td>Remote distribution, SSH tunnels, overlay</td>
+<td><code>pkg/network/overlay.go:14-173</code>
+(<code>TunnelOverlay</code> over SSH),
+<code>pkg/network/tunnel.go</code>, <code>pkg/volume/nfs.go</code>,
+<code>sshfs.go</code>, <code>rsync.go</code>,
+<code>pkg/remote</code></td>
+<td>Overlay is SSH-tunnel based (needs a real remote host); no rootless
+virtual-LAN-peer primitive</td>
+</tr>
+<tr>
+<td>Protocol-server fixtures (SMB/FTP/WebDAV/NFS/S3)</td>
+<td>none:
+<code>grep -rli 'samba|smbd|webdav|vsftpd|ftpd|minio|garage'</code> over
+Go/Dockerfile/yml found only <code>pkg/policy/policy.go</code> (an
+unrelated mention)</td>
+<td>Catalogizer keeps its own <code>docs/qa/test-servers/up.sh</code>
+(<code>cattsrv-*</code>)</td>
+</tr>
+<tr>
+<td>Desktop GUI runtime (Xvfb/VNC/WebKit)</td>
+<td>none in <code>pkg</code>/<code>cmd</code>/<code>images</code> (only
+<code>xvfb</code> as a build dep in
+<code>pkg/crossbuild/windows_wine.Containerfile:41</code>)</td>
+<td>Catalogizer keeps its own <code>scripts/tauri/run-qa.sh</code> (Xvfb
++ openbox + x11vnc + noVNC,
+<code>--memory=2G --cpus=2 --pids-limit=1024</code>)</td>
+</tr>
+<tr>
+<td>Resource limits on emulator containers</td>
+<td>none: <code>grep -rni 'memory|cpus'</code> over
+<code>pkg/emulator</code>, <code>pkg/cuttlefish</code>,
+<code>pkg/vm</code> non-test = 0 hits (control <code>kvm</code> = 33
+hits in <code>containerized.go</code>)</td>
+<td>Host-safety gap (§12.6)</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="3-catalogizer-device-legs-what-emulation-can-and-cannot-prove">3.
+Catalogizer device legs: what emulation can and cannot prove</h2>
+<p>Sources: <code>docs/CONTINUATION.md</code> Rev 20 (lines 16, 26-27,
+37, 67, 87-91, 98-100) and <code>docs/FOLLOW_UPS_NEXT_PHASE.md</code>
+(lines 1503-1520 Android/Tauri, 1425/1578/1614 second LAN host,
+605/1245/1384 Synology, 1617-1699 Tauri wizard).</p>
+<p>Rule applied. Under §11.4.289 an emulator running the REAL artifact
+(the real APK, the real Tauri binary) against the REAL API is LIVE-class
+evidence for claims scoped to the emulated target; it is not a test
+double. Two limits bind every row below:</p>
+<ul>
+<li>The record must carry the §11.4.289(D) fields: artifact sha256,
+AVD/system-image identity (<code>ro.build.fingerprint</code>,
+system-image <code>source.properties</code>), emulator version,
+container image digest, endpoint actually reached.</li>
+<li>§11.4.298(B), verbatim: "An emulator, a simulator, a host-only run,
+a replayed or copied record, or a run on hardware of another product is
+never this run." So no emulated run makes a product
+<code>RELEASABLE</code> under the release gate; Android, Android TV and
+any hardware-bound product stays <code>BLOCKED-NO-HARDWARE</code> for
+deploy/tag purposes until real hardware is connected. Emulation raises
+PROVISIONAL items to VERIFIED only for the emulated-target claim, and
+the item text must say which target.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Leg (item ids)</th>
+<th>Emulated target</th>
+<th>Claim an emulated run CAN support</th>
+<th>Claim it CANNOT support (stays SKIP
+<code>hardware_not_present</code> / open)</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tauri desktop, Linux (CAT-TAURI-NATIVE-1, TAURI-FU-7)</td>
+<td>real Linux binary in WebKitGTK under Xvfb in a rootless
+container</td>
+<td>first-run URL dialog, confirm-on-URL-change, login, SSRF refusal,
+close-X, all driven see-before-type (§11.4.193) with OCR/screenshots,
+N&gt;=3</td>
+<td>GPU compositing (WEBKIT compositing disabled), Wayland, HiDPI, real
+desktop environments, tray/notifications on real DEs</td>
+<td>COVERABLE (needs image rebuild)</td>
+</tr>
+<tr>
+<td>Tauri installer wizard (CAT-TAURI-INSTALLER-1, TAURI-R1-FU-7)</td>
+<td>same</td>
+<td>GREEN run of the Save Configuration sequence on the rebuilt wizard,
+same target as the RED</td>
+<td>install onto a real user session, OS integration (menu entries, file
+associations)</td>
+<td>COVERABLE</td>
+</tr>
+<tr>
+<td>Tauri Windows build</td>
+<td>QEMU Windows guest (not implemented)</td>
+<td>only with an operator-supplied, licensed Windows image recorded as
+DATA; WebView2 runtime behaviour</td>
+<td>anything without that image; Wine does NOT count (WebView2 under
+Wine UNCONFIRMED, and Wine is not Windows)</td>
+<td>SKIP until operator provides image + disk; reason
+<code>topology_unsupported</code></td>
+</tr>
+<tr>
+<td>Tauri macOS build</td>
+<td>none on this host</td>
+<td>none</td>
+<td>everything: macOS on non-Apple hardware is not permitted by Apple's
+licence (operator to confirm the reading); <code>pkg/vm/macos</code>
+needs an Apple-Silicon macOS host</td>
+<td>SKIP (structurally impossible on this host)</td>
+</tr>
+<tr>
+<td>Android phone (CAT-ANDROID-LOGIN-1, AND-FU-3/4/6)</td>
+<td>AVD <code>pixel_6</code>, API 34 <code>default;x86_64</code> (image
+on host), KVM</td>
+<td>install, launch, server-URL entry, real qa_admin login via
+secret-safe input, browse/search/play against the real API, AND-FU-6
+"Connected" on unreachable server reproduction</td>
+<td>ARM-only native code paths, real touch latency, radios/Wi-Fi
+roaming, battery, OEM skins, HW codecs, real performance figures,
+release gate</td>
+<td>COVERABLE for the emulated-target claim</td>
+</tr>
+<tr>
+<td>Android TV (AND-FU-2, TV player items)</td>
+<td>AVD <code>tv_1080p</code>, API 34 <code>android-tv;x86</code> (image
+on host, 8.2 GiB)</td>
+<td>leanback launch, D-pad navigation/focus, login, browse, playback
+with software decode</td>
+<td>HDMI/CEC, HW decode (HEVC/HDR/Dolby), real remote (IR/BT), TV OEM
+firmware, 4K output timing</td>
+<td>COVERABLE for the emulated-target claim</td>
+</tr>
+<tr>
+<td>Display access from a second machine (AND-FU-4)</td>
+<td>n/a</td>
+<td>none: needs a second machine by definition</td>
+<td>the SSH-tunnel + scrcpy path from another host</td>
+<td>SKIP <code>hardware_not_present</code></td>
+</tr>
+<tr>
+<td>"Anton" SMB second machine (CONTINUATION 87-91: "Anton.local IS this
+host") and bare-IP SMB</td>
+<td>rootless netavark bridge with a peer container (own netns, own IP)
+running a real Samba; optional containerized QEMU Linux guest for a
+second kernel</td>
+<td>client works against an SMB server at a different IP over a virtual
+L2 link (not loopback, not the API's own netns), bare-IP addressing,
+port 445 vs non-445, cut-recovery by stopping the peer, N&gt;=3</td>
+<td>a physical NIC, switch, router, MTU/Wi-Fi loss, a Windows SMB
+server, Synology's Samba build</td>
+<td>COVERABLE as "virtual LAN peer"; physical second-host claim stays
+SKIP</td>
+</tr>
+<tr>
+<td>NFS / FTP / FTPS / SFTP / WebDAV / S3 on a second host</td>
+<td>same peer pattern: userspace NFS (rclone/ganesha), vsftpd or
+pure-ftpd, atmoz/sftp, a WebDAV server, Garage (image on host)</td>
+<td>protocol client behaviour at a non-local IP</td>
+<td>kernel-NFS server behaviour (needs root), client-side NFS kernel
+mount (needs root; the earlier probe used sudo)</td>
+<td>COVERABLE for userspace servers; kernel-NFS SKIP</td>
+</tr>
+<tr>
+<td>TRUSTED_PROXIES / rate-limit from a second LAN host (STK3-FU-1,
+QA-MON-FU-4, TP-FU-3)</td>
+<td>peer container on a separate bridge sending through the nginx front
+door</td>
+<td>API sees a distinct client IP arriving over a veth/bridge path, XFF
+handling with a non-primary source</td>
+<td>"real remote NIC" (stays UNCONFIRMED, as the 2026-11-06 substitute
+run already states)</td>
+<td>PARTIAL, label precisely</td>
+</tr>
+<tr>
+<td>Synology SMB/FTP/NFS/WebDAV, idle-deadline, cut-recovery
+(CAT-SYN-LIVE-1, ST-NFS, LV3-2)</td>
+<td>none</td>
+<td>none: generic Samba/FTP fixtures prove nothing about the Synology
+firmware; DSM emulation (XPEnology-class) is not pursued (DSM licence is
+tied to Synology hardware; operator to confirm)</td>
+<td>all Synology claims</td>
+<td>SKIP <code>hardware_not_present</code> (drives OFF since
+2026-11-05)</td>
+</tr>
+<tr>
+<td>Real phone / real TV hardware</td>
+<td>none</td>
+<td>none</td>
+<td>every hardware claim and the §11.4.298 release gate</td>
+<td>SKIP <code>hardware_not_present</code></td>
+</tr>
+</tbody>
+</table>
+<p>Already proven once (do not re-claim): both debug APKs built in a
+rootless JDK 17 container and the phone and TV AVDs booted headless with
+KVM on the host (<code>docs/qa/android-boot-20261105/README.md</code>),
+via the host-direct runner and project-local commands, not via the
+Containers submodule.</p>
+<h2 id="4-gap-list-for-the-containers-submodule">4. Gap list for the
+Containers submodule</h2>
+<p>Each gap: proposed API, tests written first (RED captured on the
+current code, §11.4.224 / §11.4.292), paired mutants, size (non-test LOC
++ test LOC, estimate), host-safety notes. All new code is
+project-agnostic (§11.4.28): Catalogizer names, ports and IPs are
+consumer DATA.</p>
+<h3
+id="g1-typed-resource-and-device-options-in-the-run-primitive-pkgruntime">G1.
+Typed resource and device options in the run primitive
+(pkg/runtime)</h3>
+<ul>
+<li>API: <code>WithRunMemory(bytes)</code>,
+<code>WithRunMemorySwap(bytes)</code> (default = memory, i.e. no swap),
+<code>WithRunCPUs(float)</code>, <code>WithRunPidsLimit(n)</code>,
+<code>WithRunDevice(path)</code> (validated: must exist, must be in an
+allowlist the caller passes; <code>/dev/kvm</code> opened O_RDWR first),
+<code>WithRunUserns("keep-id")</code> (podman only; docker returns a
+typed error),
+<code>WithRunPublish(hostIP, hostPort, ctrPort, proto)</code> (hostIP
+REQUIRED, <code>0.0.0.0</code> refused unless
+<code>WithRunPublishAllInterfaces()</code> is explicit),
+<code>WithRunLabel(k,v)</code>, <code>WithRunImageDigest(ref)</code>
+(refuses a mutable tag when digest pinning is requested). Never
+<code>--privileged</code>, never <code>--network host</code>: both
+refused at the builder with a typed error.</li>
+<li>Tests first: arg-builder table tests (each option present/absent),
+refusal tests (privileged, network host, 0.0.0.0 publish, docker +
+userns), a podman-real test gated on podman presence that runs
+<code>alpine:3.20</code> (already on host) with <code>--memory</code>
+and reads <code>/sys/fs/cgroup/memory.max</code> inside to prove the
+limit is real.</li>
+<li>Mutants (&gt;=4): drop the memory flag; drop the <code>--</code>
+before image; allow <code>--privileged</code>; treat a tag as
+digest.</li>
+<li>Size: ~250 + ~400 LOC. Unblocks Catalogizer deviation (b)
+(<code>scripts/containers/run_pinned.sh:44</code>).</li>
+</ul>
+<h3
+id="g2-host-safety-admission--emulator-envelope-pkgemulator-shared-helper-in-pkgpolicy-or-new-pkghostbudget">G2.
+Host-safety admission + emulator envelope (pkg/emulator, shared helper
+in pkg/policy or new pkg/hostbudget)</h3>
+<ul>
+<li>API: <code>hostbudget.Admit(req Need) (Verdict, Evidence)</code>
+with <code>Need{MemBytes, CPUs, Pids, NeedsKVM}</code>; verdict closed
+set <code>fits | does_not_fit | undetermined</code> (mirrors §11.4.291
+vocabulary); inputs <code>/proc/meminfo</code> MemAvailable/MemTotal,
+<code>/proc/pressure/memory</code> and <code>/proc/pressure/cpu</code>,
+loadavg vs nproc, <code>ulimit -u</code>, <code>/dev/kvm</code> O_RDWR
+probe (read-only intent: open+close, no ioctl). Reserve and thresholds
+are consumer DATA; defaults = §12.6 60% ceiling,
+<code>MemAvailable - need &gt;= max(4 GiB, 15% MemTotal)</code>.
+<code>ContainerizedConfig</code> gains <code>Memory</code>,
+<code>CPUs</code>, <code>PidsLimit</code> (host-adaptive defaults;
+emulator default memory = AVD RAM + 1.5 GiB overhead, CPUs = min(3,
+0.25*nproc)); <code>Boot</code> refuses on <code>does_not_fit</code> or
+<code>undetermined</code> with a typed error and writes the evidence
+JSON. Replace <code>kvmAvailable</code> stat
+(<code>pkg/emulator/containerized.go:37</code>) with the O_RDWR probe
+from <code>pkg/vm/qemu.go:163</code>.</li>
+<li>Tests first: fake <code>/proc</code> fixtures (golden-good fits,
+golden-bad does_not_fit, unreadable PSI -&gt; undetermined, carrier:
+high load but low memory need is still judged by both axes); KVM probe
+with a temp char-device stand-in is not possible, so test the
+error-mapping seam plus one real probe on hosts with
+<code>/dev/kvm</code>.</li>
+<li>Mutants: stat instead of open; ignore PSI; treat undetermined as
+fits; drop <code>--memory</code> from run args.</li>
+<li>Size: ~300 + ~500 LOC.</li>
+</ul>
+<h3
+id="g3-host-sdk-mount-containerized-emulator-no-multi-gb-image-pull">G3.
+Host-SDK-mount containerized emulator (no multi-GB image pull)</h3>
+<ul>
+<li>Problem: the gate-eligible Linux runner needs an emulator image; the
+base <code>android-emulator-base:latest</code> is absent and disk is at
+97%. The host already has the SDK, emulator 37.1.11 and both API 34
+system images.</li>
+<li>API:
+<code>ContainerizedConfig.SDKMount{HostPath, ReadOnly: true}</code> and
+<code>AVDHome</code> (scratch dir, rw): run a slim image (Debian
+bookworm-slim, already on host, plus the emulator's runtime libs:
+libpulse0, libnss3, libxcomposite1, libxcursor1, libxi6, libxtst6,
+libasound2, socat) with the host SDK bind-mounted read-only at
+<code>/opt/android-sdk</code>, AVDs created by <code>avdmanager</code>
+inside the container into the scratch AVD home. New
+<code>images/android-emulator-slim/Containerfile</code>; image built
+locally (one ~150 MB layer, no SDK inside). Record the system-image
+<code>source.properties</code> and <code>ro.build.fingerprint</code> in
+<code>BootResult</code>.</li>
+<li>Tests first: arg-builder tests (mount ro, AVD home rw, no write
+mount on the SDK), avdmanager command builder for
+<code>-d pixel_6 -k "system-images;android-34;default;x86_64"</code> and
+<code>-d tv_1080p -k "system-images;android-34;android-tv;x86"</code>;
+live boot test gated on KVM + host SDK + admission
+<code>fits</code>.</li>
+<li>Mutants: rw SDK mount; wrong <code>-k</code> tag for TV; skip
+fingerprint capture; omit <code>--userns=keep-id</code>.</li>
+<li>Size: ~350 + ~450 LOC + Containerfile ~40 lines.</li>
+</ul>
+<h3 id="g4-android-tv-first-class-pkgemulator">G4. Android TV
+first-class (pkg/emulator)</h3>
+<ul>
+<li>API: <code>FormFactorTV</code> constant;
+<code>TVProfile{Device: "tv_1080p", Tag: "android-tv", ABI: "x86"}</code>;
+canary option
+<code>LaunchCategory: "android.intent.category.LEANBACK_LAUNCHER"</code>;
+D-pad helpers <code>DPad(ctx, keys...)</code> mapping to
+<code>input keyevent KEYCODE_DPAD_UP/DOWN/LEFT/RIGHT/CENTER</code>,
+<code>KEYCODE_BACK</code>, <code>KEYCODE_HOME</code>;
+<code>FocusedNode()</code> via <code>uiautomator dump</code> and a
+parser that returns the focused node (see-before-type, §11.4.193).
+<code>images/android-test/avds/config_api34_tv.ini</code>.</li>
+<li>Tests first: keyevent argv tables, uiautomator XML fixtures (golden
+focused node, no focused node -&gt; error, carrier:
+<code>focusable=true</code> but not <code>focused</code>), canary intent
+builder for leanback.</li>
+<li>Mutants: phone launcher category for TV; DPAD_CENTER mapped to
+ENTER; parser accepting <code>focusable</code>.</li>
+<li>Size: ~300 + ~450 LOC.</li>
+</ul>
+<h3 id="g5-recording-and-frame-evidence-pkgemulator-pkgdesktopgui">G5.
+Recording and frame evidence (pkg/emulator, pkg/desktopgui)</h3>
+<ul>
+<li>API:
+<code>StartRecording(ctx, serial, maxDur) (Recorder, error)</code> using
+<code>adb shell screenrecord --time-limit</code> (180 s cap per segment,
+rotate) with pull + sha256; optional scrcpy backend when present on host
+(<code>scrcpy --no-window --record</code>); <code>CaptureFrame</code>
+returns PNG + sha256 + timestamp + build fingerprint.</li>
+<li>Tests first: argv builders, segment rotation, sha256 file writing,
+failure on 0-byte file (FALSE-NULL guard).</li>
+<li>Mutants: accept empty file; skip rotation; drop time limit; wrong
+serial flag.</li>
+<li>Size: ~250 + ~350 LOC.</li>
+</ul>
+<h3 id="g6-secret-safe-text-input-pkgemulator">G6. Secret-safe text
+input (pkg/emulator)</h3>
+<ul>
+<li>Problem: AND-FU-3,
+<code>adb shell input text &lt;password&gt;</code> exposes the secret in
+the HOST process table.</li>
+<li>API: <code>TypeSecret(ctx, serial, secretFile string)</code>: pushes
+the 0600 file to <code>/data/local/tmp/&lt;random&gt;</code> via
+<code>adb push</code> (path in argv, value not), runs
+<code>adb shell 'input text "$(cat F)"; rm -f F'</code> with the command
+string free of the value, then verifies with
+<code>uiautomator dump</code> that the field is non-empty and masked.
+Secret never logged; evidence redacts.</li>
+<li>Tests first: argv never contains the secret (property test over
+random secrets), file removed on success and on failure path, refusal
+when the file is not 0600.</li>
+<li>Honest limit: the value is briefly in the device's own shell
+process; acceptable for an emulator (UNCONFIRMED whether the operator
+accepts it).</li>
+<li>Mutants: secret in argv; no rm; mode check skipped; no post-type
+verification.</li>
+<li>Size: ~150 + ~250 LOC.</li>
+</ul>
+<h3 id="g7-desktop-gui-runtime-for-linux-apps-new-pkgdesktopgui">G7.
+Desktop GUI runtime for Linux apps (new pkg/desktopgui)</h3>
+<ul>
+<li>API:
+<code>desktopgui.Session{Image, AppPath(ro), Screen, BindIP(default 127.0.0.1), VNCPasswordFile(0600), Memory, CPUs, PidsLimit}</code>
+with <code>Start</code>, <code>Screenshot</code> (xwd -&gt; PNG +
+sha256), <code>OCR</code> hook (consumer-supplied),
+<code>Type</code>/<code>Click</code> via xdotool (see-before-type:
+screenshot before and after), <code>WebDriver()</code> endpoint when
+<code>tauri-driver</code> + <code>WebKitWebDriver</code> are in the
+image, <code>Stop</code>. New
+<code>images/desktopgui-webkit/Containerfile</code> (Debian
+bookworm-slim + Xvfb + openbox + x11vnc + novnc + websockify + xdotool +
+libwebkit2gtk-4.1). Port of the logic in Catalogizer
+<code>scripts/tauri/run-qa.sh</code> (Catalogizer then calls this
+package; its script becomes a thin wrapper).</li>
+<li>Tests first: arg builder (ro app mount, loopback bind default, LAN
+bind needs explicit flag, no host network), password-file mode check,
+screenshot non-blank check (golden blank frame must FAIL).</li>
+<li>Mutants: bind 0.0.0.0 by default; accept blank screenshot; rw app
+mount; missing <code>--pids-limit</code>.</li>
+<li>Size: ~500 + ~600 LOC + Containerfile ~40 lines.</li>
+</ul>
+<h3
+id="g8-virtual-lan-peer--protocol-server-fixtures-extend-pkgnetwork-new-pkgfixtures">G8.
+Virtual LAN peer + protocol-server fixtures (extend pkg/network, new
+pkg/fixtures)</h3>
+<ul>
+<li>API: <code>network.CreateBridge(name, subnet)</code> (rootless
+netavark, internal by default),
+<code>fixtures.Peer{Network, IP, Services []Service}</code> with typed
+services <code>SMB{Share, Path, Users from 0600 file}</code>,
+<code>NFSUser{Export, RO}</code> (userspace),
+<code>FTP{Explicit/Implicit TLS}</code>, <code>SFTP</code>,
+<code>WebDAV</code>, <code>S3Garage</code>; each with a protocol-level
+health check (SMB: <code>smbclient -L</code> or a Go SMB negotiate; NFS:
+MOUNT/NULL RPC; FTP: banner + login; WebDAV: PROPFIND 207; S3: signed
+ListBuckets) and a fault API <code>Cut()</code> / <code>Restore()</code>
+(disconnect the peer from the bridge) for cut-recovery tests. Corpus
+mounted read-only except a declared <code>rw/</code> subdir. Ports:
+inside the bridge the real ports (445, 2049, 21) are used; no host
+publish unless asked.</li>
+<li>Tests first: arg builders, health checks against fixtures that
+answer wrongly (golden-bad: FTP banner but login refused must not be
+"healthy"), cut/restore state machine, real-podman test on alpine.</li>
+<li>Mutants: health = TCP connect only; publish on 0.0.0.0; corpus rw;
+Cut() that does not detach.</li>
+<li>Size: ~800 + ~1000 LOC + 4 small Containerfiles (Samba, vsftpd,
+WebDAV, NFS-userspace; reuse <code>atmoz/sftp</code> and
+<code>dxflrs/garage:v1.0.1</code> already on host).</li>
+<li>Honest limit: proves "different IP over a virtual L2 link", never a
+physical second machine.</li>
+</ul>
+<h3 id="g9-containerized-qemu-runner-pkgvm">G9. Containerized QEMU
+runner (pkg/vm)</h3>
+<ul>
+<li>Problem: <code>pkg/vm/qemu.go:173</code> launches
+<code>qemu-system-*</code> on the host; the host has none.</li>
+<li>API:
+<code>vm.NewContainerizedQEMU(cfg{Image, Memory, CPUs, KVM})</code>
+implementing the existing <code>VM</code> interface
+(<code>pkg/vm/types.go:179</code>); <code>--device /dev/kvm</code>,
+<code>--userns=keep-id</code>, qcow2 base read-only +
+<code>-snapshot</code>, networking either user-net with SSH hostfwd
+(existing) or <code>-netdev tap</code> inside the container attached to
+a G8 bridge (container has <code>/dev/net/tun</code> via
+<code>--device</code>, no privilege). <code>-m</code>/<code>-smp</code>
+from config instead of the hardcoded <code>2048</code>/<code>2</code>
+(<code>pkg/vm/qemu.go:196-197</code>).</li>
+<li>Tests first: arg builder parity with host runner, refusal without
+admission, live boot of <code>alpine-3.20-x86_64</code> gated on KVM
+(image fetched only through <code>pkg/cache</code> with sha256; not now:
+disk).</li>
+<li>Mutants: hardcoded memory; missing <code>-snapshot</code>; rw base
+image; tap without tun device.</li>
+<li>Size: ~400 + ~500 LOC + Containerfile.</li>
+</ul>
+<h3 id="g10-windows-guest-target-pkgvm-later">G10. Windows guest target
+(pkg/vm, later)</h3>
+<ul>
+<li>API: <code>VMTarget{Distro: "windows", ...}</code> + OVMF + swtpm
+(TPM 2.0) inside the G9 container; image ONLY from an operator-supplied
+path with licence DATA (<code>licence: evaluation|retail</code>,
+expiry); never auto-download; boot readiness via WinRM or
+OpenSSH-for-Windows.</li>
+<li>Blocked now: disk (Windows image 20-30 GiB vs 58 GiB free), licence
+decision (operator), host load.</li>
+<li>Size: ~600 + ~600 LOC. Record SKIP reason
+<code>topology_unsupported</code> until the operator supplies an
+image.</li>
+</ul>
+<h3 id="g11-reachable-endpoint-resolver-pkgemulator-pkgdesktopgui">G11.
+Reachable-endpoint resolver (pkg/emulator, pkg/desktopgui)</h3>
+<ul>
+<li>Problem: inside a rootless pasta container the host LAN IP resolves
+to the container (<code>scripts/tauri/run-qa.sh:10-12</code>); inside
+the Android emulator the host is <code>10.0.2.2</code>. Every run must
+record which URL it actually used.</li>
+<li>API: <code>ReachableAPI(target, hostPort) (url, evidence)</code>
+returning <code>http://10.0.2.2:&lt;p&gt;</code> (emulator),
+<code>http://host.containers.internal:&lt;p&gt;</code> (container), or a
+G8 bridge IP, with a probe from inside the target
+(curl/<code>adb shell</code> <code>toybox nc</code>) recorded as
+§11.4.289(D) endpoint identity.</li>
+<li>Size: ~150 + ~250 LOC.</li>
+</ul>
+<h3
+id="g12-device-leases-for-emulated-devices-reuse-114119--114176-pattern">G12.
+Device leases for emulated devices (reuse §11.4.119 / §11.4.176
+pattern)</h3>
+<ul>
+<li>API: lease keyed by stable AVD name / container name,
+all-or-nothing, TTL-reaped by <code>kill -0</code> + cmdline, so
+parallel agents never drive one emulator. Size ~200 + ~300 LOC. May
+reuse an existing lease engine in the constitution (UNCONFIRMED whether
+one is importable by reference; check before writing).</li>
+</ul>
+<p>Host-safety limits for every gap (binding): rootless only;
+<code>--privileged</code>, <code>--network host</code>, Cuttlefish and
+redroid (needs binder kernel module, absent) excluded;
+<code>/dev/kvm</code> touched only by open+close probe and by
+<code>--device</code> passthrough; every container carries
+<code>--memory</code>, <code>--memory-swap</code> = memory,
+<code>--cpus</code>, <code>--pids-limit</code>; whole runs wrapped in
+<code>systemd-run --user --scope -p MemoryMax=… -p MemorySwapMax=0</code>;
+at most 2 AVDs concurrently on this host (2 x ~4.5 GiB); no run while
+load &gt; ~12 (CONTINUATION dispatch rule); no image pull until the
+operator approves disk use; no nested privileged containers; no emulator
+bound to 0.0.0.0 (adb/console unauthenticated).</p>
+<h2 id="5-ordered-work-plan">5. Ordered work plan</h2>
+<p>Each step: one Sonnet author in a scratch clone of
+<code>vasic-digital/Containers</code> at <code>5ea870a</code>
+(fast-forward only, §11.4.288 vehicle rules), test-first, &gt;=4 own
+mutants, then Opus <code>xhigh</code> review (§11.4.209), budget 5
+rounds (§11.4.276(G)). Steps on one line run in parallel (disjoint
+files).</p>
+<table>
+<thead>
+<tr>
+<th>Order</th>
+<th>Steps</th>
+<th>Depends on</th>
+<th>Can run under current load/disk?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>G1 (pkg/runtime) ‖ G2 (hostbudget + emulator envelope) ‖ G11
+(resolver)</td>
+<td>none</td>
+<td>YES: unit + alpine-only real tests</td>
+</tr>
+<tr>
+<td>2</td>
+<td>G3 (SDK-mount slim emulator) ‖ G4 (TV) ‖ G6 (secret input)</td>
+<td>G1, G2</td>
+<td>code YES; live boot only when load &lt; ~12</td>
+</tr>
+<tr>
+<td>3</td>
+<td>G5 (recording) ‖ G7 (desktopgui)</td>
+<td>G1, G2</td>
+<td>code YES; image build needs base already on host (bookworm-slim)
+plus apt layer (network, ~300 MB)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>G8 (virtual LAN peer + fixtures)</td>
+<td>G1</td>
+<td>code YES; Samba/vsftpd images need apt layers</td>
+</tr>
+<tr>
+<td>5</td>
+<td>G9 (containerized QEMU) ‖ G12 (leases)</td>
+<td>G1, G2</td>
+<td>code YES; live VM needs a qcow2 via pkg/cache</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Catalogizer adoption: bump <code>submodules/containers</code> +
+constitution pin to the new tag; <code>scripts/tauri/run-qa.sh</code>,
+<code>docs/qa/android-boot-*</code> commands and
+<code>docs/qa/test-servers/up.sh</code> become thin wrappers; remove
+deviation (b)</td>
+<td>1-5 landed upstream</td>
+<td>YES</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Live legs, N&gt;=3 each: Android phone login (AND-FU-3, AND-FU-6
+repro), Android TV D-pad + playback, Tauri desktop GREEN, wizard GREEN
+(TAURI-R1-FU-7), SMB/NFS/FTP/WebDAV/S3 at a peer IP, bare-IP SMB,
+TRUSTED_PROXIES from peer</td>
+<td>6</td>
+<td>only when load &lt; ~12 and disk freed</td>
+</tr>
+<tr>
+<td>8</td>
+<td>G10 (Windows)</td>
+<td>operator: image + licence + disk</td>
+<td>NO (blocked)</td>
+</tr>
+</tbody>
+</table>
+<p>Size total (estimate, non-test + test): ~4.4k + ~5.6k LOC plus 7
+small Containerfiles; steps 1-5 ~ 12-16 author dispatches including
+review rounds.</p>
+<p>Operator decisions needed before step 2 live runs: (a) disk: approve
+pruning or a target for the ~300 MB- 1 GB of new image layers; (b)
+whether the in-device secret exposure of G6 is acceptable; (c) Windows
+image + licence (G10) or permanent SKIP; (d) confirm the macOS and
+Synology-DSM licence readings above.</p>
+<h2 id="6-findings-outside-scope-and-unconfirmed-list">6. Findings
+outside scope and UNCONFIRMED list</h2>
+<p>Findings (not fixed here, for registration as follow-ups):</p>
+<ul>
+<li>F1. <code>helix-deps.yaml:93</code> records
+<code>ref: bfd0e98</code> for <code>containers</code>, but the gitlink
+is <code>22b4970</code>
+(<code>git ls-tree HEAD submodules/containers</code>);
+<code>bfd0e98</code> is an ancestor (2 commits). Manifest drift
+(§11.4.31 / §11.4.233(G)).</li>
+<li>F2. Two checkouts of the same repo at different commits:
+<code>submodules/containers</code> <code>22b4970</code> and
+<code>constitution/submodules/containers</code> <code>5ea870a</code>.
+Decide which one Catalogizer code builds against (§11.4.28(C) one source
+of truth).</li>
+<li>F3. <code>pkg/emulator/containerized.go:37</code> judges KVM by
+<code>os.Stat</code>; <code>pkg/vm/qemu.go:163</code> already uses the
+stronger O_RDWR open. Inconsistent guard (§11.4.201). Covered by
+G2.</li>
+<li>F4. No resource limits on emulator/QEMU containers (control-needled
+0 hits). Covered by G1/G2.</li>
+<li>F5. Catalogizer's Android boot and Tauri QA runs use project-local
+commands, not the Containers submodule (§11.4.74 / §11.4.76 deviation).
+Covered by step 6.</li>
+<li>F6. <code>images/android-test/Dockerfile</code> builds FROM a
+mutable tag <code>android-emulator-base:latest</code> (§11.4.264 digest
+pinning).</li>
+</ul>
+<p>UNCONFIRMED:</p>
+<ul>
+<li>Exact host RAM footprint of a running TV AVD under container +
+Xvfb-free headless mode on this host (earlier run used
+<code>MemoryMax=5G</code> per emulator; not re-measured).</li>
+<li>Whether the host emulator 37.1.11 binary runs inside Debian
+bookworm-slim with only the listed libs (G3 assumption; needs the first
+RED/GREEN).</li>
+<li>Whether rootless netavark allows <code>--device /dev/net/tun</code>
++ tap inside a container for QEMU (G9).</li>
+<li>WebView2 behaviour under Wine; legal reading of macOS and Synology
+DSM licences (operator).</li>
+<li>Whether a reusable lease engine exists in the constitution for
+G12.</li>
+<li>Whether upstream <code>vasic-digital/Containers</code> has unpushed
+work on other mirrors (only <code>origin</code> checked).</li>
+</ul>
+</body>
+</html>

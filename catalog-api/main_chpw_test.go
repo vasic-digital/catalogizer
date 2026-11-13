@@ -1,0 +1,306 @@
+package main
+
+import (
+	"context"
+	"database/sql"
+	"go/ast"
+	"go/parser"
+	"go/token"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"strconv"
+	"strings"
+	"testing"
+
+	"catalogizer/database"
+	"catalogizer/repository"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+)
+
+type chpwRig struct {
+	db            *database.DB
+	call          func(tok string, right bool) int
+	attacker, own string
+	reached       *int
+	close         func()
+	engine        *gin.Engine
+}
+
+func newChpwRig(t *testing.T) *chpwRig {
+	gin.SetMode(gin.TestMode)
+	sqlDB, err := sql.Open("sqlite3", ":memory:")
+	require.NoError(t, err)
+	sqlDB.SetMaxOpenConns(1)
+	db := database.WrapDB(sqlDB, database.DialectSQLite)
+	require.NoError(t, db.RunMigrations(context.Background()))
+	repo := repository.NewUserRepository(db)
+	_, err = db.Exec(`INSERT INTO users (id, username, email, password_hash, salt, role_id, is_active) VALUES (7, 'dem', 'd@x.test', 'h', 's', 2, 1)`)
+	require.NoError(t, err)
+	for _, id := range []int{1, 2} { // 1 = attacker's stolen session, 2 = owner's own
+		_, err = db.Exec(`INSERT INTO user_sessions (id, user_id, session_token, refresh_token, is_active, expires_at) VALUES (?, 7, ?, ?, 1, datetime('now','+1 hour'))`,
+			id, "t"+strconv.Itoa(id), "r"+strconv.Itoa(id))
+		require.NoError(t, err)
+	}
+	mw := newAuthMiddleware("wire-test-secret", db, repo)
+	attacker := mintTestToken(t, mw, "7", 2, "1")
+	owner := mintTestToken(t, mw, "7", 2, "2")
+
+	r := gin.New()
+	g := r.Group("/api/v1/auth")
+	reached := 0
+	noop := func(c *gin.Context) { c.Status(http.StatusOK) }
+	pass := func(c *gin.Context) { c.Next() }
+	registerAuthRoutes(g, authRoutesDeps{
+		LoginRate: pass, AuthRate: pass, DefaultRate: pass, RequireAuth: mw.RequireAuth,
+		Login: noop, Register: noop, Refresh: noop, Logout: noop, Me: noop, Status: noop, Permissions: noop, InitStatus: noop,
+		ChangePassword: func(c *gin.Context) {
+			reached++
+			if c.GetHeader("X-Right") != "" {
+				c.Status(http.StatusOK)
+				return
+			}
+			c.Status(http.StatusUnauthorized)
+		},
+		Sessions: repo, Logger: zap.NewNop(),
+	})
+
+	call := func(tok string, right bool) int {
+		req := httptest.NewRequest(http.MethodPost, "/api/v1/auth/change-password", nil)
+		req.Header.Set("Authorization", "Bearer "+tok)
+		if right {
+			req.Header.Set("X-Right", "1")
+		}
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		return w.Code
+	}
+	return &chpwRig{db: db, call: call, attacker: attacker, own: owner, reached: &reached, close: func() { sqlDB.Close() }, engine: r}
+}
+
+// Production route registration + REAL RequireAuth + REAL session check + real
+// session revocation on a migrated sqlite DB (CAT-CHPW-RL-1). The handler is a
+// stub that answers 401 (wrong password) unless X-Right is set.
+func TestRegisterChangePasswordRoute_LockRevokesAttackerSessionOwnerSurvives(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	rg := newChpwRig(t)
+	defer rg.close()
+	db, call, attacker, owner := rg.db, rg.call, rg.attacker, rg.own
+	reached := rg.reached
+	for i := 0; i < 5; i++ {
+		require.Equal(t, http.StatusUnauthorized, call(attacker, false))
+	}
+	reachedAfterFive := *reached
+	// The 5th failure exhausted the session's budget: the session is revoked,
+	// so RequireAuth rejects the attacker's token before the limiter or handler.
+	require.Equal(t, http.StatusUnauthorized, call(attacker, true), "attacker session revoked, even with the right password")
+	require.Equal(t, reachedAfterFive, *reached, "handler not reached by the revoked session")
+	var active bool
+	require.NoError(t, db.QueryRow(`SELECT is_active FROM user_sessions WHERE id = 1`).Scan(&active))
+	require.False(t, active)
+	require.Equal(t, http.StatusOK, call(owner, true), "owner's own session unaffected")
+}
+
+// Failures spread over two sessions of one user (3+2) exhaust neither session's
+// budget: neither session may be revoked (end to end, real RequireAuth + DB).
+func TestRegisterChangePasswordRoute_SpreadFailuresRevokeNobody(t *testing.T) {
+	rg := newChpwRig(t)
+	defer rg.close()
+	for i := 0; i < 3; i++ {
+		require.Equal(t, http.StatusUnauthorized, rg.call(rg.attacker, false))
+	}
+	for i := 0; i < 2; i++ {
+		require.Equal(t, http.StatusUnauthorized, rg.call(rg.own, false))
+	}
+	var n int
+	require.NoError(t, rg.db.QueryRow(`SELECT COUNT(*) FROM user_sessions WHERE is_active = 1`).Scan(&n))
+	require.Equal(t, 2, n, "no session revoked")
+	require.Equal(t, http.StatusOK, rg.call(rg.own, true))
+}
+
+// The auth route table is pinned: any added/removed/re-methoded route in
+// registerAuthRoutes fails here and must be reviewed (only change-password
+// accepts a current password behind a JWT; login's own limiter is the 30 rpm
+// per-IP one plus the service lockout). Runs on the engine built through the
+// SAME registerAuthRoutes main() calls, with the real RequireAuth.
+func TestRegisterAuthRoutes_RouteTablePinnedAndProtectedRoutesNeedAuth(t *testing.T) {
+	rg := newChpwRig(t)
+	defer rg.close()
+	got := map[string]bool{}
+	for _, r := range rg.engine.Routes() {
+		got[r.Method+" "+r.Path] = true
+	}
+	want := []string{"POST /api/v1/auth/login", "POST /api/v1/auth/register", "POST /api/v1/auth/refresh",
+		"POST /api/v1/auth/logout", "GET /api/v1/auth/me", "GET /api/v1/auth/status", "GET /api/v1/auth/permissions",
+		"GET /api/v1/auth/profile", "GET /api/v1/auth/init-status", "POST /api/v1/auth/change-password"}
+	require.Len(t, got, len(want), "route table changed: review every new route for credential verification")
+	for _, w := range want {
+		require.True(t, got[w], w)
+	}
+	for _, pr := range []struct{ m, p string }{{"GET", "me"}, {"GET", "permissions"}, {"GET", "profile"}, {"POST", "change-password"}} {
+		w := httptest.NewRecorder()
+		rg.engine.ServeHTTP(w, httptest.NewRequest(pr.m, "/api/v1/auth/"+pr.p, nil))
+		require.Equal(t, http.StatusUnauthorized, w.Code, pr.p+" without a token")
+	}
+	require.Zero(t, *rg.reached, "change-password handler never reached without a token")
+	// with a valid token the request reaches the handler THROUGH the limiter
+	// (the limiter revokes the session after 5 failures: see the lock test above).
+	require.Equal(t, http.StatusUnauthorized, rg.call(rg.attacker, false))
+	require.Equal(t, 1, *rg.reached)
+}
+
+// foldString evaluates e to a string when it is a literal, a concatenation of
+// foldable parts, a parenthesised foldable, or an identifier bound to one.
+func foldString(e ast.Expr, binds map[string]string) (string, bool) {
+	switch v := e.(type) {
+	case *ast.BasicLit:
+		if v.Kind == token.STRING {
+			s, err := strconv.Unquote(v.Value)
+			return s, err == nil
+		}
+	case *ast.ParenExpr:
+		return foldString(v.X, binds)
+	case *ast.Ident:
+		s, ok := binds[v.Name]
+		return s, ok
+	case *ast.BinaryExpr:
+		if v.Op == token.ADD {
+			l, ok1 := foldString(v.X, binds)
+			r, ok2 := foldString(v.Y, binds)
+			return l + r, ok1 && ok2
+		}
+	}
+	return "", false
+}
+
+// Source guard (cheap, static; the route-table test above is the runtime proof
+// for the auth group). Across ALL non-test files of package main:
+//   - no expression evaluates to the change-password path except the one inside
+//     main_chpw.go's RegisterChangePassword call (catches another file or a
+//     second registration with a literal/concatenated/const path);
+//   - a selector `.ChangePassword` occurs only as mediaQueryHandler.ChangePassword
+//     once (the ChangePassword: field of authRoutesDeps in main.go) and
+//     d.ChangePassword once (4th argument of registerChangePasswordRoute);
+//   - registerChangePasswordRoute is called once, with g, d.RequireAuth() as 3rd
+//     and d.ChangePassword as 4th argument; registerAuthRoutes is called once,
+//     with the /api/v1/auth group and RequireAuth: jwtMiddleware.RequireAuth.
+//
+// NOT covered statically: a route built from a runtime-computed path that does
+// not reference the handler by name (none can reach the handler, see above).
+func TestMainPackageChangePasswordWiringSource(t *testing.T) {
+	fset := token.NewFileSet()
+	pkgs, err := parser.ParseDir(fset, ".", func(fi os.FileInfo) bool { return !strings.HasSuffix(fi.Name(), "_test.go") }, 0)
+	require.NoError(t, err)
+	pkg := pkgs["main"]
+	require.NotNil(t, pkg)
+	binds := map[string]string{}
+	for pass := 0; pass < 3; pass++ {
+		for _, f := range pkg.Files {
+			ast.Inspect(f, func(n ast.Node) bool {
+				switch v := n.(type) {
+				case *ast.ValueSpec:
+					for i, name := range v.Names {
+						if i < len(v.Values) {
+							if s, ok := foldString(v.Values[i], binds); ok {
+								binds[name.Name] = s
+							}
+						}
+					}
+				case *ast.AssignStmt:
+					if len(v.Lhs) == len(v.Rhs) {
+						for i, l := range v.Lhs {
+							if id, ok := l.(*ast.Ident); ok {
+								if s, ok := foldString(v.Rhs[i], binds); ok {
+									binds[id.Name] = s
+								}
+							}
+						}
+					}
+				}
+				return true
+			})
+		}
+	}
+	isPath := func(s string) bool { return s == "/change-password" || s == "/api/v1/auth/change-password" }
+	var pathSites []string
+	selMQ, selD := 0, 0
+	var helperCalls, authCalls []*ast.CallExpr
+	var mqSelParentOK bool
+	for name, f := range pkg.Files {
+		ast.Inspect(f, func(n ast.Node) bool {
+			if e, ok := n.(ast.Expr); ok {
+				if s, ok := foldString(e, binds); ok && isPath(s) {
+					if _, isIdent := e.(*ast.Ident); !isIdent {
+						pathSites = append(pathSites, name)
+					}
+				}
+			}
+			if kv, ok := n.(*ast.KeyValueExpr); ok {
+				if sel, ok := kv.Value.(*ast.SelectorExpr); ok && sel.Sel.Name == "ChangePassword" {
+					if k, ok := kv.Key.(*ast.Ident); ok && k.Name == "ChangePassword" {
+						if x, ok := sel.X.(*ast.Ident); ok && x.Name == "mediaQueryHandler" {
+							mqSelParentOK = true
+						}
+					}
+				}
+			}
+			if sel, ok := n.(*ast.SelectorExpr); ok && sel.Sel.Name == "ChangePassword" {
+				if x, ok := sel.X.(*ast.Ident); ok {
+					switch x.Name {
+					case "mediaQueryHandler":
+						selMQ++
+					case "d":
+						selD++
+					default:
+						selMQ += 100 // any other receiver of a ChangePassword selector in package main
+					}
+				} else {
+					selMQ += 100
+				}
+			}
+			if call, ok := n.(*ast.CallExpr); ok {
+				if id, ok := call.Fun.(*ast.Ident); ok {
+					switch id.Name {
+					case "registerChangePasswordRoute":
+						helperCalls = append(helperCalls, call)
+					case "registerAuthRoutes":
+						authCalls = append(authCalls, call)
+					}
+				}
+			}
+			return true
+		})
+	}
+	require.Equal(t, []string{"main_chpw.go"}, pathSites, "exactly one evaluation of the change-password path in package main")
+	require.Equal(t, 1, selMQ, "mediaQueryHandler.ChangePassword referenced exactly once (and no other ChangePassword selector receiver)")
+	require.True(t, mqSelParentOK, "...as the ChangePassword: field of authRoutesDeps")
+	require.Equal(t, 1, selD)
+	require.Len(t, helperCalls, 1)
+	args := helperCalls[0].Args
+	require.Len(t, args, 6)
+	require.Equal(t, "g", args[0].(*ast.Ident).Name)
+	rq, ok := args[2].(*ast.CallExpr)
+	require.True(t, ok, "3rd argument must be the d.RequireAuth() call")
+	rqs, ok := rq.Fun.(*ast.SelectorExpr)
+	require.True(t, ok && rqs.Sel.Name == "RequireAuth" && rqs.X.(*ast.Ident).Name == "d")
+	cp, ok := args[3].(*ast.SelectorExpr)
+	require.True(t, ok && cp.Sel.Name == "ChangePassword" && cp.X.(*ast.Ident).Name == "d")
+
+	require.Len(t, authCalls, 1, "registerAuthRoutes called exactly once")
+	lit, ok := authCalls[0].Args[1].(*ast.CompositeLit)
+	require.True(t, ok)
+	found := false
+	for _, el := range lit.Elts {
+		kv := el.(*ast.KeyValueExpr)
+		if kv.Key.(*ast.Ident).Name == "RequireAuth" {
+			sel, ok := kv.Value.(*ast.SelectorExpr)
+			require.True(t, ok && sel.Sel.Name == "RequireAuth" && sel.X.(*ast.Ident).Name == "jwtMiddleware", "RequireAuth must be jwtMiddleware.RequireAuth")
+			found = true
+		}
+	}
+	require.True(t, found)
+	require.Equal(t, "authGroup", authCalls[0].Args[0].(*ast.Ident).Name)
+}

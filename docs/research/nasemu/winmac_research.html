@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.11" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Windows and macOS test targets as containerized QEMU VMs:
+research</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+<h1
+id="windows-and-macos-test-targets-as-containerized-qemu-vms-research">Windows
+and macOS test targets as containerized QEMU VMs: research</h1>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Revision</td>
+<td>1 (read-only web research; nothing pulled, booted or installed)</td>
+</tr>
+<tr>
+<td>Retrieval date</td>
+<td>2026-11-13 (all web facts below)</td>
+</tr>
+<tr>
+<td>Context</td>
+<td>docs/research/device_emulation_plan_20261112.md (host: Ryzen 2700X,
+30 GiB RAM, load ~26/16 threads, 58 GiB free disk, /dev/kvm usable
+rootless via ACL, no host qemu)</td>
+</tr>
+<tr>
+<td>Labels</td>
+<td>FACT = read on the cited page today; UNCONFIRMED = third-party /
+memory / not verified; not legal advice</td>
+</tr>
+</tbody>
+</table>
+<h2 id="1-sources-and-findings">1. Sources and findings</h2>
+<h3
+id="dockurwindows-httpsgithubcomdockurwindows-fetched-2026-11-13">dockur/windows
+(<a
+href="https://github.com/dockur/windows">https://github.com/dockur/windows</a>,
+fetched 2026-11-13)</h3>
+<ul>
+<li>FACT: repo MIT-licensed; "Windows inside a Docker container"; Docker
+or Podman on Linux with KVM.</li>
+<li>FACT: needs &gt;= 2 GB RAM, 32 GB free disk (defaults: 4 GB RAM, 2
+cores, 64 GB disk via RAM_SIZE/CPU_CORES/DISK_SIZE).</li>
+<li>FACT: example passes <code>/dev/kvm</code>,
+<code>/dev/net/tun</code>, cap NET_ADMIN, a storage volume; ports 8006
+(web viewer), 3389 (RDP). Optional DHCP mode needs /dev/vhost-net.
+Troubleshooting suggests <code>privileged</code> only to rule out device
+problems.</li>
+<li>FACT: versions: Win 11/10 (Pro, LTSC, Enterprise), 8.1 Ent, server
+2003-2025, legacy, Tiny11/Tiny10, ReactOS. ARM64 is a separate project
+(dockur/windows-arm).</li>
+<li>FACT: Windows is downloaded automatically at first start (the page
+does not name the source), or a custom ISO via URL in VERSION or mounted
+<code>/custom.iso</code>.</li>
+<li>FACT: automation: <code>/oem</code> folder copied to C:\OEM,
+<code>install.bat</code> runs in the final install step;
+<code>COMMAND</code> runs one command. Default user <code>Docker</code>
+/ password <code>admin</code> (USERNAME/PASSWORD env). Page does NOT
+mention SSH or WinRM (UNCONFIRMED whether OpenSSH can be enabled via
+install.bat; likely, untested).</li>
+<li>FACT: page says the user must hold a valid Windows licence; keys in
+code are generic Microsoft trial/install keys, not activation.</li>
+<li>FACT: no rootless-specific guidance on the page. UNCONFIRMED:
+rootless podman needs <code>--userns=keep-id</code> style handling and
+tun/NET_ADMIN under rootless (the Containers submodule already handles
+kvm ACL at pkg/emulator/containerized.go:93-102 per the plan doc).</li>
+</ul>
+<h3
+id="dockurmacos-httpsgithubcomdockurmacos-fetched-2026-11-13">dockur/macos
+(<a
+href="https://github.com/dockur/macos">https://github.com/dockur/macos</a>,
+fetched 2026-11-13)</h3>
+<ul>
+<li>FACT: Docker/Podman on Linux with KVM; AVX2 CPU (Zen 1000+ ok, so
+2700X ok); &gt;= 4 GB RAM, 32 GB disk (defaults 4 GB, 2 cores, 64 GB).
+On AMD: do not assign &gt; 8 GB RAM during install.</li>
+<li>FACT: macOS 11 to 15 (default 15); 26 (Tahoe) selectable, "very
+slow, not recommended".</li>
+<li>FACT: web viewer 8006; 5900 mapped. No SSH mentioned. Licence: page
+links license.md but content not shown, licence name UNCONFIRMED (repo
+says it contains only open-source code and does not distribute
+macOS).</li>
+<li>FACT (legal): FAQ states installing macOS needs accepting Apple's
+EULA, which does not permit installation on non-official hardware, so
+run it only on Apple hardware.</li>
+</ul>
+<h3 id="osx-kvm-httpsgithubcomkholiaosx-kvm-fetched-2026-11-13">OSX-KVM
+(<a
+href="https://github.com/kholia/OSX-KVM">https://github.com/kholia/OSX-KVM</a>,
+fetched 2026-11-13)</h3>
+<ul>
+<li>FACT: needs QEMU &gt;= 8.2.2, AVX2 for Ventura+,
+<code>fetch-macOS-v2.py</code> downloads BaseSystem (Apple servers) then
+dmg2img, 256 GB qcow2; <code>boot-macOS-headless.sh</code> exists.
+SSH/VNC "out of the box" is an open contributor item. Licence not stated
+on the page (UNCONFIRMED). Page places the EULA decision on the user and
+cites OSK-string court document.</li>
+</ul>
+<h3
+id="quickemu-httpsgithubcomquickemu-projectquickemu-fetched-2026-11-13">Quickemu
+(<a
+href="https://github.com/quickemu-project/quickemu">https://github.com/quickemu-project/quickemu</a>,
+fetched 2026-11-13)</h3>
+<ul>
+<li>FACT: MIT; <code>quickget</code> downloads upstream OS images;
+Windows 10/11/Server and macOS (Mojave..Sequoia); automatic SSH port
+forwarding, QEMU guest agent via QMP; no elevated permissions. A host
+tool (needs host qemu), not a container; adds little over dockur for our
+Containers-submodule model.</li>
+</ul>
+<h3 id="microsoft-evaluation--dev-vms">Microsoft evaluation / dev
+VMs</h3>
+<ul>
+<li>FACT (search result, Microsoft Evaluation Center pages): Windows 11
+Enterprise evaluation is a 90-day full-featured evaluation; lab kits
+state VMs expire 90 days after provisioning and the lab must not be
+connected to production. <a
+href="https://www.microsoft.com/evalcenter/download-windows-11-enterprise">https://www.microsoft.com/evalcenter/download-windows-11-enterprise</a>
+, <a
+href="https://www.microsoft.com/evalcenter/evaluate-lab-kit">https://www.microsoft.com/evalcenter/evaluate-lab-kit</a></li>
+<li>FACT (search result): developer VMs at <a
+href="https://developer.microsoft.com/downloads/virtual-machines">https://developer.microsoft.com/downloads/virtual-machines</a>
+are Enterprise Evaluation, no key activation, x86 only, formats
+Hyper-V/VirtualBox/VMware/Parallels (no QEMU/qcow2; convertible,
+UNCONFIRMED); 8 GB RAM / 70 GB disk recommended; refreshed periodically,
+old builds expire (an Oct 2024 expiry reported). Whether WinDev images
+still exist in 2026: UNCONFIRMED (no 2025/26 source found).</li>
+<li>UNCONFIRMED (third party only): <code>slmgr /rearm</code> extension
+to 270 days; do not rely on or encode it.</li>
+<li>UNCONFIRMED: exact EULA text of the evaluation (I did not read the
+licence PDF); the evaluation is intended for evaluation/testing, not
+production. Operator must read the terms at download.</li>
+</ul>
+<h3 id="apple-macos-licence">Apple macOS licence</h3>
+<ul>
+<li>FACT (secondary sources, Apple SLA text quoted on blogs/Apple dev
+forums; primary Tahoe SLA not read): Section 2B allows up to two
+additional macOS instances in virtual environments on each Mac you own
+or control that already runs macOS, for software development/testing,
+macOS Server or personal non-commercial use; Apple-branded hardware
+only. Apple dev forum: Virtualization.framework caps at 2 VMs; more
+needs written permission. <a
+href="https://developer.apple.com/forums/thread/826102">https://developer.apple.com/forums/thread/826102</a>
+, <a
+href="https://threedots.ovh/blog/2020/12/macos-eula-licensing-restrictions-affecting-virtualisation/">https://threedots.ovh/blog/2020/12/macos-eula-licensing-restrictions-affecting-virtualisation/</a></li>
+<li>Conclusion (reading, UNCONFIRMED legally): macOS in QEMU on this AMD
+Linux host is outside the licence. Both dockur/macos and OSX-KVM say so
+or defer to the user.</li>
+</ul>
+<h2 id="2-feasibility-on-this-host">2. Feasibility on this host</h2>
+<table>
+<thead>
+<tr>
+<th>Target</th>
+<th>Technical</th>
+<th>Legal</th>
+<th>Disk/RAM</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windows 10/11 guest (dockur/windows, QEMU/KVM in rootless
+podman)</td>
+<td>Plausible: /dev/kvm ACL works rootless (plan doc); needs
+/dev/net/tun (present), NET_ADMIN (rootless netns ok for pasta/user-net,
+UNCONFIRMED). Untested here.</td>
+<td>Only with an operator-supplied/accepted licence: Microsoft eval (90
+days, re-provision) or owned licence. dockur auto-download source
+unnamed; prefer operator-supplied ISO, sha256 recorded</td>
+<td>64 GB disk default (host has 58 GiB free, 97% used): BLOCKED until
+prune. 4 GB RAM ok but CPU load 26/16 makes boots slow</td>
+<td>FEASIBLE after disk is freed and licence choice made; heavy</td>
+</tr>
+<tr>
+<td>Windows guest running Tauri installer</td>
+<td>NSIS <code>/S</code> and MSI <code>/qn</code> silent flags
+(third-party skill pages, UNCONFIRMED vs Tauri docs); WebView2 runtime
+must be present (Win11 ships it; Win10 may need offline installer ~127
+MB per v1 docs)</td>
+<td>as above</td>
+<td></td>
+<td>feasible</td>
+</tr>
+<tr>
+<td>Windows UI driving</td>
+<td>RDP 3389 / noVNC 8006 + screenshots/OCR satisfies §11.4.193
+see-before-type; tauri-driver WebDriver on Windows needs msedgedriver
+(memory, UNCONFIRMED)</td>
+<td></td>
+<td></td>
+<td>feasible, slow</td>
+</tr>
+<tr>
+<td>macOS guest on this host</td>
+<td>dockur/macos or OSX-KVM technically boot on Zen (AVX2 ok); Tahoe
+very slow; no SSH out of box; OSX-KVM needs host qemu</td>
+<td>NOT permitted by Apple SLA on non-Apple hardware (reading); dockur
+itself says Apple hardware only</td>
+<td>64 GB+ disk, 4-8 GB RAM</td>
+<td>MUST remain honest SKIP</td>
+</tr>
+<tr>
+<td>Tauri macOS build/run</td>
+<td>tauri-driver has no macOS WKWebView driver (memory,
+UNCONFIRMED)</td>
+<td>as above</td>
+<td></td>
+<td>SKIP in all cases on this host</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-determinism-and-pinning">3. Determinism and pinning</h2>
+<ul>
+<li>Image: pin container image by digest (<code>@sha256:</code>), never
+<code>:latest</code> (dockur tags move). UNCONFIRMED: dockur downloads
+the Windows ISO at first boot, so the digest of the container does not
+pin the guest OS: pin by supplying <code>/custom.iso</code> with
+recorded sha256 (Microsoft eval ISOs are re-issued and expire).</li>
+<li>Boot a copy-on-write overlay per run (qemu <code>-snapshot</code> or
+qcow2 backing file) so the golden disk is immutable and run N&gt;=3
+starts identical (§11.4.50). Golden install is done once and recorded
+(sha256 of disk, ISO sha256, Windows build <code>ver</code>, WebView2
+version).</li>
+<li>Evidence fields (§11.4.289(D)): ISO sha256, container digest, guest
+build id, Tauri artifact sha256, endpoint reached (API IP over virtual
+bridge), screenshots with OCR.</li>
+<li>90-day eval expiry makes a golden image a decaying asset: record
+expiry date; a run on an expired image is SKIP, not PASS.</li>
+<li>§11.4.298(B): an emulator is never "this run" for hardware products;
+Windows/macOS desktop are software targets, so a VM can be LIVE-class
+for "Tauri on Windows", but must not be labelled real-hardware
+verification.</li>
+</ul>
+<h2 id="4-risks">4. Risks</h2>
+<ol type="1">
+<li>Disk: 58 GiB free cannot hold a 64 GB Windows disk plus ISO (~5-6
+GB) (blocker until operator prunes).</li>
+<li>CPU: host load 26/16; Windows first install under TCG-free KVM still
+takes tens of minutes; memory PSI and §12.6 ceiling must be checked
+before each boot.</li>
+<li>Licensing: eval expiry/EULA; Apple SLA hard no.</li>
+<li>Rootless: NET_ADMIN/tun/vhost-net behaviour untested;
+<code>privileged</code> is excluded by operator constraint (rootless, no
+privileged).</li>
+<li>dockur auto-download is opaque (source unnamed on the page); supply
+ISO instead.</li>
+<li>Default creds <code>Docker/admin</code> must be overridden via a
+0600 env file (§11.4.10), not committed.</li>
+<li>Windows tauri-driver/msedgedriver availability unverified.</li>
+<li>Containers submodule has no Windows/macOS VM runtime (pkg/vm/macos
+is Tart, Apple-Silicon host only; Wine is build-only) so new upstream
+code (typed device/memory/cpus run options, a dockur-style VM profile)
+is needed per §11.4.74.</li>
+</ol>
+<h2 id="5-recommendation">5. Recommendation</h2>
+<ul>
+<li>Windows: implement a <code>windows</code> VM profile in the
+Containers submodule (pinned dockur/windows digest, operator-supplied
+ISO with sha256, immutable golden disk + per-run overlay, tun/kvm
+devices, memory/cpus/pids limits, 0600 credential env file, /oem
+install.bat that enables OpenSSH + installs the Tauri NSIS package
+silently), gated on free disk &gt;= ~100 GB, memory PSI check, and a
+recorded licence decision. Start with one Win11 Enterprise eval guest.
+Drive UI via RDP/noVNC screenshots + OCR. Do this after the
+Android/Linux legs (cheaper).</li>
+<li>macOS: do NOT build. Record <code>topology_unsupported</code>
+(reason: Apple SLA permits macOS virtualization only on Apple-branded
+hardware; host is AMD x86) for every macOS leg; revisit only if the
+operator has a Mac (then Tart path in pkg/vm/macos).</li>
+<li>No Wine substitute may be reported as Windows.</li>
+</ul>
+<h2 id="6-operator-decisions-needed">6. Operator decisions needed</h2>
+<ol type="1">
+<li>Free disk (prune) to allow &gt;= ~100 GB for a Windows guest? Which
+sibling data may be removed?</li>
+<li>Windows licence basis: Microsoft 90-day evaluation (re-provision
+each cycle) vs an owned licence/ISO; who downloads the ISO and accepts
+the terms.</li>
+<li>Confirm macOS stays SKIP (<code>topology_unsupported</code>), or
+supply Apple hardware.</li>
+<li>Accept dockur/windows as an external dependency (MIT, pinned by
+digest) vs building our own QEMU image in the Containers submodule
+(§11.4.74/§11.4.270 existence-verdict register entry needed).</li>
+<li>Accept slow serial runs (Windows boot minutes, CPU contention), or
+defer Windows until the host is quieter.</li>
+<li>Confirm rootless-only (no privileged, no root NET_ADMIN beyond
+userns) is binding for these VMs.</li>
+</ol>
+</body>
+</html>
