@@ -265,6 +265,7 @@ func TestJob404_WriteJobErrorMapsForbiddenTo404SameBodyAsNotFound(t *testing.T) 
 	assert.Equal(t, http.StatusNotFound, nf.Code)
 	assert.Equal(t, http.StatusNotFound, fb.Code)
 	assert.Equal(t, nf.Body.String(), fb.Body.String())
+	assert.Equal(t, nf.Header(), fb.Header(), "headers must be identical too")
 }
 
 // F1: a user whose id equals a job id must not get that job when someone else owns it (kills
@@ -323,8 +324,10 @@ func TestJob404_FailedPermissionLookupIsIdenticalNotFound(t *testing.T) {
 	assert.Equal(t, id, got.ID)
 }
 
-// F4: a missing id and a foreign id do the same database work for a non-owner (no timing oracle).
-func TestJob404_MissingAndForeignIdDoEqualWork(t *testing.T) {
+// F4: a missing id and a foreign id run the same NUMBER of database statements for a non-owner.
+// Honest boundary: the foreign path still decodes a full job row while the missing path stops at
+// sql.ErrNoRows; the size of any resulting timing difference is UNCONFIRMED (not measured).
+func TestJob404_MissingAndForeignIdRunSameDatabaseStatements(t *testing.T) {
 	s := newJob404Stack(t)
 	id := s.newJob(t, models.ConversionStatusPending, false)
 	count := func(jobID int) int64 {

@@ -983,8 +983,9 @@ func (s *ConversionService) GetJob(jobID int, userID int) (*models.ConversionJob
 // (models.PermissionSystemAdmin, honoured through Permissions.HasPermission, so the seeded Admin
 // role "*" and "system.*" qualify; same as user_handler callerIsAdmin and models.User.IsAdmin).
 // A failed permission lookup also reads as not found (never grant on an error). The permission
-// lookup runs BEFORE the job lookup and on every path, so a missing id and a foreign id do the
-// same work (no timing oracle on existence).
+// lookup runs BEFORE the job lookup and on every path, so a missing id and a foreign id run the
+// same database statements. Honest boundary: the foreign path still decodes a full job row while
+// the missing path stops at sql.ErrNoRows; the size of any timing difference is UNCONFIRMED.
 func (s *ConversionService) authorizedJob(jobID int, userID int) (*models.ConversionJob, error) {
 	var isAdmin bool
 	permErr := errors.New("no auth service: administrator status unknown")
