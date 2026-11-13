@@ -405,3 +405,16 @@ copy+delete, `downloadFromWebDAV`, `uploadToWebDAV` (`scanLocalFiles`), S3/GCS `
 (the text writer; the external-tool outputs go through a private directory since round 7, but `Dir(target)` itself
 can still be swapped), `LocalScanResolver` open, admin restore. Consolidation of `pathguard` into `internal/pathsafe`
 is a separate later step.
+
+## External-command and implicit-destination inventory (CAT-FS-SYMLINK-1 review round 2)
+
+Class closure (11.4.276(C)). Every `exec.Command*` in `catalog-api/filesystem/` (non-test), measured with `grep -n "exec\." filesystem/*.go`, and its confinement:
+
+| Sink | File | Path source | Confinement |
+|---|---|---|---|
+| `mount` | `nfs_client_darwin.go` Connect | configured host, export and mount point (admin config), not request-fed | none needed: no request path; the mount point is the root itself |
+| `umount`, `umount -f` | `nfs_client_darwin.go` Disconnect | configured mount point | none needed: same |
+| `cp` (CopyFile) | `nfs_client_darwin.go` | request-fed src and dst | REMOVED in round 2. `cp src dir` writes `dir/<base(src)>` through an entry the check never saw (reproduced with GNU cp: an outside file changed through an in-root link named like the source). Replaced by `copyConfinedFile` (no external command): src and dst confined with `confineReal` (followed), an existing-directory dst refused (`ErrCopyDestIsDirectory`), the file written with `os.Create` on the checked path |
+| `mv` (MoveFile) | `nfs_client_darwin.go` | request-fed src and dst | `resolveMovePair` (src not followed, dst followed). Implicit destination `dir/<base(src)>` when dst is a directory: rename(2) replaces a link at that name and does not write through it, so it cannot leave the root; a non-empty directory of that name makes mv fail |
+
+No other file in `filesystem/` shells out (ftp, smb, webdav, s3, nfs3 and the linux and windows NFS clients address a server or use Go file APIs on the exact checked path), so there is no other implicit-destination sink. A new `exec.Command` with a request-fed path in this package must be added to this table with its confinement. Class tests: `TestCATFSSYMLINK1_R2_*` in `catalog-api/filesystem/confine_real_round2_test.go`. A plain-directory destination of a copy is refused on every platform (the Linux client fails the same way through `os.Create`). Not exercised: darwin and BSD `cp`/`mv` were never run (UNCONFIRMED); the Linux evidence is GNU cp.

@@ -256,23 +256,8 @@ func (c *NFSClient) CopyFile(ctx context.Context, src, dst string) error {
 		return fmt.Errorf("not connected")
 	}
 
-	srcPath, rerr := c.resolveConfined(src)
-	if rerr != nil {
-		return rerr
-	}
-	dstPath, rerr := c.resolveConfined(dst)
-	if rerr != nil {
-		return rerr
-	}
-
-	// Simple file copy using system commands for better performance
-	cmd := exec.CommandContext(ctx, "cp", srcPath, dstPath)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("copy failed: %w, output: %s", err, string(output))
-	}
-
-	return nil
+	// No external cp: "cp src dir" writes dir/<base(src)> through an entry the check never saw (round 2, R2-1).
+	return copyConfinedFile(ctx, c.mountPoint, c.resolvePath(src), c.resolvePath(dst), src, dst, c.config.AllowSymlinkEscape)
 }
 
 func (c *NFSClient) MoveFile(ctx context.Context, src, dst string) error {
