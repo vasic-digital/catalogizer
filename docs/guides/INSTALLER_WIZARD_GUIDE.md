@@ -331,7 +331,7 @@ After completing the wizard and saving your configuration file:
 
 Copy the configuration file to the Catalogizer server's expected location. By default, the server looks for configuration in:
 
-- Environment variable: `CATALOGIZER_CONFIG_PATH`
+- Environment variable: `CATALOG_CONFIG_PATH`
 - Default path: `./config.json` in the server's working directory
 
 ### 2. Start the Server

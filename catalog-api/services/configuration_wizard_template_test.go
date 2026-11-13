@@ -432,12 +432,26 @@ func TestOBF_FU_RelativeFilePathCannotEscapeConfigPath(t *testing.T) {
 }
 
 // Nit: constructing the service with the process defaults (tests pass nil)
-// must not create ./config under the package directory.
+// must not create ./config. Robust to a pre-existing package-dir ./config: it
+// runs from an empty temp CWD and with CONFIG_PATH unset (the default path).
 func TestOBF_FU_NilServiceDoesNotCreateRelativeConfigDir(t *testing.T) {
+	cwd := t.TempDir()
+	t.Chdir(cwd)
+	t.Setenv("CONFIG_PATH", "")
 	s := NewConfigurationWizardService(nil)
-	assert.NotEqual(t, "./config", s.configPath, "TestMain points CONFIG_PATH at a temp dir")
-	_, err := os.Stat("config")
-	assert.True(t, os.IsNotExist(err), "no ./config created under the package directory")
+	require.NotNil(t, s)
+	// Control: with the default path the constructor DOES create ./config under
+	// the CWD, so the next assertion on the TestMain-configured path is meaningful.
+	_, err := os.Stat(filepath.Join(cwd, "config"))
+	require.NoError(t, err, "control: default CONFIG_PATH creates ./config in the CWD")
+	t.Setenv("CONFIG_PATH", os.Getenv("OBF_TESTMAIN_CONFIG_PATH"))
+	assert.NotEmpty(t, os.Getenv("OBF_TESTMAIN_CONFIG_PATH"), "TestMain exports its temp CONFIG_PATH")
+	cwd2 := t.TempDir()
+	t.Chdir(cwd2)
+	s2 := NewConfigurationWizardService(nil)
+	assert.NotEqual(t, "./config", s2.configPath)
+	_, err = os.Stat(filepath.Join(cwd2, "config"))
+	assert.True(t, os.IsNotExist(err), "no ./config created when CONFIG_PATH points at the temp dir")
 }
 
 // OBF-2: the I1 guard with a sentinel: a pre-existing ./config/config.json in
@@ -486,4 +500,100 @@ func TestOBF1_RestoreWriteErrorIsSurfaced(t *testing.T) {
 	err := s.rollbackConfig(f, []byte("old"), 0o400, true)
 	require.Error(t, err, "restore of a non-writable file must surface its error")
 	assert.Contains(t, err.Error(), "restore")
+}
+
+// F1: an existing file whose content is JSON `null` is not an object: refuse.
+func TestOBF_FU_ExistingNullFileIsNotClobbered(t *testing.T) {
+	s := newTemplateTestService(t)
+	require.NoError(t, os.MkdirAll(s.configPath, 0o755))
+	p := filepath.Join(s.configPath, "null.json")
+	require.NoError(t, os.WriteFile(p, []byte("null"), 0o644))
+	require.Error(t, s.createConfigurationFile(map[string]interface{}{"file_path": "null.json"},
+		&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}))
+	got, _ := os.ReadFile(p)
+	assert.Equal(t, "null", string(got))
+}
+
+// F2: an existing but unreadable file is refused, not overwritten.
+func TestOBF_FU_ExistingUnreadableFileIsNotClobbered(t *testing.T) {
+	s := newTemplateTestService(t)
+	require.NoError(t, os.MkdirAll(s.configPath, 0o755))
+	p := filepath.Join(s.configPath, "u.json")
+	require.NoError(t, os.WriteFile(p, []byte(`{"a":1}`), 0o200))
+	t.Cleanup(func() { _ = os.Chmod(p, 0o600) })
+	if _, err := os.ReadFile(p); err == nil {
+		t.Skip("file readable despite mode 0200 (running as root?)")
+	}
+	require.Error(t, s.createConfigurationFile(map[string]interface{}{"file_path": "u.json"},
+		&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}))
+	require.NoError(t, os.Chmod(p, 0o600))
+	got, _ := os.ReadFile(p)
+	assert.Equal(t, `{"a":1}`, string(got))
+}
+
+// F3: positive control: a name that merely starts with ".." is not an escape.
+func TestOBF_FU_DotDotPrefixedNameIsAllowed(t *testing.T) {
+	s := newTemplateTestService(t)
+	require.NoError(t, s.createConfigurationFile(map[string]interface{}{"file_path": "..foo/ok.json"},
+		&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}))
+	_, err := os.Stat(filepath.Join(s.configPath, "..foo", "ok.json"))
+	assert.NoError(t, err)
+}
+
+// F4: a symlink inside configPath that points outside must not be followed.
+func TestOBF_FU_SymlinkInsideConfigPathCannotEscape(t *testing.T) {
+	s := newTemplateTestService(t)
+	require.NoError(t, os.MkdirAll(s.configPath, 0o755))
+	outside := t.TempDir()
+	require.NoError(t, os.Symlink(outside, filepath.Join(s.configPath, "link")))
+	sess := &models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}
+	require.Error(t, s.createConfigurationFile(map[string]interface{}{"file_path": "link/escape.json"}, sess))
+	require.Error(t, s.createConfigurationFile(map[string]interface{}{"file_path": "link/newdir/escape.json"}, sess))
+	// a file symlink pointing outside is refused too
+	victim := filepath.Join(outside, "victim.json")
+	require.NoError(t, os.WriteFile(victim, []byte(`{"v":1}`), 0o644))
+	require.NoError(t, os.Symlink(victim, filepath.Join(s.configPath, "f.json")))
+	require.Error(t, s.createConfigurationFile(map[string]interface{}{"file_path": "f.json"}, sess))
+	entries, _ := os.ReadDir(outside)
+	assert.Len(t, entries, 1, "nothing created outside configPath")
+	got, _ := os.ReadFile(victim)
+	assert.Equal(t, `{"v":1}`, string(got))
+	// control: a symlink that stays inside is fine
+	require.NoError(t, os.MkdirAll(filepath.Join(s.configPath, "real"), 0o755))
+	require.NoError(t, os.Symlink(filepath.Join(s.configPath, "real"), filepath.Join(s.configPath, "inlink")))
+	require.NoError(t, s.createConfigurationFile(map[string]interface{}{"file_path": "inlink/ok.json"}, sess))
+}
+
+// F5: a non-object existing "config" value is refused, not silently replaced.
+func TestOBF_FU_NonObjectExistingConfigValueRefused(t *testing.T) {
+	s := newTemplateTestService(t)
+	require.NoError(t, os.MkdirAll(s.configPath, 0o755))
+	for i, content := range []string{`{"config":null}`, `{"config":"x"}`, `{"config":[1]}`} {
+		p := filepath.Join(s.configPath, "nc.json")
+		require.NoError(t, os.WriteFile(p, []byte(content), 0o644))
+		require.Error(t, s.createConfigurationFile(map[string]interface{}{"file_path": "nc.json"},
+			&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}), "case %d", i)
+		got, _ := os.ReadFile(p)
+		assert.Equal(t, content, string(got))
+	}
+}
+
+// F7: the writability probes never touch an existing test.tmp (file or symlink)
+// and leave no probe file behind.
+func TestOBF_FU_ProbesDoNotTouchExistingTestTmp(t *testing.T) {
+	s := newTemplateTestService(t)
+	dir := t.TempDir()
+	victim := filepath.Join(t.TempDir(), "victim")
+	require.NoError(t, os.WriteFile(victim, []byte("keep"), 0o644))
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "test.tmp"), []byte("mine"), 0o644))
+	require.NoError(t, os.Symlink(victim, filepath.Join(dir, "test.tmp.link")))
+	require.NoError(t, s.testSQLiteConnection(filepath.Join(dir, "db.sqlite")))
+	require.NoError(t, s.testMediaStorage(map[string]interface{}{"storage_type": "local", "media_path": dir}))
+	got, err := os.ReadFile(filepath.Join(dir, "test.tmp"))
+	require.NoError(t, err, "pre-existing test.tmp survives")
+	assert.Equal(t, "mine", string(got))
+	v, _ := os.ReadFile(victim)
+	assert.Equal(t, "keep", string(v))
+	entries, _ := os.ReadDir(dir)
+	assert.Len(t, entries, 2, "no probe file left behind")
 }

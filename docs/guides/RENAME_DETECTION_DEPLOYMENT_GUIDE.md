@@ -109,9 +109,11 @@ Create `config.json`:
 # Start the service
 ./bin/catalog-api
 
-# With a custom configuration DIRECTORY for the configuration wizard
-# (CONFIG_PATH is a directory, default ./config, not a file path: the wizard
-# writes config.json, backups/ and templates/ inside it)
+# With a custom application config FILE (CATALOG_CONFIG_PATH, default ./config.json)
+CATALOG_CONFIG_PATH=/etc/catalogizer/config.json ./bin/catalog-api
+
+# With a custom configuration-wizard DIRECTORY (CONFIG_PATH is a directory, not a
+# file: the wizard writes config.json, backups/ and templates/ inside it; default ./config)
 CONFIG_PATH=/etc/catalogizer ./bin/catalog-api
 
 # As systemd service (see systemd section below)
@@ -135,7 +137,7 @@ Type=simple
 User=catalogizer
 Group=catalogizer
 ExecStart=/opt/catalogizer/bin/catalog-api
-Environment=CONFIG_PATH=/etc/catalogizer/config.json
+Environment=CATALOG_CONFIG_PATH=/etc/catalogizer/config.json
 Environment=LOG_LEVEL=info
 WorkingDirectory=/opt/catalogizer
 Restart=always
@@ -204,7 +206,7 @@ services:
       - ./config.json:/root/config.json:ro
     environment:
       - LOG_LEVEL=info
-      - CONFIG_PATH=/root/config.json
+      - CATALOG_CONFIG_PATH=/root/config.json
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
@@ -251,7 +253,7 @@ spec:
         ports:
         - containerPort: 8080
         env:
-        - name: CONFIG_PATH
+        - name: CATALOG_CONFIG_PATH
           value: "/config/config.json"
         - name: LOG_LEVEL
           value: "info"

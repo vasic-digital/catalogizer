@@ -970,11 +970,9 @@ func (s *ConfigurationWizardService) testSQLiteConnection(dbPath string) error {
 	}
 
 	// Test write access
-	testFile := filepath.Join(dir, "test.tmp")
-	if err := os.WriteFile(testFile, []byte("test"), 0644); err != nil {
+	if err := probeWritable(dir); err != nil {
 		return fmt.Errorf("no write access to database directory: %w", err)
 	}
-	os.Remove(testFile)
 
 	return nil
 }
@@ -1032,11 +1030,9 @@ func (s *ConfigurationWizardService) testMediaStorage(config map[string]interfac
 		}
 
 		// Test write access
-		testFile := filepath.Join(mediaPath, "test.tmp")
-		if err := os.WriteFile(testFile, []byte("test"), 0644); err != nil {
+		if err := probeWritable(mediaPath); err != nil {
 			return fmt.Errorf("no write access to media directory: %w", err)
 		}
-		os.Remove(testFile)
 
 	case "smb":
 		// Validate SMB connection parameters
@@ -1204,13 +1200,16 @@ func (s *ConfigurationWizardService) createConfigurationFile(params map[string]i
 	}
 
 	// A relative path is resolved against the wizard configPath, never the
-	// process CWD (CAT-OPB-FU I1), and must stay inside it (OBF-FU: "..").
-	// Absolute paths are used as given.
+	// process CWD (CAT-OPB-FU I1), and must stay inside it both lexically ("..")
+	// and after symlink resolution (OBF-FU). Absolute paths are used as given.
 	if !filepath.IsAbs(filePath) {
 		joined := filepath.Join(s.configPath, filePath)
 		rel, relErr := filepath.Rel(filepath.Clean(s.configPath), joined)
 		if relErr != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
 			return fmt.Errorf("file_path %q resolves outside the configuration directory", filePath)
+		}
+		if err := s.ensureResolvedInsideConfigDir(joined); err != nil {
+			return fmt.Errorf("file_path %q: %w", filePath, err)
 		}
 		filePath = joined
 	}
@@ -1233,8 +1232,9 @@ func (s *ConfigurationWizardService) createConfigurationFile(params map[string]i
 	// MERGE, NEVER OVERWRITE (OBF-5, operator decision 2026-11-13): the target
 	// may be the config.json that finalizeConfiguration just wrote (version,
 	// generated_at, generated_by, user_id, configuration). Its keys win; the
-	// template content merges under them. An existing file that is not a JSON
-	// object is never clobbered.
+	// template content merges under them (deep merge, existing value wins on a
+	// clash, see mergeConfigMaps). An existing file that is not a JSON object,
+	// or whose "config" value is not an object, is never clobbered.
 	doc := map[string]interface{}{"config": data}
 	existing, readErr := os.ReadFile(filePath)
 	switch {
@@ -1243,12 +1243,75 @@ func (s *ConfigurationWizardService) createConfigurationFile(params map[string]i
 		if err := json.Unmarshal(existing, &prev); err != nil || prev == nil {
 			return fmt.Errorf("existing file %s is not a JSON object; refusing to overwrite it", filePath)
 		}
+		if v, has := prev["config"]; has {
+			if _, isMap := v.(map[string]interface{}); !isMap {
+				return fmt.Errorf("existing file %s has a non-object \"config\" value; refusing to overwrite it", filePath)
+			}
+		}
 		doc = mergeConfigMaps(doc, prev)
 	case !os.IsNotExist(readErr):
 		return fmt.Errorf("cannot read existing file %s: %w", filePath, readErr)
 	}
 
 	return s.writeConfigFile(filePath, doc)
+}
+
+// ensureResolvedInsideConfigDir refuses a target whose symlink-resolved location
+// is outside the symlink-resolved configPath. The deepest existing ancestor of
+// the target (the target itself when it exists) is resolved; the not-yet-existing
+// tail cannot contain a link.
+func (s *ConfigurationWizardService) ensureResolvedInsideConfigDir(target string) error {
+	base, err := filepath.EvalSymlinks(s.configPath)
+	if err != nil {
+		return fmt.Errorf("cannot resolve configuration directory %s: %w", s.configPath, err)
+	}
+	cur, tail := target, ""
+	for {
+		resolved, rerr := filepath.EvalSymlinks(cur)
+		if rerr == nil {
+			full := filepath.Join(resolved, tail)
+			rel, relErr := filepath.Rel(base, full)
+			if relErr != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+				return fmt.Errorf("resolves outside the configuration directory through a symbolic link")
+			}
+			return nil
+		}
+		if !os.IsNotExist(rerr) {
+			return fmt.Errorf("cannot resolve %s: %w", cur, rerr)
+		}
+		parent := filepath.Dir(cur)
+		if parent == cur {
+			return fmt.Errorf("cannot resolve %s: no existing ancestor", target)
+		}
+		tail = filepath.Join(filepath.Base(cur), tail)
+		cur = parent
+	}
+}
+
+// probeWritable checks write access to dir with a uniquely named temporary file
+// that is always removed; it never touches a file the operator already has
+// (OBF-FU F7).
+func probeWritable(dir string) error {
+	f, err := os.CreateTemp(dir, ".catalogizer-probe-*")
+	if err != nil {
+		return err
+	}
+	name := f.Name()
+	werr := func() error {
+		if _, e := f.Write([]byte("test")); e != nil {
+			return e
+		}
+		return nil
+	}()
+	cerr := f.Close()
+	rerr := os.Remove(name)
+	if werr != nil {
+		return werr
+	}
+	if cerr != nil {
+		return cerr
+	}
+	return rerr
 }
 
 //go:embed wizard_templates/*.json

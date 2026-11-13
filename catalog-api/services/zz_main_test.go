@@ -20,6 +20,7 @@ func TestMain(m *testing.M) {
 		panic(mkErr)
 	}
 	os.Setenv("CONFIG_PATH", cfgDir)
+	os.Setenv("OBF_TESTMAIN_CONFIG_PATH", cfgDir)
 	code := m.Run()
 	cleanupProdBinary()
 	if cfgDir != "" && filepath.IsAbs(cfgDir) {
