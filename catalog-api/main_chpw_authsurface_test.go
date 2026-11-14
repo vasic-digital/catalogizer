@@ -120,13 +120,13 @@ var (
 	// Functions allowed to name gin's engine/group types (they ARE the wiring).
 	sanctionedFuncs = map[string]bool{
 		"buildRouter": true, "registerAuthRoutes": true, "registerChangePasswordRoute": true,
-		"registerWebSocketRoute": true, "applyTrustedProxies": true, "setTrustedProxies": true, "verifyAuthRouteTable": true,
+		"registerWebSocketRoute": true, "applyTrustedProxies": true, "setTrustedProxies": true, "verifyAuthRouteTable": true, "engineChain": true,
 	}
 	// Callees an engine/group-typed value may be handed to.
 	handoffCallees = map[string]bool{
 		"applyTrustedProxies": true, "setTrustedProxies": true, "registerWebSocketRoute": true,
 		"registerAuthRoutes": true, "registerChangePasswordRoute": true, "root_middleware.RegisterChangePassword": true,
-		"verifyAuthRouteTable": true,
+		"verifyAuthRouteTable": true, "engineChain": true,
 	}
 	// Engine-level middleware buildRouter installs before the auth group exists
 	// (the runtime tier pins the resulting chains; this list is the cheap source-level twin).
@@ -149,6 +149,13 @@ var (
 	wantAuthGroupIdents = map[string]int{"main_router.go": 2, "main_chpw.go": 2}
 	// Groups whose folded path is a proper segment prefix of /api/v1/auth.
 	allowedPrefixGroups = map[string]int{"api/v1": 1}
+	// Engine members that install a fallback handler, serve a context again or
+	// change path matching; none is used by package main (CAT-CHPW-RL-2 F1).
+	bannedEngineSel = map[string]bool{
+		"NoRoute": true, "NoMethod": true, "HandleContext": true, "UseRawPath": true,
+		"RemoveExtraSlash": true, "RedirectTrailingSlash": true, "RedirectFixedPath": true,
+		"HandleMethodNotAllowed": true, "UnescapePathValues": true, "UseH2C": true,
+	}
 )
 
 func isGinTypeSel(se *ast.SelectorExpr) bool {
@@ -251,6 +258,8 @@ func scanAuthSurface(fset *token.FileSet, files map[string]*ast.File) []string {
 	}
 
 	defines := 0
+	var authDefPos token.Pos
+	var useSeq []string
 	sanctionedDef := map[*ast.CallExpr]bool{}
 	prefixGroups := map[string]int{}
 	identCount := map[string]int{}
@@ -348,8 +357,24 @@ func scanAuthSurface(fset *token.FileSet, files map[string]*ast.File) []string {
 					if engineIdents[v.Name] && !okIdent[v] {
 						add("%s: %s:%d: engine/group value %q used outside a method-call receiver, return, Handler: or sanctioned helper argument (alias/handoff)", fname, name, fset.Position(v.Pos()).Line, v.Name)
 					}
+				case *ast.KeyValueExpr:
+					// A server's Handler: must be exactly the engine value `router`
+					// (anything else wraps or replaces the engine; F1).
+					if k, ok := v.Key.(*ast.Ident); ok && k.Name == "Handler" {
+						if id, ok := v.Value.(*ast.Ident); !ok || id.Name != "router" {
+							add("%s:%d: Handler: must be exactly `router` (found %s): a wrapper could answer /api/v1/auth outside the checked chains", name, fset.Position(v.Pos()).Line, exprText(fset, v.Value))
+						}
+					}
 				case *ast.SelectorExpr:
 					line := fset.Position(v.Pos()).Line
+					if bannedEngineSel[v.Sel.Name] {
+						add("%s:%d: .%s is banned in package main: it installs a fallback handler or changes path matching outside the checked route chains", name, line, v.Sel.Name)
+					}
+					if v.Sel.Name == "Handler" {
+						if id, ok := v.X.(*ast.Ident); ok && engineIdents[id.Name] {
+							add("%s:%d: %s.Handler on an engine value is banned", name, line, id.Name)
+						}
+					}
 					if v.Sel.Name == "Handlers" || v.Sel.Name == "RouterGroup" {
 						add("%s:%d: direct access to gin's .%s field", name, line, v.Sel.Name)
 					}
@@ -381,14 +406,9 @@ func scanAuthSurface(fset *token.FileSet, files map[string]*ast.File) []string {
 							if v.Ellipsis.IsValid() {
 								d += "..."
 							}
-							okU := false
-							for _, a := range allowedRouterUseBeforeAuth {
-								if a == d {
-									okU = true
-								}
-							}
-							if !okU {
-								add("%s:%d: router.Use(%s) in buildRouter is not on the recorded pre-group allow-list", name, line, d)
+							useSeq = append(useSeq, d)
+							if authDefPos.IsValid() && v.Pos() > authDefPos {
+								add("%s:%d: router.Use(%s) after the auth group definition (middleware order)", name, line, d)
 							}
 						case base == "" && name == "main.go" && fname == "main":
 						case base == "":
@@ -425,6 +445,12 @@ func scanAuthSurface(fset *token.FileSet, files map[string]*ast.File) []string {
 					if segHasPrefix(full, authPrefix) || full == "auth" || strings.HasPrefix(full, "auth/") || (!known && (segHasPrefix(strings.ToLower(strings.Trim(rel, "/")), "auth"))) {
 						add("%s:%d: %s(%q) registers under the auth surface outside registerAuthRoutes", name, line, method, rel)
 					}
+					if segHasPrefix(full, "api/v1") && full != "api/v1" {
+						first := strings.Split(strings.TrimPrefix(full, "api/v1/"), "/")[0]
+						if strings.HasPrefix(first, ":") || strings.HasPrefix(first, "*") {
+							add("%s:%d: %s(%q) registers a capture/wildcard directly under /api/v1: it would conflict with the static auth segment and stop the server at startup", name, line, method, rel)
+						}
+					}
 					if method == "Group" && full != "" && segHasPrefix(authPrefix, full) && full != authPrefix {
 						prefixGroups[full]++
 					}
@@ -450,6 +476,7 @@ func scanAuthSurface(fset *token.FileSet, files map[string]*ast.File) []string {
 							continue
 						}
 						defines++
+						authDefPos = as.Pos()
 						okShape := as.Tok == token.DEFINE && name == "main_router.go" && fd.Name.Name == "buildRouter" && len(as.Lhs) == 1 && len(as.Rhs) == 1
 						if okShape {
 							c, isCall := as.Rhs[0].(*ast.CallExpr)
@@ -484,6 +511,9 @@ func scanAuthSurface(fset *token.FileSet, files map[string]*ast.File) []string {
 				walkFn("", d, nil)
 			}
 		}
+	}
+	if got := strings.Join(useSeq, " | "); got != strings.Join(allowedRouterUseBeforeAuth, " | ") {
+		add("buildRouter's engine Use sequence differs from the recorded ordered list (order matters, F3):\n got  %s\n want %s", got, strings.Join(allowedRouterUseBeforeAuth, " | "))
 	}
 	if defines != 1 {
 		add("authGroup must be defined exactly once, found %d", defines)
@@ -620,7 +650,7 @@ func TestAuthSurfaceGuard_Mutants(t *testing.T) {
 		{"N8_RouterGroup_embedded_Use_call", "direct access to gin's .RouterGroup", func(d string) {
 			edit(t, d, "main_router.go", defn, "router.RouterGroup.Use(evil)\n\t"+defn)
 		}},
-		{"N9_closure_wraps_router_Use", "not on the recorded pre-group allow-list", func(d string) {
+		{"N9_closure_wraps_router_Use", "engine Use sequence differs from the recorded ordered list", func(d string) {
 			edit(t, d, "main_router.go", defn, "useIt := func(h gin.HandlerFunc) { router.Use(h) }\n\tuseIt(evil)\n\t"+defn)
 		}},
 		{"N10_router_alias", "engine/group value \"router\" used outside", func(d string) {
@@ -647,10 +677,35 @@ func TestAuthSurfaceGuard_Mutants(t *testing.T) {
 		{"N17_package_level_authGroup", "package-level declaration of authGroup", func(d string) {
 			addFile(t, d, "zz_n17.go", "var authGroup gin.IRoutes\n")
 		}},
-		{"N18_unallowlisted_engine_Use", "not on the recorded pre-group allow-list", func(d string) {
+		{"F5_capture_directly_under_api_v1", "registers a capture/wildcard directly under /api/v1", func(d string) {
+			edit(t, d, "main_router.go", defn, defn+"\n\trouter.GET(\"/api/v1/:lang/x\", func(c *gin.Context) {})")
+		}},
+		{"R1_NoRoute_in_buildRouter", ".NoRoute is banned", func(d string) {
+			edit(t, d, "main_router.go", defn, "router.NoRoute(func(c *gin.Context) { c.Status(200) })\n\t"+defn)
+		}},
+		{"R1b_NoMethod_in_main", ".NoMethod is banned", func(d string) {
+			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {", "router.NoMethod(nil)\n\tif err := verifyAuthRouteTable(router); err != nil {")
+		}},
+		{"R8_HandleContext_wrapper", ".HandleContext is banned", func(d string) {
+			addFile(t, d, "zz_r8.go", "func r8(router *gin.Engine) { router.HandleContext(nil) }\n")
+		}},
+		{"R8b_server_Handler_wrapped", "Handler: must be exactly `router`", func(d string) {
+			addFile(t, d, "zz_r8b.go", "var _ = http.Server{Handler: http.HandlerFunc(nil)}\n")
+		}},
+		{"R8c_engine_dot_Handler", "engine value is banned", func(d string) {
+			edit(t, d, "main_router.go", defn, "_ = router.Handler\n\t"+defn)
+		}},
+		{"R2_same_name_middleware_order_swapped", "engine Use sequence differs from the recorded ordered list", func(d string) {
+			edit(t, d, "main_router.go", "router.Use(metrics.GinMiddleware())", "router.Use(firebase.GinMiddleware(firebaseApp)) //M")
+			edit(t, d, "main_router.go", "router.Use(firebase.GinMiddleware(firebaseApp))\n\trouter.Use(root_middleware.RequestID())", "router.Use(metrics.GinMiddleware())\n\trouter.Use(root_middleware.RequestID())")
+		}},
+		{"R6_InputValidation_moved_after_group", "after the auth group definition", func(d string) {
+			edit(t, d, "main_router.go", defn, defn+"\n\trouter.Use(root_middleware.InputValidation())")
+		}},
+		{"N18_unallowlisted_engine_Use", "engine Use sequence differs from the recorded ordered list", func(d string) {
 			edit(t, d, "main_router.go", "router.Use(root_middleware.RequestID())", "router.Use(authBypass())\n\trouter.Use(root_middleware.RequestID())")
 		}},
-		{"N19_hook_slice_spread_into_engine_Use", "not on the recorded pre-group allow-list", func(d string) {
+		{"N19_hook_slice_spread_into_engine_Use", "engine Use sequence differs from the recorded ordered list", func(d string) {
 			edit(t, d, "main_router.go", "router.Use(root_middleware.RequestID())", "router.Use(hooks...)\n\trouter.Use(root_middleware.RequestID())")
 		}},
 		{"N20_auth_route_in_other_file_via_const", "registers under the auth surface", func(d string) {
@@ -696,4 +751,94 @@ func TestAuthSurfaceGuard_GoldenFalse(t *testing.T) {
 			require.Empty(t, mutate(t, fn))
 		})
 	}
+}
+
+// helperAPIParam names, for each Register*Routes helper mounted on the /api/v1
+// group, the parameter that IS that group. Their first path segment becomes the
+// first segment under /api/v1 (CAT-CHPW-RL-2 F5): a ":x"/"*x" capture there
+// conflicts with the static "auth" segment and stops the server at startup, and an
+// "auth" segment would add routes to the auth surface.
+var helperAPIParam = map[string]string{
+	"RegisterStorageRoutes":  "api",
+	"RegisterSubtitleRoutes": "api",
+	"RegisterAliasRoutes":    "api",
+}
+
+func scanRouteHelpers(fset *token.FileSet, files map[string]*ast.File) (out []string, seen map[string]bool) {
+	seen = map[string]bool{}
+	binds := buildBinds(files)
+	for fname, f := range files {
+		for _, d := range f.Decls {
+			fd, ok := d.(*ast.FuncDecl)
+			if !ok || fd.Body == nil {
+				continue
+			}
+			param, ok := helperAPIParam[fd.Name.Name]
+			if !ok {
+				continue
+			}
+			seen[fd.Name.Name] = true
+			ast.Inspect(fd.Body, func(n ast.Node) bool {
+				c, ok := n.(*ast.CallExpr)
+				if !ok {
+					return true
+				}
+				se, ok := c.Fun.(*ast.SelectorExpr)
+				if !ok {
+					return true
+				}
+				id, ok := se.X.(*ast.Ident)
+				if !ok || id.Name != param {
+					return true
+				}
+				idx, isReg := regPathIdx[se.Sel.Name]
+				if !isReg || len(c.Args) <= idx {
+					return true
+				}
+				line := fset.Position(c.Pos()).Line
+				rel, folded := foldString(c.Args[idx], binds)
+				if !folded {
+					out = append(out, fmt.Sprintf("%s:%d: %s path cannot be constant-folded; fail closed", filepath.Base(fname), line, se.Sel.Name))
+					return true
+				}
+				first := strings.ToLower(strings.Split(strings.Trim(path.Clean("/"+rel), "/"), "/")[0])
+				if first == "auth" || strings.HasPrefix(first, ":") || strings.HasPrefix(first, "*") {
+					out = append(out, fmt.Sprintf("%s:%d: %s(%q) puts %q directly under /api/v1", filepath.Base(fname), line, se.Sel.Name, rel, first))
+				}
+				return true
+			})
+		}
+	}
+	return out, seen
+}
+
+func TestRouteHelpersNoAuthOrCaptureFirstSegment(t *testing.T) {
+	fset := token.NewFileSet()
+	files := map[string]*ast.File{}
+	for _, n := range []string{"handlers/storage_routes.go", "handlers/subtitle_routes.go", "handlers/alias_routes.go"} {
+		f, err := parser.ParseFile(fset, n, nil, 0)
+		require.NoError(t, err)
+		files[n] = f
+	}
+	out, seen := scanRouteHelpers(fset, files)
+	for name := range helperAPIParam {
+		require.True(t, seen[name], "helper %s not found: scan matched nothing, fail closed", name)
+	}
+	require.Empty(t, out)
+	// Mutants: each must be reported.
+	for name, src := range map[string]string{
+		"capture_first_segment": "package handlers\nfunc RegisterAliasRoutes(api *gin.RouterGroup) { api.GET(\"/:lang/x\", nil) }\n",
+		"wildcard_first":        "package handlers\nfunc RegisterAliasRoutes(api *gin.RouterGroup) { api.GET(\"/*rest\", nil) }\n",
+		"auth_first_upper":      "package handlers\nfunc RegisterAliasRoutes(api *gin.RouterGroup) { api.POST(\"/AUTH/evil\", nil) }\n",
+		"unfoldable_path":       "package handlers\nfunc RegisterAliasRoutes(api *gin.RouterGroup) { api.GET(p(), nil) }\n",
+	} {
+		f, err := parser.ParseFile(fset, "m.go", src, 0)
+		require.NoError(t, err)
+		got, _ := scanRouteHelpers(fset, map[string]*ast.File{"m.go": f})
+		require.NotEmpty(t, got, name)
+	}
+	f, err := parser.ParseFile(fset, "g.go", "package handlers\nfunc RegisterAliasRoutes(api *gin.RouterGroup) { api.GET(\"/authors\", nil); api.GET(\"/files/:id\", nil) }\n", 0)
+	require.NoError(t, err)
+	got, _ := scanRouteHelpers(fset, map[string]*ast.File{"g.go": f})
+	require.Empty(t, got, "golden-FALSE: sibling prefix and a capture below a static segment")
 }

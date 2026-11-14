@@ -7,9 +7,11 @@ import (
 	"net/http/pprof"
 	"os"
 	"path"
+	"reflect"
 	"sort"
 	"strings"
 	"time"
+	"unsafe"
 
 	root_config "catalogizer/config"
 	"catalogizer/database"
@@ -31,7 +33,11 @@ import (
 
 // routerDeps are the collaborators buildRouter wires into the engine up to and
 // including the /api/v1/auth group (CAT-CHPW-RL-2). main() builds them; a unit
-// test passes fakes for the non-auth ones and walks the REAL engine.
+// test passes fakes for the non-auth ones and walks the REAL engine. Boundary:
+// main() still registers the remaining /api/v1 routes inline on the engine this
+// function returns (too large to extract); those are covered at source level by the
+// package-main AST scan and at startup by verifyAuthRouteTable, not by a unit test
+// that builds them.
 type routerDeps struct {
 	Logger       *zap.Logger
 	Cfg          *root_config.Config
@@ -253,7 +259,8 @@ func buildRouter(d routerDeps) *gin.Engine {
 	router.GET("/api/v1/cover/:id", root_middleware.CacheHeaders(86400), coverHandler.ServeCover)
 
 	// Authentication routes (registered by registerAuthRoutes, main_chpw.go; the
-	// route table is pinned by TestRegisterAuthRoutes_*, CAT-CHPW-RL-1).
+	// route table and every route's handler chain are pinned by
+	// TestBuildRouterAuthSurface, CAT-CHPW-RL-2).
 	authGroup := router.Group("/api/v1/auth")
 	registerAuthRoutes(authGroup, authRoutesDeps{
 		LoginRate:      loginRateLimiter,
@@ -277,10 +284,14 @@ func buildRouter(d routerDeps) *gin.Engine {
 
 // authRouteTable is the exact set of routes allowed on the /api/v1/auth surface
 // ("METHOD path", sorted). verifyAuthRouteTable enforces it at startup over the
-// engine main() finished building, so a route added anywhere in main() (or in a
-// helper main() hands a group to) under /api/v1/auth, however its path is spelled,
-// stops the process instead of serving unrated. TestBuildRouterAuthSurface pins the
-// same table together with every route's handler chain (CAT-CHPW-RL-2).
+// engine main() finished building. Scope, stated truthfully: it sees every route
+// gin registered in the route trees (so a route added anywhere in main() or in a
+// helper it hands a group to, however its path is spelled, is caught because gin
+// cleans the path) and it refuses a non-default NoRoute/NoMethod chain, the one
+// other channel that can answer an /api/v1/auth path. It does NOT see the handler
+// chain of a route (TestBuildRouterAuthSurface pins that for the routes buildRouter
+// registers) nor anything outside gin's engine (a wrapper around the engine in
+// http.Server.Handler is refused by the package-main AST scan, not here).
 var authRouteTable = []string{
 	"GET /api/v1/auth/init-status",
 	"GET /api/v1/auth/me",
@@ -309,9 +320,47 @@ func onAuthSurface(p string) bool {
 	return segs[0] == "auth"
 }
 
+// engineChain reads a HandlersChain field of the engine by name (Handlers,
+// allNoRoute, allNoMethod). Reflection with unsafe is the only way gin 1.12 exposes them.
+func engineChain(eng any, field string) (gin.HandlersChain, error) {
+	f := reflect.ValueOf(eng).Elem().FieldByName(field)
+	if !f.IsValid() || f.Type() != reflect.TypeOf(gin.HandlersChain(nil)) {
+		return nil, fmt.Errorf("gin Engine.%s not found: gin layout changed", field)
+	}
+	return *(*gin.HandlersChain)(unsafe.Pointer(f.UnsafeAddr())), nil
+}
+
+func sameHandlers(a, b gin.HandlersChain) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if reflect.ValueOf(a[i]).Pointer() != reflect.ValueOf(b[i]).Pointer() {
+			return false
+		}
+	}
+	return true
+}
+
 // verifyAuthRouteTable returns an error when the engine's auth-surface routes
-// differ from authRouteTable.
+// differ from authRouteTable, or when a NoRoute/NoMethod handler is installed:
+// without one, the fallback chain of both is exactly the engine's global
+// middleware, and anything else could answer an unregistered /api/v1/auth path
+// without the route's limiter.
 func verifyAuthRouteTable(e *gin.Engine) error {
+	global, err := engineChain(e, "Handlers")
+	if err != nil {
+		return err
+	}
+	for _, field := range []string{"allNoRoute", "allNoMethod"} {
+		ch, err := engineChain(e, field)
+		if err != nil {
+			return err
+		}
+		if !sameHandlers(ch, global) {
+			return fmt.Errorf("engine %s chain differs from the global middleware: a NoRoute/NoMethod handler is installed", field)
+		}
+	}
 	var got []string
 	for _, ri := range e.Routes() {
 		if onAuthSurface(ri.Path) {
