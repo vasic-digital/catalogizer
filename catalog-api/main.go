@@ -857,7 +857,7 @@ func main() {
 	playbackHandler := root_handlers.NewPlaybackHandler(playbackSessionRepo)
 
 	// Scan handler for storage roots and scan operations
-	scanHandler := root_handlers.NewScanHandler(universalScanner, databaseDB)
+	scanHandler := root_handlers.NewScanHandler(universalScanner, databaseDB).WithAdminChecker(userRepo.IsAdmin)
 
 	// Create service adapters to bridge interface differences between services and handlers
 	authAdapter := &root_handlers.AuthServiceAdapter{Inner: authService}

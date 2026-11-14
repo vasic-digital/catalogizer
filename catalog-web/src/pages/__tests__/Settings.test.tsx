@@ -374,6 +374,14 @@ describe('Settings', () => {
       expect(startBtn.closest('button')).toBeDisabled()
     })
 
+    it('non-admin: no Start New Scan card and no storage-roots request (SSE-OPQ-1)', async () => {
+      authState.isAdmin = false
+      render(<Settings />, { wrapper: createWrapper() })
+      await screen.findByText('No scans recorded yet.')
+      expect(screen.queryByText('Start New Scan')).not.toBeInTheDocument()
+      expect(screen.queryByLabelText('Storage Root')).not.toBeInTheDocument()
+    })
+
     it('renders default option in storage root select', () => {
       render(<Settings />, { wrapper: createWrapper() })
       const select = screen.getByLabelText('Storage Root')

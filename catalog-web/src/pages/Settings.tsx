@@ -41,6 +41,7 @@ const failureMessage = (err: unknown, fallback: string): string =>
 // --- Scans Section ---
 const ScansSection: React.FC = () => {
   const queryClient = useQueryClient()
+  const { isAdmin } = useAuth()
   const [selectedRootId, setSelectedRootId] = useState<number>(0)
 
   const { data: scans, isLoading: scansLoading } = useQuery({
@@ -52,6 +53,8 @@ const ScansSection: React.FC = () => {
   const { data: storageRoots } = useQuery({
     queryKey: ['storage-roots'],
     queryFn: () => mediaApi.getStorageRoots(),
+    // GET /storage/roots is administrator-only (SSE-OPQ-1); only an admin can queue a scan, so only an admin needs the list.
+    enabled: isAdmin,
   })
 
   const queueMutation = useMutation({
@@ -81,44 +84,46 @@ const ScansSection: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plus className="h-5 w-5" />
-            Start New Scan
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-end gap-4">
-            <div className="flex-1">
-              <label htmlFor="scan-root-select" className="text-sm font-medium text-gray-700 dark:text-gray-200 block mb-2">
-                Storage Root
-              </label>
-              <select
-                id="scan-root-select"
-                className="w-full h-11 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
-                value={selectedRootId}
-                onChange={(e) => setSelectedRootId(Number(e.target.value))}
+      {isAdmin && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5" />
+              Start New Scan
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-end gap-4">
+              <div className="flex-1">
+                <label htmlFor="scan-root-select" className="text-sm font-medium text-gray-700 dark:text-gray-200 block mb-2">
+                  Storage Root
+                </label>
+                <select
+                  id="scan-root-select"
+                  className="w-full h-11 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                  value={selectedRootId}
+                  onChange={(e) => setSelectedRootId(Number(e.target.value))}
+                >
+                  <option value={0}>Select a storage root...</option>
+                  {storageRoots?.map((root) => (
+                    <option key={root.id} value={root.id}>
+                      {root.name} ({root.protocol})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <Button
+                onClick={handleStartScan}
+                loading={queueMutation.isPending}
+                disabled={!selectedRootId}
               >
-                <option value={0}>Select a storage root...</option>
-                {storageRoots?.map((root) => (
-                  <option key={root.id} value={root.id}>
-                    {root.name} ({root.protocol})
-                  </option>
-                ))}
-              </select>
+                <Play className="h-4 w-4 mr-2" />
+                Start Scan
+              </Button>
             </div>
-            <Button
-              onClick={handleStartScan}
-              loading={queueMutation.isPending}
-              disabled={!selectedRootId}
-            >
-              <Play className="h-4 w-4 mr-2" />
-              Start Scan
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

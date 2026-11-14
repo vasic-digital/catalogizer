@@ -2031,8 +2031,8 @@ List files in a storage path.
 
 Get all available storage root configurations.
 
-**Description:** Lists configured storage roots (SMB, FTP, NFS, WebDAV, local).
-**Auth:** Required
+**Description:** Lists configured storage roots (SMB, FTP, NFS, WebDAV, local) with their connection data (host, path, username, domain).
+**Auth:** Required; **admin only** (SSE-OPQ-1). A non-admin gets 403; if the live admin check fails the request is refused with 503. Authenticated non-admin clients list roots through `GET /api/v1/browse/roots`, which carries no connection data.
 **Rate Limit:** Standard (2000/min)
 
 **Response:** 200 OK
@@ -2090,7 +2090,7 @@ The accepted protocols are the ones the client factory builds (`local`, `smb`, `
 Alias for GET /api/v1/storage/roots. Returns same response.
 
 **Description:** Alternative path for listing storage roots.
-**Auth:** Required
+**Auth:** Required; **admin only** (SSE-OPQ-1), same as GET /api/v1/storage/roots.
 **Rate Limit:** Standard (2000/min)
 
 ---
@@ -2720,7 +2720,7 @@ Queue a new scan job for a storage root.
 
 List all scan jobs with their status.
 
-**Description:** Returns recent and active scan operations.
+**Description:** Returns recent and active scan operations. For a non-admin caller the failure text `reason` of a failed scan is replaced by the fixed text `scan error (details restricted to administrators)`; admins see the raw text (SSE-OPQ-1).
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
@@ -2747,7 +2747,7 @@ List all scan jobs with their status.
 
 Get the status of a specific scan job.
 
-**Description:** Returns detailed progress for a scan operation.
+**Description:** Returns detailed progress for a scan operation. A non-admin caller sees the fixed text `scan error (details restricted to administrators)` instead of a non-empty `reason`; admins see the raw text (SSE-OPQ-1).
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 
@@ -5020,8 +5020,8 @@ Directory browsing and file information endpoints using the database file reposi
 
 Get all storage roots available for browsing.
 
-**Description:** Lists storage roots with browse-relevant metadata.
-**Auth:** Required
+**Description:** Lists storage roots with browse-relevant metadata only: `id`, `name`, `protocol`, `enabled`, `max_depth`, `created_at`, `updated_at`, `last_scan_at`. No host, port, path, username, password, domain, mount point, options or url (SSE-OPQ-1).
+**Auth:** Required (any authenticated user)
 **Rate Limit:** Standard (2000/min)
 
 ---

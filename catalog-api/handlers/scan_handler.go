@@ -37,6 +37,33 @@ type ScanHandler struct {
 	clientFactory filesystem.ClientFactory
 	// listMaxEntries bounds one /storage/list response (0 = defaultListMaxEntries).
 	listMaxEntries int
+	// isAdmin is the live admin check (production wires UserRepository.IsAdmin); see callerIsAdmin.
+	isAdmin func(ctx context.Context, userID int) (bool, error)
+}
+
+// WithAdminChecker installs the live admin check (SSE-OPQ-1). Without it the role_id claim in the request context is used.
+func (h *ScanHandler) WithAdminChecker(f func(ctx context.Context, userID int) (bool, error)) *ScanHandler {
+	h.isAdmin = f
+	return h
+}
+
+// callerIsAdmin reports whether the caller is an administrator; any failure (no/invalid user id, checker error) fails closed (false).
+// It is the same decision as StatsHandler.callerIsAdmin (STATS-SCANS-ERR-1).
+func (h *ScanHandler) callerIsAdmin(c *gin.Context) bool {
+	if h.isAdmin != nil {
+		uid, ok := statsActorID(c)
+		if !ok {
+			return false
+		}
+		admin, err := h.isAdmin(c.Request.Context(), uid)
+		return err == nil && admin
+	}
+	if r, ok := c.Get("role_id"); ok {
+		if id, isInt := r.(int); isInt {
+			return id == 1
+		}
+	}
+	return false
 }
 
 // defaultListMaxEntries bounds the entries one /storage/list call may return; more are reported with "truncated": true.
@@ -490,9 +517,10 @@ func (h *ScanHandler) QueueScan(c *gin.Context) {
 // Returns all active scan statuses.
 func (h *ScanHandler) ListScans(c *gin.Context) {
 	statuses := h.scanner.GetAllActiveScanStatuses()
+	admin := h.callerIsAdmin(c)
 	scans := make([]gin.H, 0, len(statuses))
 	for id, s := range statuses {
-		scans = append(scans, scanStatusToJSON(id, s))
+		scans = append(scans, scanStatusToJSON(id, s, admin))
 	}
 	c.JSON(http.StatusOK, gin.H{"scans": scans})
 }
@@ -513,7 +541,7 @@ func (h *ScanHandler) GetScanStatus(c *gin.Context) {
 		return
 	}
 	snapshot := status.GetSnapshot()
-	c.JSON(http.StatusOK, scanStatusToJSON(jobID, &snapshot))
+	c.JSON(http.StatusOK, scanStatusToJSON(jobID, &snapshot, h.callerIsAdmin(c)))
 }
 
 // loadStorageRoot reads a StorageRoot from the database by ID. It selects every column the settings contract consumes
@@ -532,9 +560,14 @@ func (h *ScanHandler) loadStorageRoot(ctx context.Context, id int64) (*models.St
 	return &root, nil
 }
 
-// scanStatusToJSON converts a ScanStatus to a JSON-friendly map.
-func scanStatusToJSON(jobID string, s *services.ScanStatus) gin.H {
+// scanStatusToJSON converts a ScanStatus to a JSON-friendly map. A non-admin never sees the raw failure text (it can carry host,
+// share and account names): a non-empty reason is replaced by the fixed class text (SSE-OPQ-1).
+func scanStatusToJSON(jobID string, s *services.ScanStatus, admin bool) gin.H {
 	elapsed := time.Since(s.StartTime).Milliseconds()
+	reason := s.Reason
+	if !admin && reason != "" {
+		reason = scanErrorClassText
+	}
 	return gin.H{
 		"job_id":          jobID,
 		"storage_root":    s.StorageRootName,
@@ -548,7 +581,7 @@ func scanStatusToJSON(jobID string, s *services.ScanStatus) gin.H {
 		"files_updated":   s.FilesUpdated,
 		"files_deleted":   s.FilesDeleted,
 		"error_count":     s.ErrorCount,
-		"reason":          s.Reason,
+		"reason":          reason,
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"catalogizer/models"
 	"catalogizer/repository"
@@ -30,7 +31,7 @@ func NewBrowseHandler(fileRepo *repository.FileRepository) *BrowseHandler {
 // @Tags browse
 // @Accept json
 // @Produce json
-// @Success 200 {array} models.StorageRoot
+// @Success 200 {array} browseRootView
 // @Failure 500 {object} utils.SendErrorResponse
 // @Router /api/browse/roots [get]
 func (h *BrowseHandler) GetStorageRoots(c *gin.Context) {
@@ -42,10 +43,32 @@ func (h *BrowseHandler) GetStorageRoots(c *gin.Context) {
 		return
 	}
 
+	// Any authenticated user may call this: only what a browse UI needs is returned. Host, port, path, username, password, domain,
+	// mount point, options and url are connection data and stay admin-only (GET /storage/roots) (SSE-OPQ-1).
+	safe := make([]browseRootView, 0, len(roots))
+	for _, r := range roots {
+		safe = append(safe, browseRootView{
+			ID: r.ID, Name: r.Name, Protocol: r.Protocol, Enabled: r.Enabled, MaxDepth: r.MaxDepth,
+			CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt, LastScanAt: r.LastScanAt,
+		})
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
-		"data":    roots,
+		"data":    safe,
 	})
+}
+
+// browseRootView is the connection-data-free projection of a storage root returned by /browse/roots.
+type browseRootView struct {
+	ID         int64      `json:"id"`
+	Name       string     `json:"name"`
+	Protocol   string     `json:"protocol"`
+	Enabled    bool       `json:"enabled"`
+	MaxDepth   int        `json:"max_depth"`
+	CreatedAt  time.Time  `json:"created_at"`
+	UpdatedAt  time.Time  `json:"updated_at"`
+	LastScanAt *time.Time `json:"last_scan_at"`
 }
 
 // BrowseDirectory godoc
