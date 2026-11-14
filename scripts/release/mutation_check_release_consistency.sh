@@ -285,6 +285,13 @@ except subprocess.TimeoutExpired:'
 'CAT-REL-CHECK-3 R2-3 raw_tree_check scratch file outside the snapshot|||mktemp "${SNAP:?}/.relchk_lst.XXXXXX"|||mktemp "${SNAPBASE:?}/lst.XXXXXX"'
 'CAT-REL-CHECK-3 R2-5 RELCHK_GIT_TIMEOUT not validated|||for _k in RELCHK_GIT_TIMEOUT RELCHK_SNAP_TIMEOUT|||for _k in RELCHK_SNAP_TIMEOUT'
 'CAT-REL-CHECK-3 R2-6 knob length bound off|||[ "${#_v}" -le 15 ] || blind|||true || blind'
+'CAT-REL-CHECK-3 R3-1 bash snap_readable size bound off by one|||[ "$sz" -le "${RELCHK_MAX_READ:-67108864}" ]|||[ "$sz" -lt "${RELCHK_MAX_READ:-67108864}" ]'
+'CAT-REL-CHECK-3 R3-8 python reader size bound off by one|||        if st.st_size > MAXREAD:|||        if st.st_size >= MAXREAD:'
+'CAT-REL-CHECK-3 R3-7 python reader opens the unresolved path with O_NOFOLLOW|||fd = os.open(rp, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW)|||fd = os.open(os.path.join(base, rel), os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW)'
+'CAT-REL-CHECK-3 R3-10 default git timeout 1 s|||RELCHK_GIT_TIMEOUT="${RELCHK_GIT_TIMEOUT:-120}"; export|||RELCHK_GIT_TIMEOUT="${RELCHK_GIT_TIMEOUT:-1}"; export'
+'CAT-REL-CHECK-3 R3-11 snapshot base not realpathed|||    rb = os.path.realpath(base)|||    rb = base'
+'CAT-REL-CHECK-3 R3-3 RELCHK_SNAP_TIMEOUT range bound off|||[ "${#_st}" -le 9 ] || blind|||true || blind'
+'CAT-REL-CHECK-3 R3-4 RELCHK_TODAY not validated|||=~ ^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$ ]] || blind|||=~ ^ ]] || blind'
 )
 
 # MUT_JOBS=<n> runs n mutants at once (default 4; each mutant runs the whole suite, ~40 s).

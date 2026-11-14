@@ -136,7 +136,9 @@ Fix at the class level (`scripts/release/check_release_consistency.sh`, snapshot
    `snapshot refused: internal error in the snapshot writer (<type>)`, never a traceback.
 6. Every numeric knob (`RELCHK_GIT_TIMEOUT`, `RELCHK_SNAP_TIMEOUT`, `RELCHK_MAX_FILES`, `RELCHK_MAX_BYTES`,
    `RELCHK_MAX_READ`) is validated in the shell: a non-numeric, zero, leading-zero or more-than-15-digit value is a clear
-   BLIND (F6a-F6c, R2-5, R2-6); unset or empty selects the default.
+   BLIND (F6a-F6c, R2-5, R2-6); unset or empty selects the default. `RELCHK_SNAP_TIMEOUT` is further limited to 9 digits
+   (999999999 s) because `signal.alarm` takes a C int (R3-3). `RELCHK_TODAY`, when set, must be a date `YYYY-MM-DD`,
+   because the waiver expiry is a string comparison (R3-4).
 
 Class inventory: every place the checker writes, or follows a path derived from repository content.
 
@@ -155,7 +157,7 @@ Class inventory: every place the checker writes, or follows a path derived from 
 | shell `done < "$SNAP/..."` (waiver file, manifests) | read `SNAP` | `snap_readable`: inside `SNAP`, regular, at most `RELCHK_MAX_READ` bytes (F2f-F2j) |
 | `sha256sum -c` file contents | reads files named by manifest entries | an entry resolving outside `SNAP` fails first; inside `SNAP` only HEAD blobs exist, total bounded by `RELCHK_MAX_BYTES` |
 | `readlink`, `stat`, `[ -e ]`, `[ -f ]` on snapshot paths | metadata only | never read content |
-| `raw_tree_check` listing | git, captured to a file inside `SNAP` (removed with it on every return path, R2-3) | exit status checked: a failed or hung `ls-tree -r` is BLIND, not an empty tree (F5a, F5b) |
+| `raw_tree_check` listing | git, captured to a file inside `SNAP` (removed on every return path because the EXIT trap removes the whole snapshot directory it lives in, R2-3) | exit status checked: a failed or hung `ls-tree -r` is BLIND, not an empty tree (F5a, F5b) |
 | working-tree reads in `raw_tree_check` (`hash-object`, `readlink`) | reads the working tree | BLIND guard only, never HEAD content. A type change (regular file to symlink or FIFO) is caught earlier by `git status` (measured: a tracked file replaced by a symlink to `/dev/zero` ends BLIND in 3 s under a 1 GiB cap); the remaining case, a stat-cache trick that hides it from `git status`, is bounded by `RELCHK_GIT_TIMEOUT` and was not exercised (UNCONFIRMED) |
 
 The checker writes nothing else: no file in the repository, no index, no refs. Remaining limits (UNCONFIRMED where not
@@ -165,12 +167,14 @@ cited-path collisions are still reported by `name_collides`).
 
 Tests: `scripts/release/test_check_release_consistency_rc4.sh` (also run by the main suite). Unit-class evidence only.
 
-Mutation evidence (CAT-REL-CHECK-3, unit-class). `mutation_check_release_consistency.sh` carries 30 mutants of the new
+Mutation evidence (CAT-REL-CHECK-3, unit-class). `mutation_check_release_consistency.sh` carries 37 mutants of the new
 code: the original 15, nine added in round 2 (reader target outside the snapshot, reader size cap, waiver-file and manifest
 readability checks, `raw_tree_check` ls-tree status, writer excepthook, numeric knob validation, N4 post-extraction check,
 N8 child kill) and six added in round 3 (REV-A python reader sibling prefix, REV-B bash `snap_readable` sibling prefix,
 REV-C bash `snap_readable` size bound, R2-3 scratch file location, R2-5 `RELCHK_GIT_TIMEOUT` validation, R2-6 knob length
-bound). Four older mutants were repaired because their target text moved (I4-1 head check, CC2r5 C6, CC2r5 C1, RM1 text);
+bound) and seven added in round 4 (R3-1 bash size bound off by one, R3-8 python size bound off by one, R3-7 python reader
+opening the unresolved path, R3-10 default git timeout of 1 s, R3-11 snapshot base not realpathed, R3-3 `RELCHK_SNAP_TIMEOUT`
+range bound, R3-4 `RELCHK_TODAY` validation). Four older mutants were repaired because their target text moved (I4-1 head check, CC2r5 C6, CC2r5 C1, RM1 text);
 `MUT_APPLY_ONLY=1` must print no ERROR line. The runner runs the whole main suite per mutant
 (`MUT_FILTER='CAT-REL-CHECK-3|I4-1 head check only the resolved|CC2r5 C6 token path set|CC2r5 C1 version file read|existence check disabled'`);
 the result table of the last run belongs to the item's report, not to this document.

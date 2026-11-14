@@ -239,10 +239,17 @@ d=$(fresh); prev="$(blob "$d" leaf)"; for i in $(seq 1 20); do
 done
 printf '40000\tdeep\t%s\n' "$prev" | evil_head "$d"; run "$d" --check changelog
 want "D1 20 levels of 249-char names (beyond PATH_MAX) -> BLIND from the extraction verification" 2 "snapshot refused: extracted entry"
-sd=$(gitstub 'case "$*" in *" cat-file --batch"*) exec sleep 27;; esac'); t0=$SECONDS
+# R3-1: the stub's sleep carries a duration unique to THIS run (pid + random), so the count and the cleanup only ever see processes
+# this test started (parallel suites and mutation jobs never see each other's sleeps, 11.4.174)
+MARK="27.${BASHPID}${RANDOM}${RANDOM}"
+sd=$(gitstub "case \"\$*\" in *\" cat-file --batch\"*) exec sleep $MARK;; esac"); t0=$SECONDS
 PATH="$sd:$PATH" RELCHK_SNAP_TIMEOUT=2 run "$(fresh)" --check changelog
-sleep 1; n="$(pgrep -fc '^sleep 27$' || true)"
-[ "${n:-0}" = 0 ] && ok || { bad "D2 hung cat-file child outlived the writer ($n orphan sleep processes)"; pgrep -f '^sleep 27$' | xargs -r kill 2>/dev/null || true; }
+sleep 1
+# identity check: only pids whose own /proc cmdline is exactly "sleep <MARK>" are counted
+orph=""; for pp in $(pgrep -x sleep || true); do
+  [ "$(tr '\0' ' ' < "/proc/$pp/cmdline" 2>/dev/null)" = "sleep $MARK " ] && orph="$orph $pp"
+done
+[ -z "$orph" ] && ok || { bad "D2 hung cat-file child outlived the writer (orphan sleep pids:$orph)"; for pp in $orph; do kill "$pp" 2>/dev/null || true; done; }
 
 echo "== F5: a failing or hung ls-tree in raw_tree_check is BLIND, never an empty (clean) tree"
 sd=$(gitstub 'case "$*" in *"ls-tree -r -z HEAD -- "*) exec sleep 25;; esac'); t0=$SECONDS
@@ -285,6 +292,31 @@ want "R2-3a gitlink in a manifest tree -> BLIND (early return of raw_tree_check)
 for v in abc 0 007 -3; do d=$(fresh); RELCHK_GIT_TIMEOUT=$v run "$d" --check changelog; want "R2-5 RELCHK_GIT_TIMEOUT=$v -> clear BLIND" 2 "RELCHK_GIT_TIMEOUT must be a positive integer"; done
 d=$(fresh); RELCHK_GIT_TIMEOUT= run "$d" --check changelog; want "R2-5 empty RELCHK_GIT_TIMEOUT -> default, PASS" 0 "VERDICT: PASS"
 d=$(fresh); RELCHK_MAX_READ=99999999999999999999 run "$d" --check changelog; want "R2-6 absurdly long RELCHK_MAX_READ -> clear BLIND" 2 "RELCHK_MAX_READ is too large"
+
+echo "== R3: boundaries and positive controls (reviewer mutants REVIEW3-1/-7/-8/-10/-11), knob bounds, RELCHK_TODAY"
+padto() { # <file> <exact size> [line prefix]: append one line (prefix + x's) so the file is exactly that many bytes
+  local f="$1" n="$2" pre="${3:-}" cur; cur="$(stat -c %s -- "$f")"; [ "$cur" -lt $((n-${#pre}-2)) ] || return 1
+  printf '\n%s%s' "$pre" "$(head -c $((n - cur - 1 - ${#pre})) /dev/zero | tr '\0' 'x')" >> "$f"
+  [ "$(stat -c %s -- "$f")" = "$n" ]
+}
+d=$(fresh); padto "$d/docs/CHANGELOG.md" 100000 || bad "R3 fixture: padding the changelog"; ( cd "$d" && git add -A && git commit -q -m padc )
+RELCHK_MAX_READ=100000 run "$d" --check changelog; want "R3-8a python reader: file of exactly RELCHK_MAX_READ bytes is accepted" 0 "VERDICT: PASS"
+RELCHK_MAX_READ=99999 run "$d" --check changelog; want "R3-8b python reader: one byte above RELCHK_MAX_READ -> BLIND" 2 "RELCHK_MAX_READ"
+d=$(fresh); mkdir -p "$d/docs/qa"; printf '# waivers\n' > "$d/docs/qa/EVIDENCE_WAIVERS.txt"
+padto "$d/docs/qa/EVIDENCE_WAIVERS.txt" 100000 "# " || bad "R3 fixture: padding the waiver file"; ( cd "$d" && git add -A && git commit -q -m padw )
+RELCHK_MAX_READ=100000 run "$d" --check changelog; want "R3-1a bash reader: waiver file of exactly RELCHK_MAX_READ bytes is accepted" 0 "VERDICT: PASS"
+RELCHK_MAX_READ=99999 run "$d" --check changelog; want "R3-1b bash reader: one byte above RELCHK_MAX_READ -> BLIND" 2 "exceeds RELCHK_MAX_READ"
+d=$(fresh); ( cd "$d" && git mv docs/CHANGELOG.md docs/CHANGELOG.real.md && ln -s CHANGELOG.real.md docs/CHANGELOG.md && git add -A && git commit -q -m symchg )
+run "$d" --check changelog; want "R3-7 changelog that is an in-snapshot symlink to a regular file -> PASS" 0 "VERDICT: PASS"
+d=$(fresh); sd=$(gitstub 'case "$*" in *"ls-tree -r -z HEAD -- "*) sleep 2;; esac')
+PATH="$sd:$PATH" run "$d" --check changelog; want "R3-10 default RELCHK_GIT_TIMEOUT is far above 1 s (a 2 s git call is not a timeout) -> PASS" 0 "VERDICT: PASS"
+lk="$ROOT/tmplink"; mkdir "$ROOT/tmpreal"; ln -s "$ROOT/tmpreal" "$lk"; d=$(fresh)
+RELCHK_TMP="$lk" run "$d" --check changelog; want "R3-11 RELCHK_TMP that is itself a symlink -> PASS" 0 "VERDICT: PASS"
+d=$(fresh); RELCHK_SNAP_TIMEOUT=9999999999 run "$d" --check changelog; want "R3-3a RELCHK_SNAP_TIMEOUT beyond the alarm range -> clear knob BLIND" 2 "RELCHK_SNAP_TIMEOUT must be at most 999999999"
+if printf '%s\n' "$OUT_" | grep -q 'OverflowError\|Traceback'; then bad "R3-3a: overflow traceback in output"; else ok; fi
+d=$(fresh); RELCHK_SNAP_TIMEOUT=999999999 run "$d" --check changelog; want "R3-3b RELCHK_SNAP_TIMEOUT at the bound -> PASS" 0 "VERDICT: PASS"
+for v in 0 2026-1-5 2026-01-05x 20260105 abc; do d=$(fresh); RELCHK_TODAY=$v run "$d" --check changelog; want "R3-4 RELCHK_TODAY=$v -> clear BLIND" 2 "RELCHK_TODAY must be a date"; done
+d=$(fresh); RELCHK_TODAY=2026-01-05 run "$d" --check changelog; want "R3-4 control: RELCHK_TODAY=2026-01-05 -> PASS" 0 "VERDICT: PASS"
 
 echo "== valid snapshot shapes still work (negative controls for the new refusals)"
 d=$(fresh); mkdir -p "$d/docs/other/sub"; echo x > "$d/docs/other/sub/f.txt"; ln -s sub/f.txt "$d/docs/other/lnk"; ln -s sub "$d/docs/other/dlnk"; chmod +x "$d/docs/other/sub/f.txt"

@@ -120,6 +120,12 @@ for _k in RELCHK_GIT_TIMEOUT RELCHK_SNAP_TIMEOUT RELCHK_MAX_FILES RELCHK_MAX_BYT
   [ -z "$_v" ] || case "$_v" in *[!0-9]*|0*) blind "$_k must be a positive integer without leading zeros (got '$_v')" ;; esac
   [ "${#_v}" -le 15 ] || blind "$_k is too large (more than 15 digits)"
 done
+# R3-3: signal.alarm takes a C int: more than 9 digits (999999999 s, about 31 years) is out of range, a clear BLIND, never an OverflowError
+_st="${RELCHK_SNAP_TIMEOUT:-}"; [ "${#_st}" -le 9 ] || blind "RELCHK_SNAP_TIMEOUT must be at most 999999999 seconds (got '$RELCHK_SNAP_TIMEOUT')"
+# R3-4: waiver expiry is a string compare, so the reference date must be a real YYYY-MM-DD (0 or free text would make waivers never expire)
+if [ -n "${RELCHK_TODAY:-}" ]; then
+  [[ "$RELCHK_TODAY" =~ ^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$ ]] || blind "RELCHK_TODAY must be a date in the form YYYY-MM-DD (got '$RELCHK_TODAY')"
+fi
 RELCHK_GIT_TIMEOUT="${RELCHK_GIT_TIMEOUT:-120}"; export RELCHK_GIT_TIMEOUT
 git() { command timeout --kill-after=5 "$RELCHK_GIT_TIMEOUT" git "$@"; }
 HEADC="$(git -C "$REPO" rev-parse --verify -q 'HEAD^{commit}' 2>/dev/null)" || blind "'$REPO' has no HEAD commit"
