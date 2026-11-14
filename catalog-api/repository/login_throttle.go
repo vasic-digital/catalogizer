@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"crypto/rand"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
@@ -18,6 +19,28 @@ import (
 //
 // Design (the decisions, so a reviewer can attack them):
 //
+//   - THE INVARIANT (CAT-LOGIN-LOCK-2, structural; every rule below is derived from it). The set of state an attacker can
+//     observe about an account (the account block and its end, the number of guesses that get evaluated before the block, the
+//     status and Retry-After of every probe) MUST be a function only of attacker-caused events (the failed attempts charged to
+//     the account scope, and time), never of an owner SUCCESS event. Then an existing account and a nonexistent name give the
+//     same trace to every attacker, whatever the owner does and whenever, and the owner's logins leave no mark to read.
+//     Consequences, each enforced in code and by TestInvariant_* (a model-based test over interleavings):
+//     (1) The ACCOUNT scope counts only completed FAILED attempts (Fail), charged after the password was evaluated. A success
+//     never writes it: not a charge, not a refund, not a reset, so it can neither end a block early (the CAT-LOGIN-LOCK-1
+//     refund did, RV5-1) nor leave a charge behind (R4-1: an owner who logs in from many new addresses with nobody
+//     attacking is never charged, so is never locked out).
+//     (2) Parallel guessing is bounded by IN-FLIGHT TOKENS (rows with scope "pend:<nonce>", Policy.MaxInflight per subject)
+//     instead of by charging before the check. A token is not a charge: it is released by Success or converted into a
+//     charge by Fail, so settled state never depends on whether an attempt was the owner's. A token cannot tell owner
+//     from attacker before the password is checked, so the cap is a constant that does not depend on the failure count:
+//     an owner's token then changes what a SERIAL attacker sees only if the attacker already holds MaxInflight-1
+//     concurrent tokens. Cost, stated honestly: evaluated guesses before the first block are at most
+//     AccountFree + MaxInflight - 1 (exactly AccountFree for a serial guesser), not exactly AccountFree.
+//     (3) Residual, accepted and documented: an attacker who bursts exactly MaxInflight parallel probes can see one fewer
+//     slot while an owner login is in flight (a contention channel that exists only during the bcrypt window and needs
+//     a burst); an administrator's Clear (unlock, password change) ends a block of a real account and has no counterpart
+//     for a name that does not exist; a known-good address is not stopped by the account block, which only a holder of
+//     that address can see.
 //   - It is a THROTTLE, never a lock: no block is permanent and every block is at most Policy.Cap (default 15 minutes) long
 //     from the moment it is set. It is NOT a bound on how long an attacker can keep an account throttled: an attacker who
 //     keeps guessing renews the block each time it expires (one further charged attempt per Cap), so the owner can be held
@@ -27,13 +50,11 @@ import (
 //     The administrative suspension (users.is_locked) is a different mechanism and is not touched here: using it would revoke
 //     the victim's sessions on the attacker's say-so.
 //   - Two scopes. "account": every client together (stops distributed guessing of one account). "ip:<addr>": one client
-//     address against one account (stops one address from using the whole account budget).
-//   - Charge-first. An attempt is charged ATOMICALLY (compare-and-swap on a version column, no read-modify-write window)
-//     BEFORE the password is checked, so N parallel attempts cannot all slip through before the first one is counted: exactly
-//     Free evaluations happen before the block. A success gives back its own account charge (restoring the row as it was,
-//     by compare-and-swap, never an earlier charge) and clears that client address's own bucket; it never resets the account
-//     scope, because an account block that ended on the owner's success would tell a real account from a nonexistent name.
-//     Giving the charge back is what keeps an owner who logs in from many new addresses from being locked out with no attacker.
+//     address against one account (stops one address from using the whole account budget). Plus transient "pend:<nonce>" rows.
+//   - Fail-charged, token-gated. An attempt first takes an in-flight token (atomic insert bounded by MaxInflight, a single
+//     statement) and its per-address bucket is charged by compare-and-swap BEFORE the password is checked; the ACCOUNT charge
+//     is made by Fail, after the check, by compare-and-swap on a version column. Success releases the token and clears that
+//     client address's own bucket; it never writes the account scope.
 //   - Known-good client. A client address that completed a login for this account within KnownGoodTTL (at most MaxKnownGood
 //     addresses per account are remembered) is not stopped by the ACCOUNT block, so an attacker cannot lock the owner out of
 //     the places the owner really logs in from. It is still subject to its own per-address block, so spoofing a known address
@@ -42,7 +63,7 @@ import (
 //     does not reveal whether a name exists. The subject MUST be derived with the same equality the user lookup uses
 //     (UserRepository.GetByUsernameOrEmail matches username or email byte for byte), otherwise a normalisation difference
 //     (case folding, trimming) is an existence oracle: a nonexistent "Victim" would share a budget with "victim" while an
-//     existing "victim" would not. Rows are bounded only by time: at most two per distinct submitted string, purged after
+//     existing "victim" would not. Rows are bounded only by time: at most two persistent rows per distinct submitted string (plus at most MaxInflight transient tokens), purged after
 //     StaleAfter (rows that carry a known-good marker live up to KnownGoodTTL), purged in batches. There is no row cap, and the
 //     per-address request limiter does not bound the number of distinct strings under address rotation (IPv6 /64, botnet):
 //     table growth under such an attack is a recorded follow-up.
@@ -73,6 +94,10 @@ type LoginThrottlePolicy struct {
 	KnownGoodTTL              time.Duration
 	MaxKnownGood              int
 	StaleAfter                time.Duration
+	// MaxInflight is the most attempts per subject that may be between Begin and Success/Fail at once (a constant, see the
+	// invariant). PendingTTL: a token older than this no longer counts and is purged (a crashed attempt is not charged).
+	MaxInflight int
+	PendingTTL  time.Duration
 }
 
 // DefaultLoginThrottlePolicy: 5 free attempts per address and 20 per account, then 30s, 60s, ... up to 15 minutes.
@@ -82,7 +107,8 @@ func DefaultLoginThrottlePolicy() LoginThrottlePolicy {
 		Base: 30 * time.Second, Cap: 15 * time.Minute,
 		BucketDecay: time.Hour, AccountDecay: 24 * time.Hour,
 		KnownGoodTTL: 30 * 24 * time.Hour, MaxKnownGood: 5,
-		StaleAfter: 24 * time.Hour,
+		StaleAfter:  24 * time.Hour,
+		MaxInflight: 4, PendingTTL: 2 * time.Minute,
 	}
 }
 
@@ -117,6 +143,12 @@ func (p LoginThrottlePolicy) withDefaults() LoginThrottlePolicy {
 	}
 	if p.StaleAfter <= 0 {
 		p.StaleAfter = d.StaleAfter
+	}
+	if p.MaxInflight <= 0 {
+		p.MaxInflight = d.MaxInflight
+	}
+	if p.PendingTTL <= 0 {
+		p.PendingTTL = d.PendingTTL
 	}
 	// A row older than StaleAfter is purged, so an account failure count can never outlive it: the effective account window is
 	// min(AccountDecay, StaleAfter). Make that the configured value instead of a silent coupling.
@@ -175,18 +207,31 @@ type Decision struct {
 	Allowed bool
 	// RetryAfter is how long the caller must wait when Allowed is false.
 	RetryAfter time.Duration
-	// AccountRefund is the undo token for the account-scope charge THIS attempt made (zero when it made none). Pass it to
-	// Success so a correct password gives its own charge back; see Success.
-	AccountRefund AccountRefund
+	// Attempt is the in-flight token of an allowed attempt that is not from a known-good address (zero otherwise). Pass it to
+	// exactly one of Success or Fail.
+	Attempt AttemptToken
 }
 
-// AccountRefund records the account row exactly as it was before this attempt's charge, and the version the charge left.
-type AccountRefund struct {
-	charged        bool
-	version        int64
-	failures       int
-	blockedUntilMs int64
-	lastFailureMs  int64
+// AttemptToken names one in-flight attempt: the subject it was taken for, a random nonce (so a recreated row is never confused
+// with an earlier one, RV5-2) and the row's scope. It carries no state to restore, so settling it can never write anything an
+// attacker could read except by Fail's charge.
+type AttemptToken struct {
+	held    bool
+	subject string
+	scope   string
+}
+
+// ErrAttemptSubject is returned when a token is settled for a different subject than it was taken for (RV5-4).
+var ErrAttemptSubject = errors.New("login throttle: attempt token belongs to another subject")
+
+const pendPrefix = "pend:"
+
+func newAttemptToken(subject string) (AttemptToken, error) {
+	var b [12]byte
+	if _, err := rand.Read(b[:]); err != nil {
+		return AttemptToken{}, err
+	}
+	return AttemptToken{held: true, subject: subject, scope: pendPrefix + hex.EncodeToString(b[:])}, nil
 }
 
 func delayFor(f, free int, base, cap time.Duration) time.Duration {
@@ -228,21 +273,21 @@ func (t *LoginThrottle) read(ctx context.Context, subject, scope string) (rowSta
 	return s, nil
 }
 
-// reserve charges one attempt on (subject, scope) atomically. until is the end of the block when refused. undo describes the
-// row as it was before the charge (used to give a correct password's own account charge back, see Success).
-func (t *LoginThrottle) reserve(ctx context.Context, subject, scope string, free int, decay time.Duration, now time.Time, pol LoginThrottlePolicy) (allowed bool, until time.Time, undo AccountRefund, err error) {
+// reserve charges one attempt on (subject, scope) atomically. until is the end of the block when refused (the row is blocked
+// and nothing is charged).
+func (t *LoginThrottle) reserve(ctx context.Context, subject, scope string, free int, decay time.Duration, now time.Time, pol LoginThrottlePolicy) (allowed bool, until time.Time, err error) {
 	nowMs := now.UnixMilli()
 	for i := 0; i < casRetries; i++ {
 		if _, err = t.db.ExecContext(ctx,
 			`INSERT OR IGNORE INTO login_throttle (subject, scope) VALUES (?, ?)`, subject, scope); err != nil {
-			return false, time.Time{}, AccountRefund{}, err
+			return false, time.Time{}, err
 		}
 		s, rerr := t.read(ctx, subject, scope)
 		if rerr != nil {
-			return false, time.Time{}, AccountRefund{}, rerr
+			return false, time.Time{}, rerr
 		}
 		if s.blockedUntilMs > nowMs {
-			return false, time.UnixMilli(s.blockedUntilMs), AccountRefund{}, nil
+			return false, time.UnixMilli(s.blockedUntilMs), nil
 		}
 		f := s.failures
 		if f > 0 && nowMs-s.lastFailureMs > decay.Milliseconds() {
@@ -257,15 +302,39 @@ func (t *LoginThrottle) reserve(ctx context.Context, subject, scope string, free
 			`UPDATE login_throttle SET failures = ?, blocked_until_ms = ?, last_failure_ms = ?, version = version + 1 WHERE subject = ? AND scope = ? AND version = ?`,
 			f, nb, nowMs, subject, scope, s.version)
 		if uerr != nil {
-			return false, time.Time{}, AccountRefund{}, uerr
+			return false, time.Time{}, uerr
 		}
 		if n, _ := res.RowsAffected(); n == 1 {
-			return true, time.Time{}, AccountRefund{charged: true, version: s.version + 1,
-				failures: s.failures, blockedUntilMs: s.blockedUntilMs, lastFailureMs: s.lastFailureMs}, nil
+			return true, time.Time{}, nil
 		}
 		runtime.Gosched()
 	}
-	return false, time.Time{}, AccountRefund{}, ErrLoginThrottleBusy
+	return false, time.Time{}, ErrLoginThrottleBusy
+}
+
+// takeToken inserts an in-flight token unless the subject already has MaxInflight live ones: one statement, so the bound holds
+// on SQLite; on PostgreSQL (read committed) concurrent inserts can overshoot it by the number of racing requests, which is
+// the same order as the slack the bound already allows and is recorded as UNCONFIRMED (no PostgreSQL run here).
+func (t *LoginThrottle) takeToken(ctx context.Context, tok AttemptToken, now time.Time, pol LoginThrottlePolicy) (bool, error) {
+	nowMs := now.UnixMilli()
+	res, err := t.db.ExecContext(ctx,
+		`INSERT INTO login_throttle (subject, scope, last_failure_ms) SELECT ?, ?, ? WHERE (SELECT COUNT(*) FROM login_throttle WHERE subject = ? AND scope > ? AND scope < ? AND last_failure_ms > ?) < ?`,
+		tok.subject, tok.scope, nowMs, tok.subject, pendPrefix, "pend;", nowMs-pol.PendingTTL.Milliseconds(), pol.MaxInflight)
+	if err != nil {
+		return false, err
+	}
+	n, _ := res.RowsAffected()
+	return n == 1, nil
+}
+
+// dropToken deletes the token row; true when this call removed it (false: already settled, expired and purged, or cleared).
+func (t *LoginThrottle) dropToken(ctx context.Context, tok AttemptToken) (bool, error) {
+	res, err := t.db.ExecContext(ctx, `DELETE FROM login_throttle WHERE subject = ? AND scope = ?`, tok.subject, tok.scope)
+	if err != nil {
+		return false, err
+	}
+	n, _ := res.RowsAffected()
+	return n == 1, nil
 }
 
 // Begin decides whether this attempt may be evaluated and charges it. It must be called BEFORE the password is checked.
@@ -296,35 +365,49 @@ func (t *LoginThrottle) Begin(ctx context.Context, subject, ip string) (Decision
 	if a.blockedUntilMs > nowMs && !known {
 		return refuse(time.UnixMilli(a.blockedUntilMs), now), nil
 	}
-	// A known-good address is never charged to the account scope (and so a legitimate owner's login has no effect on it, which
-	// would otherwise tell a real account from a nonexistent name); it is still limited by its own address bucket below.
-	var refund AccountRefund
+	// A known-good address takes no token and is never charged to the account scope, by Begin or by Fail (its own bucket still
+	// limits it): it is the one client the account block does not stop, and only a holder of that address can see that.
+	var tok AttemptToken
 	if !known {
-		ok, until, undo, err := t.reserve(ctx, subject, scopeAccount, pol.AccountFree, pol.AccountDecay, now, pol)
-		if errors.Is(err, ErrLoginThrottleBusy) {
-			return refuse(now.Add(pol.Base), now), nil
-		}
+		tok, err = newAttemptToken(subject)
 		if err != nil {
 			return Decision{}, err
 		}
-		if !ok {
-			return refuse(until, now), nil
+		got, err := t.takeToken(ctx, tok, now, pol)
+		if err != nil {
+			return Decision{}, err
 		}
-		refund = undo
+		if !got {
+			return refuse(now.Add(pol.Base), now), nil
+		}
+		// The account may have been blocked by a Fail that landed between the read above and the token: look again.
+		a2, err := t.read(ctx, subject, scopeAccount)
+		if err != nil {
+			_, _ = t.dropToken(ctx, tok)
+			return Decision{}, err
+		}
+		if a2.blockedUntilMs > nowMs {
+			_, _ = t.dropToken(ctx, tok)
+			return refuse(time.UnixMilli(a2.blockedUntilMs), now), nil
+		}
 	}
 
-	// 3. This address's charge.
-	ok, until, _, err := t.reserve(ctx, subject, bucket, pol.BucketFree, pol.BucketDecay, now, pol)
+	// 3. This address's charge (charge-first: it is per address, so an owner's success clearing it is not visible to an
+	// attacker, who uses other addresses).
+	ok, until, err := t.reserve(ctx, subject, bucket, pol.BucketFree, pol.BucketDecay, now, pol)
 	if errors.Is(err, ErrLoginThrottleBusy) {
+		_, _ = t.dropToken(ctx, tok)
 		return refuse(now.Add(pol.Base), now), nil
 	}
 	if err != nil {
+		_, _ = t.dropToken(ctx, tok)
 		return Decision{}, err
 	}
 	if !ok {
+		_, _ = t.dropToken(ctx, tok)
 		return refuse(until, now), nil
 	}
-	return Decision{Allowed: true, AccountRefund: refund}, nil
+	return Decision{Allowed: true, Attempt: tok}, nil
 }
 
 func refuse(until, now time.Time) Decision {
@@ -335,26 +418,39 @@ func refuse(until, now time.Time) Decision {
 	return Decision{Allowed: false, RetryAfter: d}
 }
 
-// Success clears this address's charges (never the account scope) of a completed login and (rememberClient) records the address as known-good.
-func (t *LoginThrottle) Success(ctx context.Context, subject, ip string, rememberClient bool, refund AccountRefund) error {
+// Fail settles an allowed attempt whose password was wrong (or that ended without a correct password): the token becomes ONE
+// charge on the account scope. A token that is no longer there (settled, expired, or removed by Clear) charges nothing, so an
+// attempt that began before an administrator's Clear can never write into the state created after it (RV5-2). An account that
+// is already blocked is not charged again (the attempt was in flight when the block was set).
+func (t *LoginThrottle) Fail(ctx context.Context, subject string, tok AttemptToken) error {
+	if !tok.held {
+		return nil
+	}
+	if tok.subject != subject {
+		return ErrAttemptSubject
+	}
+	now, pol := t.clock()
+	own, err := t.dropToken(ctx, tok)
+	if err != nil || !own {
+		return err
+	}
+	_, _, err = t.reserve(ctx, subject, scopeAccount, pol.AccountFree, pol.AccountDecay, now, pol)
+	return err
+}
+
+// Success releases an allowed attempt's token and clears this address's own charges (never the account scope: see the
+// invariant) of a completed login; with rememberClient it also records the address as known-good.
+func (t *LoginThrottle) Success(ctx context.Context, subject, ip string, rememberClient bool, tok AttemptToken) error {
 	now, pol := t.clock()
 	nowMs := now.UnixMilli()
-	// Give back THIS attempt's own account charge (R4-1). Without it every owner login from a new address would leave +1 on the
-	// account count and refresh its decay clock, so a quiet account with no attacker would reach the block after ~20 new-address
-	// logins. The row is restored to exactly what it was before the charge, by compare-and-swap on the version the charge left:
-	// if any other attempt touched the row since, nothing is restored (a prior or concurrent attacker charge is never erased; the
-	// worst case is that one charge stays, which is the previous, safe behaviour). A nonexistent name never reaches Success, and
-	// the restored row is byte-for-byte what a request that never happened would leave, so S1 stays closed: the owner's login
-	// does not move the account state an attacker can observe.
-	if refund.charged {
-		if _, err := t.db.ExecContext(ctx,
-			`UPDATE login_throttle SET failures = ?, blocked_until_ms = ?, last_failure_ms = ?, version = version + 1 WHERE subject = ? AND scope = ? AND version = ?`,
-			refund.failures, refund.blockedUntilMs, refund.lastFailureMs, subject, scopeAccount, refund.version); err != nil {
+	if tok.held {
+		if tok.subject != subject {
+			return ErrAttemptSubject
+		}
+		if _, err := t.dropToken(ctx, tok); err != nil {
 			return err
 		}
 	}
-	// The account scope is deliberately NOT touched: a nonexistent name can never log in, so an account block that ended early on
-	// the owner's success would reveal that the account exists. Only the owner's own address bucket is cleared.
 	bucket := ipScope(ip)
 	if !rememberClient {
 		_, err := t.db.ExecContext(ctx,
@@ -395,6 +491,7 @@ func (t *LoginThrottle) maybePurge(ctx context.Context, now time.Time, pol Login
 	t.purge = now
 	t.mu.Unlock()
 	nowMs := now.UnixMilli()
+	_, _ = t.db.ExecContext(ctx, `DELETE FROM login_throttle WHERE scope > ? AND scope < ? AND last_failure_ms < ?`, pendPrefix, "pend;", nowMs-pol.PendingTTL.Milliseconds())
 	// Bounded work inside a login request: at most purgeBatch rows per run (the rest go on the next run, a minute later).
 	_, _ = t.db.ExecContext(ctx,
 		`DELETE FROM login_throttle WHERE (subject, scope) IN (

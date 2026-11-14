@@ -434,13 +434,13 @@ func TestLoginLock_OwnerNewAddressLoginsNeverAccumulateWithoutAttacker(t *testin
 	e.advance(-59 * time.Minute)
 	w := e.loginFrom("198.51.100.77", "victim", llPass)
 	assert.Equal(t, http.StatusOK, w.Code, "device B a minute after the last login: "+w.Header().Get("Retry-After"))
-	var f int
-	require.NoError(t, e.raw.QueryRow(`SELECT failures FROM login_throttle WHERE subject = ? AND scope = 'account'`, fmt.Sprintf("u:%d", e.uid)).Scan(&f))
-	assert.Equal(t, 0, f, "every success gave its own charge back")
+	var n int
+	require.NoError(t, e.raw.QueryRow(`SELECT COUNT(*) FROM login_throttle WHERE subject = ? AND scope = 'account'`, fmt.Sprintf("u:%d", e.uid)).Scan(&n))
+	assert.Equal(t, 0, n, "no success ever wrote the account scope (CAT-LOGIN-LOCK-2): the row was never created")
 }
 
-// With an attacker: an owner login from a NEW address in the middle of the attack neither erases the attacker's earlier charges
-// nor leaves an extra one, and the attacker sees the same thing as against a nonexistent name.
+// With an attacker: an owner login from a NEW address in the middle of the attack neither changes the attacker's account count
+// nor leaves a mark, and the attacker sees the same thing as against a nonexistent name.
 func TestLoginLock_OwnerNewAddressLoginIsInvisibleToAttacker(t *testing.T) {
 	run := func(name string, owner bool) (processed, final int, retry string) {
 		e := newLLEnv(t)

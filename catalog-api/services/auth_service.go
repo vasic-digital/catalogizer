@@ -157,8 +157,19 @@ func (s *AuthService) throttleSuccess(subject, ip string, remember bool, d repos
 		if ip == "" {
 			ip = "unknown"
 		}
-		if err := th.Success(context.Background(), subject, ip, remember, d.AccountRefund); err != nil {
+		if err := th.Success(context.Background(), subject, ip, remember, d.Attempt); err != nil {
 			log.Printf("auth: login throttle reset failed: %v", err)
+		}
+	}
+}
+
+// throttleFail turns the attempt's in-flight token into the one account charge a failed attempt costs. A failure to write it
+// is logged and the attempt stays refused as invalid credentials: the attempt was already evaluated, so failing open here would
+// only mean one uncounted guess, and failing the request differently would tell a real account from an unknown name.
+func (s *AuthService) throttleFail(subject string, d repository.Decision) {
+	if th := s.userRepo.LoginThrottle(); th != nil {
+		if err := th.Fail(context.Background(), subject, d.Attempt); err != nil {
+			log.Printf("auth: login throttle charge failed: %v", err)
 		}
 	}
 }
@@ -170,12 +181,15 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// An unknown name is throttled exactly like a known one, so the answer reveals nothing about existence.
-			if _, terr := s.throttleBegin(repository.SubjectForUnknownName(req.Username), ipAddress); terr != nil {
+			unknownSubject := repository.SubjectForUnknownName(req.Username)
+			ud, terr := s.throttleBegin(unknownSubject, ipAddress)
+			if terr != nil {
 				return nil, terr
 			}
 			// Same bcrypt cost as a wrong password for a real user, so response time does not
 			// reveal which usernames exist (D9SR3-F3).
 			BurnDummyPasswordCheck(req.Password)
+			s.throttleFail(unknownSubject, ud) // the same settle step a wrong password for a real user takes
 			s.auditEvent(0, "failed_login", ipAddress, userAgent, "unknown user")
 			return nil, ErrInvalidCredentials
 		}
@@ -188,6 +202,15 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 	if terr != nil {
 		return nil, terr
 	}
+	// Every allowed attempt settles exactly once: a correct password releases the token (throttleSuccess), anything else,
+	// including an early return or a panic, turns it into the account charge. The deferred call is a no-op after a success
+	// because the token is already gone.
+	succeeded := false
+	defer func() {
+		if !succeeded {
+			s.throttleFail(subject, decision)
+		}
+	}()
 
 	// Check if user can login. The account state (suspended, locked, pending,
 	// disabled) is revealed only to someone who knows the password; anyone else
@@ -201,7 +224,8 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 			s.auditEvent(user.ID, "failed_login_inactive", ipAddress, userAgent, "account not loginable: invalid password")
 			return nil, ErrInvalidCredentials
 		}
-		// The password is right: the guesser's charge does not apply, but no known-good client is recorded.
+		// The password is right: no charge applies, but no known-good client is recorded.
+		succeeded = true
 		s.throttleSuccess(subject, ipAddress, false, decision)
 		s.auditEvent(user.ID, "failed_login_inactive", ipAddress, userAgent, "account not loginable: password correct")
 		if user.IsAccountLocked() {
@@ -232,6 +256,7 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 	// known-good: that happens only once the login is accepted (after verifyUserUnchanged below), so a login refused because
 	// the account changed meanwhile never earns the address the account-block bypass.
 	s.userRepo.ResetFailedLoginAttempts(user.ID)
+	succeeded = true
 	s.throttleSuccess(subject, ipAddress, false, decision)
 
 	// Create session
@@ -253,7 +278,7 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 		}
 		return nil, err
 	}
-	s.throttleSuccess(subject, ipAddress, true, repository.Decision{}) // the refund was already given at the first call
+	s.throttleSuccess(subject, ipAddress, true, repository.Decision{}) // the token was already released at the first call
 
 	// Update last login information
 	s.userRepo.UpdateLastLogin(user.ID, ipAddress)

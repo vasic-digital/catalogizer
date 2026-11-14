@@ -406,13 +406,14 @@ Authenticate a user and receive JWT tokens.
 
 **Errors:** 400 (malformed JSON), 401 (invalid credentials), 429 (login back-off, see below), 503 (back-off store unavailable)
 
-**Login back-off (CAT-LOGIN-LOCK-1).** On top of the 30/min per-address limiter, every attempt is charged against a persisted,
-progressive back-off BEFORE the password is evaluated, in two scopes: per (account, client address) and per account (all
+**Login back-off (CAT-LOGIN-LOCK-1).** On top of the 30/min per-address limiter, every attempt is checked against a persisted,
+progressive back-off BEFORE the password is evaluated (the address is charged first, the account when the answer is known; see the
+invariant below), in two scopes: per (account, client address) and per account (all
 addresses together). Defaults: 5 free evaluations per address and 20 per account within the decay window (1 h per address, 24 h
 per account), then a block of 30 s that doubles with every further charged attempt up to 15 minutes. A blocked attempt answers
 `429 {"error":"too many failed sign-in attempts, try again later"}` with a `Retry-After` header and is not evaluated. A
-refused attempt is not charged to the address or account that refused it; in a rare race an attempt refused at the per-address
-step may already have been charged to the account scope. It is a throttle, never a permanent lock: every block ends, at most
+refused attempt is not charged to the address or account that refused it, and a token taken before a refusal at the per-address
+step is released. It is a throttle, never a permanent lock: every block ends, at most
 15 minutes after it was set, `users.is_locked` (the administrative suspension) is never written and the owner's sessions are
 not revoked. It does not bound how long an attacker can keep an account throttled: while guessing continues the block is renewed
 every time it expires, and the owner is held out from every address that is not known-good. A client address that completed a
@@ -422,17 +423,25 @@ A correct password from any other address is also refused while the account is b
 throttled with the same status, body and header as an existing one: the throttle key for such a name is derived from the exact
 submitted string, matching how the account lookup compares names (no case folding, no trimming). A username and the e-mail
 address of one account share one budget, so a client that submits both can tell they belong to the same account once the
-budget is spent. A successful login clears only that client address's own charges and never the account's: an account block, like
-the block of a nonexistent name, only ends by expiry, so the owner's login cannot be used to tell a real account from an unused
-name. A login from a known-good address is not charged to the account at all (it keeps its own per-address limit). A login from a
-new address is charged to the account like any attempt, and when the password is right that one charge is given back, restoring
-the account count and its decay clock exactly as they were (by compare-and-swap; if another attempt touched the account in
-between, the owner's charge simply stays, never an earlier attacker charge is erased). So an owner who logs in from many new
-addresses is not locked out when nobody is attacking, and the evaluated-guess count an attacker sees is the same as against a
-nonexistent name. What remains observable: while an attack is in progress a blocked account refuses a new address even for the
-owner (the owner's own login from a new address is held like anyone else's), and a known-good address keeps working while
-others are refused, which only someone who holds a known-good address of the account can see. During the instant of a login
-the owner's charge is counted, so a guesser racing it can be refused one guess early; that window is accepted. Both account and address windows are bounded by the
+budget is spent. **Invariant (CAT-LOGIN-LOCK-2).** Everything an attacker can observe about an account (the status and `Retry-After` of every
+probe, how many guesses are evaluated before the block, when the block ends) is a function only of attacker-caused events (failed
+attempts charged to the account, and time), never of an owner's successful login. An existing account and a nonexistent name
+therefore give the same trace, whenever the owner logs in. How it is kept: the ACCOUNT counter is charged only by a completed
+failed attempt, after the password was evaluated; a successful login never writes it (no charge, no refund, no reset), so it
+neither ends an account block early nor leaves a charge behind. Parallel guessing is bounded by in-flight tokens instead of by
+charging before the check: at most 4 attempts per account may be between "accepted" and "answered" at once (a token is released by
+a success and turned into one charge by a failure; an attempt refused because the 4 slots are taken is answered 429 with
+`Retry-After` of the first block length and is not evaluated or charged). A successful login clears only that client address's own
+charges; an account block, like the block of a nonexistent name, ends only by expiry. A login from a known-good address takes no
+token and is never charged to the account (it keeps its own per-address limit). A login from a new address takes a token and, when
+the password is right, only releases it: an owner who logs in from many new addresses with nobody attacking is never charged and so
+never locked out. Consequence for the guess budget: a serial guesser gets exactly 20 evaluated guesses per account before the
+block, a burst of parallel guesses at most 20 + 3 (the slack of the in-flight bound). What remains observable, accepted: an attacker
+bursting exactly 4 parallel probes sees one slot fewer while an owner login is in flight (the bcrypt window); an administrator's
+unlock or a password change ends a block of a real account and has no counterpart for an unused name; while an attack is in
+progress a blocked account refuses a new address even for the owner, and a known-good address keeps working while others are
+refused, which only a holder of that address can see; an attempt whose answer is never produced (a crash) is not charged, its
+token stops counting after 2 minutes. Both account and address windows are bounded by the
 24-hour stale-row purge, so the effective account window is min(AccountDecay, StaleAfter); a row can in a narrow window be
 read just before its purge, which is accepted. The state is in table `login_throttle` (migration v29), so it survives
 a restart and is shared by every instance on one database. Rows without a success marker are removed after 24 hours without
