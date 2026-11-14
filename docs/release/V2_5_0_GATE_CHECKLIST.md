@@ -62,7 +62,7 @@ Source: `docs/FOLLOW_UPS_NEXT_PHASE.md` (line numbers at `main` `10f270b7e`) and
 
 ## Not release-blocking by decision, kept visible
 
-CAT-KEYROT-WAIVER-1 (PERMANENT operator-accepted risk, decision OPDEC-2026-11-14-KEYROT, no expiry; listed by the release checker as `PERMANENT-RISK`, re-affirmed at each release review); Synology live tests SKIP `hardware_not_present` (never counted as pass); Jev stays SHADOW; API image size 761 MB accepted (static-ffmpeg slim planned); LLMCTL_API_KEY rotation (operator).
+CAT-KEYROT-WAIVER-1 (PERMANENT operator-accepted risk, decision BG-OPQ-2026-11-14b, no expiry; listed by the release checker as `PERMANENT-RISK`, re-affirmed at each release review); Synology live tests SKIP `hardware_not_present` (never counted as pass); Jev stays SHADOW; API image size 761 MB accepted (static-ffmpeg slim planned); LLMCTL_API_KEY rotation (operator).
 
 ## Tag-time procedure (order)
 

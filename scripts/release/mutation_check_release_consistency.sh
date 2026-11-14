@@ -145,7 +145,9 @@ MUTANTS=(
 'RC-3b manifest files demanded in the manifest|||if f in tmf or os.path.islink(full) or not os.path.isfile(full):|||if os.path.islink(full) or not os.path.isfile(full):'
 'RC-3b symlinks demanded in the manifest|||if f in tmf or os.path.islink(full) or not os.path.isfile(full):|||if f in tmf or not os.path.isfile(full):'
 'C6 tracked() asks the index|||head_entry "$1" && [ -n "$E_MODE" ]|||git -C "$REPO" ls-files --error-unmatch -- "$1" >/dev/null 2>&1'
-'waiver: reason optional|||if [ -z "$reason" ]; then W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n missing reason"; continue; fi|||if false; then W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n missing reason"; continue; fi'
+'waiver: reason optional|||if [ -z "$reason" ]; then W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n missing reason"; continue; fi
+    if ! [[ "$item"|||if false; then W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n missing reason"; continue; fi
+    if ! [[ "$item"'
 'waiver: tracked item optional|||if ! [[ "$item" =~ ^[A-Za-z][A-Za-z0-9]*(-[A-Za-z0-9]+)+$ ]]; then|||if false; then'
 'waiver: impossible date accepted||||| [ "$(date -d "$exp" +%F 2>/dev/null)" != "$exp" ]; then|||; then'
 'waiver: expiry not enforced|||if [[ "$exp" < "$today" ]]; then|||if false; then'

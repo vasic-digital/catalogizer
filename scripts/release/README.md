@@ -94,9 +94,9 @@ permanent-risk|<risk key>|<item>|<operator decision id>|<decision date>|<re-affi
 The item is a tracked item id, the decision id names the recorded operator decision (`<ALPHA>-<ID>`), the decision
 date is a real `YYYY-MM-DD` date that is not in the future, and the re-affirmation note says when the operator
 re-affirms the risk; a missing or malformed field, a blank reason or a duplicate key is `BADWAIVER` and FAILs.
-A valid line is printed in every run as `PERMANENT-RISK <key>: <reason> [item ..., operator decision ..., no expiry;
+A valid line is printed in every changelog-checking run (`--check changelog` or `all`; `--check version` loads no waivers) as `PERMANENT-RISK <key>: <reason> [item ..., operator decision ..., no expiry;
 re-affirmation: ...]` and counted in `permanent_risks=` (it is never hidden). It does not waive any evidence gap, does
-not turn `PASS` into `PASS-WITH-WAIVERS`, and does not rescue an expired ordinary waiver. Tests:
+not turn `PASS` into `PASS-WITH-WAIVERS`, and does not rescue an expired ordinary waiver. A row of `docs/WORKABLE_ITEMS_REGISTER.md` marked `(PERMANENT)` must have a `permanent-risk` record for its item, otherwise the changelog check FAILs (`BADWAIVER`), so a deleted or commented-out record cannot pass silently. The decision id must name a recorded operator decision (for example `BG-OPQ-2026-11-14b` in `docs/requests/background_queue.md`). Tests:
 `test_permanent_risk.sh`; mutations: `mutation_check_permanent_risk.sh`.
 
 #### Declaring known evidence gaps (waivers)

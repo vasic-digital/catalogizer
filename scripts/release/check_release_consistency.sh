@@ -345,7 +345,7 @@ snap_readable() {
 }
 V_OK=0; V_FAIL=0; C_PATHS=0; C_MISS=0; C_SKIP=0; S_OK=0; S_FAIL=0; S_UNV=0; BLINDS=""
 C_NOMAN=0; U_FILES=0; W_APPLIED=0; W_BAD=0; W_UNUSED=0; PERM_N=0
-declare -A WV=() WVUSED=() PERMSEEN=()
+declare -A WV=() WVUSED=() PERMSEEN=() PERMITEM=()
 SECTION_USED="-"
 note_blind() { BLINDS="$BLINDS ${1}"; echo "BLIND: $1"; }
 
@@ -882,6 +882,7 @@ PY
   declare -A seen_dir=()
   local -a queue=()
   load_waivers || return
+  check_permanent_register
   for p in "${paths[@]}"; do
     C_PATHS=$((C_PATHS+1))
     if [[ "$p" == *[[:cntrl:]]* ]]; then
@@ -1020,7 +1021,7 @@ load_waivers() {
       fi
       if [ -z "$pre" ]; then W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n permanent risk needs a re-affirmation note"; continue; fi
       if [ -n "${PERMSEEN[$pkey]+x}" ]; then W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n duplicate permanent risk"; continue; fi
-      PERMSEEN["$pkey"]=1; PERM_N=$((PERM_N+1))
+      PERMSEEN["$pkey"]=1; PERMITEM["$pitem"]=1; PERM_N=$((PERM_N+1))
       echo "PERMANENT-RISK  $pkey: $reason [item $pitem, operator decision $pdec of $pdate, no expiry; re-affirmation: $pre]"
       continue
     fi
@@ -1051,6 +1052,23 @@ load_waivers() {
     WV["$key"]="$reason [item $item, expires $exp]"
   done < "$SNAP/$rel"
   return 0
+}
+
+# check_permanent_register: a workable-items register row marked (PERMANENT) must have a permanent-risk record for its
+# item in the waiver file; a deleted or commented-out record is a BADWAIVER, never a silent pass. Read from HEAD.
+check_permanent_register() {
+  local reg="docs/WORKABLE_ITEMS_REGISTER.md" line id
+  [ -f "$SNAP/$reg" ] || return 0
+  head_check "register $reg" "$reg"
+  snap_readable "$reg" || { note_blind "register $reg is not a regular file inside the snapshot, or exceeds RELCHK_MAX_READ"; return 0; }
+  while IFS= read -r line || [ -n "$line" ]; do
+    if [[ "$line" =~ ^\|\ ([A-Za-z][A-Za-z0-9]*(-[A-Za-z0-9]+)+)\ \|.*\(PERMANENT\) ]]; then
+      id="${BASH_REMATCH[1]}"
+      if [ -z "${PERMITEM[$id]+x}" ]; then
+        W_BAD=$((W_BAD+1)); echo "BADWAIVER  $id is marked PERMANENT in $reg but the waiver file has no permanent-risk record for it"
+      fi
+    fi
+  done < "$SNAP/$reg"
 }
 
 # waived <key> <label>: true (and prints WAIVED with the reason) when a declared waiver matches.

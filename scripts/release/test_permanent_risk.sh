@@ -49,5 +49,18 @@ d=$(fresh); echo extra > "$d/docs/qa/run2/extra.txt"; wv "$d" "$PR"; expect "PR1
 d=$(fresh); wv "$d" 'unlisted|docs/qa/run2|nothing.txt|CAT-T-1|2020-01-01|r'; expect "PR14 an expired ordinary waiver alone still fails" 1 "expired on 2020-01-01" "$d" --check changelog
 d=$(fresh); wv "$d" "# comment
 $PR"; expect "PR15 permanent risk with leading comment line is read" 0 "permanent_risks=1" "$d" --check changelog
+# M-1: a register item marked PERMANENT must have a permanent-risk record
+REG='| CAT-KEYROT-WAIVER-1 | Task | Open risk, operator-accepted (PERMANENT) | text | next | owner |'
+regcommit() { mkdir -p "$1/docs"; printf '%s\n' "$2" > "$1/docs/WORKABLE_ITEMS_REGISTER.md"; (cd "$1" && git add -A && git commit -q -m reg); }
+d=$(fresh); regcommit "$d" "$REG"; expect "PR16 register item marked PERMANENT without any record -> FAIL" 1 "marked PERMANENT in docs/WORKABLE_ITEMS_REGISTER.md" "$d" --check changelog
+d=$(fresh); regcommit "$d" "$REG"; wv "$d" "# $PR"; expect "PR17 commented-out record does not satisfy the register -> FAIL" 1 "CAT-KEYROT-WAIVER-1" "$d" --check changelog
+d=$(fresh); regcommit "$d" "$REG"; wv "$d" "$PR"; expect "PR18 register PERMANENT item with its record passes" 0 "permanent_risks=1" "$d" --check changelog
+d=$(fresh); regcommit "$d" "$REG"; wv "$d" 'permanent-risk|other|CAT-OTHER-1|OPDEC-1|2026-11-14|note|reason'; expect "PR19 record for another item does not satisfy the register -> FAIL" 1 "marked PERMANENT" "$d" --check changelog
+d=$(fresh); regcommit "$d" '| CAT-X-1 | Task | Open risk | not permanent | n | o |'; expect "PR20 register row without the PERMANENT mark is not required to have a record" 0 "VERDICT: PASS" "$d" --check changelog
+# M-4: reviewer mutants
+d=$(fresh); wv "$d" "${PR/permanent-risk|/permanent-riskX|}"; expect "PR21 kind prefix permanent-riskX is an unknown kind (R1)" 1 "unknown kind 'permanent-riskX'" "$d" --check changelog
+d=$(fresh); wv "$d" 'permanent-risk|keyrot|CAT-KEYROT-WAIVER-1|OPDEC-1|2026-02-30|note|reason'; expect "PR22 impossible decision date 2026-02-30 -> BADWAIVER (R2)" 1 "decision date" "$d" --check changelog
+d=$(fresh); wv "$d" 'permanent-risk|keyrot|CAT-KEYROT-WAIVER-1|OPDEC-1|2026-11-14|note|part one|part two'; expect "PR23 reason containing a pipe is kept whole (R3)" 0 "part one|part two [item" "$d" --check changelog
+d=$(fresh); wv "$d" "$PR"; so="$("$CHECKER" --repo "$d" --check changelog 2>/dev/null)"; if printf '%s\n' "$so" | grep -q '^PERMANENT-RISK  keyrot'; then ok; else bad "PR24 PERMANENT-RISK line must be on stdout (R4)"; fi
 echo "== result: $PASS passed, $FAIL failed"
 [ "$FAIL" -eq 0 ]

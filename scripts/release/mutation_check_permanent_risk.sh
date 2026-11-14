@@ -17,13 +17,19 @@ MUTANTS=(
 'future decision date accepted||||| [[ "$pdate" > "$today" ]]; then|||; then'
 're-affirmation note not required|||if [ -z "$pre" ]; then W_BAD|||if false; then W_BAD'
 'permanent risk not printed|||echo "PERMANENT-RISK  $pkey:|||: "PERMANENT-RISK  $pkey:'
-'permanent risk not counted|||PERMSEEN["$pkey"]=1; PERM_N=$((PERM_N+1))|||PERMSEEN["$pkey"]=1'
+'permanent risk not counted|||PERMITEM["$pitem"]=1; PERM_N=$((PERM_N+1))|||PERMITEM["$pitem"]=1'
 'duplicate permanent risk accepted|||if [ -n "${PERMSEEN[$pkey]+x}" ]; then|||if false; then'
 'tracked item not required for permanent risk|||if ! [[ "$pitem" =~ ^[A-Za-z][A-Za-z0-9]*(-[A-Za-z0-9]+)+$ ]]; then|||if false; then'
 'blank reason accepted for permanent risk|||if [ -z "$reason" ]; then W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n missing reason"; continue; fi
       if ! [[ "$pitem"|||if false; then W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n missing reason"; continue; fi
       if ! [[ "$pitem"'
-'permanent risk treated as evidence waiver (verdict word)|||PERMSEEN["$pkey"]=1; PERM_N=$((PERM_N+1))|||PERMSEEN["$pkey"]=1; PERM_N=$((PERM_N+1)); W_APPLIED=$((W_APPLIED+1))'
+'permanent risk treated as evidence waiver (verdict word)|||PERMITEM["$pitem"]=1; PERM_N=$((PERM_N+1))|||PERMITEM["$pitem"]=1; PERM_N=$((PERM_N+1)); W_APPLIED=$((W_APPLIED+1))'
+'register PERMANENT mark not enforced|||if [ -z "${PERMITEM[$id]+x}" ]; then|||if false; then'
+'register check reads wrong mark|||\(PERMANENT\) ]]; then|||\(NOTHING\) ]]; then'
+'record only needs any item (register satisfied by key)|||PERMITEM["$pitem"]=1;|||PERMITEM["any"]=1;'
+'kind prefix match accepted|||if [ "$k" = permanent-risk ]; then|||if [[ "$k" == permanent-risk* ]]; then'
+'reason truncated at first pipe|||for ((i=6; i<${#F[@]}; i++)); do|||for ((i=6; i<7; i++)); do'
+'permanent line to stderr|||echo "PERMANENT-RISK  $pkey: $reason [item $pitem, operator decision $pdec of $pdate, no expiry; re-affirmation: $pre]"|||echo "PERMANENT-RISK  $pkey: $reason [item $pitem, operator decision $pdec of $pdate, no expiry; re-affirmation: $pre]" >&2'
 'ordinary expired waiver accepted|||if [[ "$exp" < "$today" ]]; then|||if false; then'
 )
 run_one() {
@@ -51,6 +57,7 @@ PY
 n=0
 for m in "${MUTANTS[@]}"; do
   name="${m%%|||*}"; rest="${m#*|||}"; old="${rest%%|||*}"; new="${rest#*|||}"
+  if [ -n "${MUT_FILTER:-}" ] && ! [[ "$name" =~ $MUT_FILTER ]]; then continue; fi
   n=$((n+1))
   while [ "$(jobs -rp | wc -l)" -ge "$JOBS" ]; do wait -n; done
   run_one "$n" "$name" "$old" "$new" &
