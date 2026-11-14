@@ -82,9 +82,11 @@ func TestSSRF_RealBinary_SyncEndpointURL(t *testing.T) {
 				"name": "ssrf", "type": typ, "url": u, "sync_direction": "upload",
 				"local_path": filepath.Join(syncRoot, "local"), "remote_path": "/"})
 			assert.Equal(t, 400, code, "case %d %s %s must be refused as an invalid URL: %s", i, typ, u, raw)
-			// Since CAT-PXF23-R5B (197eec593) a 400 carries a fixed per-status class text, never the validator's own wording, so the
-			// message can no longer tell WHICH validation refused. The refusal is attributed by the status, the fixed class text, and the
-			// zero-contact assertion below (the URL check runs before any dial).
+			// Since CAT-PXF23-R5B (197eec593) a 400 carries a fixed per-status class text, never the validator's own wording, so this
+			// test can no longer tell WHICH validation refused (an earlier validation refusing every request would also pass; the attribution
+			// to the URL check is carried by services/sync_service_netguard_test.go, which calls validateSyncEndpoint directly). The
+			// zero-contact assertion below proves only that nothing was dialled, not which check refused. A positive control (a vetted URL
+			// getting past validation) is a tracked follow-up: it needs a vetted public endpoint, which a hermetic test does not have.
 			assert.Contains(t, string(raw), "invalid input", "a refusal must be the fixed 400 class text (no validator wording leaked): %s", raw)
 			assert.NotContains(t, string(raw), "invalid endpoint URL", "the validator's own wording must not reach the client: %s", raw)
 		}

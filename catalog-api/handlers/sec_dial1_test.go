@@ -72,9 +72,10 @@ func TestSECDIAL1_CreateStorageRootRefusesMalformedHostAndNFSInjection(t *testin
 		require.Equal(t, 400, code, "options %q: %v", opt, body)
 	}
 	// An export path with a control character or a leading '-' is refused. A space or a ',' is a legal part of a share name
-	// ("/volume1/My Videos"): ValidateNFSExport (SEC-DIAL-1-FU, b001ac4bf) lets them through because the export only ever forms the SOURCE of
-	// mount(2), never an option string, so it cannot inject an option or another address. The pre-FU expectation (400) is stale.
-	for i, exp := range []string{"/ex\nport", "-o"} {
+	// ("/volume1/My Videos"): ValidateNFSExport (SEC-DIAL-1-FU, b001ac4bf) lets them through because on linux the export only ever forms the SOURCE of
+	// mount(2), never an option string; a ',' followed by ':' is refused (second darwin server location, see ValidateNFSExport). The pre-FU expectation (400) is stale.
+	// A ',' followed by ':' would add a second server location on darwin (mount_nfs "host1:/p1,host2:/p2"): refused (review round 1).
+	for i, exp := range []string{"/ex\nport", "-o", "/vol,10.0.0.5:/x", "/vol,[::1]:/x"} {
 		r := secDialRoot("nfs", "192.168.1.20", "nfs-exp-"+string(rune('a'+i)))
 		r["path"] = exp
 		code, body := h.do("POST", "/storage/roots", r)
