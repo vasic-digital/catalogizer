@@ -46,10 +46,11 @@ the value at that tag (a file absent at the tag counts as new).
 
 ### Check 2: changelog evidence paths
 
-Section = `--section` (e.g. `2.4.0`), default the topmost numbered `## [x.y.z...]`
+Section = `--section` (e.g. `2.4.0`); without it the `--version` value when given (a missing `## [X]` section is
+BLIND, never a fall-back), else the topmost numbered `## [x.y.z...]`
 heading of `docs/CHANGELOG.md` (`[Unreleased]` is skipped). In its `### VERIFIED`
 subsections (every `### VERIFIED...` heading of the section is read, each until the next heading) every backticked token that looks like a repo path
-(contains `/`, no spaces/globs/URLs, first directory is a tracked top-level directory or
+(contains `/`, no globs/URLs; a token with spaces only when it is exactly a tracked file or directory, first directory is a tracked top-level directory or
 one of the known names `docs scripts challenges tests tools specs catalog* installer-wizard ...`;
 a trailing `:12` or `:12-20` is stripped) must exist in the working tree and be
 git-tracked; each failure is a `MISS`. Every backticked token that contains a `/` but is not accepted as a repo path (spaces, globs,
@@ -115,10 +116,51 @@ The only cure for a mismatch is to regenerate the evidence and its manifest. Exa
 the cover-art run `docs/qa/coverart/results/final/` has a `summary.txt` whose checksum no longer
 matches (finding E-1); it stays a `SHAFAIL` until that evidence is regenerated.
 
-Committed state only: a clone sees HEAD, so the run goes BLIND (exit 2) when `docs/CHANGELOG.md`, any
-version file that was read, any existing cited path, or any tracked file under a manifest tree is not in
-HEAD or differs from it in the index or working tree (staged-but-uncommitted counts). Untracked files are
-not part of this check (they are judged by the tracked/UNLISTED rules). Commit first, then run the check.
+Round 5 (CAT-REL-CHECK-2): HEAD is the single source of every read. The checker writes a snapshot of the HEAD tree
+to a private temp directory and reads versions, changelog, `versions.json`, gradle files, evidence files, manifests,
+waivers and `.gitignore` decisions (committed `.gitignore` files only) from it, with replace refs disabled
+(`GIT_NO_REPLACE_OBJECTS=1`). Path sets come from `git ls-tree HEAD`. The working tree is consulted only by BLIND
+guards (it never decides FAIL or MISS) and those guards are not a proof of equality: a HEAD file that is missing in the working
+tree (deleted, sparse checkout, skip-worktree) gives the verdict of a clean clone, not BLIND. Consequences: an untracked or index-only file is invisible, so a manifest entry or cited
+path that names one is `SHAFAIL`/`MISS` (as in a clone), not BLIND; the snapshot costs one write of every HEAD file per
+run (run time on the real repository UNCONFIRMED); an empty symlink target in HEAD gives BLIND.
+
+CAT-REL-CHECK-3: the snapshot writer treats the HEAD tree as untrusted input. It refuses (BLIND) duplicate paths, a path that is
+both an entry and a directory, `.`/`..`/`.git`/empty components and unsupported modes before writing anything, writes
+through directory descriptors with `O_NOFOLLOW`, creates symlinks last and verifies the result, so no write can resolve outside
+the snapshot. Bounds (BLIND on exceed): `RELCHK_MAX_FILES` (default 1000000 entries), `RELCHK_MAX_BYTES` (default 4 GiB),
+`RELCHK_SNAP_TIMEOUT` (900 s), `RELCHK_GIT_TIMEOUT` (120 s per git call), `RELCHK_MAX_READ` (64 MiB: the largest snapshot file any reader opens; a symlink to a target outside the snapshot, a non-regular target or an oversize file is refused). A non-numeric, zero, leading-zero or more-than-15-digit knob (RELCHK_GIT_TIMEOUT included) is a BLIND, `RELCHK_SNAP_TIMEOUT` is limited to 9 digits (999999999 s) and `RELCHK_TODAY`, if set, must be `YYYY-MM-DD`; unset or empty selects the default. Residual: a file stored as a Git LFS pointer is read as
+the pointer text (a clone with git-lfs would fetch the content). Details: `docs/release_checker_path_inventory.md`.
+
+Committed state only: a clone sees HEAD, not the index or the working tree, so the run goes BLIND (exit 2)
+for each of the divergences listed below (the list is the class inventory, not a proof that no other divergence exists). The same walk is applied to `docs/CHANGELOG.md`,
+every version file that was read and every existing cited path (full inventory and tests:
+`docs/release_checker_path_inventory.md`). The path is resolved component by component the way the kernel does,
+following symlinks hop by hop (at most 40 hops, `.` and `..` honoured after a symlinked directory), and:
+
+* every component and every symlink hop must exist in HEAD with the same type (file, directory, symlink, submodule);
+* a symlink hop must have the same target bytes as in HEAD, compared raw (a retargeted, staged-only, untracked or flagged hop is BLIND; a target
+  containing a newline or other control character is BLIND); every hop also gets its own `git status` and skip-worktree / assume-unchanged check;
+* the cited spelling is always walked, also when it resolves to the repository root (no exemption);
+* an absolute symlink hop, a hop into a submodule, a path below a submodule, more than 40 hops, or two HEAD
+  entries whose names differ only in ASCII case are BLIND (a clone elsewhere or on a case-insensitive disk cannot be proven);
+* the final file's RAW bytes (`git hash-object --no-filters`) must equal its HEAD blob and the final file or directory must show no
+  `git status` difference. Any conversion between blob and working copy is therefore BLIND: a CRLF copy of an LF blob, `core.autocrlf` / `core.eol`,
+  a local clean filter, `.git/info/attributes`, `core.attributesFile`, an untracked `.gitattributes` (this also makes a legitimately
+  committed `eol=` attribute BLIND for that file: stricter than necessary, never a false pass);
+* no file under the final path or under a manifest tree may carry the skip-worktree or assume-unchanged flag
+  (such a file can hide an edit from `git status`);
+* a clean submodule gitlink may be cited directly; a submodule checked out at another commit is BLIND; a path inside a submodule is a `MISS`
+  (not BLIND), because a clone does not provide it.
+
+Environment: inherited `GIT_*` variables (`GIT_DIR`, `GIT_INDEX_FILE`, ...) are unset at start. Without `--version`/`--section`, the changelog
+section is derived from `versions.json` (global); if that is unreadable the run is BLIND (the topmost section is never used silently).
+
+A hop that leaves the repository, a dangling hop and a symlink loop are `MISS`, never PASS. Untracked files outside
+the walk are not part of this check (they are judged by the tracked/UNLISTED rules). Commit first, then run the check.
+Not handled (UNCONFIRMED / residual): Unicode case folding and normalisation, `core.symlinks=false` clones, sparse
+or shallow clones, LFS pointers, the executable bit under `core.fileMode=false`, untracked files inside a cited directory outside the
+evidence prefix.
 
 ### Instrument verification (constitution 11.4.273, 11.4.224)
 

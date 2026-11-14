@@ -8,6 +8,11 @@
 # (PASS-WITH-WAIVERS exits 0 like PASS but means declared evidence gaps were relied on.)
 set -u
 
+# F6: an inherited GIT_DIR / GIT_INDEX_FILE / GIT_WORK_TREE / GIT_CONFIG_* ... would redirect every git call
+# below to another repository or index; the checker reads only the repository named by --repo.
+for _gv in $(compgen -e | grep '^GIT_' || true); do unset "$_gv"; done
+unset _gv
+
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SELF="$HERE/$(basename "${BASH_SOURCE[0]}")"
 
@@ -29,7 +34,8 @@ usage: check_release_consistency.sh [--repo DIR] [--version X.Y.Z] [--prev-tag T
   --version   expected version (default: versions.json global major.minor.patch)
   --prev-tag  git tag; versionCode of each Android app must be an integer strictly
               greater than its value at that tag
-  --section   CHANGELOG section version (default: topmost numbered section)
+  --section   CHANGELOG section version (default: --version, else versions.json global;
+              BLIND when neither is available - the topmost section is never used silently)
   --waivers   file (repo-relative, git-tracked) declaring known evidence gaps; default
               docs/qa/EVIDENCE_WAIVERS.txt when present (see README)
   --evidence-prefix P
@@ -57,6 +63,8 @@ while [ $# -gt 0 ]; do
   esac
 done
 
+# --version X selects the changelog section [X] (never a silent fall-back to the topmost section).
+[ -n "$SECTION" ] || SECTION="$EXPECTED"
 [ "${#EV_PREFIXES[@]}" -gt 0 ] || EV_PREFIXES=("docs/qa/")
 case "$CHECK" in version|changelog|all) ;; *) blind "bad --check value '$CHECK'" ;; esac
 
@@ -75,6 +83,11 @@ if [ "$SELFTEST" = 1 ]; then
   sed -i 's/^  "version": "2.4.0"/  "version": "2.3.0"/' "$st/bad_ver/catalog-web/package.json"
   # shellcheck disable=SC2016
   sed -i 's#`scripts/tool.sh`#`scripts/planted_fake_path.sh`#' "$st/bad_path/docs/CHANGELOG.md"
+  # the planted edits are committed: the checker reads HEAD only, so an uncommitted edit would be BLIND, not FAIL
+  for pl in bad_ver bad_path; do
+    git -C "$st/$pl" -c user.name=selftest -c user.email=selftest@localhost -c commit.gpgsign=false commit -q -a -m planted >/dev/null 2>&1 \
+      || blind "cannot commit the planted $pl edit"
+  done
   fail=0
   rc=0; "$SELF" --repo "$st/good" >/dev/null 2>&1 || rc=$?
   [ "$rc" -eq 0 ] || { echo "selftest: known-good fixture did not PASS (rc=$rc)"; fail=1; }
@@ -93,7 +106,243 @@ fi
 [ -d "$REPO" ] || blind "repo directory '$REPO' not found"
 git -C "$REPO" rev-parse --git-dir >/dev/null 2>&1 || blind "'$REPO' is not a git repository"
 REPO="$(cd "$REPO" && pwd)"
-
+# CAT-REL-CHECK-2 round 5: HEAD is the single source for EVERY read. replace refs never apply (C8), and the
+# contents of HEAD are written once into a throw-away directory (SNAP) from the raw blobs; manifests, version
+# files, the changelog, the waiver file, gradle files, .gitignore decisions and the tracked-file sets are all
+# read from SNAP or from `git ls-tree HEAD`, never from the working tree, the index, .git/info/* or any
+# local/global configuration. The working tree is consulted only to say BLIND when it differs from HEAD.
+export GIT_NO_REPLACE_OBJECTS=1
+# CAT-REL-CHECK-3 (N2): every git call is bounded; a hung git is an ordinary git failure (BLIND), never a hang
+# CAT-REL-CHECK-3 (F6, R2-5, R2-6): every numeric knob is validated here; a bad, zero, leading-zero or absurdly long value is a
+# clear BLIND, never a silent default (unset or empty selects the default)
+for _k in RELCHK_GIT_TIMEOUT RELCHK_SNAP_TIMEOUT RELCHK_MAX_FILES RELCHK_MAX_BYTES RELCHK_MAX_READ; do
+  _v="${!_k:-}"
+  [ -z "$_v" ] || case "$_v" in *[!0-9]*|0*) blind "$_k must be a positive integer without leading zeros (got '$_v')" ;; esac
+  [ "${#_v}" -le 15 ] || blind "$_k is too large (more than 15 digits)"
+done
+# R3-3: signal.alarm takes a C int: more than 9 digits (999999999 s, about 31 years) is out of range, a clear BLIND, never an OverflowError
+_st="${RELCHK_SNAP_TIMEOUT:-}"; [ "${#_st}" -le 9 ] || blind "RELCHK_SNAP_TIMEOUT must be at most 999999999 seconds (got '$RELCHK_SNAP_TIMEOUT')"
+# R3-4: waiver expiry is a string compare, so the reference date must be a real YYYY-MM-DD (0 or free text would make waivers never expire)
+if [ -n "${RELCHK_TODAY:-}" ]; then
+  [[ "$RELCHK_TODAY" =~ ^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$ ]] || blind "RELCHK_TODAY must be a date in the form YYYY-MM-DD (got '$RELCHK_TODAY')"
+fi
+RELCHK_GIT_TIMEOUT="${RELCHK_GIT_TIMEOUT:-120}"; export RELCHK_GIT_TIMEOUT
+git() { command timeout --kill-after=5 "$RELCHK_GIT_TIMEOUT" git "$@"; }
+HEADC="$(git -C "$REPO" rev-parse --verify -q 'HEAD^{commit}' 2>/dev/null)" || blind "'$REPO' has no HEAD commit"
+SNAPBASE="${RELCHK_TMP:-${XDG_CACHE_HOME:-${HOME:?}/.cache}/relchk-tmp}"
+mkdir -p "$SNAPBASE" || blind "cannot create $SNAPBASE"
+if [ -n "${RELCHK_SNAP_DIR:-}" ]; then
+  # test hook: a fixed, absolute, not yet existing snapshot path (lets a test place a sibling directory whose name
+  # starts with the snapshot's name); never used by a normal run
+  case "$RELCHK_SNAP_DIR" in /*) ;; *) blind "RELCHK_SNAP_DIR must be absolute" ;; esac
+  [ ! -e "$RELCHK_SNAP_DIR" ] || blind "RELCHK_SNAP_DIR exists already"
+  mkdir -p -- "$RELCHK_SNAP_DIR" || blind "cannot create RELCHK_SNAP_DIR"
+  SNAP="$RELCHK_SNAP_DIR"
+else
+  SNAP="$(mktemp -d "$SNAPBASE/snap.XXXXXX")" || blind "cannot create a HEAD snapshot directory"
+  case "$SNAP" in "$SNAPBASE"/snap.*) ;; *) blind "odd snapshot directory" ;; esac
+fi
+trap 'rm -rf -- "${SNAP:?}"' EXIT
+# the snapshot writer resolves its interpreter from fixed system locations first, so a python3 shadowed on PATH
+# (the helper-output tests do that on purpose) cannot fake the snapshot
+SNAP_PY=""; for _p in /usr/bin/python3 /usr/local/bin/python3 /bin/python3; do [ -x "$_p" ] && { SNAP_PY="$_p"; break; }; done
+[ -n "$SNAP_PY" ] || SNAP_PY="$(command -v python3 2>/dev/null)" || blind "python3 not found"
+SNAP_ERR="$("$SNAP_PY" -I - "$REPO" "$HEADC" "$SNAP" 2>&1 >/dev/null <<'PY'
+import os, signal, subprocess, sys
+repo, commit, snap = sys.argv[1:4]
+CHILD = []
+def die(code, msg):
+    sys.stderr.write("snapshot refused: %s\n" % msg); sys.stderr.flush()
+    for ch in CHILD:   # a hung git must not outlive the writer (it would keep the caller's pipe open); pid > 1 only
+        try:
+            if ch.pid > 1:
+                ch.kill()
+        except Exception:
+            pass
+    os._exit(code)
+def _unexpected(t, v, tb):
+    die(10, "internal error in the snapshot writer (%s)" % t.__name__)
+sys.excepthook = _unexpected
+def envint(name, dflt):
+    try:
+        v = int(os.environ.get(name, dflt))
+        return v if v > 0 else dflt
+    except ValueError:
+        return dflt
+MAXFILES = envint("RELCHK_MAX_FILES", 1000000)
+MAXBYTES = envint("RELCHK_MAX_BYTES", 4 << 30)
+GIT_TO = envint("RELCHK_GIT_TIMEOUT", 120)
+signal.signal(signal.SIGALRM, lambda *_: die(7, "snapshot writer exceeded its time limit"))
+signal.alarm(envint("RELCHK_SNAP_TIMEOUT", 900))
+try:
+    r = subprocess.run(["git", "-C", repo, "ls-tree", "-r", "-z", "--full-tree", commit], capture_output=True, timeout=GIT_TO)
+except subprocess.TimeoutExpired:
+    die(7, "git ls-tree timed out")
+if r.returncode != 0:
+    die(3, "git ls-tree failed")
+# ---- 1. parse and validate the whole listing BEFORE anything is written (class: no content-derived write may
+# resolve outside SNAP; duplicate / conflicting paths, special names and size excesses are refused up front)
+ents = []
+seen = set(); prefixes = set()
+for rec in r.stdout.split(b"\0"):
+    if not rec:
+        continue
+    try:
+        meta, path = rec.split(b"\t", 1)
+        mode, typ, sha = meta.split(b" ")
+    except ValueError:
+        die(4, "malformed ls-tree record")
+    if (mode, typ) not in ((b"100644", b"blob"), (b"100755", b"blob"), (b"120000", b"blob"), (b"160000", b"commit")):
+        die(4, "unsupported tree entry %r" % (mode,))
+    parts = path.split(b"/")
+    if any(p in (b"", b".", b"..") or p.lower() == b".git" for p in parts):
+        die(4, "unsafe path component in %r" % (path,))
+    if path in seen:
+        die(4, "duplicate tree entry %r" % (path,))
+    seen.add(path)
+    for i in range(1, len(parts)):
+        prefixes.add(b"/".join(parts[:i]))
+    ents.append((mode, typ, sha, path, parts))
+if len(ents) > MAXFILES:
+    die(8, "more than %d tree entries" % MAXFILES)
+clash = seen & prefixes
+if clash:
+    die(4, "a path is both an entry and a directory: %r" % (sorted(clash)[0],))
+# ---- 2. extraction through directory file descriptors, no symlink is ever followed
+base = os.fsencode(snap)
+RFD = os.open(base, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+FLAGS = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+_cache = {"key": None, "fd": None}
+def dirfd(parts, create=True):
+    key = tuple(parts)
+    if _cache["key"] == key:
+        return _cache["fd"]
+    if _cache["fd"] is not None:
+        os.close(_cache["fd"]); _cache["key"] = None; _cache["fd"] = None
+    fd = os.dup(RFD)
+    for p in parts:
+        if create:
+            try:
+                os.mkdir(p, 0o755, dir_fd=fd)
+            except FileExistsError:
+                pass
+        nfd = os.open(p, FLAGS, dir_fd=fd)   # O_NOFOLLOW: a symlink here is an error, never followed
+        os.close(fd); fd = nfd
+    _cache["key"] = key; _cache["fd"] = fd
+    return fd
+cat = subprocess.Popen(["git", "-C", repo, "cat-file", "--batch"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+CHILD.append(cat)
+total = 0
+links = []
+expect = {}
+for mode, typ, sha, path, parts in ents:
+    if typ == b"commit":
+        pfd = dirfd(parts[:-1])
+        os.mkdir(parts[-1], 0o755, dir_fd=pfd)
+        expect[path] = "d"
+        continue
+    cat.stdin.write(sha + b"\n"); cat.stdin.flush()
+    hdr = cat.stdout.readline().split()
+    if len(hdr) != 3 or hdr[1] != b"blob":
+        die(5, "unreadable blob")
+    n = int(hdr[2])
+    total += n
+    if total > MAXBYTES:
+        die(8, "more than %d bytes of content" % MAXBYTES)
+    if mode == b"120000":
+        if n > 65536 or n == 0:
+            die(4, "implausible symlink target size %d" % n)
+        data = cat.stdout.read(n); cat.stdout.read(1)
+        if len(data) != n or b"\0" in data:
+            die(6, "short or malformed symlink blob")
+        links.append((path, parts, data)); continue
+    pfd = dirfd(parts[:-1])
+    fd = os.open(parts[-1], os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o644, dir_fd=pfd)
+    with os.fdopen(fd, "wb") as fh:
+        left = n   # streamed in 1 MiB pieces: a large blob is never held in memory whole
+        while left > 0:
+            piece = cat.stdout.read(min(left, 1 << 20))
+            if not piece:
+                die(6, "short blob")
+            fh.write(piece); left -= len(piece)
+        if cat.stdout.read(1) != b"\n":
+            die(6, "blob framing error")
+        if mode == b"100755":
+            os.fchmod(fh.fileno(), 0o755)
+    expect[path] = "f"
+cat.stdin.close(); cat.wait()
+# symlinks last: every parent is a real directory made above (a path that is both a link and a directory was refused)
+for path, parts, data in links:
+    pfd = dirfd(parts[:-1])
+    os.symlink(data, parts[-1], dir_fd=pfd)
+    expect[path] = "l"
+# ---- 3. verify: exactly the expected entries exist, none through a link, every parent resolves inside SNAP
+real = os.path.realpath(base)
+found = {}
+for dp, dns, fns in os.walk(base, followlinks=False):
+    rdp = os.path.realpath(dp)
+    if rdp != real and not rdp.startswith(real + b"/"):
+        die(9, "extracted directory resolves outside the snapshot")
+    for nm in dns + fns:
+        full = os.path.join(dp, nm)
+        rel = full[len(base) + 1:]
+        found[rel] = "l" if os.path.islink(full) else ("d" if os.path.isdir(full) else "f")
+for rel, k in expect.items():
+    if found.get(rel) != k:
+        die(9, "extracted entry %r is not what the tree says" % (rel,))
+dirs_expected = set(prefixes) | {p for p, k in expect.items() if k == "d"}
+for rel, k in found.items():
+    if k == "d":
+        if rel not in dirs_expected:
+            die(9, "unexpected directory %r" % (rel,))
+    elif rel not in expect:
+        die(9, "unexpected entry %r" % (rel,))
+PY
+)" || blind "cannot write the HEAD snapshot of $REPO: ${SNAP_ERR:-no detail}"
+# the snapshot is a git repository only so that `check-ignore` can apply the COMMITTED .gitignore files;
+# no .git/info/exclude, no global/system config, no core.excludesFile
+GIT_SNAP=(env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 timeout --kill-after=5 "$RELCHK_GIT_TIMEOUT" git -c core.excludesFile=/dev/null -C "$SNAP")
+"${GIT_SNAP[@]}" init -q --template= . >/dev/null 2>&1 || blind "cannot initialise the HEAD snapshot repository"
+# CAT-REL-CHECK-3 (F2): the single reader of snapshot content for every python block below (exec'd from this variable)
+IFS= read -r -d '' RELCHK_PYLIB <<'PYLIB' || true
+import io, os, stat
+MAXREAD = int(os.environ.get("RELCHK_MAX_READ", "") or str(64 << 20))
+def snap_bytes(base, rel):
+    # CAT-REL-CHECK-3 (F2): the only way this helper reads snapshot content. The target must resolve inside the snapshot,
+    # be a regular file (a FIFO or device is never opened blocking) and not exceed RELCHK_MAX_READ.
+    rb = os.path.realpath(base)
+    rp = os.path.realpath(os.path.join(base, rel))
+    if rp != rb and not rp.startswith(rb + os.sep):
+        raise OSError("%s resolves outside the snapshot" % rel)
+    fd = os.open(rp, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW)
+    try:
+        st = os.fstat(fd)
+        if not stat.S_ISREG(st.st_mode):
+            raise OSError("%s is not a regular file" % rel)
+        if st.st_size > MAXREAD:
+            raise OSError("%s is larger than RELCHK_MAX_READ (%d)" % (rel, MAXREAD))
+        with os.fdopen(fd, "rb", closefd=False) as fh:
+            data = fh.read(MAXREAD + 1)
+    finally:
+        os.close(fd)
+    if len(data) > MAXREAD:
+        raise OSError("%s is larger than RELCHK_MAX_READ (%d)" % (rel, MAXREAD))
+    return data
+def snap_text(base, rel, encoding="utf-8", errors="strict"):
+    return io.TextIOWrapper(io.BytesIO(snap_bytes(base, rel)), encoding=encoding, errors=errors).read()
+PYLIB
+export RELCHK_PYLIB
+# CAT-REL-CHECK-3 (F2): a shell `< file` / `cat` read of snapshot content goes through this check first: the target must
+# resolve inside SNAP, be a regular file (never a FIFO or a device) and not exceed RELCHK_MAX_READ bytes
+SNAP_REAL="$(cd "$SNAP" && pwd -P)"
+snap_readable() {
+  local rp sz
+  rp="$(readlink -f -- "$SNAP/$1" 2>/dev/null)" || return 1
+  case "$rp" in "$SNAP_REAL"/*) ;; *) return 1 ;; esac
+  [ -f "$rp" ] || return 1
+  sz="$(stat -c %s -- "$rp" 2>/dev/null)" || return 1
+  [ "$sz" -le "${RELCHK_MAX_READ:-67108864}" ]
+}
 V_OK=0; V_FAIL=0; C_PATHS=0; C_MISS=0; C_SKIP=0; S_OK=0; S_FAIL=0; S_UNV=0; BLINDS=""
 C_NOMAN=0; U_FILES=0; W_APPLIED=0; W_BAD=0; W_UNUSED=0
 declare -A WV=() WVUSED=()
@@ -101,42 +350,158 @@ SECTION_USED="-"
 note_blind() { BLINDS="$BLINDS ${1}"; echo "BLIND: $1"; }
 
 # ---------------------------------------------------------------- (1) versions
-# head_check <label> <repo-relative path>...: a clone sees HEAD only. Every existing path must be in HEAD
-# and match it in the index and the working tree (tracked changes only); otherwise the verdict about
-# it is unprovable and the run is BLIND. (R3-1: one check for the changelog, version files, cited paths.)
-head_check() {
-  local label="$1" p out bad=""; shift
-  local -a specs=()
-  for p in "$@"; do
-    [ -e "$REPO/$p" ] || continue
-    specs+=(":(literal)$p")
-    git -C "$REPO" cat-file -e "HEAD:$p" 2>/dev/null || bad="$bad [$p is not in HEAD]"
-  done
-  [ "${#specs[@]}" -gt 0 ] || return 0
-  if ! out="$(git -C "$REPO" status --porcelain=v1 -z --untracked-files=no -- "${specs[@]}" 2>/dev/null)"; then
-    note_blind "$label: git status failed; cannot prove the files match HEAD"; return 0
+# head_check <label> <repo-relative path>...: a clone sees HEAD only, so every existing path must read the
+# same in a clean clone as it does here. One generic mechanism (CAT-REL-CHECK-2, see
+# docs/release_checker_path_inventory.md): the path is walked component by component exactly as the kernel
+# would walk it, following symlinks hop by hop; EVERY component and EVERY hop must be in HEAD with the same
+# type, a symlink hop must carry the same target as HEAD, the final file must hash to its HEAD blob, and the
+# final file or directory must show no status difference and no skip-worktree / assume-unchanged flag.
+# Anything that differs, or that cannot be proven (absolute hop, hop into a submodule, hop out of the
+# repository, more than 40 hops, case-insensitive name collision, git failing), makes the run BLIND.
+CHAIN_BAD=""
+chain_bad() { CHAIN_BAD="$CHAIN_BAD [$1]"; }
+
+# head_entry <repo-relative path>: sets E_MODE E_SHA from HEAD's tree for exactly that path
+# (E_MODE empty when HEAD has no such entry). Returns 1 when git itself fails.
+head_entry() {
+  local ent="$1" out line meta nm
+  E_MODE=""; E_SHA=""
+  out="$(git -C "$REPO" -c core.quotepath=off ls-tree HEAD -- "$ent" 2>/dev/null)" || return 1
+  while IFS= read -r line; do
+    [ -n "$line" ] || continue
+    meta="${line%%$'\t'*}"; nm="${line#*$'\t'}"
+    [ "$nm" = "$ent" ] || continue
+    read -r E_MODE _ E_SHA <<< "$meta"
+  done <<< "$out"
+  return 0
+}
+
+# name_collides <parent> <name>: true when HEAD's tree holds a second entry in <parent> whose name equals
+# <name> ignoring case (a clone on a case-insensitive filesystem would merge them).
+name_collides() {
+  local parent="$1" name="$2" want out e n=0
+  want="${parent:+$parent/}$name"; want="${want,,}"
+  if [ -n "$parent" ]; then out="$(git -C "$REPO" -c core.quotepath=off ls-tree --name-only HEAD -- "$parent/" 2>/dev/null)" || return 2
+  else out="$(git -C "$REPO" -c core.quotepath=off ls-tree --name-only HEAD 2>/dev/null)" || return 2; fi
+  while IFS= read -r e; do
+    [ -n "$e" ] || continue
+    [ "${e,,}" = "$want" ] && n=$((n+1))
+  done <<< "$out"
+  [ "$n" -gt 1 ]
+}
+
+# entry_clean <path>: status and skip-worktree / assume-unchanged check for one tracked entry (a symlink hop,
+# the final file or the final directory). Appends to CHAIN_BAD; returns 1 only when git failed (BLIND noted).
+entry_clean() {
+  local cur="$1" out flagged
+  if ! out="$(git -C "$REPO" -c core.quotepath=off status --porcelain=v1 --ignore-submodules=none --untracked-files=no -- ":(literal)$cur" 2>/dev/null)"; then
+    note_blind "$(printf '%q' "$cur"): git status failed; cannot prove the files match HEAD"; return 1
   fi
-  [ -z "$out" ] || bad="$bad [differs from HEAD: $(printf '%s' "$out" | tr '\0' '\n' | head -3 | tr '\n' ';')]"
-  [ -z "$bad" ] || note_blind "$label are not committed as read (a clone would differ):$bad"
+  [ -z "$out" ] || chain_bad "$cur differs from HEAD: $(printf '%s\n' "$out" | head -3 | tr '\n' ';')"
+  if ! flagged="$(git -C "$REPO" -c core.quotepath=off ls-files -v -- ":(literal)$cur" 2>/dev/null)"; then
+    note_blind "$(printf '%q' "$cur"): git ls-files failed; cannot prove no file is hidden from git status"; return 1
+  fi
+  flagged="$(printf '%s\n' "$flagged" | grep -m1 '^[a-zS] ' || true)"
+  [ -z "$flagged" ] || chain_bad "$cur holds a skip-worktree or assume-unchanged file ($flagged), which hides changes from git status"
+  return 0
+}
+
+# chain_one <path>: appends to CHAIN_BAD; returns 1 only when git failed (a BLIND was already noted).
+chain_one() {
+  local spec="$1" cur="" c ent hops=0 ftype="tree" fsha="" tgt want out flagged rest r
+  local -a pend=() parts=()
+  [ -e "$REPO/$spec" ] || return 0
+  case "$spec" in /*) chain_bad "$spec is not a repo-relative path"; return 0 ;; esac
+  IFS='/' read -r -a pend <<< "$spec"
+  while [ "${#pend[@]}" -gt 0 ]; do
+    c="${pend[0]}"; pend=("${pend[@]:1}")
+    case "$c" in
+      ""|.) continue ;;
+      ..) if [ -z "$cur" ]; then chain_bad "$spec leaves the repository"; return 0; fi
+          if [[ "$cur" == */* ]]; then cur="${cur%/*}"; else cur=""; fi
+          ftype="tree"; fsha=""; continue ;;
+    esac
+    ent="${cur:+$cur/}$c"
+    head_entry "$ent" || { note_blind "git ls-tree failed for $(printf '%q' "$ent"); cannot prove it matches HEAD"; return 1; }
+    if [ -z "$E_MODE" ]; then chain_bad "$ent is not in HEAD"; return 0; fi
+    name_collides "$cur" "$c"; r=$?
+    if [ "$r" -eq 2 ]; then note_blind "git ls-tree failed for $(printf '%q' "${cur:-.}"); cannot prove it matches HEAD"; return 1; fi
+    if [ "$r" -eq 0 ]; then chain_bad "$ent collides with another HEAD entry ignoring case"; return 0; fi
+    case "$E_MODE" in
+      120000)
+        if [ ! -L "$REPO/$ent" ]; then chain_bad "$ent is a symlink in HEAD but not in the working tree"; return 0; fi
+        # F2: compare the RAW bytes. $(...) strips trailing newlines and `read` keeps one line, so a
+        # sentinel byte is appended and removed again (readlink adds exactly one newline of its own).
+        tgt="$(readlink -- "$REPO/$ent"; printf .)"; tgt="${tgt%.}"; tgt="${tgt%$'\n'}"
+        want="$(git -C "$REPO" cat-file blob "$E_SHA" 2>/dev/null; printf .)" \
+          || { note_blind "git cat-file failed for $(printf '%q' "$ent")"; return 1; }
+        want="${want%.}"
+        # HEAD's own target decides what is supportable, so these checks come before the comparison
+        case "$want" in
+          "") chain_bad "$ent is an empty symlink in HEAD"; return 0 ;;
+          /*) chain_bad "$ent is an absolute symlink ($want); a clone elsewhere cannot prove it"; return 0 ;;
+        esac
+        if [ "$tgt" != "$want" ]; then chain_bad "$ent link target differs from HEAD (working tree $(printf '%q' "$tgt"), HEAD $(printf '%q' "$want"))"; return 0; fi
+        if [[ "$tgt" == *[[:cntrl:]]* ]]; then chain_bad "$ent link target contains a control character or newline ($(printf '%q' "$tgt"))"; return 0; fi
+        # F2: a hop is a tracked entry too: its own status and skip-worktree / assume-unchanged flags
+        entry_clean "$ent" || return 1
+        hops=$((hops+1))
+        if [ "$hops" -gt 40 ]; then chain_bad "$spec needs more than 40 symlink hops"; return 0; fi
+        IFS='/' read -r -a parts <<< "$tgt"
+        pend=("${parts[@]}" "${pend[@]}") ;;
+      040000)
+        if [ -L "$REPO/$ent" ] || [ ! -d "$REPO/$ent" ]; then chain_bad "$ent is a directory in HEAD but not in the working tree"; return 0; fi
+        cur="$ent"; ftype="tree"; fsha="" ;;
+      160000)
+        if [ -L "$REPO/$ent" ] || [ ! -d "$REPO/$ent" ]; then chain_bad "$ent is a submodule in HEAD but not a directory in the working tree"; return 0; fi
+        rest=""; for r in "${pend[@]}"; do case "$r" in ""|.) ;; *) rest=1 ;; esac; done
+        if [ -n "$rest" ]; then chain_bad "$spec continues inside the submodule $ent, which a clone does not provide"; return 0; fi
+        cur="$ent"; ftype="commit"; fsha="" ;;
+      100644|100755)
+        rest=""; for r in "${pend[@]}"; do case "$r" in ""|.) ;; *) rest=1 ;; esac; done
+        if [ -n "$rest" ]; then chain_bad "$spec continues below the file $ent"; return 0; fi
+        if [ -L "$REPO/$ent" ] || [ ! -f "$REPO/$ent" ]; then chain_bad "$ent is a file in HEAD but not in the working tree"; return 0; fi
+        cur="$ent"; ftype="blob"; fsha="$E_SHA" ;;
+      *) chain_bad "$ent has the unsupported HEAD mode $E_MODE"; return 0 ;;
+    esac
+  done
+  [ -n "$cur" ] || return 0
+  if [ "$ftype" = blob ]; then
+    out="$(git -C "$REPO" hash-object --no-filters -- "$cur" 2>/dev/null)" || { note_blind "git hash-object failed for $(printf '%q' "$cur")"; return 1; }
+    # F3: RAW bytes against the blob. A local clean filter, .git/info/attributes, core.attributesFile,
+    # core.autocrlf / core.eol or an untracked .gitattributes can make `git status` clean while the bytes a
+    # clone checks out differ; any raw difference is therefore unprovable here (BLIND), never a pass.
+    [ "$out" = "$fsha" ] || chain_bad "$cur raw bytes differ from the HEAD blob (content, or a local filter / eol / attribute conversion that a clone would not apply; to resolve, commit the bytes exactly as they are in the working tree or remove the eol/filter attribute for this path)"
+  fi
+  entry_clean "$cur" || return 1
+  return 0
+}
+
+head_check() {
+  local label="$1" p; shift
+  CHAIN_BAD=""
+  for p in "$@"; do chain_one "$p" || return 0; done
+  [ -z "$CHAIN_BAD" ] || note_blind "$label are not committed as read (a clone would differ):$CHAIN_BAD"
   return 0
 }
 
 run_versions() {
   echo "== version consistency"
   local kind label detail vout vrc
-  vout="$(python3 -I - "$REPO" "$EXPECTED" "$PREV_TAG" <<'PY'
+  vout="$(python3 -I - "$REPO" "$EXPECTED" "$PREV_TAG" "$SNAP" <<'PY'
 import json, os, re, subprocess, sys, tomllib
 
-repo, expected, prevtag = sys.argv[1:4]
+repo, expected, prevtag, snap = sys.argv[1:5]
+GIT_TO = int(os.environ.get("RELCHK_GIT_TIMEOUT", "120") or "120")   # repo: git queries only; snap: the HEAD snapshot every file read uses
 
 def emit(kind, label, detail=""):
     print(f"{kind}\t{label}\t{detail}")
 
+exec(os.environ["RELCHK_PYLIB"])   # snap_bytes / snap_text (defined once, near the top)
 READ = []
 def read(path):
     READ.append(path)
-    with open(os.path.join(repo, path), encoding="utf-8") as fh:
-        return fh.read()
+    return snap_text(snap, path)
 
 # expected version
 vj_ok = True
@@ -236,18 +601,18 @@ def gradle_field(text, name):
 tag_ok = True
 if prevtag:
     r = subprocess.run(["git", "-C", repo, "rev-parse", "-q", "--verify", prevtag + "^{commit}"],
-                       capture_output=True, text=True)
+                       capture_output=True, text=True, timeout=GIT_TO)
     if r.returncode != 0:
         tag_ok = False
         emit("FAIL", "--prev-tag", f"tag {prevtag!r} not found")
 
 for app in APPS:
     path = f"{app}/app/build.gradle.kts"
-    both = (os.path.exists(os.path.join(repo, path))
-            and os.path.exists(os.path.join(repo, f"{app}/app/build.gradle")))
+    both = (os.path.exists(os.path.join(snap, path))
+            and os.path.exists(os.path.join(snap, f"{app}/app/build.gradle")))
     if both:
         emit("FAIL", f"{app}/app", "both build.gradle.kts and build.gradle exist; ambiguous")
-    if not os.path.exists(os.path.join(repo, path)):
+    if not os.path.exists(os.path.join(snap, path)):
         path = f"{app}/app/build.gradle"
     check(f"{path} versionName", lambda p=path: gradle_field(read(p), "versionName"))
     label = f"{path} versionCode"
@@ -263,7 +628,7 @@ for app in APPS:
     if not (prevtag and tag_ok):
         emit("INFO", label, f"{cur} (no --prev-tag, monotonicity not checked)" if not prevtag else str(cur))
         continue
-    r = subprocess.run(["git", "-C", repo, "show", f"{prevtag}:{path}"], capture_output=True, text=True)
+    r = subprocess.run(["git", "-C", repo, "show", f"{prevtag}:{path}"], capture_output=True, text=True, timeout=GIT_TO)
     if r.returncode != 0:
         emit("OK", label, f"{cur} (file absent at {prevtag}: new)")
         continue
@@ -352,13 +717,13 @@ PY
 }
 
 # ---------------------------------------------------------------- (2) changelog
-tracked() { # tracked <path>: true when git tracks the path (file or directory)
-  git -C "$REPO" ls-files -- ":(literal)$1" 2>/dev/null | grep -q .
+tracked() { # tracked <path>: true when HEAD holds the path (file, symlink, gitlink or directory); never the index
+  head_entry "$1" && [ -n "$E_MODE" ]
 }
 
 run_changelog() {
   echo "== changelog evidence paths"
-  local cl="$REPO/docs/CHANGELOG.md"
+  local cl="$SNAP/docs/CHANGELOG.md"
   [ -f "$cl" ] || { note_blind "docs/CHANGELOG.md not found"; return; }
 
   # 11.4.273 control needles: the existence instrument must see a known-present tracked
@@ -366,18 +731,31 @@ run_changelog() {
   local pos neg
   # tracked-instrument needle: first tracked path with a plain name (no quoting issues), judged
   # by git only; existence-instrument needle: the changelog itself, which was just found.
-  pos="$(git -C "$REPO" ls-files | grep -m1 -E '^[A-Za-z0-9._/-]+$')"
+  pos="$(git -C "$REPO" ls-tree -r --name-only HEAD | grep -m1 -E '^[A-Za-z0-9._/-]+$')"
   neg="__no_such_path_$$__/none"
-  if [ -z "$pos" ] || ! tracked "$pos" || [ ! -e "$cl" ] || [ -e "$REPO/$neg" ] || tracked "$neg"; then
+  if [ -z "$pos" ] || ! tracked "$pos" || [ ! -e "$cl" ] || [ -e "$SNAP/$neg" ] || tracked "$neg"; then
     note_blind "control needle failed: existence/tracked instrument cannot be trusted"; return
   fi
 
   local out kind a b
-  out="$(python3 -I - "$REPO" "$SECTION" <<'PY'
-import os, re, subprocess, sys
-repo, want = sys.argv[1:3]
-with open(os.path.join(repo, "docs/CHANGELOG.md"), encoding="utf-8") as fh:
-    lines = fh.read().splitlines()
+  out="$(python3 -I - "$REPO" "$SECTION" "$SNAP" <<'PY'
+import json, os, re, subprocess, sys
+repo, want, snap = sys.argv[1:4]
+GIT_TO = int(os.environ.get("RELCHK_GIT_TIMEOUT", "120") or "120")
+exec(os.environ["RELCHK_PYLIB"])   # snap_bytes / snap_text (defined once, near the top)
+if not want:
+    # F6: no --version/--section: the section is derived from versions.json (global), never the topmost heading
+    try:
+        g = json.loads(snap_text(snap, "versions.json"))["global"]
+        want = f"{g['major']}.{g['minor']}.{g['patch']}"
+    except Exception as exc:  # noqa: BLE001
+        print(f"ERR\tno --version/--section given and versions.json global is unreadable ({type(exc).__name__}); refusing to use the topmost changelog section")
+        sys.exit(0)
+try:
+    lines = snap_text(snap, "docs/CHANGELOG.md").splitlines()
+except Exception as exc:  # noqa: BLE001
+    print(f"ERR\tdocs/CHANGELOG.md is unreadable in the snapshot ({type(exc).__name__}: {exc})")
+    sys.exit(0)
 head = re.compile(r"^## \[(\d[^\]]*)\]")
 # lines inside fenced code blocks are never headings (fence lines included)
 fenced = []
@@ -425,10 +803,17 @@ if nsub == 0:
     sys.exit(0)
 print(f"SECTION\t{name}")
 tops = set()
-r = subprocess.run(["git", "-C", repo, "ls-files", "-z"], capture_output=True, text=True)
+tfiles = set()
+tdirs = set()
+r = subprocess.run(["git", "-C", repo, "ls-tree", "-r", "-z", "--name-only", "--full-tree", "HEAD"], capture_output=True, text=True, timeout=GIT_TO)
 for p in r.stdout.split("\0"):
+    if p:
+        tfiles.add(p)
     if "/" in p:
         tops.add(p.split("/", 1)[0])
+        parts = p.split("/")
+        for i in range(1, len(parts)):
+            tdirs.add("/".join(parts[:i]))
 known = re.compile(r"^(docs|scripts|challenges|tests?|tools|specs|catalog[a-z0-9_-]*|installer-wizard|submodules|constitution|Website|config|deployment|\.github)$")
 seen = set()
 nskip = 0
@@ -440,7 +825,7 @@ for ln in vlines:
         if re.search(r"[\x00-\x1f\x7f]", tok):
             print(f"CTRL\t{tok}")
             continue
-        if re.search(r"[\s*?<>${}|\\=(),;\"']", t) or re.match(r"^[a-z][a-z0-9+.-]*://", t) \
+        if re.search(r"[*?<>${}|\\=(),;\"']", t) or re.match(r"^[a-z][a-z0-9+.-]*://", t) \
                 or t.startswith(("/", "~", "-")):
             print(f"SKIP\t{tok.strip()}")
             nskip += 1
@@ -448,6 +833,12 @@ for ln in vlines:
         t = re.sub(r":\d+(-\d+)?$", "", t.rstrip(".,;:"))
         if t.startswith("./"):
             t = t[2:]
+        if re.search(r"\s", t) and t not in tfiles and t not in tdirs:
+            # m-2: a token with whitespace is a path only when it is exactly a tracked file or directory;
+            # otherwise it is indistinguishable from a command line and stays a skipped token.
+            print(f"SKIP\t{t}")
+            nskip += 1
+            continue
         top = t.split("/", 1)[0]
         if top in tops or known.match(top):
             if t not in seen:
@@ -484,8 +875,10 @@ PY
   echo "section $SECTION_USED: ${#paths[@]} path(s) in VERIFIED; skipped non-repo-looking: ${skips[*]:-none}"
 
   head_check "docs/CHANGELOG.md" "docs/CHANGELOG.md"
+  # C7: the derived section comes from versions.json, so the working-tree copy must read like HEAD's as well
+  [ -n "$SECTION" ] || head_check "versions.json" "versions.json"
   local p q d rp mf ev evrel cited_ok
-  local REPO_REAL; REPO_REAL="$(cd "$REPO" && pwd -P)"
+  local REPO_REAL; REPO_REAL="$(cd "$SNAP" && pwd -P)"   # the HEAD snapshot: every symlink below resolves inside HEAD
   declare -A seen_dir=()
   local -a queue=()
   load_waivers || return
@@ -496,30 +889,37 @@ PY
     fi
     q="${p%/}"
     # N3: a tracked symlink must not lead outside the repository.
-    rp="$(readlink -f -- "$REPO/$q" 2>/dev/null || true)"
-    if [ -e "$REPO/$q" ] && { [ -z "$rp" ] || { [ "$rp" != "$REPO_REAL" ] && [[ "$rp" != "$REPO_REAL"/* ]]; }; }; then
+    rp="$(readlink -f -- "$SNAP/$q" 2>/dev/null || true)"
+    if [ -e "$SNAP/$q" ] && { [ -z "$rp" ] || { [ "$rp" != "$REPO_REAL" ] && [[ "$rp" != "$REPO_REAL"/* ]]; }; }; then
       C_MISS=$((C_MISS+1)); echo "MISS  $p (resolves outside the repository)"; continue
-    fi
-    cited_ok=0
-    if [ ! -e "$REPO/$q" ]; then
-      C_MISS=$((C_MISS+1)); echo "MISS  $p (not in working tree)"
-    elif ! tracked "$q"; then
-      C_MISS=$((C_MISS+1)); echo "MISS  $p (exists but not git-tracked)"
-    else
-      echo "OK    $p"; cited_ok=1
     fi
     # RC-3: decide on the REAL in-repo location (// and /./ collapsed, symlinks resolved), so a
     # spelling trick or an alias cannot dodge the evidence prefix or the manifest search.
-    ev="$(readlink -m -- "$REPO/$q" 2>/dev/null || true)"
+    ev="$(readlink -m -- "$SNAP/$q" 2>/dev/null || true)"
     if [ -n "$ev" ] && { [ "$ev" = "$REPO_REAL" ] || [[ "$ev" == "$REPO_REAL"/* ]]; }; then
       evrel="${ev#"$REPO_REAL"}"; evrel="${evrel#/}"; [ -n "$evrel" ] || evrel="."
     else
       evrel="$q"
     fi
-    { [ "$cited_ok" = 0 ] || [ "$evrel" = "." ]; } || head_check "cited path $p" "$evrel"
+    cited_ok=0
+    if [ ! -e "$SNAP/$q" ]; then
+      # CAT-REL-CHECK-3 (M1): existence is decided by HEAD's snapshot, as in a clean clone (a dangling HEAD symlink
+      # is missing there too); the working tree is consulted only afterwards, by head_check, to say BLIND
+      C_MISS=$((C_MISS+1)); echo "MISS  $p (not in HEAD)"
+      # BLIND guard only (never a verdict): HEAD holds an entry here that dangles in HEAD while the working tree resolves
+      # it, so the working tree is not HEAD; a plain clone fails this path, the local run must not look cleaner than that
+      if tracked "$q" && [ -e "$REPO/$q" ]; then head_check "cited path $p" "$q"; fi
+    elif ! tracked "$q" && ! tracked "$evrel"; then
+      C_MISS=$((C_MISS+1)); echo "MISS  $p (exists but not git-tracked)"
+    else
+      echo "OK    $p"; cited_ok=1
+    fi
+    # CAT-REL-CHECK-2: the cited spelling is walked component by component and hop by hop (head_check).
+    # F1: no exemption for a path that resolves to the repository root; the cited spelling is always walked.
+    [ "$cited_ok" = 0 ] || head_check "cited path $p" "$q"
     # nearest tracked manifest (SHA256SUMS, SHA256SUMS.txt, MANIFEST*.sha256) at or above the path
     # (never the repo root itself)
-    if [ -d "$REPO/$q" ]; then d="$evrel"; else d="$(dirname "$evrel")"; fi
+    if [ -d "$SNAP/$q" ]; then d="$evrel"; else d="$(dirname "$evrel")"; fi
     local found=0 guard=0
     while [ -n "$d" ] && [ "$d" != "." ] && [ "$d" != "/" ] && [ "$guard" -lt 500 ]; do
       guard=$((guard+1))
@@ -549,7 +949,7 @@ PY
 # A manifest that is untracked or gitignored does not exist for a clone, so it does not count.
 manifests_in() {
   local d="$1" f n
-  for f in "$REPO/$d"/SHA256SUMS "$REPO/$d"/SHA256SUMS.txt "$REPO/$d"/MANIFEST*.sha256; do
+  for f in "$SNAP/$d"/SHA256SUMS "$SNAP/$d"/SHA256SUMS.txt "$SNAP/$d"/MANIFEST*.sha256; do
     [ -f "$f" ] || continue
     n="${f##*/}"
     tracked "$d/$n" && printf '%s\n' "$n"
@@ -578,15 +978,16 @@ load_waivers() {
   local -a F
   if [ -n "$f" ]; then explicit=1; else f="docs/qa/EVIDENCE_WAIVERS.txt"; fi
   rel="$f"
-  if [ ! -f "$REPO/$rel" ]; then
+  if [ ! -f "$SNAP/$rel" ]; then
+    # not in HEAD: a clone has no such waiver file
+    if [ -e "$REPO/$rel" ] || [ -L "$REPO/$rel" ]; then note_blind "waiver file $rel exists but is not git-tracked (not in HEAD)"; return 1; fi
     [ "$explicit" = 0 ] || { note_blind "waiver file $rel not found"; return 1; }
     return 0
   fi
-  if ! tracked "$rel"; then note_blind "waiver file $rel exists but is not git-tracked"; return 1; fi
-  # a waiver that exists only in the working tree would PASS here and FAIL in a clone
-  if ! git -C "$REPO" diff --quiet HEAD -- ":(literal)$rel" 2>/dev/null; then
-    note_blind "waiver file $rel differs from HEAD (commit it first)"; return 1
-  fi
+  # the waivers are read from HEAD; a working-tree copy that reads differently (edit, deletion, assume-unchanged /
+  # skip-worktree flag, local clean filter, stat-cache trick) makes the run BLIND instead of passing on either copy
+  head_check "waiver file $rel" "$rel"
+  snap_readable "$rel" || { note_blind "waiver file $rel is not a regular file inside the snapshot, or exceeds RELCHK_MAX_READ"; return 1; }
   today="${RELCHK_TODAY:-$(date +%F)}"
   while IFS= read -r line || [ -n "$line" ]; do
     n=$((n+1))
@@ -621,7 +1022,7 @@ load_waivers() {
     fi
     if [ -n "${WV[$key]+x}" ]; then W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n duplicate waiver"; continue; fi
     WV["$key"]="$reason [item $item, expires $exp]"
-  done < "$REPO/$rel"
+  done < "$SNAP/$rel"
   return 0
 }
 
@@ -640,28 +1041,103 @@ report_unused_waivers() {
   done
 }
 
+# raw_tree_check <dir>: N1. Every tracked file under <dir> (the manifest tree) is compared as RAW bytes with its
+# HEAD blob (hash-object --no-filters, which never consults the stat cache or any local filter), and every
+# tracked symlink by its target bytes. `git status` alone cannot prove this: its stat cache can be fooled
+# (core.checkStat / core.trustctime plus a restored mtime) and local clean filters make a tampered HEAD blob
+# look like the restored working-tree bytes. Returns 1 after noting a BLIND.
+raw_tree_check() {
+  local d="$1" rec meta path mode sha tgt want n i got
+  local -a paths=() shas=() gots=()
+  # a failing ls-tree inside the process substitution below would look like an empty tree; probe it first
+  if ! git -C "$REPO" ls-tree HEAD -- "$d/" >/dev/null 2>&1; then
+    note_blind "git ls-tree failed for $(printf '%q' "$d"); cannot prove the manifest tree matches HEAD"; return 1
+  fi
+  # CAT-REL-CHECK-3 (F5): the listing is captured to a file first so that its exit status is checked; read through a process
+  # substitution a timed-out or failing ls-tree looked like an empty tree and the check returned 0
+  local lst; lst="$(mktemp "${SNAP:?}/.relchk_lst.XXXXXX" 2>/dev/null)" || { note_blind "cannot create a scratch file for the manifest tree listing"; return 1; }
+  if ! git -C "$REPO" ls-tree -r -z HEAD -- "$d/" > "$lst" 2>/dev/null; then
+    rm -f -- "${lst:?}"; note_blind "git ls-tree -r failed or timed out for $(printf '%q' "$d"); cannot prove the manifest tree matches HEAD"; return 1
+  fi
+  # -z: names are NUL-delimited and never quoted, so tabs, quotes and newlines in names are handled
+  while IFS= read -r -d '' rec; do
+    meta="${rec%%$'\t'*}"; path="${rec#*$'\t'}"
+    read -r mode _ sha <<< "$meta"
+    case "$mode" in
+      100644|100755)
+        if [[ "$path" == *$'\n'* ]]; then
+          # --stdin-paths is newline-delimited: hash such a file on its own
+          got="$(git -C "$REPO" hash-object --no-filters -- "$path" 2>/dev/null)" || { note_blind "git hash-object failed under manifest tree $(printf '%q' "$d")"; return 1; }
+          if [ "$got" != "$sha" ]; then note_blind "manifest tree $(printf '%q' "$d"): $(printf '%q' "$path") raw bytes differ from the HEAD blob"; return 1; fi
+        else
+          paths+=("$path"); shas+=("$sha")
+        fi ;;
+      120000)
+        tgt="$(readlink -- "$REPO/$path"; printf .)"; tgt="${tgt%.}"; tgt="${tgt%$'\n'}"
+        want="$(git -C "$REPO" cat-file blob "$sha" 2>/dev/null; printf .)" || { note_blind "git cat-file failed for $(printf '%q' "$path")"; return 1; }
+        want="${want%.}"
+        if [ ! -L "$REPO/$path" ] || [ "$tgt" != "$want" ]; then
+          note_blind "manifest tree $(printf '%q' "$d"): symlink $(printf '%q' "$path") differs from HEAD"; return 1
+        fi;;
+      160000)
+        # R3-1: a clone (non-recursive) has nothing below a gitlink and git status may be told to ignore it
+        note_blind "manifest tree $(printf '%q' "$d") contains the submodule $(printf '%q' "$path"); a clone does not provide its files, so the manifest cannot be proven"; return 1 ;;
+      *)
+        note_blind "manifest tree $(printf '%q' "$d"): $(printf '%q' "$path") has the unsupported HEAD mode $mode"; return 1 ;;
+    esac
+  done < "$lst"
+  rm -f -- "${lst:?}"
+  n="${#paths[@]}"
+  [ "$n" -gt 0 ] || return 0
+  if ! got="$(printf '%s\n' "${paths[@]}" | git -C "$REPO" hash-object --no-filters --stdin-paths 2>/dev/null)"; then
+    note_blind "git hash-object failed under manifest tree $(printf '%q' "$d") (a tracked file is missing or unreadable)"; return 1
+  fi
+  mapfile -t gots <<< "$got"
+  if [ "${#gots[@]}" -ne "$n" ]; then
+    note_blind "git hash-object returned ${#gots[@]} hashes for $n files under $(printf '%q' "$d")"; return 1
+  fi
+  for ((i=0; i<n; i++)); do
+    if [ "${gots[$i]}" != "${shas[$i]}" ]; then
+      note_blind "manifest tree $(printf '%q' "$d"): $(printf '%q' "${paths[$i]}") raw bytes differ from the HEAD blob (edit hidden from git status, or a local filter / eol conversion)"; return 1
+    fi
+  done
+  return 0
+}
+
 # check_manifest_dir <dir>: verify every manifest in the directory (syntax, escapes, checksums) and
 # that the manifests list every regular file of the tree they cover (RC-3b). Nested manifests found
 # below are queued for the same checks.
 check_manifest_dir() {
   local d="$1" mf line name status rc o esc ent rp sawfail sawunv sawwaived mfs
   mfs="$(manifests_in "$d")"
-  if [ ! -d "$REPO/$d" ] || [ -z "$mfs" ]; then
+  if [ ! -d "$SNAP/$d" ] || [ -z "$mfs" ]; then
     note_blind "manifest directory $(printf '%q' "$d") is missing or has no tracked manifest"; return
   fi
   # I-1: a clone sees HEAD, not the index or the working tree. Any tracked file under the covered tree
   # (manifests included) that is staged-but-uncommitted, modified or deleted makes this verdict unprovable.
   local dirty
-  if ! dirty="$(git -C "$REPO" status --porcelain=v1 -z --untracked-files=no -- ":(literal)$d" 2>/dev/null)"; then
+  if ! dirty="$(git -C "$REPO" -c core.quotepath=off status --porcelain=v1 --ignore-submodules=none --untracked-files=no -- ":(literal)$d" 2>/dev/null)"; then
     note_blind "git status failed for $(printf '%q' "$d"); cannot prove it matches HEAD"; return
   fi
-  if [ -n "$dirty" ]; then
-    note_blind "manifest tree $(printf '%q' "$d") has changes that are not committed (index or working tree differ from HEAD): $(printf '%s' "$dirty" | tr '\0' '\n' | head -3 | tr '\n' ';')"; return
+  local flagged
+  if ! flagged="$(git -C "$REPO" -c core.quotepath=off ls-files -v -- ":(literal)$d" 2>/dev/null)"; then
+    note_blind "git ls-files failed for $(printf '%q' "$d"); cannot prove no file is hidden from git status"; return
   fi
+  flagged="$(printf '%s\n' "$flagged" | grep -m1 '^[a-zS] ' || true)"
+  if [ -n "$flagged" ]; then
+    note_blind "manifest tree $(printf '%q' "$d") holds a skip-worktree or assume-unchanged file ($flagged), which hides changes from git status"; return
+  fi
+  if [ -n "$dirty" ]; then
+    note_blind "manifest tree $(printf '%q' "$d") has changes that are not committed (index or working tree differ from HEAD): $(printf '%s\n' "$dirty" | head -3 | tr '\n' ';')"; return
+  fi
+  raw_tree_check "$d" || return
   while IFS= read -r mf; do
     [ -n "$mf" ] || continue
     # F4: manifest entries must stay inside the manifest's directory.
     esc=0
+    if ! snap_readable "$d/$mf"; then
+      S_FAIL=$((S_FAIL+1)); echo "SHAFAIL  $d/$mf (manifest is not a regular file inside the snapshot, or exceeds RELCHK_MAX_READ)"; continue
+    fi
     while IFS= read -r line || [ -n "$line" ]; do
       ent=""
       line="${line%$'\r'}"   # CRLF manifests: sha256sum implementations strip one trailing CR
@@ -678,7 +1154,11 @@ check_manifest_dir() {
           S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/$mf entry escapes its directory: $ent"
         else
           # F2: an in-directory symlink must not lead outside the repository.
-          rp="$(readlink -m -- "$REPO/$d/$ent" 2>/dev/null || true)"   # -m: missing components are fine
+          rp="$(readlink -m -- "$SNAP/$d/$ent" 2>/dev/null || true)"   # -m: missing components are fine
+          # N1: an entry reached through a symlink reads a file the tree walk above did not compare; walk it
+          if [ -n "$rp" ] && [ "$rp" != "$(realpath -m -s -- "$REPO_REAL/$d/$ent" 2>/dev/null)" ]; then
+            head_check "manifest entry $d/$ent" "$d/$ent"
+          fi
           if [ -z "$rp" ] || { [ "$rp" != "$REPO_REAL" ] && [[ "$rp" != "$REPO_REAL"/* ]]; }; then
             S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/$mf entry resolves outside the repository: $ent"
           fi
@@ -688,9 +1168,9 @@ check_manifest_dir() {
         # (backslash-escaped GNU/BSD lines, comments, anything else the parser cannot judge).
         S_FAIL=$((S_FAIL+1)); esc=1; echo "SHAFAIL  $d/$mf unsupported manifest line: $line"
       fi
-    done < "$REPO/$d/$mf"
+    done < "$SNAP/$d/$mf"
     [ "$esc" = 0 ] || continue
-    o="$(cd "$REPO/$d" && sha256sum --strict -c "$mf" 2>&1)"; rc=$?
+    o="$(cd "$SNAP/$d" && sha256sum --strict -c "$mf" 2>&1)"; rc=$?
     sawfail=0; sawunv=0; sawwaived=0
     while IFS= read -r line; do
       if [[ "$line" =~ ^(.*):\ (OK|FAILED\ open\ or\ read|FAILED)$ ]]; then
@@ -707,7 +1187,7 @@ check_manifest_dir() {
               echo "BADWAIVER  bad-entry waiver for $d/$name refused: a checksum mismatch is tampering or corruption and is never waivable"
             fi ;;
           *)
-            if git -C "$REPO" check-ignore -q -- "$d/$name"; then
+            if "${GIT_SNAP[@]}" check-ignore -q -- "$d/$name"; then
               S_UNV=$((S_UNV+1)); sawunv=1; echo "UNVERIFIABLE-FROM-CLONE  $d/$name (gitignored, absent/unreadable)"
             elif waived "bad-entry|$d|$name" "$d/$name (missing/unreadable)"; then sawwaived=1
             else
@@ -723,29 +1203,31 @@ check_manifest_dir() {
 
   # RC-3b: every regular file of the covered tree must be listed by the nearest manifest above it.
   local cout kind a b nend=0 lastkind="" ne=-1 nu=-1 nn=-1
-  cout="$(python3 -I - "$REPO" "$d" <<'PY'
+  cout="$(python3 -I - "$REPO" "$d" "$SNAP" <<'PY'
 import fnmatch, os, re, subprocess, sys
-repo, d = sys.argv[1:3]
+repo, d, snap = sys.argv[1:4]
+GIT_TO = int(os.environ.get("RELCHK_GIT_TIMEOUT", "120") or "120")
+exec(os.environ["RELCHK_PYLIB"])   # snap_bytes / snap_text (defined once, near the top)
 def is_mf(n):
     return n in ("SHA256SUMS", "SHA256SUMS.txt") or fnmatch.fnmatchcase(n, "MANIFEST*.sha256")
 def esc(t):
     return re.sub(r"[\x00-\x1f\x7f]", lambda m: "\\x%02x" % ord(m.group()), t)
 def entries(path):
     out = set()
-    with open(path, encoding="utf-8", errors="surrogateescape") as fh:
-        for ln in fh.read().split("\n"):
-            # (no CR strip: open() in text mode already folds \r\n and lone \r into \n)
-            m = re.match(r"^[0-9a-fA-F]{64} [ *](.*)$", ln) or re.match(r"^[A-Za-z0-9-]+ \((.*)\) = [0-9a-fA-F]+$", ln)
-            if m:
-                out.add(os.path.normpath(m.group(1)))
+    for ln in snap_text(snap, os.path.relpath(path, snap), errors="surrogateescape").split("\n"):
+        # (no CR strip: open() in text mode already folds \r\n and lone \r into \n)
+        m = re.match(r"^[0-9a-fA-F]{64} [ *](.*)$", ln) or re.match(r"^[A-Za-z0-9-]+ \((.*)\) = [0-9a-fA-F]+$", ln)
+        if m:
+            out.add(os.path.normpath(m.group(1)))
     return out
-def ls(*flags):
-    r = subprocess.run(["git", "-C", repo, "ls-files", "-z", *flags, "--", ":(literal)" + d], capture_output=True)
+def ls():
+    # HEAD's tree only: never the index, never untracked or ignored working-tree files
+    r = subprocess.run(["git", "-C", repo, "ls-tree", "-r", "-z", "--name-only", "--full-tree", "HEAD", "--", d + "/"], capture_output=True, timeout=GIT_TO)
     if r.returncode != 0:
-        print("ERR\tgit ls-files failed"); sys.exit(0)
+        print("ERR\tgit ls-tree failed"); sys.exit(0)
     return {p.decode("utf-8", "surrogateescape") for p in r.stdout.split(b"\0") if p}
-tracked = ls("--cached")
-files = sorted(ls("--cached", "--others", "--exclude-standard"))
+tracked = ls()
+files = sorted(tracked)
 tmf = {f for f in tracked if is_mf(os.path.basename(f))}
 mdirs = {os.path.dirname(f) for f in tmf}
 listed = {}
@@ -753,15 +1235,18 @@ def listed_for(md):
     if md not in listed:
         s = set()
         for f in sorted(tmf):
-            if os.path.dirname(f) == md and os.path.isfile(os.path.join(repo, f)):
-                s |= entries(os.path.join(repo, f))
+            if os.path.dirname(f) == md and os.path.isfile(os.path.join(snap, f)):
+                try:
+                    s |= entries(os.path.join(snap, f))
+                except Exception as exc:  # noqa: BLE001
+                    print("ERR\tmanifest %s is unreadable in the snapshot (%s)" % (esc(f), type(exc).__name__)); sys.exit(0)
         listed[md] = s
     return listed[md]
 nested = set()
 nfiles = 0
 nunl = 0
 for f in files:
-    full = os.path.join(repo, f)
+    full = os.path.join(snap, f)
     if f in tmf or os.path.islink(full) or not os.path.isfile(full):
         continue
     nfiles += 1

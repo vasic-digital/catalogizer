@@ -2446,3 +2446,55 @@ Constitution bd0036bd (already on all mirrors and pinned). F1 closed for the 336
 - IMG-SLIM-N5 (nit, process-doc): QA README blames the 4 shared failures on PDF/SVG tooling and root mode; two (TestD1, TestCAT002) fail because the harness ran from /tmp (testdata/pdf/uni.pdf missing); "every native demuxer/encoder included" overstates (dash, imf, dvdvideo demuxers and hap encoder need external libs); ogg/m4a cover drop not in user-facing docs; docs/qa/img-slim/README.md only plain path text.
 - Open (UNCONFIRMED): full catalog-api/Dockerfile build including the Go stage not exercised; GPG web of trust not established; builds ran locally, not on the remote build host (§11.4.173); encoder output compared by ffprobe properties not bytes. Behaviour change: ogg/m4a conversions now drop embedded cover art.
 - CAT-AUDIO-COVER-M4A-1 resolved incidentally by IMG-SLIM-1 (-vn for ogg and m4a targets; m4a-with-cover rc=234 existed in the old image too).
+
+## CAT-REL-CHECK-1 Opus round 4 (fix/release-checker-rc3, PROVISIONAL)
+
+Round 4 verdict NO-GO (1 important), round 5 is the last round (R_max=5).
+
+- I4-1 (important, fixed in round 5): `head_check` checked only the resolved path of a cited symlink, never the cited tracked spelling. A symlink retargeted in the working tree only (P1x), or a new symlink only staged (P2x), passed locally while a clone MISSes. Both spellings are checked now; RED-first tests P1x/P2x plus a committed-symlink negative control.
+- Reviewer mutants A (directory cite, `-e` to `-f` in `head_check`) and C (`READ.append` only for `.json`): tests added for a cited directory with an uncommitted tracked edit and for uncommitted edits of openapi.yaml, Cargo.toml and a gradle file.
+
+Minor follow-ups, registered and NOT fixed now:
+
+- m-1: `skip-worktree` / `assume-unchanged` flags hide worktree != HEAD from `git status`. Fix: hash the HEAD blobs, or refuse flagged paths.
+- m-2: a VERIFIED path containing a space is skipped by the extractor while the verdict stays PASS; it should be BLIND.
+- m-3: a clean committed submodule gitlink cited directly gives a false BLIND.
+- UNCONFIRMED: the waiver expiry 2026-12-12 was chosen by the author, not by an operator decision.
+
+## CAT-REL-CHECK-2 (structural replacement of CAT-REL-CHECK-1 after round 5 NO-GO; branch fix/release-checker-rc3; PROVISIONAL)
+
+Cause of rounds 1-5: HEAD-consistency was added as point checks (changelog, version files, cited spelling, resolved target), each round a reviewer found the next member of the same class (a path component that reads differently in a clean clone). Round 5: `head_check` ignored intermediate hops of a symlink chain (R5-1).
+
+- Class inventory (32 members, behaviour, tests): `docs/release_checker_path_inventory.md`.
+- One generic mechanism: `head_check` / `chain_one` walk the path like the kernel (hop by hop, cap 40, `.`/`..` after symlinked directories) and require every component and hop to match HEAD (existence, type, link target text), plus blob hash, `git status` and skip-worktree / assume-unchanged flags for the final entry and for manifest trees. BLIND on anything that differs or cannot be proven.
+- R5-1 fixed (Z2, Z3, Z4, Z5). RV5-4 covered (Z41; HEAD membership is now per entry through `git ls-tree`, not `cat-file`). `--version X` without a `## [X]` section is BLIND (Z42-Z44). Committed `..` and mid-path `./` spellings have negative-control tests (Z36-Z40). README over-claim sentence replaced by the exact list of behaviours.
+- Registered minors: m-1 fixed (flags + hash), m-2 fixed (tokens with spaces that are exactly a tracked file or directory are checked; an untracked name with a space stays a skipped token, honest), m-3 fixed (clean gitlink cited directly is PASS; cause was `cat-file -e HEAD:<gitlink>`).
+- Behaviour change: a committed directory-symlink alias into tracked evidence is now PASS (was a false MISS "exists but not git-tracked"); an uncommitted alias is BLIND.
+- Residual / UNCONFIRMED: Unicode case folding and NFC/NFD, `core.symlinks=false`, sparse/shallow clones, LFS pointers, exec bit compared only through `git status`, a path inside a submodule is MISS not BLIND (git does not track below a gitlink).
+
+### CAT-REL-CHECK-2 round 2 (Opus round 1 NO-GO: F1-F6, OWN1-OWN6)
+F1 root-resolving cited path walked; F2 raw-byte hop compare plus per-hop status/flag checks; F3 raw-byte (`--no-filters`) compare against the blob; F6 `GIT_*` unset, section derived from versions.json, no `-z` warning. Inventory rows 33-38, tests Z50-Z68 (suite 326 passed). OWN4 is an equivalent mutant (git canonicalises regular-file modes). Mutants: CC2 + CC2r2 = 33 run to completion, all killed; the runner now counts a kill only when the last line is `== result: N passed, M failed` with M > 0, otherwise INVALID.
+
+### CAT-REL-CHECK-2 round 3 (Opus round 2 NO-GO: N1-N4)
+N1: `raw_tree_check` compares every tracked file and symlink under a manifest tree as raw bytes with its HEAD blob (no stat cache, no filters) and walks manifest entries reached through symlinks; Z69/Z70/Z72/Z73. N2 `--help` fixed (Z74). N3 inventory fixed. N4 committed `eol=` attribute stays BLIND by design (accepted limit; message says how to resolve; Z71). Suite 332 passed. Mutants CC2r3 (4) killed; manifest-flag mutant is now equivalent (raw compare subsumes it).
+
+### CAT-REL-CHECK-2 round 4 (Opus round 3 NO-GO: R3-1 important, R3-2..R3-4 minor)
+R3-1 fixed class-wide: a gitlink (or any unexpected mode) under a manifest tree is BLIND, every `git status` and the waiver `git diff` use `--ignore-submodules=none`, entries inside a gitlink are BLIND; Z75-Z81. R3-2: symlink stat-cache, newline-name, hash-count and ls-tree-probe tests Z82-Z85. Inventory rows 41-45 and a silent-skip enumeration table; the earlier "N1 closed" wording is replaced by what is actually covered.
+Registered, NOT fixed:
+- R3-3: a non-UTF-8 file name in the changelog helper's input crashes it (reported as a helper crash, i.e. BLIND, not a false pass). Fix: read names as bytes with surrogateescape throughout.
+- R3-4: the per-record `read` loop in `raw_tree_check` is about 2x slower at 20k files than a single pass (mapfile/awk). Not trivial enough to change in the last-but-one review round; behaviour is correct.
+
+### CAT-REL-CHECK-2 round 5 (Opus round 4 NO-GO: C1-C8, one class "working tree/index/local config differs from HEAD while the checker PASSes"; PROVISIONAL)
+Replaced, not layered: HEAD is the single source of every read (snapshot of the HEAD tree, `GIT_NO_REPLACE_OBJECTS=1`, path sets from `ls-tree HEAD`, committed `.gitignore` only, waiver/manifests/versions.json/gradle files from the snapshot); the working tree is read only by BLIND guards. Tests Z86-Z96 compare each of C1-C8 with a plain `git clone`; RED against `4ced5ef1`. Decision for a manifest entry naming an untracked file: FAIL (SHAFAIL), as a clone lacks it. Test fixtures that created untracked files now commit them; several staged-only cases changed from BLIND to MISS/FAIL (see `docs/release_checker_path_inventory.md`). Mutation runner repaired (20 non-applying mutants re-aimed) plus 11 new mutants for the HEAD-only reads. Open: snapshot run time on the real repo not measured (UNCONFIRMED); empty symlink target in HEAD is BLIND; R3-3 and R3-4 above still registered.
+
+## CAT-REL-CHECK-3 Opus round 4 review (fix/release-checker-rc4, GO-with-follow-ups, PROVISIONAL)
+
+Round 4 of 5: no critical or important finding open. D2 cross-talk fixed (unique sleep duration plus exact /proc cmdline match). Suite 502 passed; reviewer real run on main FAILs with sha_fail=1 no_manifest=1 unlisted=1 unused_waivers=3 (the 4 known findings). Minor follow-ups, registered and NOT fixed:
+
+- F4-1 (minor, test-instrumentation): month and day range checks of the RELCHK_TODAY regex are untested; reviewer mutants REVIEW4-1/-3/-6 survive. Add fixtures 2026-13-01, 2026-00-05, 2026-01-32.
+- F4-2 (minor, source): RELCHK_TODAY validation weaker than waiver-expiry validation (accepts 2026-02-31 and 0000-01-01; non-ASCII digits under a UTF-8 locale). Fix: ASCII-only regex plus `date -d` round-trip, reuse the expiry check. No unsafe outcome found.
+- F4-3 (minor, test-instrumentation): nothing guards the D2 identity filter; add a test with a foreign long-lived `sleep 27.x` that must survive.
+- F4-4 (nit): rename the duplicated "R3-1" label (D2 fix vs bash snap_readable size bound).
+- F4-5 (nit): D2 never checks the checker's own rc/verdict.
+- Open from earlier rounds: docs/qa/coverart/results/final checksum mismatch, stat-cache working-tree case UNCONFIRMED, full 236-mutant set not run end to end.
+- Release checker stays advisory for v2.4.3 and BLOCKING for v2.5.0 (operator decision 2026-11-13).
