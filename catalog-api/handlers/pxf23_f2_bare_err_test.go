@@ -6,7 +6,7 @@ package handlers
 // back from disk exactly as it reads a real handler file.
 //
 // Unit-class: the sweep is a name/type heuristic over go/ast, not the Go type checker. Known remaining gap, pinned by
-// TestPXF23F2_KnownGaps so a change of behaviour is noticed: an error stored in a struct field, or a multi-value-call result with a non-synonym name.
+// TestPXF23F2_KnownGaps so a change of behaviour is noticed: an error stored in a struct field, a multi-value-call result with a non-synonym name, a direct call result (gin.H{"m": do()}), a variable or closure parameter declared with a concrete error-implementing type other than `error` (var pe *os.PathError).
 
 import (
 	"os"
@@ -72,8 +72,20 @@ func TestPXF23F2_KnownGaps(t *testing.T) {
 	gaps := []f2Case{
 		{"error-typed struct field", f2Head + "type holder struct{ Cause error }\n\nfunc h(c *gin.Context, v holder) {\n\tc.JSON(500, gin.H{\"m\": v.Cause})\n}\n", 0},
 		{"non-synonym name from a multi-value call", f2Head + "func h(c *gin.Context) {\n\t_, kaboom := pair()\n\tc.JSON(500, gin.H{\"m\": kaboom})\n}\n", 0},
+		{"M6: direct call result in the sink (gin.H{\"m\": do()})", f2Head + "func h(c *gin.Context) {\n\tc.JSON(500, gin.H{\"m\": do()})\n}\n", 0},
+		{"M7: var of a qualified error-implementing type (var pe *os.PathError)", f2Head + "func h(c *gin.Context) {\n\tvar pe *os.PathError = do()\n\tc.JSON(500, gin.H{\"m\": pe})\n}\n", 0},
+		{"M8: error-implementing closure parameter (func(x *os.PathError))", f2Head + "func h(c *gin.Context) {\n\tfn := func(x *os.PathError) {\n\t\tc.JSON(500, gin.H{\"m\": x})\n\t}\n\tfn(nil)\n}\n", 0},
 	}
 	for _, g := range gaps {
 		assert.Empty(t, f2Sweep(t, t.TempDir(), g), "UNCONFIRMED gap: %s", g.name)
 	}
+}
+
+// Known FALSE-POSITIVE class (PXF18DOC-F2, measured 2026-11-14): the error-synonym name heuristic fires on a NON-error
+// value that merely carries a synonym name (here a bool called `fail` from a multi-value call). This is a deliberate
+// over-report of the sweep (it fails closed: a reviewer renames the variable or allow-lists the line); it is pinned so
+// a change of behaviour is noticed and so the doc can state the class instead of leaving it undiscovered.
+func TestPXF23F2_KnownFalsePositives(t *testing.T) {
+	fp := f2Case{"bool named like an error synonym (fail) from a multi-value call", f2Head + "func h(c *gin.Context) {\n\tn, fail := lookup()\n\tc.JSON(200, gin.H{\"n\": n, \"fail\": fail})\n}\n", 1}
+	assert.Len(t, f2Sweep(t, t.TempDir(), fp), fp.want, "known false positive: %s", fp.name)
 }
