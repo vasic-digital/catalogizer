@@ -4,9 +4,21 @@
 > A fresh session that receives only the prompt `continue` MUST read this file first, then
 > `docs/FOLLOW_UPS_NEXT_PHASE.md`, then resume the §11.4.126 loop with the steps in "RESUME ORDER".
 
-**Revision:** 20
-**Last modified:** 2026-11-12
-**Exports:** `CONTINUATION.html` / `CONTINUATION.pdf` regenerated at Rev 20 with `pandoc -s` (HTML) and `weasyprint` (PDF) from this file; this `.md` is authoritative.
+**Revision:** 21
+**Last modified:** 2026-11-14
+**Exports:** `CONTINUATION.html` / `CONTINUATION.pdf` regenerated at Rev 21 with `pandoc -s` (HTML) and `weasyprint` (PDF) from this file; this `.md` is authoritative.
+
+## 0.0000 Rev 21 delta (since Rev 20; main = `b43f5370`; release prep branch `release/v2.4.3-prep`)
+
+* **v2.4.2 is published** (annotated tag object `26f2e1df`, commit `fc8dcf27e`, pre-release). The Rev 20 "prepared, not tagged" wording is superseded.
+* **v2.4.3 content is prepared, not tagged, not pushed.** Branch `release/v2.4.3-prep` (made from `main` `b43f5370` in a scratch clone) bumps every product version to 2.4.3 (Android `versionCode` 9, Android TV 11), adds `[2.4.3]` to `docs/CHANGELOG.md` (VERIFIED / PROVISIONAL / REOPENED / OVERDUE separate), `docs/release/RELEASE_NOTES_v2.4.3.md`, the "v2.4.3 additions" section 6 of `docs/PROVISIONAL_VERIFICATION_PLAN.md` (jobs `VJ243-01..23`, due dates proposed by the preparer) and an upgrade section in `docs/UPGRADE_NOTES.md`. Release class: pre-release, NOT production-ready.
+* **Release gate (11.4.298): `BLOCKED-NO-BASELINE`.** No live run on connected hardware exists and no v2.4.2 baseline run was done; the 11.4.293 comparison is impossible until both exist. The checker is advisory for v2.4.3 (`--version 2.4.3 --prev-tag v2.4.2`: PASS, only `unused_waivers=3`) and blocking for v2.5.0 (`docs/release/V2_5_0_GATE_CHECKLIST.md`, an unreviewed draft).
+* **Landed on `main` since Rev 20** (328 commits, 101 distinct `Roadmap-Item` ids, all PROVISIONAL, Opus GO-with-follow-ups; list in `docs/CHANGELOG.md` `[2.4.3]`). Wave-1 landings on top: `2c799a9f` (CAT-CHPW-RL-2), `3a33fb05` (CAT-LOGIN-LOCK-2) and `b43f5370` (CAT-RETEST-STALE-1, NFS export refuses `,` followed by `:`). The "R_max NO-GO outcomes" section of `docs/FOLLOW_UPS_NEXT_PHASE.md` still describes LOGIN-LOCK-2 and CHPW-RL-2 as not landed; `main` contains their merges.
+* **11.4.40 retest of `main` `3a33fb05` (partial, scratch copy, PROVISIONAL):** go build/vet rc 0; go test 5935 pass / 20 honest skip / 3 fail (two stale tests fixed on `main`, one scratch pollution); catalog-web type-check pass, vitest 2796 pass; web lint 1 error + 84 warnings (same as v2.4.2); `catalog-api/tests/automation` fails with connection refused instead of SKIP; web production build UNCONFIRMED offline; `gofmt` lists 42 files; anti-bluff-scan 4 ASSERT_TAUTOLOGY in third-party/hub code; `-race` not run.
+* **Not landed:** CAT-NFS-EMU-1 (R_max NO-GO on `feat/nfs-emulator`); the structural successor **CAT-NFS-EMU-2** is open. CAT-PREEXIST-9b (UNREPRODUCED), D8-F1, D9-F1 and the SEC-WS-1 follow-ups remain open.
+* **Owed:** the live hardware baseline run of v2.4.2 and the v2.4.3 run with comparison; the 11.4.40 full-suite retest of the tag; 11.4.185 manual QA; live UI QA with Vision; every live leg in `docs/PROVISIONAL_VERIFICATION_PLAN.md` section 6 (gaps `G243-1..18`); independent review of `V250-GATES`. Synology stays SKIP `hardware_not_present`.
+* **Next steps:** independent review (11.4.209 substrate) of the prep branch, merge to `main` fast-forward (11.4.288), then decide the tag `v2.4.3` (pre-release); then the continuous release train opens the next candidate (11.4.230(F)).
+* Not verified while writing Rev 21: upstream parity of `main`, whether any stack 3 container is running, and that the prep branch has been pushed anywhere (it has not).
 
 ## 0.000 Rev 20 delta (since Rev 19; main = `1538ef19`; release prep branch `release/v2.4.2-prep`)
 
