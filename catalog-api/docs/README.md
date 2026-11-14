@@ -226,7 +226,7 @@ All endpoints return standardized error responses:
 }
 ```
 
-Internal error text (driver, path or parser messages) is never sent to the client; it is logged server-side with the status and `request_id`. Some endpoints that document their own `details` field (for example the sync API) are described on their own pages.
+Responses never carry internal error text (driver, path or parser messages); it is logged server-side with the status and `request_id` (PXF23-R5/R5b closed the handler sites). Deliberate residuals: (1) the storage-root probe endpoints in `handlers/scan_handler.go` return the probe error because it is the feature, passed through `services.ScrubErrorFor` (R5B-3; scrubber completeness not proven); (2) validation and rule text authored by the server is returned in `message`/`error` on `handlers/playlist_handler.go` and `handlers/collection_handler.go` (`validationText`) and `handlers/service_handlers.go` (`paramRequiredText`); (3) `handlers/conversion_handler.go` returns the `reason` text of `models.ErrInvalidConversionRequest` (authored by the conversion service). The sync API `details` field is a fixed class text per status and is described on its own page.
 
 ## Success Responses
 

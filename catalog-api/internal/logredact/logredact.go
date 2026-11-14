@@ -122,6 +122,11 @@ func SecretPath(path string) string {
 		}
 		if j < len(segs) {
 			segs[j] = ":redacted"
+			if j > i+1 {
+				// "/share//S": the empty segment is what a decoded %2F at the START of the token leaves ("%2Fenc%2FTok" ->
+				// "/enc/Tok"); the rest of the path may be more of the token, so it is removed too (over-redaction by policy).
+				segs = segs[:j+1]
+			}
 		}
 	}
 	return strings.Join(segs, "/")
@@ -134,4 +139,10 @@ func Path(path, rawQuery string) string {
 		return path + "?" + q
 	}
 	return path
+}
+
+// PathKnown is Path with the request's known credentials (KnownSecrets, route parameters included) removed from ANY segment,
+// not only from the one after a secret-introducing segment (HANDLERS-RED-1-F3).
+func PathKnown(path, rawQuery string, secrets []string) string {
+	return ReplaceKnown(Path(path, rawQuery), secrets)
 }

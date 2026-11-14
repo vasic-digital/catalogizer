@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"sort"
 	"strings"
+	"unicode/utf8"
 )
 
 // Known-secret substitution (PX-F17 round 3, F3). A free-text pattern cannot recognise a BARE secret ("lookup share S"), but the
@@ -106,4 +107,28 @@ func ReplaceKnown(s string, secrets []string) string {
 		pairs = append(pairs, k, redactedMark)
 	}
 	return strings.NewReplacer(pairs...).Replace(s)
+}
+
+// ErrorTextKnown is the ONE pipeline for error text of a request that knows its own credentials (PKGB-FU1/FU2): the input is cut
+// BEFORE ReplaceKnown (its cost is O(n*L); on uncapped text 64 secrets x 4 KiB cost 0.87 s per 4 MiB), then known secrets are
+// replaced, then ErrorText runs. The pre-cut keeps maxKnownSecretLen bytes beyond what Text keeps; the output is capped at ErrorTextMaxBytes
+// (2 KiB), far before any pre-cut position, so a secret that straddles the cut cannot appear in the output either way (the margin
+// is defensive; see TestErrorTextKnown_StraddlingSecretNeverExposed).
+func ErrorTextKnown(s string, secrets []string) string {
+	return ErrorText(replaceKnownFn(preCutForKnown(s), secrets))
+}
+
+// replaceKnownFn is ReplaceKnown; a variable only so tests can observe the length of its input (deterministic cost oracle).
+var replaceKnownFn = ReplaceKnown
+
+// preCutForKnown bounds the text handed to ReplaceKnown.
+func preCutForKnown(s string) string {
+	if limit := textPreCapBytes + maxKnownSecretLen; len(s) > limit {
+		cut := limit
+		for cut > 0 && !utf8.RuneStart(s[cut]) {
+			cut--
+		}
+		s = s[:cut]
+	}
+	return s
 }
