@@ -2632,3 +2632,11 @@ Retry-After on 429 for in-memory tier + Redis fixed/sliding/token-bucket. Open m
 - WSFU-m2 (minor, test-instrumentation): dead-slot zeroing in the wsticket purge queue (`order[:head]`) is not pinned by any test (reviewer mutation GM2 survives).
 - WSFU-N1 (nit, test-instrumentation): `reconnectAttempts: 0` is removable without a test failing (mutation M1 survives); pin it or soften the comment.
 - WSFU-N2 (nit, test-instrumentation): the N2 access-log test copies the logger wiring instead of calling the production `main_router.go` builder.
+
+## SSE-F1..F3 review (Opus round 1, GO-with-follow-ups, PROVISIONAL)
+- SSEFU-F1 (important, test-instrumentation): mutation R4 survives. With an admin checker wired and a missing/invalid user_id, nothing pins that a stale role_id=1 claim is ignored; add setRole:true, roleID:1 to the missing/zero/negative/string cases or a dedicated case.
+- SSEFU-F2 (minor, test-instrumentation): R2 survives; no negative int64 user id case (only negative int). Add int64(-3).
+- SSEFU-F3 (minor, test-instrumentation): R3 survives; uint(5)/uint(0)/float64(5) ids are not pinned. Nit: statsActorID accepts int64 while RequireAdmin accepts only int (both fail closed).
+- SSEFU-F4 (minor, process-doc): API_DOCUMENTATION.md Errors lines and openapi for sync/status and sync/providers omit 500 `{"error":"database query failed"}` (pre-existing gap).
+- SSEFU-F5 (nit, process-doc): openapi 503 description says "Could not verify the admin role"; actual message is "Could not verify admin role".
+- Pre-existing, unchanged: scripts/check_api_route_vs_spec.py exits 3 (BLIND) on main.go:1416-1447; check_doc_coverage reports 25 gaps on both trees; openapi GET /sync/endpoints/{id} has a duplicate '403' key.
