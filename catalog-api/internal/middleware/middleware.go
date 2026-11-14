@@ -49,7 +49,7 @@ func CORS() gin.HandlerFunc {
 func Logger(logger *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
-		path := c.Request.URL.Path
+		path := loggedPath(c.Request)
 		raw := c.Request.URL.RawQuery
 
 		c.Next()
@@ -87,7 +87,7 @@ func ErrorHandler() gin.HandlerFunc {
 				reqID, _ = c.Get("RequestID")
 			}
 			log.Printf("middleware: request %q %s %q failed (type %d, detail not returned to client): %v",
-				fmt.Sprint(reqID), c.Request.Method, logredact.PathKnown(c.Request.URL.Path, "", requestKnownSecrets(c)), err.Type, requestErrorText(c, err.Err))
+				fmt.Sprint(reqID), c.Request.Method, logredact.PathKnown(loggedPath(c.Request), "", requestKnownSecrets(c)), err.Type, requestErrorText(c, err.Err))
 			switch err.Type {
 			case gin.ErrorTypeBind:
 				c.JSON(http.StatusBadRequest, gin.H{
@@ -170,12 +170,41 @@ func requestErrorText(c *gin.Context, err error) string {
 	return logredact.ErrorTextKnown(fmt.Sprint(err), requestKnownSecrets(c))
 }
 
+// accessLogParamsKey is the gin context key under which AccessLogRouteParams stores the matched route parameters.
+const accessLogParamsKey = "catalogizer.accesslog.route_params"
+
+// AccessLogRouteParams hands the matched route parameters to AccessLogFormatter: gin.LogFormatterParams carries no route
+// parameters, but it carries c.Keys. Register it AFTER the logger (the parameters exist once the route matched; the formatter
+// runs after the handlers). HYG-F3.
+func AccessLogRouteParams() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if len(c.Params) > 0 {
+			params := make(gin.Params, len(c.Params))
+			copy(params, c.Params)
+			c.Set(accessLogParamsKey, params)
+		}
+		c.Next()
+	}
+}
+
+// loggedPath is the request path as it is logged: the RAW (still escaped) path, so a %2F inside a malformed token stays inside
+// its segment and SecretPath redacts the whole segment instead of leaving the later decoded segments (HYG-F4).
+func loggedPath(r *http.Request) string { return r.URL.EscapedPath() }
+
 // AccessLogFormatter is the gin access-log line format (gin.LoggerWithFormatter): the path+query and the error text are redacted.
 func AccessLogFormatter(p gin.LogFormatterParams) string {
-	known := logredact.KnownSecrets(p.Request.URL.Path, p.Request.URL.RawQuery, p.Request.Header, nil)
+	var params map[string]string
+	if rp, ok := p.Keys[accessLogParamsKey].(gin.Params); ok {
+		params = make(map[string]string, len(rp))
+		for _, kv := range rp {
+			params[kv.Key] = kv.Value
+		}
+	}
+	path := loggedPath(p.Request)
+	known := logredact.KnownSecrets(path, p.Request.URL.RawQuery, p.Request.Header, params)
 	return fmt.Sprintf("[GIN] %s | %3d | %13v | %15s | %-7s %#v\n%s",
 		p.TimeStamp.Format("2006/01/02 - 15:04:05"), p.StatusCode, p.Latency, p.ClientIP, p.Method,
-		logredact.PathKnown(p.Request.URL.Path, p.Request.URL.RawQuery, known), logredact.ErrorTextKnown(p.ErrorMessage, known))
+		logredact.PathKnown(path, p.Request.URL.RawQuery, known), logredact.ErrorTextKnown(p.ErrorMessage, known))
 }
 
 // requestKnownSecrets are the credential values carried by c's request (path secrets, sensitive route parameters and query
