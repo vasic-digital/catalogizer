@@ -522,7 +522,10 @@ describe('CatalogizerClient Integration', () => {
       };
 
       mockAxiosInstance.get.mockResolvedValueOnce({ data: { status: 'healthy' } });
-      mockAxiosInstance.post.mockResolvedValueOnce({ data: loginResponse });
+      mockAxiosInstance.post
+        .mockResolvedValueOnce({ data: loginResponse })
+        // POST /ws/ticket (SEC-WS-1 F2): the raw server body {ticket, expires_at, expires_in}
+        .mockResolvedValueOnce({ data: { ticket: 'tkt-login', expires_in: 30 } });
 
       // Start connect (will block on WS connect waiting for onopen)
       const connectPromise = client.connect({
@@ -540,7 +543,9 @@ describe('CatalogizerClient Integration', () => {
 
       expect(result).toEqual(loginResponse);
       expect(MockWebSocket).toHaveBeenCalled();
-      expect(MockWebSocket.mock.calls[0][0]).toContain('token=jwt-token');
+      expect(MockWebSocket.mock.calls[0][0]).toBe('ws://localhost:8080/ws?ticket=tkt-login');
+      expect(MockWebSocket.mock.calls[0][0]).not.toContain('jwt-token');
+      expect(mockAxiosInstance.post).toHaveBeenLastCalledWith('/ws/ticket', {}, undefined);
     });
 
     it('connects WebSocket with existing token when already authenticated', async () => {
@@ -551,6 +556,7 @@ describe('CatalogizerClient Integration', () => {
       });
 
       client.setAuthToken('existing-token');
+      mockAxiosInstance.post.mockResolvedValueOnce({ data: { ticket: 'tkt-existing' } });
 
       mockAxiosInstance.get
         .mockResolvedValueOnce({ data: { status: 'healthy' } })
@@ -571,7 +577,8 @@ describe('CatalogizerClient Integration', () => {
       await connectPromise;
 
       expect(MockWebSocket).toHaveBeenCalled();
-      expect(MockWebSocket.mock.calls[0][0]).toContain('token=existing-token');
+      expect(MockWebSocket.mock.calls[0][0]).toBe('ws://localhost:8080/ws?ticket=tkt-existing');
+      expect(MockWebSocket.mock.calls[0][0]).not.toContain('existing-token');
     });
   });
 

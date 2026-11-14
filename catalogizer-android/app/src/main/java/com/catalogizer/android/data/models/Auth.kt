@@ -153,3 +153,10 @@ object Permissions {
     const val API_ACCESS = "access:api"
     const val API_WRITE = "write:api"
 }
+/** Response of POST /api/v1/ws/ticket (SEC-WS-1 F2): a single-use ticket valid for [expiresIn] seconds. */
+@Serializable
+data class WsTicketResponse(
+    val ticket: String,
+    @kotlinx.serialization.SerialName("expires_at") val expiresAt: String? = null,
+    @kotlinx.serialization.SerialName("expires_in") val expiresIn: Int? = null
+)
