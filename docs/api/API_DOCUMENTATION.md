@@ -404,7 +404,54 @@ Authenticate a user and receive JWT tokens.
 }
 ```
 
-**Errors:** 400 (malformed JSON), 401 (invalid credentials)
+**Errors:** 400 (malformed JSON), 401 (invalid credentials), 429 (login back-off, see below), 503 (back-off store unavailable)
+
+**Login back-off (CAT-LOGIN-LOCK-1).** On top of the 30/min per-address limiter, every attempt is checked against a persisted,
+progressive back-off BEFORE the password is evaluated (the address is charged first, the account when the answer is known; see the
+invariant below), in two scopes: per (account, client address) and per account (all
+addresses together). Defaults: 5 free evaluations per address and 20 per account within the decay window (1 h per address, 24 h
+per account), then a block of 30 s that doubles with every further charged attempt up to 15 minutes. A blocked attempt answers
+`429 {"error":"too many failed sign-in attempts, try again later"}` with a `Retry-After` header and is not evaluated. A
+refused attempt is not charged to the address or account that refused it, and a token taken before a refusal at the per-address
+step is released. It is a throttle, never a permanent lock: every block ends, at most
+15 minutes after it was set, `users.is_locked` (the administrative suspension) is never written and the owner's sessions are
+not revoked. It does not bound how long an attacker can keep an account throttled: while guessing continues the block is renewed
+every time it expires, and the owner is held out from every address that is not known-good. A client address that completed a
+login for the account in the last 30 days (at most 5 per account are remembered) is not stopped by the ACCOUNT block (it keeps its
+own per-address block); an owner whose address changes (IPv6 privacy addresses, carrier-grade NAT, a new device) is not known-good.
+A correct password from any other address is also refused while the account is blocked. A name that matches no account is
+throttled with the same status, body and header as an existing one: the throttle key for such a name is derived from the exact
+submitted string, matching how the account lookup compares names (no case folding, no trimming). A username and the e-mail
+address of one account share one budget, so a client that submits both can tell they belong to the same account once the
+budget is spent. **Invariant (CAT-LOGIN-LOCK-2).** Everything an attacker can observe about an account (the status and `Retry-After` of every
+probe, how many guesses are evaluated before the block, when the block ends) is a function only of attacker-caused events (failed
+attempts charged to the account, and time), never of an owner's successful login (limits: an owner's own wrong password from a
+non-known-good address is charged to the account like a guess; the model test contains no owner failures and no attacker concurrency). An existing account and a nonexistent name
+therefore give the same trace, whenever the owner logs in. How it is kept: the ACCOUNT counter is charged only by a completed
+failed attempt, after the password was evaluated; a successful login never writes it (no charge, no refund, no reset), so it
+neither ends an account block early nor leaves a charge behind. Parallel guessing is bounded by in-flight tokens instead of by
+charging before the check: at most 4 attempts per account may be between "accepted" and "answered" at once (a token is released by
+a success and turned into one charge by a failure; an attempt refused because the 4 slots are taken is answered 429 with
+`Retry-After` of the first block length and is not evaluated or charged). A successful login clears only that client address's own
+charges; an account block, like the block of a nonexistent name, ends only by expiry. A login from a known-good address takes no
+token and is never charged to the account (it keeps its own per-address limit). A login from a new address takes a token and, when
+the password is right, only releases it: an owner who logs in from many new addresses with nobody attacking is never charged and so
+never locked out. Consequence for the guess budget: a serial guesser gets exactly 20 evaluated guesses per account before the
+block, a burst of parallel guesses at most 20 + 3 (AccountFree + MaxInflight - 1). The in-flight cap is serialised per account by a row lock inside one transaction; the hand-off from an in-flight token to the account charge is one atomic commit (no lock), so the bound does not depend on timing. Every evaluated attempt is charged exactly once, also when it settles on an account that is already blocked (the failure count and the doubling delay grow with each charged attempt, the block end is the larger of the current end and now + the doubling delay of the new count, so it is never longer than 15 minutes from the last charge, assuming a single clock: with several instances whose clocks differ, an end set by an instance whose clock is ahead stays). The bound was measured on real PostgreSQL 15 with 16 concurrent guessers over 20 rounds: 22 (author, one image) to 23 (reviewer; in the round-4 run both local images, postgres:15-alpine and postgres:15, reported datcollate=en_US.utf8, so no C/byte-order collation image has been exercised); the observed maximum varies with timing, the bound is 23. It is replayed on SQLite (unit-class). An attempt that stays in flight longer than 2 minutes (a stalled or crashed request) stops counting and is not charged. What remains observable, accepted: an attacker
+bursting exactly 4 parallel probes sees one slot fewer while an owner login is in flight (the bcrypt window); an administrator's
+unlock or a password change ends a block of a real account and has no counterpart for an unused name; while an attack is in
+progress a blocked account refuses a new address even for the owner, and a known-good address keeps working while others are
+refused, which only a holder of that address can see; an attempt whose answer is never produced (a crash), or that takes longer than 2 minutes, is not charged, its
+token stops counting after 2 minutes; an attacker behind the same NAT as a known-good address gets a fresh per-address budget (5 attempts) after each owner login from it and can see that the owner logged in. Both account and address windows are bounded by the
+24-hour stale-row purge, so the effective account window is min(AccountDecay, StaleAfter); a row can in a narrow window be
+read just before its purge, which is accepted. The state is in table `login_throttle` (migration v29), so it survives
+a restart and is shared by every instance on one database. Rows without a success marker are removed after 24 hours without
+activity; rows that carry a known-good marker live up to 30 days. Removal runs in batches of up to 2000 rows per minute per
+process, and the table has no row cap: a client that rotates addresses (an IPv6 /64, a botnet) can create rows faster than they
+are purged, and the per-address request limiter does not bound that. This growth is a recorded follow-up, not a solved problem.
+The routed (gin) login keys the address on `c.ClientIP()` after `applyTrustedProxies`. The unrouted net/http `Login` variant keys the throttle on the TCP peer address only and ignores forwarding headers, so behind a reverse proxy all its clients would share the proxy's address (and a unix-socket peer maps to "unknown"); that variant is not wired in `main.go`. An administrator ends a
+back-off with `POST /api/v1/users/{id}/unlock`, by setting a new password, or with the offline `admin-reset-password` command
+(for the admin accounts it rotates). If the store cannot be read, login answers 503 (fail closed). Client addresses come from `c.ClientIP()`, so `TRUSTED_PROXIES` must be set correctly behind a reverse proxy.
 
 ---
 

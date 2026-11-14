@@ -1,0 +1,5 @@
+ok  	catalogizer/repository	235.172s
+ok  	catalogizer/handlers	108.163s
+ok  	catalogizer/services	8.652s
+ok  	catalogizer/database	16.794s
+rc=0

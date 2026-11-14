@@ -21,16 +21,26 @@ const Image = "docker.io/library/postgres:15-alpine"
 
 func Start(t testing.TB) (dsn, container string) {
 	t.Helper()
+	return StartImage(t, Image)
+}
+
+// ImageGlibc is a Debian-based PostgreSQL 15 image whose default database collation is glibc en_US.utf8 (Image is the musl/alpine
+// one; measured in CAT-LOGIN-LOCK-2 round 4: it too reported datcollate=en_US.utf8, so no byte-order/C collation is exercised). A test whose result may depend on collation runs against both.
+const ImageGlibc = "docker.io/library/postgres:15"
+
+// StartImage is Start for an explicit image; it SKIPs when podman or that image is unavailable locally (nothing is pulled).
+func StartImage(t testing.TB, img string) (dsn, container string) {
+	t.Helper()
 	if _, err := exec.LookPath("podman"); err != nil {
 		t.Skip("SKIP hardware_not_present: podman not installed")
 	}
-	if err := exec.Command("podman", "image", "exists", Image).Run(); err != nil {
-		t.Skipf("SKIP hardware_not_present: image %s not present locally", Image)
+	if err := exec.Command("podman", "image", "exists", img).Run(); err != nil {
+		t.Skipf("SKIP hardware_not_present: image %s not present locally", img)
 	}
 	name := fmt.Sprintf("catalogizer-migtest-%d", time.Now().UnixNano())
 	out, err := exec.Command("podman", "run", "-d", "--rm", "--name", name,
 		"-e", "POSTGRES_PASSWORD=migtest", "-e", "POSTGRES_DB=migtest",
-		"-p", "127.0.0.1::5432", Image).CombinedOutput()
+		"-p", "127.0.0.1::5432", img).CombinedOutput()
 	if err != nil {
 		t.Fatalf("podman run: %v: %s", err, out)
 	}

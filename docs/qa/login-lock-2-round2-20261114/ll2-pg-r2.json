@@ -1,0 +1,25 @@
+{
+  "schema": "disk-headroom/1",
+  "op_id": "ll2-pg-r2",
+  "at": "2026-11-14T04:49:36Z",
+  "need_bytes": 600000000,
+  "min_free_bytes": 12172240540,
+  "filesystems": [
+    {
+      "role": "graphroot",
+      "path": "/home/milosvasic/.local/share/containers/storage",
+      "free_before": 4493242368,
+      "free_after": 3893242368,
+      "readable": true
+    },
+    {
+      "role": "repository",
+      "path": "/home/milosvasic/.cache/claude-tmp/loginlock.j67Ffa/repo",
+      "free_before": 4645482496,
+      "free_after": 4045482496,
+      "readable": true
+    }
+  ],
+  "verdict": "refused",
+  "reason": "disk_below_headroom"
+}

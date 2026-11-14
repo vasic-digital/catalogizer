@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"crypto/rand"
 	"database/sql"
 	"encoding/hex"
@@ -120,20 +121,96 @@ func lockedError(u *models.User) error {
 	return ErrAccountLocked
 }
 
+// ErrLoginThrottled is returned when the login back-off refuses an attempt before the password is evaluated
+// (CAT-LOGIN-LOCK-1). It is the same answer for an unknown name, a known account and a throttled one.
+type ErrLoginThrottled struct{ RetryAfter time.Duration }
+
+func (e *ErrLoginThrottled) Error() string {
+	return "too many failed sign-in attempts, try again later"
+}
+
+// ErrLoginThrottleUnavailable is returned when the back-off state cannot be read or written: login fails closed.
+var ErrLoginThrottleUnavailable = errors.New("sign-in temporarily unavailable")
+
+// throttleBegin takes the attempt's in-flight token and charges its address bucket before the password is checked (the account scope is charged by a failure, afterwards). nil subject means no throttle is configured.
+func (s *AuthService) throttleBegin(subject, ip string) (repository.Decision, error) {
+	th := s.userRepo.LoginThrottle()
+	if th == nil {
+		return repository.Decision{}, nil
+	}
+	if ip == "" {
+		ip = "unknown"
+	}
+	d, err := th.Begin(context.Background(), subject, ip)
+	if err != nil {
+		log.Printf("auth: login throttle unavailable: %v", err)
+		return repository.Decision{}, ErrLoginThrottleUnavailable
+	}
+	if !d.Allowed {
+		return repository.Decision{}, &ErrLoginThrottled{RetryAfter: d.RetryAfter}
+	}
+	return d, nil
+}
+
+func (s *AuthService) throttleSuccess(subject, ip string, remember bool, d repository.Decision) {
+	if th := s.userRepo.LoginThrottle(); th != nil {
+		if ip == "" {
+			ip = "unknown"
+		}
+		if err := th.Success(context.Background(), subject, ip, remember, d.Attempt); err != nil {
+			log.Printf("auth: login throttle reset failed: %v", err)
+		}
+	}
+}
+
+// throttleFail turns the attempt's in-flight token into the one account charge a failed attempt costs. A failure to write it
+// is logged and the attempt stays refused as invalid credentials: the attempt was already evaluated, so failing open here would
+// only mean one uncounted guess, and failing the request differently would tell a real account from an unknown name.
+func (s *AuthService) throttleFail(subject string, d repository.Decision) {
+	if th := s.userRepo.LoginThrottle(); th != nil {
+		if err := th.Fail(context.Background(), subject, d.Attempt); err != nil {
+			log.Printf("auth: login throttle charge failed: %v", err)
+		}
+	}
+}
+
 // Login authenticates a user and creates a session
 func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent string) (*AuthResult, error) {
 	// Find user by username or email
 	user, err := s.userRepo.GetByUsernameOrEmail(req.Username)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			// An unknown name is throttled exactly like a known one, so the answer reveals nothing about existence.
+			unknownSubject := repository.SubjectForUnknownName(req.Username)
+			ud, terr := s.throttleBegin(unknownSubject, ipAddress)
+			if terr != nil {
+				return nil, terr
+			}
 			// Same bcrypt cost as a wrong password for a real user, so response time does not
 			// reveal which usernames exist (D9SR3-F3).
 			BurnDummyPasswordCheck(req.Password)
+			s.throttleFail(unknownSubject, ud) // the same settle step a wrong password for a real user takes
 			s.auditEvent(0, "failed_login", ipAddress, userAgent, "unknown user")
 			return nil, ErrInvalidCredentials
 		}
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
+
+	// Back-off (CAT-LOGIN-LOCK-2): every attempt takes an in-flight token and its address bucket is charged before the password is evaluated; the account scope is charged only by a completed failure.
+	subject := repository.SubjectForUser(user.ID)
+	decision, terr := s.throttleBegin(subject, ipAddress)
+	if terr != nil {
+		return nil, terr
+	}
+	// Every allowed attempt settles exactly once: a correct password releases the token (throttleSuccess), anything else,
+	// including an early return or a panic, turns it into the account charge. The deferred call is a no-op after a success
+	// because the token is already gone.
+	succeeded := false
+	defer func() {
+		if !succeeded {
+			s.throttleFail(subject, decision)
+		}
+	}()
 
 	// Check if user can login. The account state (suspended, locked, pending,
 	// disabled) is revealed only to someone who knows the password; anyone else
@@ -147,6 +224,9 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 			s.auditEvent(user.ID, "failed_login_inactive", ipAddress, userAgent, "account not loginable: invalid password")
 			return nil, ErrInvalidCredentials
 		}
+		// The password is right: no charge applies, but no known-good client is recorded.
+		succeeded = true
+		s.throttleSuccess(subject, ipAddress, false, decision)
 		s.auditEvent(user.ID, "failed_login_inactive", ipAddress, userAgent, "account not loginable: password correct")
 		if user.IsAccountLocked() {
 			return nil, lockedError(user)
@@ -172,8 +252,12 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 		}
 	}
 
-	// Reset failed login attempts on successful login
+	// Reset failed login attempts on successful login and clear the back-off. The client address is NOT yet remembered as
+	// known-good: that happens only once the login is accepted (after verifyUserUnchanged below), so a login refused because
+	// the account changed meanwhile never earns the address the account-block bypass.
 	s.userRepo.ResetFailedLoginAttempts(user.ID)
+	succeeded = true
+	s.throttleSuccess(subject, ipAddress, false, decision)
 
 	// Create session
 	session, err := s.createSession(user, req.DeviceInfo, ipAddress, userAgent, req.RememberMe)
@@ -194,6 +278,7 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 		}
 		return nil, err
 	}
+	s.throttleSuccess(subject, ipAddress, true, repository.Decision{}) // the token was already released at the first call
 
 	// Update last login information
 	s.userRepo.UpdateLastLogin(user.ID, ipAddress)

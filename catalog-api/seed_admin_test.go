@@ -5,6 +5,7 @@ import (
 	root_config "catalogizer/config"
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/DATA-DOG/go-sqlmock"
 	"testing"
 
@@ -251,4 +252,28 @@ func TestAdminReset_RowsErrFails(t *testing.T) {
 	t.Setenv("ADMIN_NEW_PASSWORD", "Rotated-Op3rator-Value-7q")
 	var out, errb bytes.Buffer
 	assert.Equal(t, 1, runAdminReset(database.WrapDB(sqlDB, database.DialectSQLite), []string{"admin-reset-password"}, &out, &errb))
+}
+
+// CAT-LOGIN-LOCK-1 (F4): the offline reset ends the account's login back-off and leaves other accounts' alone.
+func TestAdminReset_ClearsLoginBackoff(t *testing.T) {
+	t.Setenv("CATALOGIZER_ALLOW_INSECURE_DEFAULTS", "")
+	db := seedTestDB(t)
+	_, err := db.Exec(`CREATE TABLE login_throttle (subject TEXT NOT NULL, scope TEXT NOT NULL, failures INTEGER NOT NULL DEFAULT 0, blocked_until_ms BIGINT NOT NULL DEFAULT 0, last_failure_ms BIGINT NOT NULL DEFAULT 0, last_success_ms BIGINT NOT NULL DEFAULT 0, version BIGINT NOT NULL DEFAULT 0, PRIMARY KEY (subject, scope))`)
+	require.NoError(t, err)
+	id := addAdmin(t, db, "admin", seedCompromised)
+	other := addAdmin(t, db, "other", "Other-Strong-Pw-4k")
+	for _, u := range []int64{id, other} {
+		for _, sc := range []string{"account", "ip:203.0.113.9"} {
+			_, err := db.Exec(`INSERT INTO login_throttle (subject, scope, failures, blocked_until_ms) VALUES (?, ?, 9, 9999999999999)`, fmt.Sprintf("u:%d", u), sc)
+			require.NoError(t, err)
+		}
+	}
+	t.Setenv("ADMIN_NEW_PASSWORD", "Rotated-Op3rator-Value-7q")
+	var out, errb bytes.Buffer
+	require.Equal(t, 0, runAdminReset(db, []string{"admin-reset-password"}, &out, &errb))
+	var n int
+	require.NoError(t, db.QueryRow(`SELECT COUNT(*) FROM login_throttle WHERE subject = ?`, fmt.Sprintf("u:%d", id)).Scan(&n))
+	assert.Equal(t, 0, n, "rotated account's back-off rows are gone")
+	require.NoError(t, db.QueryRow(`SELECT COUNT(*) FROM login_throttle WHERE subject = ?`, fmt.Sprintf("u:%d", other)).Scan(&n))
+	assert.Equal(t, 2, n, "an account that was not rotated keeps its back-off")
 }

@@ -40,6 +40,7 @@ func (db *DB) RunMigrations(ctx context.Context) error {
 		{Version: 26, Name: "create_file_text_index", Up: db.createFileTextIndex},
 		{Version: 27, Name: "add_endpoint_approved_class", Up: db.addApprovedClassColumns},
 		{Version: 28, Name: "invalidate_legacy_log_share_tokens", Up: db.invalidateLegacyLogShareTokens},
+		{Version: 29, Name: "create_login_throttle", Up: db.createLoginThrottleTable},
 	}
 
 	for _, migration := range migrations {
