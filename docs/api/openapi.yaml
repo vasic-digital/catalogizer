@@ -4266,7 +4266,7 @@ paths:
             default: 0
       responses:
         '200':
-          description: Scan history
+          description: Scan history. `error_message` is the raw scan error for administrators; every other authenticated user receives the fixed text `scan error (details restricted to administrators)`.
 
   /api/v1/smb/discover:
     post:
@@ -7003,6 +7003,8 @@ paths:
       security:
         - BearerAuth: []
       responses:
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: User sync endpoints
           content:
@@ -7044,6 +7046,8 @@ paths:
           schema:
             type: integer
       responses:
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Sync endpoint details
           content:
@@ -7291,6 +7295,8 @@ paths:
             type: integer
             default: 0
       responses:
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: User sync sessions
           content:
@@ -7332,6 +7338,8 @@ paths:
           schema:
             type: integer
       responses:
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Sync session details
           content:
@@ -7455,6 +7463,8 @@ paths:
             type: string
             format: date-time
       responses:
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Sync statistics
           content:
@@ -10157,6 +10167,8 @@ paths:
       security:
       - BearerAuth: []
       responses:
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '501':
           description: Not implemented (no sync conflict store exists); nothing is fabricated
           content:
@@ -10178,6 +10190,8 @@ paths:
       security:
       - BearerAuth: []
       responses:
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '501':
           description: Not implemented (no device registry exists); nothing is fabricated
           content:
@@ -10199,6 +10213,8 @@ paths:
       security:
       - BearerAuth: []
       responses:
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Status
           content:
@@ -10228,6 +10244,8 @@ paths:
       security:
       - BearerAuth: []
       responses:
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: Providers
           content:
@@ -10265,6 +10283,8 @@ paths:
           type: integer
           default: 0
       responses:
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
         '200':
           description: User sync sessions
           content:
