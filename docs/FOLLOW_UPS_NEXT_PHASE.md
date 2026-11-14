@@ -2546,3 +2546,7 @@ Retest (scratch copy, PROVISIONAL): go build/vet rc 0; go test 5935 pass / 20 ho
 - Declaration of the §11.4.298 product list and deployable-build kinds is owed before G2 can be evaluated.
 - Whether follow-up F4-1 id text matches the CAT-REL-CHECK-3 entry: UNCONFIRMED (one grep hit).
 - The aborted v2.4.2 baseline run (2026-11-14 12:44) was stopped because its container image build consumed disk faster than the host could afford (free space fell to about 13 GB); its partial evidence was discarded; it must be re-run only with at least 40 GB free.
+
+## CAT-QA-BASELINE-V242 review (2026-11-14, Opus round 1 NO-GO provenance, round 2 GO-with-follow-ups; PROVISIONAL)
+- Landed: docs/qa/baseline-v2.4.2-20261114/ (first §11.4.298 baseline for product `web`: 33/33 PASS x 6 runs, gate BLOCKED-NO-BASELINE exit 21; android/androidtv/desktop/wizard/synology BLOCKED-NO-HARDWARE exit 20). Branch tip 2fb4fe039.
+- Open: first-baseline acceptance record and product list (operator, G2); N1 (minor, doc): containers_identity.txt is described as 4 containers/template error, actually 2 lines (api, web) with web health printed empty; chromium-390/firefox-390 projects not run; baseline images removed from host so the exact image cannot be redeployed; kind=physical is the author's classification pending G2.
