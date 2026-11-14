@@ -430,6 +430,9 @@ func TestMainGoAuthLimiterAndGroupWiringSource(t *testing.T) {
 	fset := token.NewFileSet()
 	f, err := parser.ParseFile(fset, "main.go", nil, 0)
 	require.NoError(t, err)
+	// The auth group and registerAuthRoutes call live in buildRouter (main_router.go).
+	rf, err := parser.ParseFile(fset, "main_router.go", nil, 0)
+	require.NoError(t, err)
 
 	// --- struct: the only *Rate* fields are the three pinned ones.
 	pf, err := parser.ParseFile(fset, "main_chpw.go", nil, 0)
@@ -464,7 +467,7 @@ func TestMainGoAuthLimiterAndGroupWiringSource(t *testing.T) {
 		switch v := n.(type) {
 		case *ast.CompositeLit:
 			id, ok := v.Type.(*ast.Ident)
-			if !ok || id.Name != "authRoutesDeps" {
+			if !ok || id.Name != "routerDeps" {
 				return true
 			}
 			lits++
@@ -472,11 +475,11 @@ func TestMainGoAuthLimiterAndGroupWiringSource(t *testing.T) {
 			for _, el := range v.Elts {
 				kv, ok := el.(*ast.KeyValueExpr)
 				if !ok {
-					t.Fatalf("authRoutesDeps literal must use keyed fields")
+					t.Fatalf("routerDeps literal must use keyed fields")
 				}
 				k, ok := kv.Key.(*ast.Ident)
 				if !ok {
-					t.Fatalf("authRoutesDeps literal key is not an identifier")
+					t.Fatalf("routerDeps literal key is not an identifier")
 				}
 				if _, isRate := want[k.Name]; isRate {
 					vi, ok := kv.Value.(*ast.Ident)
@@ -486,22 +489,24 @@ func TestMainGoAuthLimiterAndGroupWiringSource(t *testing.T) {
 					got[k.Name] = vi.Name
 				}
 			}
-			require.Equal(t, want, got, "authRoutesDeps limiter fields must map to their exact limiter idents")
-		case *ast.AssignStmt:
-			if len(v.Lhs) == 1 && len(v.Rhs) == 1 {
-				if id, ok := v.Lhs[0].(*ast.Ident); ok && id.Name == "authGroup" {
-					groupAssigns++
-					c, ok := v.Rhs[0].(*ast.CallExpr)
-					if !ok {
-						t.Fatalf("authGroup must be assigned from a call")
-					}
-					groupCall = c
+			require.Equal(t, want, got, "routerDeps limiter fields must map to their exact limiter idents")
+		}
+		return true
+	})
+	ast.Inspect(rf, func(n ast.Node) bool {
+		if v, ok := n.(*ast.AssignStmt); ok && len(v.Lhs) == 1 && len(v.Rhs) == 1 {
+			if id, ok := v.Lhs[0].(*ast.Ident); ok && id.Name == "authGroup" {
+				groupAssigns++
+				c, ok := v.Rhs[0].(*ast.CallExpr)
+				if !ok {
+					t.Fatalf("authGroup must be assigned from a call")
 				}
+				groupCall = c
 			}
 		}
 		return true
 	})
-	require.Equal(t, 1, lits, "exactly one authRoutesDeps literal in main.go")
+	require.Equal(t, 1, lits, "exactly one routerDeps literal in main.go")
 
 	// --- limiter construction: classify every assignment to the three idents.
 	type asg struct {
@@ -575,15 +580,15 @@ func TestMainGoAuthLimiterAndGroupWiringSource(t *testing.T) {
 	// (ag := authGroup), deref, slice/struct-field storage, helper-call and
 	// closure uses, whatever the syntactic form.
 	idents := 0
-	ast.Inspect(f, func(n ast.Node) bool {
+	ast.Inspect(rf, func(n ast.Node) bool {
 		if id, ok := n.(*ast.Ident); ok && id.Name == "authGroup" {
 			idents++
 		}
 		return true
 	})
-	require.Equal(t, 2, idents, "authGroup must occur exactly twice in main.go: its definition and the registerAuthRoutes argument")
+	require.Equal(t, 2, idents, "authGroup must occur exactly twice in main_router.go: its definition and the registerAuthRoutes argument")
 	ac := 0
-	ast.Inspect(f, func(n ast.Node) bool {
+	ast.Inspect(rf, func(n ast.Node) bool {
 		if c, ok := n.(*ast.CallExpr); ok {
 			if fn, ok := c.Fun.(*ast.Ident); ok && fn.Name == "registerAuthRoutes" {
 				ac++
@@ -594,5 +599,5 @@ func TestMainGoAuthLimiterAndGroupWiringSource(t *testing.T) {
 		}
 		return true
 	})
-	require.Equal(t, 1, ac, "registerAuthRoutes called exactly once in main.go")
+	require.Equal(t, 1, ac, "registerAuthRoutes called exactly once in main_router.go")
 }

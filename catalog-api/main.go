@@ -1,7 +1,6 @@
 package main
 
 import (
-	"catalogizer/internal/logredact"
 	"catalogizer/internal/streamticket"
 	"errors"
 	"catalogizer/challenges"
@@ -18,7 +17,6 @@ import (
 	"catalogizer/internal/logging"
 	"catalogizer/internal/media/providers"
 	"catalogizer/internal/metrics"
-	"catalogizer/internal/middleware"
 	"catalogizer/internal/modules"
 	"catalogizer/internal/pathguard"
 	"catalogizer/internal/services"
@@ -38,11 +36,9 @@ import (
 	"encoding/pem"
 	"flag"
 	"fmt"
-	"io"
 	"math/big"
 	"net"
 	"net/http"
-	"net/http/pprof"
 	"net/url"
 	"os"
 	"os/signal"
@@ -67,7 +63,6 @@ import (
 	"digital.vasic.discovery/pkg/broadcast"
 	"github.com/gin-gonic/gin"
 	_ "github.com/mutecomm/go-sqlcipher"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/quic-go/quic-go/http3"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
@@ -988,206 +983,30 @@ func main() {
 	logger.Info("Redis available but REDIS_RATE_LIMIT not set — using in-memory rate limiting")
 	}
 
-	// Setup Gin router
-	// gin.Default() equivalent whose access log redacts credential-bearing query parameters (ticket, access_token, token).
-	router := gin.New()
-	router.Use(gin.LoggerWithFormatter(func(p gin.LogFormatterParams) string {
-		return fmt.Sprintf("[GIN] %s | %3d | %13v | %15s | %-7s %#v\n%s",
-			p.TimeStamp.Format("2006/01/02 - 15:04:05"), p.StatusCode, p.Latency, p.ClientIP, p.Method, logredact.Path(p.Request.URL.Path, p.Request.URL.RawQuery), logredact.ErrorText(p.ErrorMessage))
-	}), middleware.Recovery(logger))
-
-	// RULE-GO-005 / Master Plan §4.2 — lock down X-Forwarded-For
-	// handling. Gin's default TrustedProxies is 0.0.0.0/0, which
-	// lets any peer spoof the client IP via X-Forwarded-For and
-	// bypass per-IP rate limits. Policy:
-	//   - TRUSTED_PROXIES unset:    refuse to trust any proxy
-	//     header; c.ClientIP() returns the actual peer IP.
-	//   - TRUSTED_PROXIES=auto:     DEPRECATED, client-forgeable
-	//     (CAT-TRUSTEDPROXIES-AUTO-1); trusts loopback + RFC-1918;
-	//     refused in release mode unless TRUSTED_PROXIES_ALLOW_AUTO=true.
-	//   - TRUSTED_PROXIES=<cidr>,...: explicit allow-list.
-	warnTrustedProxies(logger, os.Getenv("TRUSTED_PROXIES"))
-	if err := applyTrustedProxies(router, os.Getenv("TRUSTED_PROXIES")); err != nil {
-		// applyTrustedProxies has already failed closed (no proxy trusted).
-		logger.Error("TRUSTED_PROXIES rejected; trusting NO proxy header (every client behind a reverse proxy will share its address)", zap.Error(err))
-	}
-
-	// Service discovery (PUBLIC - must respond in < 2 seconds for Android TV)
-	// Register BEFORE middleware chain to avoid slow middleware (CORS, metrics, compression)
-	// This ensures the /discovery endpoint responds quickly for LAN discovery probes
-	router.GET("/discovery", func(c *gin.Context) {
-	host := serviceInfo.Host
-	port := cfg.Server.Port
-	c.JSON(200, gin.H{
-			"service":        serviceInfo.Service,
-			"name":           serviceInfo.Name,
-			"version":        Version,
-			"build":          BuildNumber,
-			"build_date":     BuildDate,
-			"host":           host,
-			"port":           port,
-			"protocol":       "http",
-			"websocket_url":  fmt.Sprintf("ws://%s:%d/ws", host, port),
-			"api_base_url":   fmt.Sprintf("http://%s:%d/api/v1", host, port),
-			"capabilities":   serviceInfo.Capabilities,
-			"database":       cfg.Database.Type,
-			"instance_id":    serviceInfo.InstanceID,
-			"uptime_seconds": int(time.Since(startTime).Seconds()),
-	})
-	})
-
-	// Middleware
-	router.Use(root_middleware.SecurityHeaders())
-	router.Use(root_middleware.ConcurrencyLimiter(100))
-	router.Use(root_middleware.RequestTimeout(60 * time.Second))
-	router.Use(root_middleware.CORS())
-	router.Use(metrics.GinMiddleware())
-	router.Use(middleware.Logger(logger))
-	router.Use(middleware.ErrorHandler())
-	// Crashlytics middleware: captures HTTP 5xx responses as non-fatal
-	// errors to Firebase. Safe no-op when Firebase is disabled.
-	router.Use(firebase.GinMiddleware(firebaseApp))
-	router.Use(root_middleware.RequestID())
-	router.Use(root_middleware.InputValidation(root_middleware.DefaultInputValidationConfig()))
-	router.Use(middleware.CompressionMiddleware(middleware.DefaultCompressionConfig()))
-
 	// Start runtime metrics collector (goroutines, memory)
 	metrics.StartRuntimeCollector(15 * time.Second)
 
-	// Prometheus metrics endpoint
-	// Authz round 2: the exposition lists routes, hosts, runtime internals and
-	// per-endpoint traffic, so it is administrator-only (a scraper presents an
-	// administrator bearer token or the dedicated METRICS_SCRAPE_TOKEN, valid on this route only). /health and /health/deep stay public.
-	router.GET("/metrics", metricsScrapeDetect(metricsScrapeToken()), metricsSkipIfScrape(jwtMiddleware.RequireAuth()), metricsSkipIfScrape(jwtMiddleware.RequireAdmin()), gin.WrapH(promhttp.Handler()))
-
-	// pprof endpoints — OPT-IN via HELIX_PPROF_ENABLED=true.
-	//
-	// DEFER-QA-2026-04-21-002 follow-up: heap/goroutine profiling was
-	// previously unavailable, so the 2026-04-20 RunAll memory burst
-	// (peak 53.5× baseline heap) could only be assessed from logs. With
-	// this flag set, /debug/pprof/{heap,goroutine,profile,trace,…}
-	// become available (standard net/http/pprof handlers). The flag
-	// defaults OFF so untrusted networks never see the endpoints by
-	// accident — operators flip it on, capture profiles, flip it off.
-	if os.Getenv("HELIX_PPROF_ENABLED") == "true" {
-	pprofGroup := router.Group("/debug/pprof")
-	// Authz round 2: heap/goroutine/cmdline output exposes memory contents and
-	// process arguments; the flag turns the routes on, the admin gate decides who
-	// may read them.
-	pprofGroup.Use(jwtMiddleware.RequireAuth(), jwtMiddleware.RequireAdmin(), root_middleware.PprofSamplingGuard(60)) // SECQ-3: sampling window capped at 60 s, one at a time
-	pprofGroup.GET("/", gin.WrapF(pprof.Index))
-	pprofGroup.GET("/cmdline", gin.WrapF(pprof.Cmdline))
-	pprofGroup.GET("/profile", gin.WrapF(pprof.Profile))
-	pprofGroup.POST("/symbol", gin.WrapF(pprof.Symbol))
-	pprofGroup.GET("/symbol", gin.WrapF(pprof.Symbol))
-	pprofGroup.GET("/trace", gin.WrapF(pprof.Trace))
-	pprofGroup.GET("/allocs", gin.WrapH(pprof.Handler("allocs")))
-	pprofGroup.GET("/block", gin.WrapH(pprof.Handler("block")))
-	pprofGroup.GET("/goroutine", gin.WrapH(pprof.Handler("goroutine")))
-	pprofGroup.GET("/heap", gin.WrapH(pprof.Handler("heap")))
-	pprofGroup.GET("/mutex", gin.WrapH(pprof.Handler("mutex")))
-	pprofGroup.GET("/threadcreate", gin.WrapH(pprof.Handler("threadcreate")))
-	logging.Info("pprof endpoints enabled at /debug/pprof/*")
-	}
-
-	// Health check (short-lived cache to reduce redundant health polling).
-	//
-	// /api/v1/health is registered as an alias here — several HelixQA
-	// test banks + external monitors probe that path. Before the alias,
-	// the 2026-04-20 Article VII RunAll log showed 11× 404 on it
-	// (bank/monitor noise, not product failures). Keeping both paths
-	// unauthenticated matches the canonical /health contract.
-	healthHandler := func(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-			"status":       "healthy",
-			"time":         time.Now().UTC(),
-			"version":      Version,
-			"build_number": BuildNumber,
-			"build_date":   BuildDate,
-	})
-	}
-	router.GET("/health", root_middleware.CacheHeaders(5), healthHandler)
-	router.GET("/api/v1/health", root_middleware.CacheHeaders(5), healthHandler)
-
-	// Deep health check — pings the database with a 100ms timeout so
-	// a slow DB never blocks callers for an unreasonable duration.
-	deepHealthChecker := metrics.NewHealthChecker(databaseDB, Version)
-	router.GET("/health/deep", root_middleware.CacheHeaders(5), deepHealthHandler(deepHealthChecker, Version, 100*time.Millisecond))
-
-	// WebSocket endpoint: authenticated (Bearer header or ?token=, session-checked) and Origin-checked; see registerWebSocketRoute
-	registerWebSocketRoute(router, jwtMiddleware, wsHandler)
-
-	// Image proxy — serves external images (TMDB, etc.) through the API.
-	// When the upstream CDN is unreachable, falls back to a type-specific
-	// placeholder SVG so client apps still render something useful.
-	router.GET("/api/v1/image-proxy", func(c *gin.Context) {
-	imageURL := c.Query("url")
-	if imageURL == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "url parameter required"})
-			return
-	}
-	// Exact parsed-host match, https only (review round 1, F4): a substring test let
-	// http://127.0.0.1/internal?x=image.tmdb.org through.
-	parsedImage, perr := validateImageProxyURL(imageURL)
-	if perr != nil {
-			c.JSON(http.StatusForbidden, gin.H{"error": "domain not allowed"})
-			return
-	}
-	imageURL = parsedImage.String()
-
-	// Build a proxy client that can work around DNS hijacking.
-	proxyClient := newImageProxyClient(imageURL, cfg.Proxy)
-	resp, err := proxyClient.Get(imageURL)
-	if err != nil || resp.StatusCode != http.StatusOK {
-			if resp != nil && resp.Body != nil {
-				resp.Body.Close()
-			}
-			mediaType := c.DefaultQuery("type", "movie")
-			svg := services.GeneratePlaceholderSVG(mediaType)
-			c.Header("Content-Type", "image/svg+xml")
-			c.Header("Cache-Control", "public, max-age=3600")
-			c.Data(http.StatusOK, "image/svg+xml", svg)
-			return
-	}
-	defer resp.Body.Close()
-	c.Header("Content-Type", resp.Header.Get("Content-Type"))
-	c.Header("Cache-Control", "public, max-age=86400") // Cache 24h
-	c.Status(resp.StatusCode)
-	if _, copyErr := io.Copy(c.Writer, resp.Body); copyErr != nil {
-			logger.Warn("Image proxy stream copy failed", zap.Error(copyErr))
-	}
-	})
-
-	// Asset serving (public — no auth needed for serving images)
-	// StaticCacheHeaders() sets Cache-Control: public, max-age=31536000, immutable
-	// for fingerprinted/content-hashed assets. Also suitable for future static file
-	// server routes (e.g., router.Static("/static", "./public", root_middleware.StaticCacheHeaders())).
-	router.GET("/api/v1/assets/:id", root_middleware.StaticCacheHeaders(), assetHandler.ServeAsset)
-
-	// Cover image serving (public — no auth needed for serving cover images)
-	router.GET("/api/v1/cover/placeholder/:type", root_middleware.CacheHeaders(86400), coverHandler.ServePlaceholder)
-	router.GET("/api/v1/cover/url/:id", root_middleware.CacheHeaders(300), coverHandler.GetCoverURL)
-	router.GET("/api/v1/cover/:id", root_middleware.CacheHeaders(86400), coverHandler.ServeCover)
-
-	// Authentication routes (registered by registerAuthRoutes, main_chpw.go; the
-	// route table is pinned by TestRegisterAuthRoutes_*, CAT-CHPW-RL-1).
-	authGroup := router.Group("/api/v1/auth")
-	registerAuthRoutes(authGroup, authRoutesDeps{
-		LoginRate:      loginRateLimiter,
-		AuthRate:       authRateLimiter,
-		DefaultRate:    defaultRateLimiter,
-		RequireAuth:    jwtMiddleware.RequireAuth,
-		Login:          authHandler.LoginGin,
-		Register:       func(c *gin.Context) { authHandler.RegisterGin(c, userRepo) },
-		Refresh:        authHandler.RefreshTokenGin,
-		Logout:         authHandler.LogoutGin,
-		Me:             authHandler.GetCurrentUserGin,
-		Status:         authHandler.GetAuthStatusGin,
-		Permissions:    authHandler.GetPermissionsGin,
-		InitStatus:     mediaQueryHandler.GetInitStatus,
-		ChangePassword: mediaQueryHandler.ChangePassword,
-		Sessions:       userRepo,
-		Logger:         logger,
+	// Engine, global middleware, public routes and the /api/v1/auth group are
+	// built by buildRouter (main_router.go); the auth route table and handler
+	// chains are pinned by TestBuildRouterAuthSurface* (CAT-CHPW-RL-2).
+	router := buildRouter(routerDeps{
+		Logger:       logger,
+		Cfg:          cfg,
+		ServiceInfo:  serviceInfo,
+		StartTime:    startTime,
+		FirebaseApp:  firebaseApp,
+		JWT:          jwtMiddleware,
+		DB:           databaseDB,
+		WS:           wsHandler,
+		Asset:        assetHandler,
+		Cover:        coverHandler,
+		Auth:         authHandler,
+		MediaQuery:   mediaQueryHandler,
+		UserRepo:     userRepo,
+		LoginRate:    loginRateLimiter,
+		AuthRate:     authRateLimiter,
+		DefaultRate:  defaultRateLimiter,
+		TrustedProxy: os.Getenv("TRUSTED_PROXIES"),
 	})
 
 	// API routes
@@ -1636,6 +1455,12 @@ func main() {
 	// sync status/providers, files, subtitles). Routes with no real source
 	// answer 501 instead of canned data (CAT-001, §11.4.289). See handlers/alias_routes.go.
 	root_handlers.NewAliasHandler(databaseDB, browseHandler).RegisterAliasRoutes(api)
+	}
+
+	// Fail closed: the auth surface of the finished engine must be exactly the
+	// pinned route table (CAT-CHPW-RL-2), whatever main() registered above.
+	if err := verifyAuthRouteTable(router); err != nil {
+		logger.Fatal("Auth route table check failed", zap.Error(err))
 	}
 
 	// Find available port for HTTP server

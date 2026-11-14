@@ -1,0 +1,389 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"os/exec"
+	"path"
+	"path/filepath"
+	"reflect"
+	"regexp"
+	"runtime"
+	"sort"
+	"strings"
+	"testing"
+	"time"
+	"unsafe"
+
+	root_config "catalogizer/config"
+	root_handlers "catalogizer/handlers"
+	"catalogizer/internal/firebase"
+	root_middleware "catalogizer/middleware"
+
+	"digital.vasic.discovery/pkg/broadcast"
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+)
+
+// CAT-CHPW-RL-2 runtime tier: the test builds the REAL gin engine through
+// buildRouter (the function main() uses) and reads, from the engine's own route
+// trees, the full ordered handler chain of every route. Unit-class: it never
+// starts a server and opens no connection; the limiters are tagging fakes so that
+// each route's limiter identity is observable, everything else (engine middleware,
+// JWT middleware, handler method values) is the production code.
+
+func routerTestLoginRate(c *gin.Context)   { c.Next() }
+func routerTestAuthRate(c *gin.Context)    { c.Next() }
+func routerTestDefaultRate(c *gin.Context) { c.Next() }
+
+func routerTestDeps() routerDeps {
+	gin.SetMode(gin.TestMode)
+	nop := zap.NewNop()
+	return routerDeps{
+		Logger:       nop,
+		Cfg:          &root_config.Config{},
+		ServiceInfo:  broadcast.ServiceInfo{},
+		StartTime:    time.Now(),
+		FirebaseApp:  firebase.New(firebase.Config{Logger: nop}),
+		JWT:          root_middleware.NewJWTMiddleware("router-test-secret"),
+		WS:           root_handlers.NewWebSocketHandler(nop),
+		LoginRate:    routerTestLoginRate,
+		AuthRate:     routerTestAuthRate,
+		DefaultRate:  routerTestDefaultRate,
+		TrustedProxy: "",
+	}
+}
+
+func handlerName(h gin.HandlerFunc) string {
+	return runtime.FuncForPC(reflect.ValueOf(h).Pointer()).Name()
+}
+
+// routeChains reads every route's ordered handler-name chain from the engine's
+// private route trees (gin v1.12: Engine.trees []methodTree{method, root *node},
+// node.handlers). The reflection is test-only; sanity controls below prove it sees
+// the same routes as Engine.Routes().
+func routeChains(t *testing.T, e *gin.Engine) map[string][]string {
+	t.Helper()
+	out := map[string][]string{}
+	trees := reflect.ValueOf(e).Elem().FieldByName("trees")
+	require.True(t, trees.IsValid(), "gin Engine.trees not found: the gin layout changed, update routeChains")
+	var walk func(method string, n reflect.Value)
+	walk = func(method string, n reflect.Value) {
+		if n.IsNil() {
+			return
+		}
+		nn := n.Elem()
+		hv := nn.FieldByName("handlers")
+		fp := nn.FieldByName("fullPath")
+		require.True(t, hv.IsValid() && fp.IsValid(), "gin node layout changed")
+		hv = reflect.NewAt(hv.Type(), unsafe.Pointer(hv.UnsafeAddr())).Elem()
+		fp = reflect.NewAt(fp.Type(), unsafe.Pointer(fp.UnsafeAddr())).Elem()
+		if hv.Len() > 0 {
+			var names []string
+			for i := 0; i < hv.Len(); i++ {
+				names = append(names, handlerName(hv.Index(i).Interface().(gin.HandlerFunc)))
+			}
+			key := method + " " + fp.String()
+			require.NotContains(t, out, key, "route listed twice in the trees")
+			out[key] = names
+		}
+		ch := nn.FieldByName("children")
+		ch = reflect.NewAt(ch.Type(), unsafe.Pointer(ch.UnsafeAddr())).Elem()
+		for i := 0; i < ch.Len(); i++ {
+			walk(method, ch.Index(i))
+		}
+	}
+	for i := 0; i < trees.Len(); i++ {
+		mt := trees.Index(i)
+		m := reflect.NewAt(mt.FieldByName("method").Type(), unsafe.Pointer(mt.FieldByName("method").UnsafeAddr())).Elem().String()
+		root := reflect.NewAt(mt.FieldByName("root").Type(), unsafe.Pointer(mt.FieldByName("root").UnsafeAddr())).Elem()
+		walk(m, root)
+	}
+	// Control: the tree walk and Engine.Routes() describe the same route set.
+	var fromRoutes []string
+	for _, ri := range e.Routes() {
+		fromRoutes = append(fromRoutes, ri.Method+" "+ri.Path)
+	}
+	var fromTrees []string
+	for k := range out {
+		fromTrees = append(fromTrees, k)
+	}
+	sort.Strings(fromRoutes)
+	sort.Strings(fromTrees)
+	require.Equal(t, fromRoutes, fromTrees, "tree walk must see exactly the routes Engine.Routes() lists")
+	return out
+}
+
+// chainKey reduces a runtime function name to a form that does not depend on
+// inlining or closure numbering: ".funcN" suffixes are dropped, a method keeps its
+// "(*T).Method" tail, anything else keeps its last identifier.
+var funcNRe = regexp.MustCompile(`(\.func\d+)+$`)
+
+func chainKey(name string) string {
+	name = funcNRe.ReplaceAllString(name, "")
+	if i := strings.LastIndex(name, "(*"); i >= 0 {
+		return name[i:]
+	}
+	if i := strings.LastIndex(name, "."); i >= 0 {
+		return name[i+1:]
+	}
+	return name
+}
+
+func keyedChains(chains map[string][]string) map[string][]string {
+	out := map[string][]string{}
+	for k, v := range chains {
+		var kv []string
+		for _, n := range v {
+			kv = append(kv, chainKey(n))
+		}
+		out[k] = kv
+	}
+	return out
+}
+
+// wantEngineLevel is the engine-level handler chain in force when the auth group
+// is created (the chain prefix of every auth route). Changing it is a deliberate
+// edit of this list.
+var wantEngineLevel = []string{
+	"LoggerWithConfig", "Recovery", "SecurityHeadersWithConfig", "ConcurrencyLimiter",
+	"RequestTimeout", "CORS", "GinMiddleware", "Logger", "ErrorHandler", "GinMiddleware",
+	"RequestID", "InputValidation", "CompressionMiddleware",
+}
+
+// wantAuthRoutes pins, per auth route, the handlers after the engine-level ones:
+// which limiter (the tagging fakes of routerTestDeps), whether RequireAuth runs,
+// the change-password failed-attempt limiter, and the final handler.
+var wantAuthRoutes = map[string][]string{
+	"POST /api/v1/auth/login":           {"routerTestLoginRate", "(*AuthHandler).LoginGin-fm"},
+	"POST /api/v1/auth/register":        {"routerTestLoginRate", "buildRouter"},
+	"POST /api/v1/auth/refresh":         {"routerTestAuthRate", "(*AuthHandler).RefreshTokenGin-fm"},
+	"POST /api/v1/auth/logout":          {"routerTestAuthRate", "(*AuthHandler).LogoutGin-fm"},
+	"GET /api/v1/auth/me":               {"routerTestAuthRate", "(*JWTMiddleware).RequireAuth", "(*AuthHandler).GetCurrentUserGin-fm"},
+	"GET /api/v1/auth/status":           {"routerTestAuthRate", "(*AuthHandler).GetAuthStatusGin-fm"},
+	"GET /api/v1/auth/permissions":      {"routerTestAuthRate", "(*JWTMiddleware).RequireAuth", "(*AuthHandler).GetPermissionsGin-fm"},
+	"GET /api/v1/auth/profile":          {"routerTestAuthRate", "(*JWTMiddleware).RequireAuth", "(*AuthHandler).GetCurrentUserGin-fm"},
+	"GET /api/v1/auth/init-status":      {"routerTestDefaultRate", "(*MediaQueryHandler).GetInitStatus-fm"},
+	"POST /api/v1/auth/change-password": {"routerTestDefaultRate", "(*JWTMiddleware).RequireAuth", "(*FailedAttemptLimiter).Middleware", "(*MediaQueryHandler).ChangePassword-fm"},
+}
+
+// inAuthSurface is the test's OWN classification (independent of the production
+// onAuthSurface): case-insensitive, after path.Clean, anything under /api/v1/auth
+// or /auth, any :param or *wildcard segment directly under /api/v1, and the
+// /api/auth shape.
+func inAuthSurface(p string) bool {
+	segs := strings.Split(strings.Trim(path.Clean("/"+p), "/"), "/")
+	for i := range segs {
+		segs[i] = strings.ToLower(segs[i])
+	}
+	if len(segs) >= 3 && segs[0] == "api" && segs[1] == "v1" {
+		if segs[2] == "auth" || strings.HasPrefix(segs[2], ":") || strings.HasPrefix(segs[2], "*") {
+			return true
+		}
+	}
+	if len(segs) >= 2 && segs[0] == "api" && segs[1] == "auth" {
+		return true
+	}
+	return segs[0] == "auth"
+}
+
+// authSurfaceDiff compares the keyed chains of every route on the auth surface
+// with the pinned table. Deny-by-default: an unknown route, a missing route, a
+// changed chain or a different engine-level prefix is a finding.
+func authSurfaceDiff(chains map[string][]string) []string {
+	var out []string
+	seen := map[string]bool{}
+	var keys []string
+	for k := range chains {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
+		p := strings.SplitN(k, " ", 2)[1]
+		if !inAuthSurface(p) {
+			continue
+		}
+		want, ok := wantAuthRoutes[k]
+		if !ok {
+			out = append(out, fmt.Sprintf("unknown route on the auth surface: %s (chain %v)", k, chains[k]))
+			continue
+		}
+		seen[k] = true
+		wantFull := append(append([]string{}, wantEngineLevel...), want...)
+		if !reflect.DeepEqual(chains[k], wantFull) {
+			out = append(out, fmt.Sprintf("%s: handler chain %v, want %v", k, chains[k], wantFull))
+		}
+	}
+	for k := range wantAuthRoutes {
+		if !seen[k] {
+			out = append(out, "missing auth route: "+k)
+		}
+	}
+	sort.Strings(out)
+	return out
+}
+
+func TestBuildRouterAuthSurface(t *testing.T) {
+	e := buildRouter(routerTestDeps())
+	chains := keyedChains(routeChains(t, e))
+	// Controls: the walk sees routes outside the auth surface too, with the same
+	// engine-level prefix, and does not see a route that was never registered.
+	require.Contains(t, chains, "GET /health")
+	require.Equal(t, wantEngineLevel, chains["GET /health"][:len(wantEngineLevel)])
+	require.NotContains(t, chains, "POST /api/v1/auth/never-registered")
+	require.Len(t, wantAuthRoutes, len(authRouteTable), "the test's table and the production authRouteTable must list the same routes")
+	for _, k := range authRouteTable {
+		require.Contains(t, wantAuthRoutes, k, "authRouteTable entry missing from the pinned chains")
+	}
+	require.Empty(t, authSurfaceDiff(chains))
+	require.NoError(t, verifyAuthRouteTable(e))
+}
+
+// Comparator golden-bad set: each hand-made engine/chain shape must be reported.
+func TestBuildRouterAuthSurface_ComparatorDetects(t *testing.T) {
+	base := func() map[string][]string {
+		return keyedChains(routeChains(t, buildRouter(routerTestDeps())))
+	}
+	login := "POST /api/v1/auth/login"
+	cases := map[string]func(m map[string][]string){
+		"limiter_dropped_from_one_route": func(m map[string][]string) {
+			c := m[login]
+			m[login] = append(append([]string{}, c[:len(wantEngineLevel)]...), c[len(wantEngineLevel)+1:]...)
+		},
+		"limiters_swapped_login_uses_auth_rate": func(m map[string][]string) {
+			m[login] = append([]string{}, m[login]...)
+			m[login][len(wantEngineLevel)] = "routerTestAuthRate"
+		},
+		"route_moved_outside_the_group": func(m map[string][]string) {
+			m["POST /api/v1/login"] = m[login]
+			delete(m, login)
+		},
+		"evil_handler_injected_after_engine_level": func(m map[string][]string) {
+			c := m[login]
+			m[login] = append(append(append([]string{}, c[:len(wantEngineLevel)]...), "evil"), c[len(wantEngineLevel):]...)
+		},
+		"evil_engine_level_prefix": func(m map[string][]string) {
+			m[login] = append([]string{"evil"}, m[login]...)
+		},
+		"new_unpinned_auth_route": func(m map[string][]string) { m["GET /api/v1/auth/evil"] = []string{"evil"} },
+		"unclean_path_spelling":   func(m map[string][]string) { m["POST /api//v1/auth/evil"] = []string{"evil"} },
+		"relative_dot_path":       func(m map[string][]string) { m["GET ./auth/evil"] = []string{"evil"} },
+		"param_segment_capturing_auth": func(m map[string][]string) {
+			m["GET /api/v1/:x/login"] = []string{"evil"}
+		},
+		"upper_case_spelling": func(m map[string][]string) { m["GET /API/V1/AUTH/evil"] = []string{"evil"} },
+		"route_removed":       func(m map[string][]string) { delete(m, login) },
+	}
+	require.Empty(t, authSurfaceDiff(base()), "golden-good control")
+	for name, mut := range cases {
+		mut := mut
+		t.Run(name, func(t *testing.T) {
+			m := base()
+			mut(m)
+			require.NotEmpty(t, authSurfaceDiff(m), "comparator missed this shape")
+		})
+	}
+}
+
+func TestVerifyAuthRouteTable_RealEngines(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	good := buildRouter(routerTestDeps())
+	require.NoError(t, verifyAuthRouteTable(good))
+	for name, mut := range map[string]func(e *gin.Engine){
+		"extra_auth_route":       func(e *gin.Engine) { e.GET("/api/v1/auth/evil", func(*gin.Context) {}) },
+		"unclean_double_slash":   func(e *gin.Engine) { e.POST("/api//v1/auth/evil", func(*gin.Context) {}) },
+		"relative_dot_under_api": func(e *gin.Engine) { e.Group("/api/v1").GET("./auth/evil", func(*gin.Context) {}) },
+		"patch_method":           func(e *gin.Engine) { e.PATCH("/api/v1/auth/evil", func(*gin.Context) {}) },
+		"static_file":            func(e *gin.Engine) { e.StaticFile("/api/v1/auth/f", "x") },
+	} {
+		mut := mut
+		t.Run(name, func(t *testing.T) {
+			e := buildRouter(routerTestDeps())
+			mut(e)
+			require.Error(t, verifyAuthRouteTable(e))
+		})
+	}
+	// golden-FALSE: a sibling prefix and a non-auth api route must not fire.
+	e := buildRouter(routerTestDeps())
+	e.GET("/api/v1/authors", func(*gin.Context) {})
+	e.GET("/api/v1/catalog/x", func(*gin.Context) {})
+	require.NoError(t, verifyAuthRouteTable(e))
+}
+
+// ---- runtime-tier source mutants (opt-in) -------------------------------------
+//
+// Each mutant edits the real sources through `go test -overlay` (nothing in the
+// work tree is written) and runs TestBuildRouterAuthSurface on the compiled
+// mutated package: the test MUST fail. Opt-in because every case compiles the
+// package (about a minute each): CHPW_RUNTIME_MUTANTS=1.
+func runtimeMutant(t *testing.T, edits map[string][][2]string) string {
+	t.Helper()
+	tmp := t.TempDir()
+	require.True(t, strings.HasPrefix(tmp, os.TempDir()))
+	overlay := map[string]map[string]string{"Replace": {}}
+	for file, es := range edits {
+		abs, err := filepath.Abs(file)
+		require.NoError(t, err)
+		b, err := os.ReadFile(file)
+		require.NoError(t, err)
+		s := string(b)
+		for _, e := range es {
+			require.Equal(t, 1, strings.Count(s, e[0]), "mutation anchor must occur exactly once in %s: %s", file, e[0])
+			s = strings.Replace(s, e[0], e[1], 1)
+		}
+		dst := filepath.Join(tmp, filepath.Base(file))
+		require.NoError(t, os.WriteFile(dst, []byte(s), 0o600))
+		overlay["Replace"][abs] = dst
+	}
+	oj, err := json.Marshal(overlay)
+	require.NoError(t, err)
+	op := filepath.Join(tmp, "overlay.json")
+	require.NoError(t, os.WriteFile(op, oj, 0o600))
+	cmd := exec.Command("nice", "-n", "10", "go", "test", "-buildvcs=false", "-p", "1", "-count=1",
+		"-overlay="+op, "-run", "^TestBuildRouterAuthSurface$", ".")
+	cmd.Env = append(os.Environ(), "GOMAXPROCS=2", "CHPW_RUNTIME_MUTANTS=")
+	out, err := cmd.CombinedOutput()
+	require.Error(t, err, "mutant SURVIVED the runtime test:\n%s", out)
+	require.NotContains(t, string(out), "[build failed]", "mutant did not compile (not a kill):\n%s", out)
+	require.Contains(t, string(out), "--- FAIL: TestBuildRouterAuthSurface", string(out))
+	return string(out)
+}
+
+func TestBuildRouterAuthSurface_RuntimeMutants(t *testing.T) {
+	if os.Getenv("CHPW_RUNTIME_MUTANTS") != "1" {
+		t.Skip("opt-in (compiles the package per mutant): set CHPW_RUNTIME_MUTANTS=1")
+	}
+	const defn = `authGroup := router.Group("/api/v1/auth")`
+	m := func(file, old, repl string) map[string][][2]string {
+		return map[string][][2]string{file: {{old, repl}}}
+	}
+	cases := []struct {
+		name  string
+		edits map[string][][2]string
+	}{
+		{"RV1_method_value_Use_before_group", m("main_router.go", defn, "u := router.Use\n\tu(func(c *gin.Context) { c.Next() })\n\t"+defn)},
+		{"RV2_method_value_Group_auth_route", m("main_router.go", defn, defn+"\n\tgrp := router.Group\n\tgrp(\"/api/v1/auth\").POST(\"/evil\", func(c *gin.Context) {})")},
+		{"RV3_unclean_double_slash_route", m("main_router.go", defn, defn+"\n\trouter.POST(\"/api//v1/auth/evil\", func(c *gin.Context) {})")},
+		{"RV5_g_Handlers_prepend_in_registerAuthRoutes", m("main_chpw.go", `g.POST("/login", d.LoginRate, d.Login)`, "g.Handlers = append(gin.HandlersChain{func(c *gin.Context) { c.Next() }}, g.Handlers...)\n\tg.POST(\"/login\", d.LoginRate, d.Login)")},
+		{"RV6_engine_Handlers_append_in_applyTrustedProxies", m("trusted_proxies.go", "if err := setTrustedProxies(r, tp); err != nil {", "r.Handlers = append(r.Handlers, func(c *gin.Context) { c.Next() })\n\tif err := setTrustedProxies(r, tp); err != nil {")},
+		{"RV8_method_value_Use_in_ws_helper", m("main_wsroute.go", `router.GET("/ws", mw.RequireAuth(), h.HandleConnection)`, "u := router.Use\n\tu(func(c *gin.Context) { c.Next() })\n\trouter.GET(\"/ws\", mw.RequireAuth(), h.HandleConnection)")},
+		{"RV9_RouterGroup_field_Use_in_trusted_proxies", m("trusted_proxies.go", "if err := setTrustedProxies(r, tp); err != nil {", "rg := &r.RouterGroup\n\tf := rg.Use\n\tf(func(c *gin.Context) { c.Next() })\n\tif err := setTrustedProxies(r, tp); err != nil {")},
+		{"N1_limiter_dropped_from_login", m("main_chpw.go", `g.POST("/login", d.LoginRate, d.Login)`, `g.POST("/login", d.Login)`)},
+		{"N2_limiters_swapped_login_uses_auth_rate", m("main_chpw.go", `g.POST("/login", d.LoginRate, d.Login)`, `g.POST("/login", d.AuthRate, d.Login)`)},
+		{"N3_route_moved_outside_group", m("main_chpw.go", `g.POST("/logout", d.AuthRate, d.Logout)`, "")},
+		{"N4_duplicate_allowlisted_engine_Use", m("main_router.go", defn, "router.Use(root_middleware.RequestID())\n\t"+defn)},
+		{"N5_engine_Use_lookalike_swapped_order", m("main_router.go", "router.Use(root_middleware.CORS())\n\trouter.Use(metrics.GinMiddleware())", "router.Use(metrics.GinMiddleware())\n\trouter.Use(root_middleware.CORS())")},
+		{"N6_require_auth_dropped_from_me", m("main_chpw.go", `g.GET("/me", d.AuthRate, d.RequireAuth(), d.Me)`, `g.GET("/me", d.AuthRate, d.Me)`)},
+		{"N7_changepassword_limiter_dropped", m("main_chpw.go", `root_middleware.RegisterChangePassword(authGroup, "/change-password", rate, requireAuth, handler, lim)`, `authGroup.POST("/change-password", rate, requireAuth, handler)`)},
+	}
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			out := runtimeMutant(t, tc.edits)
+			t.Logf("KILLED by runtime test")
+			_ = out
+		})
+	}
+}

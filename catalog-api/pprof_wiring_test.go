@@ -14,10 +14,10 @@ import (
 // imported, so the registration statement is read from source; the behaviour of the guard itself is tested in
 // middleware/pprof_guard_test.go.
 func TestPprofGroupIsGuardedBehindAuthAndAdmin(t *testing.T) {
-	src, err := os.ReadFile("main.go")
+	src, err := os.ReadFile("main_router.go")
 	require.NoError(t, err)
 	m := regexp.MustCompile(`pprofGroup\.Use\(([^\n]*)\)`).FindStringSubmatch(string(src))
-	require.NotNil(t, m, "main.go must register middleware on pprofGroup with a single Use(...) statement")
+	require.NotNil(t, m, "main_router.go must register middleware on pprofGroup with a single Use(...) statement")
 	use := m[1]
 	auth := strings.Index(use, "RequireAuth()")
 	admin := strings.Index(use, "RequireAdmin()")

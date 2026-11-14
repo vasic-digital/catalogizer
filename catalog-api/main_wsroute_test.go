@@ -162,7 +162,7 @@ func TestWSRoute_OriginPolicy(t *testing.T) {
 }
 
 func TestMainGoMountsWebSocketThroughHelper(t *testing.T) {
-	src, err := os.ReadFile("main.go")
+	src, err := os.ReadFile("main_router.go") // the route wiring lives in buildRouter (CAT-CHPW-RL-2)
 	require.NoError(t, err)
 	s := string(src)
 	assert.Contains(t, s, "registerWebSocketRoute(router, jwtMiddleware, wsHandler)")
