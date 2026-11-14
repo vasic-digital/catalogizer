@@ -64,15 +64,14 @@ func (s *SyncHandlerTestSuite) TestSECQ1C_UpdateWideningNeedsStepUp() {
 	body := s.davBody(srv.URL)
 	body["confirm_private_network"] = true
 	require.Equal(s.T(), http.StatusCreated, s.doRequest("POST", "/sync/endpoints", body, true).Code)
-	// the operator had narrowed this endpoint to public
-	db := s.db
-	require.NoError(s.T(), db.SetApprovedClass(ctxBG(), database.TableSyncEndpoints, 1, netguard.ClassPublic, database.ApprovedSourceOperator))
-
 	// a change that does not touch the URL does not re-classify and needs no step-up
 	w := s.doRequest("PUT", "/sync/endpoints/1", map[string]interface{}{"name": "renamed"}, true)
 	require.Equal(s.T(), http.StatusOK, w.Code, "%s", w.Body.String())
 	cls, _ := s.syncClassOf(1)
-	require.Equal(s.T(), "public", cls)
+	require.Equal(s.T(), "private", cls)
+
+	// the operator then narrows this endpoint to public
+	require.NoError(s.T(), s.db.SetApprovedClass(ctxBG(), database.TableSyncEndpoints, 1, netguard.ClassPublic, database.ApprovedSourceOperator))
 
 	// a new URL that classifies private would widen the approval: step-up
 	other := openDavSecq1c(s.T())

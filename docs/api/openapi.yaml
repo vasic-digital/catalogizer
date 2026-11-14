@@ -110,6 +110,9 @@ components:
           description: "Human-readable message; the default error envelope is only {error: ...}"
         details:
           type: string
+        code:
+          type: string
+          description: "Optional machine-readable code, for example private_network_confirmation_required, step_up_required, step_up_failed, step_up_throttled"
 
     HealthResponse:
       type: object
@@ -1230,7 +1233,10 @@ components:
         approved_class:
           type: string
           enum: [private, public]
-          description: Address class the endpoint is approved for (filled on create and update responses)
+          description: |
+            Address class the endpoint is approved for (filled on create and update responses). It is enforced on every WebDAV request
+            of the sync (connection test, listing, upload, download) together with the strict outbound policy: a public approval refuses
+            private and loopback addresses, a private approval still needs CATALOGIZER_OUTBOUND_ALLOW_CIDRS for them.
 
     CreateSyncEndpointRequest:
       type: object
@@ -1296,7 +1302,9 @@ components:
           type: string
           description: |
             The acting user's password. Required to widen the approved class (public to private). Failed attempts are throttled per
-            user (5 per 15 minutes, then 429 step_up_throttled with Retry-After); the client address plays no part.
+            user (5 per 15 minutes, then 429 step_up_throttled with Retry-After); the client address plays no part. Attempts that are
+            still running count against the limit, so a burst of concurrent requests cannot run more password checks than the limit.
+            The endpoint must exist and be updatable by the caller before the password is checked.
 
     SyncSession:
       type: object
@@ -4149,6 +4157,12 @@ paths:
                     example: operator
         '400':
           description: Invalid id, body or class
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized (missing or invalid token, or no acting user)
           content:
             application/json:
               schema:

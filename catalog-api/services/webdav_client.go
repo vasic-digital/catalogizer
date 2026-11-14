@@ -45,14 +45,12 @@ func NewWebDAVClientWithClass(url, username, password string, approved netguard.
 		approved = netguard.ClassPrivate
 	}
 	client := gowebdav.NewClient(url, username, password)
-	// SECQ-1/W5: dial-time operator policy (loopback / link-local / metadata refused on the resolved address of every connection,
-	// so every redirect hop is covered) and, since CAT-SECQ1-A, the transport pins itself to the address class of its first
-	// connection (a public root cannot be redirected into the LAN). gowebdav owns its CheckRedirect (it cannot be replaced), so
-	// there is no earlier per-hop host check. One transport per client, shared with GetQuota.
-	// NOTE (truthful scope): the only caller of this constructor is sync_service.go, which passes the stored class and then replaces the
-	// gowebdav transport with netguard.Transport() (strict policy, stricter than any class: private ranges refused unless allow-listed),
-	// and GetQuota has no caller, so the class-pinned operator transport is not on a live path for gowebdav today (CAT-SECQ1-D).
-	tr := netguard.OperatorTransportFor(approved)
+	// One transport per client, shared with GetQuota, and it enforces BOTH policies on the address that is dialled (CAT-SECQ1-C review
+	// round 2): the strict outbound policy (private ranges refused unless CATALOGIZER_OUTBOUND_ALLOW_CIDRS lists them; loopback,
+	// link-local and metadata always refused) AND the approved class (public refuses every private or loopback address, an allow-listed
+	// one included; the transport also tightens itself to public after its first public connection). The check sits in the dial, so every
+	// redirect hop of gowebdav (which owns its CheckRedirect) is covered. This is never looser than netguard.Transport().
+	tr := netguard.StrictClassTransport(approved)
 	client.SetTransport(tr)
 
 	return &WebDAVClient{
@@ -265,7 +263,7 @@ func (c *WebDAVClient) GetQuota() (*WebDAVQuota, error) {
 	req.Header.Set("Content-Type", "application/xml")
 	httpClient := c.quotaHTTP
 	if httpClient == nil { // a client built without NewWebDAVClient
-		httpClient = &http.Client{Timeout: 30 * time.Second, Transport: netguard.OperatorTransport(), CheckRedirect: netguard.OperatorCheckRedirect}
+		httpClient = &http.Client{Timeout: 30 * time.Second, Transport: netguard.StrictClassTransport(netguard.ClassPrivate), CheckRedirect: netguard.OperatorCheckRedirect}
 	}
 	resp, err := httpClient.Do(req)
 	if err != nil {

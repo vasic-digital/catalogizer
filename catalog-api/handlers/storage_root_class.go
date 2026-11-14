@@ -203,16 +203,9 @@ func (h *ScanHandler) SetStorageRootApprovedClass(c *gin.Context) {
 			c.JSON(http.StatusForbidden, gin.H{"error": "widening the approved network class needs the password of the acting administrator", "code": codeStepUpRequired})
 			return
 		}
-		if wait, blocked := stepUpThrottle.blocked(uid); blocked {
-			respondStepUpThrottled(c, wait, false)
+		if !stepUpAttempt(c, uid, false, func() bool { return h.verifyStepUp(ctx, uid, req.StepUpPassword) }) {
 			return
 		}
-		if !h.verifyStepUp(ctx, uid, req.StepUpPassword) {
-			stepUpThrottle.fail(uid)
-			c.JSON(http.StatusForbidden, gin.H{"error": "step-up authentication failed", "code": codeStepUpFailed})
-			return
-		}
-		stepUpThrottle.ok(uid)
 	}
 	if err := h.db.SetApprovedClass(ctx, database.TableStorageRoots, id, want, database.ApprovedSourceOperator); err != nil {
 		if errors.Is(err, database.ErrEndpointNotFound) {

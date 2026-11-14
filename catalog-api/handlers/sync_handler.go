@@ -132,16 +132,23 @@ func (h *SyncHandler) UpdateEndpoint(c *gin.Context) {
 	}
 
 	if updates.StepUpPassword != "" {
-		if wait, blocked := stepUpThrottle.blocked(currentUser.ID); blocked {
-			respondStepUpThrottled(c, wait, true)
+		// the endpoint must exist and be updatable by this user BEFORE a password is checked (no password oracle on foreign endpoints)
+		if aerr := h.syncService.AuthorizeEndpointUpdate(endpointID, currentUser.ID); aerr != nil {
+			status := http.StatusInternalServerError
+			if strings.Contains(aerr.Error(), "unauthorized") {
+				status = http.StatusForbidden
+			} else if strings.Contains(aerr.Error(), "not found") {
+				status = http.StatusNotFound
+			}
+			syncFail(c, status, "Failed to update sync endpoint", aerr)
 			return
 		}
-		if ok, _ := services.CheckPassword(updates.StepUpPassword, currentUser.Salt, currentUser.PasswordHash); !ok {
-			stepUpThrottle.fail(currentUser.ID)
-			c.JSON(http.StatusForbidden, gin.H{"success": false, "error": "step-up authentication failed", "code": codeStepUpFailed})
+		if !stepUpAttempt(c, currentUser.ID, true, func() bool {
+			ok, _ := services.CheckPassword(updates.StepUpPassword, currentUser.Salt, currentUser.PasswordHash)
+			return ok
+		}) {
 			return
 		}
-		stepUpThrottle.ok(currentUser.ID)
 		updates.StepUpVerified = true
 	}
 

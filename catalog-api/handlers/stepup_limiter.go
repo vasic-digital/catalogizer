@@ -24,8 +24,9 @@ const (
 )
 
 type stepUpFailure struct {
-	count int
-	first time.Time // start of the window this count belongs to
+	count    int       // failed attempts in the current window
+	inflight int       // attempts that hold a slot and have not finished (their password check is running)
+	first    time.Time // start of the window this entry belongs to
 }
 
 type stepUpLimiter struct {
@@ -41,63 +42,76 @@ func newStepUpLimiter() *stepUpLimiter {
 // stepUpThrottle is the process-wide limiter shared by every step-up route.
 var stepUpThrottle = newStepUpLimiter()
 
-// purge drops expired entries and, when the table is still full, the oldest ones. Caller holds mu.
+// purge drops expired entries that have no attempt in flight and, when the table is still full, the oldest ones that have none either.
+// Caller holds mu.
 func (l *stepUpLimiter) purge(now time.Time) {
 	for id, f := range l.m {
-		if now.Sub(f.first) >= stepUpWindow {
+		if f.inflight == 0 && now.Sub(f.first) >= stepUpWindow {
 			delete(l.m, id)
 		}
 	}
 	for len(l.m) >= stepUpMaxUsers {
 		var oldest int
 		var ot time.Time
-		first := true
+		found := false
 		for id, f := range l.m {
-			if first || f.first.Before(ot) {
-				oldest, ot, first = id, f.first, false
+			if f.inflight == 0 && (!found || f.first.Before(ot)) {
+				oldest, ot, found = id, f.first, true
 			}
+		}
+		if !found {
+			return
 		}
 		delete(l.m, oldest)
 	}
 }
 
-// blocked reports whether user may not try a step-up now, and for how long.
-func (l *stepUpLimiter) blocked(user int) (time.Duration, bool) {
+// acquire reserves one step-up attempt of user BEFORE the password is checked. The reservation counts failures and attempts that are still
+// running together, so N concurrent requests cannot all pass the limit and all run the password check (the check is slow and not atomic
+// with the failure count). When it returns ok the caller MUST call release exactly once. When it does not, wait is the time to advertise.
+func (l *stepUpLimiter) acquire(user int) (wait time.Duration, ok bool) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	now := l.now()
-	f, ok := l.m[user]
-	if !ok {
-		return 0, false
-	}
-	if now.Sub(f.first) >= stepUpWindow {
-		delete(l.m, user)
-		return 0, false
+	f, have := l.m[user]
+	if !have {
+		l.purge(now)
+		f = &stepUpFailure{first: now}
+		l.m[user] = f
+	} else if now.Sub(f.first) >= stepUpWindow {
+		f.count, f.first = 0, now // the window ended; attempts still in flight are carried over
 	}
 	if f.count >= stepUpMaxFailures {
-		return stepUpWindow - now.Sub(f.first), true
+		return stepUpWindow - now.Sub(f.first), false
 	}
-	return 0, false
+	if f.count+f.inflight >= stepUpMaxFailures {
+		return time.Second, false // the remaining attempts are all running; try again when they have finished
+	}
+	f.inflight++
+	return 0, true
 }
 
-// fail records one failed step-up of user.
-func (l *stepUpLimiter) fail(user int) {
+// release ends an attempt that acquire admitted. A success clears the failures of the user; a failure counts against the window.
+func (l *stepUpLimiter) release(user int, success bool) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
-	now := l.now()
-	if f, ok := l.m[user]; ok && now.Sub(f.first) < stepUpWindow {
-		f.count++
+	f, have := l.m[user]
+	if !have {
 		return
 	}
-	l.purge(now)
-	l.m[user] = &stepUpFailure{count: 1, first: now}
-}
-
-// ok clears the failures of user after a successful step-up.
-func (l *stepUpLimiter) ok(user int) {
-	l.mu.Lock()
-	delete(l.m, user)
-	l.mu.Unlock()
+	if f.inflight > 0 {
+		f.inflight--
+	}
+	if success {
+		f.count = 0
+		if f.inflight == 0 {
+			delete(l.m, user)
+		} else {
+			f.first = l.now()
+		}
+		return
+	}
+	f.count++
 }
 
 func (l *stepUpLimiter) size() int {
@@ -118,4 +132,28 @@ func respondStepUpThrottled(c *gin.Context, wait time.Duration, syncShape bool) 
 		body["success"] = false
 	}
 	c.JSON(http.StatusTooManyRequests, body)
+}
+
+// stepUpAttempt runs one throttled step-up: it reserves the attempt (429 with Retry-After when the user has no attempts left), runs check,
+// and records the outcome (a panic in check counts as a failure). It returns true only for a verified step-up; otherwise the response has
+// been written (429 throttled, or 403 step_up_failed).
+func stepUpAttempt(c *gin.Context, user int, syncShape bool, check func() bool) bool {
+	wait, ok := stepUpThrottle.acquire(user)
+	if !ok {
+		respondStepUpThrottled(c, wait, syncShape)
+		return false
+	}
+	verified := func() (v bool) {
+		defer func() { stepUpThrottle.release(user, v) }()
+		return check()
+	}()
+	if !verified {
+		body := gin.H{"error": "step-up authentication failed", "code": codeStepUpFailed}
+		if syncShape {
+			body["success"] = false
+		}
+		c.JSON(http.StatusForbidden, body)
+		return false
+	}
+	return true
 }

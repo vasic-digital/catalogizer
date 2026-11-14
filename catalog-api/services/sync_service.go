@@ -115,6 +115,22 @@ func (s *SyncService) GetEndpoint(endpointID int, userID int) (*models.SyncEndpo
 	return endpoint, nil
 }
 
+// AuthorizeEndpointUpdate reports whether userID may update the endpoint (it exists, and the user owns it or may edit shares). The
+// handler calls it BEFORE it checks a step-up password, so an unknown or foreign endpoint costs no password check and no throttle slot.
+func (s *SyncService) AuthorizeEndpointUpdate(endpointID int, userID int) error {
+	endpoint, err := s.syncRepo.GetEndpoint(endpointID)
+	if err != nil {
+		return err
+	}
+	if endpoint.UserID != userID {
+		hasPermission, err := s.authService.CheckPermission(userID, models.PermissionEditShares)
+		if err != nil || !hasPermission {
+			return fmt.Errorf("unauthorized to update this endpoint")
+		}
+	}
+	return nil
+}
+
 func (s *SyncService) UpdateEndpoint(endpointID int, userID int, updates *models.UpdateSyncEndpointRequest) (_ *models.SyncEndpoint, retErr error) {
 	endpoint, err := s.syncRepo.GetEndpoint(endpointID)
 	if err != nil {
@@ -194,8 +210,16 @@ func (s *SyncService) UpdateEndpoint(endpointID int, userID int, updates *models
 		}
 	}
 
-	if err := s.testConnection(endpoint); err != nil {
-		return nil, fmt.Errorf("connection test failed: %w", err)
+	var terr error
+	if urlChanged && plan.networked && endpoint.Type == models.SyncTypeWebDAV {
+		// the NEW destination is tested under the class it is about to be approved for (already confirmed, and step-up verified when it
+		// widens), never under the class stored for the OLD one; the client is not cached
+		terr = s.testConnectionAs(endpoint, plan.class)
+	} else {
+		terr = s.testConnection(endpoint)
+	}
+	if terr != nil {
+		return nil, fmt.Errorf("connection test failed: %w", terr)
 	}
 
 	err = s.syncRepo.UpdateEndpoint(endpoint)
@@ -1354,6 +1378,11 @@ func (s *SyncService) testConnection(endpoint *models.SyncEndpoint) error {
 	}
 }
 
+// testConnectionAs tests the connection of a WebDAV endpoint with a throwaway client built for class (never cached, never the stored class).
+func (s *SyncService) testConnectionAs(endpoint *models.SyncEndpoint, class netguard.Class) error {
+	return NewWebDAVClientWithClass(endpoint.URL, endpoint.Username, endpoint.Password, class).TestConnection()
+}
+
 // evictWebDAVClient drops the cached client of an endpoint.
 func (s *SyncService) evictWebDAVClient(id int) {
 	s.webdavMu.Lock()
@@ -1392,9 +1421,8 @@ func (s *SyncService) getWebDAVClient(endpoint *models.SyncEndpoint) (*WebDAVCli
 	}
 
 	client := NewWebDAVClientWithClass(endpoint.URL, endpoint.Username, endpoint.Password, approved)
-	// Every WebDAV request is dialled through the SSRF guard (resolved address checked
-	// and pinned), also for endpoints stored before the URL validation existed.
-	client.client.SetTransport(netguard.Transport())
+	// The constructor installed the transport that enforces the strict outbound policy AND the approved class on every dial; it is not
+	// replaced here (a replacement by the class-blind netguard.Transport() was the review round 2 finding F2).
 	if endpoint.ID != 0 { // a not-yet-stored endpoint (ID 0) must never be cached under 0
 		s.webdavClients[endpoint.ID] = client
 	}
