@@ -45,10 +45,9 @@ var rlRoutes = []rlRoute{
 
 func realRateLimitedEngine(t *testing.T) *gin.Engine {
 	t.Helper()
-	d := routerTestDeps()
 	am := auth.NewAuthMiddleware(nil, zap.NewNop()) // fresh limiters per engine
-	d.LoginRate, d.AuthRate, d.DefaultRate = newAuthRateTiers(am)
-	return buildRouter(d)
+	// newRouterDeps is the function main() calls to fill the limiter fields (RLW-FU1).
+	return buildRouter(newRouterDeps(routerTestDeps(), am, nil, false))
 }
 
 func rlHit(e *gin.Engine, method, path, ip string) *httptest.ResponseRecorder {

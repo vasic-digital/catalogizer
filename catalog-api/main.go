@@ -965,20 +965,17 @@ func main() {
 	//     /logout, /status, /me). These are cheap reads and the
 	//     challenge runner hits them heavily.
 	//   - defaultRateLimiter (2000 rpm per IP): everything else.
-	loginRateLimiter, authRateLimiter, defaultRateLimiter := newAuthRateTiers(authMiddleware)
-
-	// Redis-based distributed rate limiting: activates automatically when
-	// Redis is available AND REDIS_RATE_LIMIT=true is set.
-	if redisClient != nil && os.Getenv("REDIS_RATE_LIMIT") == "true" {
-	logger.Info("Activating Redis-based distributed rate limiting")
-	// Operator decision 2026-11-12: a Redis outage after startup falls back to
-	// the in-memory tiers (600/2000 per minute), not 503. /login and /register
-	// keep using the in-memory loginRateLimiter.
-	// root_middleware.NewRedisTierLimiters wires each tier to ITS OWN in-memory
-	// fallback (tested in middleware, CAT-OPA-1).
-	authRateLimiter, defaultRateLimiter = root_middleware.NewRedisTierLimiters(redisClient, authRateLimiter, defaultRateLimiter)
+	// newRouterDeps (main_ratetiers.go) builds the three tiers and applies the optional Redis tiers;
+	// the same function is what the behavioural wiring test calls (RLW-FU1).
+	// Redis-based distributed rate limiting: activates automatically when Redis is available AND
+	// REDIS_RATE_LIMIT=true is set. Operator decision 2026-11-12: a Redis outage after startup falls
+	// back to the in-memory tiers (600/2000 per minute), not 503; /login and /register always use the
+	// in-memory login tier (the Redis fallback wiring is tested in middleware, CAT-OPA-1).
+	redisRateLimit := redisClient != nil && os.Getenv("REDIS_RATE_LIMIT") == "true"
+	if redisRateLimit {
+		logger.Info("Activating Redis-based distributed rate limiting")
 	} else if redisClient != nil {
-	logger.Info("Redis available but REDIS_RATE_LIMIT not set — using in-memory rate limiting")
+		logger.Info("Redis available but REDIS_RATE_LIMIT not set — using in-memory rate limiting")
 	}
 
 	// Start runtime metrics collector (goroutines, memory)
@@ -987,7 +984,7 @@ func main() {
 	// Engine, global middleware, public routes and the /api/v1/auth group are
 	// built by buildRouter (main_router.go); the auth route table and handler
 	// chains are pinned by TestBuildRouterAuthSurface* (CAT-CHPW-RL-2).
-	router := buildRouter(routerDeps{
+	deps := newRouterDeps(routerDeps{
 		Logger:       logger,
 		Cfg:          cfg,
 		ServiceInfo:  serviceInfo,
@@ -1001,11 +998,9 @@ func main() {
 		Auth:         authHandler,
 		MediaQuery:   mediaQueryHandler,
 		UserRepo:     userRepo,
-		LoginRate:    loginRateLimiter,
-		AuthRate:     authRateLimiter,
-		DefaultRate:  defaultRateLimiter,
 		TrustedProxy: os.Getenv("TRUSTED_PROXIES"),
-	})
+	}, authMiddleware, redisClient, redisRateLimit)
+	router := buildRouter(deps)
 
 	// API routes
 	api := router.Group("/api/v1")
@@ -1013,7 +1008,7 @@ func main() {
 	// without authentication - needed for Android TV and other clients that need to
 	// fetch cover images from TMDB through the API proxy.
 	api.Use(jwtMiddleware.RequireAuth()) // Apply auth middleware to all API routes
-	api.Use(defaultRateLimiter)          // Apply general rate limiting to API
+	api.Use(deps.DefaultRate)            // Apply general rate limiting to API
 	{
 	// Catalog browsing endpoints
 	api.GET("/catalog", catalogHandler.ListRoot)
