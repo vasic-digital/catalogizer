@@ -22,7 +22,7 @@ Checked on this branch with `sha256sum -c` (0 non-OK lines). "VERIFIED" here mea
 ### PROVISIONAL (landed on `main`; counts as done for planning, NOT verified)
 Each item landed after an Opus review that returned GO-with-follow-ups (minor-class follow-ups tracked in `docs/FOLLOW_UPS_NEXT_PHASE.md`). Evidence class is mostly unit / httptest / SQLite (some PostgreSQL 15/16, container) level; live end-to-end runs are owed. Pending job per row: the full-suite retest, live UI QA and the live hardware baseline listed in `docs/PROVISIONAL_VERIFICATION_PLAN.md`.
 
-Evidence sets hand-verified with `sha256sum -c` (0 non-OK) but not checker-cited, because the checker lists their unhashed README.html/README.pdf twins as UNLISTED (advisory finding, below):
+Evidence sets hand-verified with `sha256sum -c` (0 non-OK) but not checker-cited, because the checker would list their unhashed README.html/README.pdf twins as UNLISTED:
 - docs/qa/anton-smb-n3-20261112/run1.log, run2.log, run3.log and README.md there (Anton SMB N=3 live run; SHA256SUMS verifies). No negative control: the run proves reachability at N=3 only.
 - docs/qa/secq2-repro-20261112/rep6.json and rep6.log.txt (CAT-SECQ2-WD-F1 live WebDAV reproduction: not reproduced, 6/6 ok; SHA256SUMS verifies).
 **Security: authentication, sessions, rate limiting**
