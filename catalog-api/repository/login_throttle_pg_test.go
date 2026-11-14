@@ -92,7 +92,7 @@ func TestLoginThrottlePostgres_InflightCapHolds(t *testing.T) {
 	}
 }
 
-// F8 (round 2): the evaluated-before-block bound AccountFree + MaxInflight - 1 under concurrent Begin/Fail loops on real
+// F8 (round 2, F19 round 3): the evaluated-before-block bound AccountFree + MaxInflight - 1 under concurrent Begin/Fail loops on real
 // PostgreSQL. With Fail deleting the token and charging in two steps, a new attempt can take the freed slot in between.
 func TestLoginThrottlePostgres_EvaluatedBeforeBlockBound(t *testing.T) {
 	for _, img := range []string{testpg.Image, testpg.ImageGlibc} {
@@ -112,6 +112,7 @@ func TestLoginThrottlePostgres_EvaluatedBeforeBlockBound(t *testing.T) {
 			pol := th.pol
 			bound := pol.AccountFree + pol.MaxInflight - 1
 			worst := 0
+			var beginErrs, failErrs atomic.Int32
 			for round := 0; round < 20; round++ {
 				subj := fmt.Sprintf("u:%d", 500+round)
 				evaluated := 0
@@ -132,11 +133,17 @@ func TestLoginThrottlePostgres_EvaluatedBeforeBlockBound(t *testing.T) {
 						<-start
 						for i := 0; i < 6; i++ {
 							d, err := th.Begin(ctx, subj, fmt.Sprintf("10.4.%d.%d.%d", round, g, i))
-							if err != nil || !d.Allowed {
+							if err != nil {
+								beginErrs.Add(1)
+								continue
+							}
+							if !d.Allowed {
 								continue
 							}
 							n.Add(1)
-							_ = th.Fail(ctx, subj, d.Attempt)
+							if err := th.Fail(ctx, subj, d.Attempt); err != nil {
+								failErrs.Add(1)
+							}
 						}
 					}(g)
 				}
@@ -148,7 +155,91 @@ func TestLoginThrottlePostgres_EvaluatedBeforeBlockBound(t *testing.T) {
 				}
 				require.LessOrEqual(t, evaluated, bound, "round %d", round)
 			}
-			t.Logf("image %s: worst evaluated before the block over 20 rounds: %d (bound %d)", img, worst, bound)
+			t.Logf("image %s: worst evaluated before the block over 20 rounds: %d (bound %d); Begin errors %d, Fail errors %d", img, worst, bound, beginErrs.Load(), failErrs.Load())
+			require.Equal(t, int32(0), beginErrs.Load(), "Begin errors would hide evaluated attempts")
+			require.Equal(t, int32(0), failErrs.Load(), "Fail errors would leave attempts uncharged")
+		})
+	}
+}
+
+// F14 on real PostgreSQL: concurrent Begin/Fail loops AFTER the account is blocked and the block expired: every evaluated attempt
+// must be charged (failures grows by exactly the number evaluated). F15 on real PostgreSQL: the cap holds for tokens inside
+// PendingTTL and they expire after it.
+func TestLoginThrottlePostgres_ChargeEveryEvaluatedAndCapWindow(t *testing.T) {
+	for _, img := range []string{testpg.Image, testpg.ImageGlibc} {
+		img := img
+		t.Run(img, func(t *testing.T) {
+			dsn, _ := testpg.StartImage(t, img)
+			raw, err := sql.Open("postgres", dsn)
+			require.NoError(t, err)
+			raw.SetMaxOpenConns(64)
+			defer raw.Close()
+			db := database.WrapDB(raw, database.DialectPostgres)
+			require.NoError(t, db.RunMigrations(context.Background()))
+			th := NewLoginThrottle(db)
+			now := time.Unix(1_800_000_000, 0)
+			th.SetClock(func() time.Time { return now })
+			ctx := context.Background()
+			pol := th.pol
+
+			// F14: block the account serially, let the block expire, then run waves of MaxInflight parallel evaluated attempts.
+			for i := 0; i < pol.AccountFree; i++ {
+				d, err := th.Begin(ctx, "u:r4", fmt.Sprintf("10.1.0.%d", i))
+				require.NoError(t, err)
+				require.True(t, d.Allowed)
+				require.NoError(t, th.Fail(ctx, "u:r4", d.Attempt))
+			}
+			evaluated := 0
+			for window := 0; window < 4; window++ {
+				var bu int64
+				require.NoError(t, raw.QueryRow(`SELECT blocked_until_ms FROM login_throttle WHERE subject='u:r4' AND scope='account'`).Scan(&bu))
+				var before int
+				require.NoError(t, raw.QueryRow(`SELECT failures FROM login_throttle WHERE subject='u:r4' AND scope='account'`).Scan(&before))
+				now = time.UnixMilli(bu + 1)
+				var open []Decision
+				for i := 0; i < pol.MaxInflight; i++ {
+					d, err := th.Begin(ctx, "u:r4", fmt.Sprintf("10.1.%d.%d", 10+window, i))
+					require.NoError(t, err)
+					if d.Allowed {
+						open = append(open, d)
+					}
+				}
+				var wg sync.WaitGroup
+				for _, d := range open {
+					wg.Add(1)
+					go func(d Decision) {
+						defer wg.Done()
+						if err := th.Fail(ctx, "u:r4", d.Attempt); err != nil {
+							t.Errorf("Fail: %v", err)
+						}
+					}(d)
+				}
+				wg.Wait()
+				var after int
+				require.NoError(t, raw.QueryRow(`SELECT failures FROM login_throttle WHERE subject='u:r4' AND scope='account'`).Scan(&after))
+				t.Logf("image %s window %d: evaluated %d, charged %d", img, window, len(open), after-before)
+				require.Equal(t, len(open), after-before, "every evaluated attempt must be charged")
+				evaluated += len(open)
+			}
+			require.Greater(t, evaluated, 0)
+
+			// F15: cap window on PostgreSQL.
+			for i := 0; i < pol.MaxInflight; i++ {
+				d, err := th.Begin(ctx, "u:r4w", fmt.Sprintf("10.2.0.%d", i))
+				require.NoError(t, err)
+				require.True(t, d.Allowed)
+			}
+			start := now
+			for _, step := range []time.Duration{time.Second, pol.PendingTTL / 2, pol.PendingTTL - time.Second} {
+				now = start.Add(step)
+				d, err := th.Begin(ctx, "u:r4w", "10.2.1.1")
+				require.NoError(t, err)
+				require.False(t, d.Allowed, "tokens inside PendingTTL still hold the cap (+%v)", step)
+			}
+			now = start.Add(pol.PendingTTL + time.Second)
+			d, err := th.Begin(ctx, "u:r4w", "10.2.2.1")
+			require.NoError(t, err)
+			require.True(t, d.Allowed, "tokens older than PendingTTL no longer count")
 		})
 	}
 }

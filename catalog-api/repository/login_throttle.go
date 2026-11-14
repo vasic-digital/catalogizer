@@ -46,11 +46,17 @@ import (
 //     counts tokens by substr(scope,1,5), so it holds on PostgreSQL under READ COMMITTED and under any collation (the first
 //     version used a single INSERT..SELECT..WHERE COUNT < cap and a range comparison on scope, which did not: measured on
 //     real PostgreSQL 15, evidence docs/qa/login-lock-2-round2-20261114/pg_both_collations.txt). The hand-off from token to
-//     charge is atomic too: Fail deletes the token and charges the account in one transaction under the same lock, so no
-//     instant exists at which an evaluated attempt is counted by neither the cap nor the account counter. Cost, stated
+//     charge is atomic too: Fail deletes the token and charges the account in ONE transaction (one atomic commit; Fail takes no
+//     slots lock, the commit alone makes the swap invisible half-done), so no instant exists at which an evaluated attempt is
+//     counted by neither the cap nor the account counter. EVERY evaluated attempt is charged exactly once, also when it settles
+//     on an account that a sibling attempt has just blocked (round-3 review F14: it used to be deleted uncharged, 24 evaluated
+//     against 6 charged over 6 block windows, a 4x guess rate); a charge on a blocked account raises the failure count by one
+//     and the block end to max(current end, now + the doubling delay of the new count), so the doubling and the Cap bound hold. Cost, stated
 //     honestly: evaluated guesses before the first block are at most AccountFree + MaxInflight - 1 (exactly AccountFree for
-//     a serial guesser), not exactly AccountFree. Members of the class "an attempt is uncounted by both the cap and the
-//     account counter at some instant", each closed or scoped out: Fail (closed: one transaction); Success (by design: a
+//     a serial guesser), not exactly AccountFree. Measured on real PostgreSQL 15 with 16 goroutines of Begin/Fail loops: the
+//     worst case over 20 rounds was 22 on one image in the author's round-2 run and 23 on both images in the reviewer's run
+//     (the bound is 23; the observed maximum depends on timing and is not a constant). Members of the class "an attempt is uncounted by both the cap and the
+//     account counter at some instant", each closed or scoped out: Fail (closed: one transaction, charged also on a blocked account); Success (by design: a
 //     correct password is not a guess, it is never charged); Begin refusals after the token was taken (closed: the attempt
 //     is not evaluated, so nothing is owed); Clear (by design: wipes tokens and counters together; a later Fail of an
 //     attempt from before the Clear charges nothing, RV5-2); the TTL purge (it removes only tokens older than PendingTTL,
@@ -323,8 +329,10 @@ func (t *LoginThrottle) read(ctx context.Context, q querier, subject, scope stri
 }
 
 // reserve charges one attempt on (subject, scope) atomically. until is the end of the block when refused (the row is blocked
-// and nothing is charged).
-func (t *LoginThrottle) reserve(ctx context.Context, q querier, subject, scope string, free int, decay time.Duration, now time.Time, pol LoginThrottlePolicy) (allowed bool, until time.Time, err error) {
+// and nothing is charged), unless chargeBlocked is set: Fail charges a row that is already blocked too (the attempt was evaluated,
+// so it is owed one charge, F14), growing the failure count by one and the block end to max(current end, now + the doubling
+// delay of the new count), so a block is never shortened and never longer than Cap from now.
+func (t *LoginThrottle) reserve(ctx context.Context, q querier, subject, scope string, free int, decay time.Duration, now time.Time, pol LoginThrottlePolicy, chargeBlocked bool) (allowed bool, until time.Time, err error) {
 	nowMs := now.UnixMilli()
 	for i := 0; i < casRetries; i++ {
 		if _, err = q.ExecContext(ctx,
@@ -335,7 +343,7 @@ func (t *LoginThrottle) reserve(ctx context.Context, q querier, subject, scope s
 		if rerr != nil {
 			return false, time.Time{}, rerr
 		}
-		if s.blockedUntilMs > nowMs {
+		if s.blockedUntilMs > nowMs && !chargeBlocked {
 			return false, time.UnixMilli(s.blockedUntilMs), nil
 		}
 		f := s.failures
@@ -346,6 +354,9 @@ func (t *LoginThrottle) reserve(ctx context.Context, q querier, subject, scope s
 		var nb int64
 		if f >= free {
 			nb = nowMs + delayFor(f, free, pol.Base, pol.Cap).Milliseconds()
+		}
+		if chargeBlocked && s.blockedUntilMs > nb {
+			nb = s.blockedUntilMs // never shorten an existing block
 		}
 		res, uerr := q.ExecContext(ctx,
 			`UPDATE login_throttle SET failures = ?, blocked_until_ms = ?, last_failure_ms = ?, version = version + 1 WHERE subject = ? AND scope = ? AND version = ?`,
@@ -486,7 +497,7 @@ func (t *LoginThrottle) Begin(ctx context.Context, subject, ip string) (Decision
 
 	// 3. This address's charge (charge-first: it is per address, so an owner's success clearing it is not visible to an
 	// attacker, who uses other addresses).
-	ok, until, err := t.reserve(ctx, t.db, subject, bucket, pol.BucketFree, pol.BucketDecay, now, pol)
+	ok, until, err := t.reserve(ctx, t.db, subject, bucket, pol.BucketFree, pol.BucketDecay, now, pol, false)
 	if errors.Is(err, ErrLoginThrottleBusy) {
 		_, _ = t.dropToken(ctx, tok)
 		return refuse(now.Add(pol.Base), now), nil
@@ -518,8 +529,9 @@ func refuse(until, now time.Time) Decision {
 // before-block count was 24, or 35 with delayed charges, against the documented 23). A token that is no longer there (settled,
 // removed by Clear, or purged after PendingTTL) charges nothing: after Clear that is required (RV5-2); after PendingTTL it is
 // the documented residual (an attempt that outlives PendingTTL is not charged; PendingTTL is 2 minutes against a bcrypt check of
-// about 100 ms, so only a stalled or crashed attempt gets there). An account that is already blocked is not charged again (the
-// attempt was in flight when the block was set). If the transaction fails (store error, ErrLoginThrottleBusy) nothing is
+// about 100 ms, so only a stalled or crashed attempt gets there). An account that is already blocked IS charged (F14): the
+// attempt was evaluated, so it is owed one charge; the failure count grows by one, the block end becomes max(current end, now +
+// doubling delay of the new count), never longer than Cap from now. If the transaction fails (store error, ErrLoginThrottleBusy) nothing is
 // changed: the token stays and counts as in flight until PendingTTL, then expires uncharged (store failure, logged by the caller).
 func (t *LoginThrottle) Fail(ctx context.Context, subject string, tok AttemptToken) error {
 	if !tok.held {
@@ -542,7 +554,7 @@ func (t *LoginThrottle) Fail(ctx context.Context, subject string, tok AttemptTok
 	if n, _ := res.RowsAffected(); n != 1 {
 		return tx.Commit()
 	}
-	if _, _, err = t.reserve(ctx, q, subject, scopeAccount, pol.AccountFree, pol.AccountDecay, now, pol); err != nil {
+	if _, _, err = t.reserve(ctx, q, subject, scopeAccount, pol.AccountFree, pol.AccountDecay, now, pol, true); err != nil {
 		return err
 	}
 	return tx.Commit()
@@ -589,7 +601,10 @@ func (t *LoginThrottle) Success(ctx context.Context, subject, ip string, remembe
 // no slots lock: on PostgreSQL a token inserted by a Begin that is committing at the same moment can survive the DELETE (the
 // DELETE sees only rows committed before its statement). Such an attempt is then settled normally and charges the account after
 // the Clear; that is one counted attempt in the new state, not a loss of the cap. A Fail racing a Clear can fail with a
-// store error on PostgreSQL (both write the same rows); the caller logs it and the request is refused.
+// store error on PostgreSQL (both write the same rows, a deadlock aborts one of them: an administrator's unlock or password
+// change can therefore return an error and must be retried; the caller of Fail logs its error and the request is refused).
+// Across instances sharing one database the cap and the purge compare tokens' timestamps with each instance's own clock: clocks
+// that differ by more than PendingTTL make the cap count too many or too few tokens and the purge remove live ones.
 func (t *LoginThrottle) Clear(ctx context.Context, userID int) error {
 	_, err := t.db.ExecContext(ctx, `DELETE FROM login_throttle WHERE subject = ?`, SubjectForUser(userID))
 	return err

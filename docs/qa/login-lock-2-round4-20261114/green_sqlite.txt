@@ -1,0 +1,62 @@
+=== RUN   TestInvariant_EvaluatedBeforeBlockBound
+--- PASS: TestInvariant_EvaluatedBeforeBlockBound (0.01s)
+=== RUN   TestInvariant_EvaluatedBeforeBlockWaves
+--- PASS: TestInvariant_EvaluatedBeforeBlockWaves (0.01s)
+=== RUN   TestInvariant_EvaluatedBeforeBlockConcurrent
+--- PASS: TestInvariant_EvaluatedBeforeBlockConcurrent (0.18s)
+=== RUN   TestInvariant_LockOrderPinned
+--- PASS: TestInvariant_LockOrderPinned (0.00s)
+=== RUN   TestBegin_AccountBlockedBetweenReadAndTokenIsRefused
+--- PASS: TestBegin_AccountBlockedBetweenReadAndTokenIsRefused (0.00s)
+=== RUN   TestInvariant_RV51_OwnerSuccessNeverEndsAccountBlock
+--- PASS: TestInvariant_RV51_OwnerSuccessNeverEndsAccountBlock (0.01s)
+=== RUN   TestInvariant_R41_OwnerFromManyNewAddressesNeverBlocked
+--- PASS: TestInvariant_R41_OwnerFromManyNewAddressesNeverBlocked (0.02s)
+=== RUN   TestInvariant_RV52_StaleAttemptAfterClearWritesNothing
+--- PASS: TestInvariant_RV52_StaleAttemptAfterClearWritesNothing (0.00s)
+=== RUN   TestInvariant_RV54_TokenIsBoundToItsSubject
+--- PASS: TestInvariant_RV54_TokenIsBoundToItsSubject (0.00s)
+=== RUN   TestInvariant_InflightTokensAreBounded
+--- PASS: TestInvariant_InflightTokensAreBounded (0.00s)
+=== RUN   TestInvariant_BucketRefusalReleasesToken
+--- PASS: TestInvariant_BucketRefusalReleasesToken (0.00s)
+=== RUN   TestInvariant_InflightRefusalAnswersBaseDelay
+--- PASS: TestInvariant_InflightRefusalAnswersBaseDelay (0.00s)
+=== RUN   TestInvariant_AttackerTraceIsIndependentOfOwnerSuccess
+    login_throttle_invariant_test.go:386: 11204 interleavings checked
+--- PASS: TestInvariant_AttackerTraceIsIndependentOfOwnerSuccess (76.51s)
+=== RUN   TestInvariant_OwnerWithoutAttackerIsNeverBlocked
+    login_throttle_invariant_test.go:451: 19531 owner-only interleavings checked
+--- PASS: TestInvariant_OwnerWithoutAttackerIsNeverBlocked (17.14s)
+=== RUN   TestLoginThrottlePolicy_AccountDecayIsClampedToStaleAfter
+--- PASS: TestLoginThrottlePolicy_AccountDecayIsClampedToStaleAfter (0.00s)
+=== RUN   TestInvariant_R1_BlockedAccountWithFullSlotsAnswersBlockEnd
+--- PASS: TestInvariant_R1_BlockedAccountWithFullSlotsAnswersBlockEnd (0.00s)
+=== RUN   TestInvariant_R1_InflightBoundHoldsUnderConcurrency
+--- PASS: TestInvariant_R1_InflightBoundHoldsUnderConcurrency (0.10s)
+=== RUN   TestInvariant_R1_OwnerSuccessBelowThresholdLeavesAccountRowIdentical
+--- PASS: TestInvariant_R1_OwnerSuccessBelowThresholdLeavesAccountRowIdentical (0.01s)
+=== RUN   TestInvariant_R4_EveryEvaluatedAttemptIsCharged
+    login_throttle_round4_test.go:55: window 0: evaluated 4, charged 4
+    login_throttle_round4_test.go:55: window 1: evaluated 4, charged 4
+    login_throttle_round4_test.go:55: window 2: evaluated 4, charged 4
+    login_throttle_round4_test.go:55: window 3: evaluated 4, charged 4
+    login_throttle_round4_test.go:55: window 4: evaluated 4, charged 4
+    login_throttle_round4_test.go:55: window 5: evaluated 4, charged 4
+    login_throttle_round4_test.go:59: after the first block: evaluated 24, charged 24
+--- PASS: TestInvariant_R4_EveryEvaluatedAttemptIsCharged (0.02s)
+=== RUN   TestInvariant_R4_ChargingBlockedAccountFollowsDoublingAndCap
+--- PASS: TestInvariant_R4_ChargingBlockedAccountFollowsDoublingAndCap (0.01s)
+=== RUN   TestInvariant_R4_CapWindowHoldsWithinTTLAndExpiresAfter
+--- PASS: TestInvariant_R4_CapWindowHoldsWithinTTLAndExpiresAfter (0.00s)
+=== RUN   TestInvariant_R4_FailErrorRollsBackAndKeepsToken
+=== RUN   TestInvariant_R4_FailErrorRollsBackAndKeepsToken/charge-error
+=== RUN   TestInvariant_R4_FailErrorRollsBackAndKeepsToken/cancelled-context
+--- PASS: TestInvariant_R4_FailErrorRollsBackAndKeepsToken (0.00s)
+    --- PASS: TestInvariant_R4_FailErrorRollsBackAndKeepsToken/charge-error (0.00s)
+    --- PASS: TestInvariant_R4_FailErrorRollsBackAndKeepsToken/cancelled-context (0.00s)
+=== RUN   TestInvariant_R4_PurgeBoundaryOfInflightTokens
+--- PASS: TestInvariant_R4_PurgeBoundaryOfInflightTokens (0.00s)
+PASS
+ok  	catalogizer/repository	94.057s
+EXIT 0

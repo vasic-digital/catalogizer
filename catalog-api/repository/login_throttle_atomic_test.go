@@ -18,6 +18,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// F18 (round-3 review): this test, the Waves test and the Concurrent test PASS on the round-2 code (097b519f3) as well, because
+// SQLite serialises every connection (SetMaxOpenConns(1)) and the interleaving they are meant to expose cannot happen there. They
+// pin the bound as a regression guard on SQLite only. The test that is RED on the round-2 code is the PostgreSQL one,
+// TestLoginThrottlePostgres_EvaluatedBeforeBlockBound (live-class); the structural pin TestInvariant_LockOrderPinned fails on
+// any change of the statement order inside Fail/takeToken.
 func TestInvariant_EvaluatedBeforeBlockBound(t *testing.T) {
 	w := newWorld(t, "u:1")
 	ctx := context.Background()
@@ -48,6 +53,7 @@ func TestInvariant_EvaluatedBeforeBlockBound(t *testing.T) {
 }
 
 // Waves of parallel attempts that all fail: the number evaluated before the block must not depend on timing.
+// (Passes on the round-2 code too, see the F18 note above: a SQLite regression guard, not proof of the atomic hand-off.)
 func TestInvariant_EvaluatedBeforeBlockWaves(t *testing.T) {
 	w := newWorld(t, "u:1")
 	ctx := context.Background()
@@ -74,7 +80,7 @@ func TestInvariant_EvaluatedBeforeBlockWaves(t *testing.T) {
 	require.LessOrEqual(t, evaluated, pol.AccountFree+pol.MaxInflight-1)
 }
 
-// The same bound under real goroutine concurrency (attackers that guess in a loop).
+// The same bound under real goroutine concurrency (attackers that guess in a loop). Passes on the round-2 code too (F18 note).
 func TestInvariant_EvaluatedBeforeBlockConcurrent(t *testing.T) {
 	for round := 0; round < 10; round++ {
 		w := newWorld(t, "u:1")
