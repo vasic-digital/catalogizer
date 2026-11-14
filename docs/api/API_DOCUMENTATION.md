@@ -5333,7 +5333,7 @@ Content-Type: `application/json`
 |---|---|
 | `providers` | array of object (`id` = endpoint type, `endpoints` = count) |
 
-**Errors:** 401 (unauthorized), 403 (not an administrator), 503 (admin role could not be verified)
+**Errors:** 401 (unauthorized), 403 (not an administrator), 500 (`{"error":"database query failed"}`), 503 (`Could not verify admin role`)
 
 ---
 ### GET /api/v1/sync/status
@@ -5354,7 +5354,7 @@ Content-Type: `application/json`
 | `active_sessions` | integer |
 | `last_sync` | string (nullable) |
 
-**Errors:** 401 (unauthorized), 403 (not an administrator), 503 (admin role could not be verified)
+**Errors:** 401 (unauthorized), 403 (not an administrator), 500 (`{"error":"database query failed"}`), 503 (`Could not verify admin role`)
 
 ---
 
