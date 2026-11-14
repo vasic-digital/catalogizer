@@ -290,6 +290,7 @@ func modelRun(t testing.TB, seq []op, seed int) (real, ghost []string) {
 		rec(gw, &ghost, a)
 	}
 	var open []Decision
+	var openAddr []string // the address each open owner attempt began from (its Success must come from the same address)
 	oaddr := 0
 	for _, o := range seq {
 		switch o {
@@ -299,15 +300,17 @@ func modelRun(t testing.TB, seq []op, seed int) (real, ghost []string) {
 			rec(gw, &ghost, a)
 		case opOwnBeg:
 			oaddr++
-			d, err := rw.th.Begin(ctx, "u:1", fmt.Sprintf("203.0.%d.%d", oaddr/250, 1+oaddr%250))
+			addr := fmt.Sprintf("203.0.%d.%d", oaddr/250, 1+oaddr%250)
+			d, err := rw.th.Begin(ctx, "u:1", addr)
 			require.NoError(t, err)
 			if d.Allowed {
 				open = append(open, d)
+				openAddr = append(openAddr, addr)
 			}
 		case opOwnDone:
 			if len(open) > 0 {
-				require.NoError(t, rw.th.Success(ctx, "u:1", "203.0.113.200", true, open[0].Attempt))
-				open = open[1:]
+				require.NoError(t, rw.th.Success(ctx, "u:1", openAddr[0], true, open[0].Attempt))
+				open, openAddr = open[1:], openAddr[1:]
 			}
 		case opKnown:
 			d, err := rw.th.Begin(ctx, "u:1", "192.0.2.77")
@@ -328,8 +331,8 @@ func modelRun(t testing.TB, seq []op, seed int) (real, ghost []string) {
 		}
 	}
 	// settle every owner attempt still in flight, then let the attacker probe until well past the threshold
-	for _, d := range open {
-		require.NoError(t, rw.th.Success(ctx, "u:1", "203.0.113.200", true, d.Attempt))
+	for i, d := range open {
+		require.NoError(t, rw.th.Success(ctx, "u:1", openAddr[i], true, d.Attempt))
 	}
 	for i := 0; i < 10; i++ {
 		a := next()

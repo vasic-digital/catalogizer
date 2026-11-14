@@ -1,0 +1,24 @@
+ok  	catalogizer/repository	224.353s
+--- FAIL: TestLoginLock_DecayWindowsHold (0.94s)
+    login_lock_review_test.go:263: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/loginlock.j67Ffa/repo/catalog-api/handlers/login_lock_review_test.go:263
+        	Error:      	Not equal: 
+        	            	expected: 2
+        	            	actual  : 3
+        	Test:       	TestLoginLock_DecayWindowsHold
+        	Messages:   	not purged before StaleAfter
+2026/11/14 06:01:32 auth: login throttle unavailable: no such table: login_throttle
+--- FAIL: TestLoginLock_StaleRowsArePurgedAndBounded (2.57s)
+    login_lock_test.go:403: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/loginlock.j67Ffa/repo/catalog-api/handlers/login_lock_test.go:403
+        	Error:      	Not equal: 
+        	            	expected: 60
+        	            	actual  : 90
+        	Test:       	TestLoginLock_StaleRowsArePurgedAndBounded
+        	Messages:   	two rows (account, address) per distinct unknown name
+FAIL
+FAIL	catalogizer/handlers	127.939s
+ok  	catalogizer/services	9.702s
+ok  	catalogizer/database	16.723s
+FAIL
+rc=1

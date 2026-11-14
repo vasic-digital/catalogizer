@@ -400,7 +400,7 @@ func TestLoginLock_StaleRowsArePurgedAndBounded(t *testing.T) {
 	}
 	var n int
 	require.NoError(t, e.db.QueryRow(`SELECT COUNT(*) FROM login_throttle`).Scan(&n))
-	assert.Equal(t, 60, n, "two rows (account, address) per distinct unknown name")
+	assert.Equal(t, 90, n, "three rows (account, address, per-subject slots lock row) per distinct unknown name")
 	e.advance(25 * time.Hour)
 	e.loginFrom("192.0.2.1", "victim", llPass)
 	require.NoError(t, e.db.QueryRow(`SELECT COUNT(*) FROM login_throttle WHERE subject LIKE 'n:%'`).Scan(&n))

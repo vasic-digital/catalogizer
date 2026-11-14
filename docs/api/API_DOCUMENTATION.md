@@ -425,7 +425,8 @@ submitted string, matching how the account lookup compares names (no case foldin
 address of one account share one budget, so a client that submits both can tell they belong to the same account once the
 budget is spent. **Invariant (CAT-LOGIN-LOCK-2).** Everything an attacker can observe about an account (the status and `Retry-After` of every
 probe, how many guesses are evaluated before the block, when the block ends) is a function only of attacker-caused events (failed
-attempts charged to the account, and time), never of an owner's successful login. An existing account and a nonexistent name
+attempts charged to the account, and time), never of an owner's successful login (limits: an owner's own wrong password from a
+non-known-good address is charged to the account like a guess; the model test contains no owner failures and no attacker concurrency). An existing account and a nonexistent name
 therefore give the same trace, whenever the owner logs in. How it is kept: the ACCOUNT counter is charged only by a completed
 failed attempt, after the password was evaluated; a successful login never writes it (no charge, no refund, no reset), so it
 neither ends an account block early nor leaves a charge behind. Parallel guessing is bounded by in-flight tokens instead of by
@@ -436,12 +437,12 @@ charges; an account block, like the block of a nonexistent name, ends only by ex
 token and is never charged to the account (it keeps its own per-address limit). A login from a new address takes a token and, when
 the password is right, only releases it: an owner who logs in from many new addresses with nobody attacking is never charged and so
 never locked out. Consequence for the guess budget: a serial guesser gets exactly 20 evaluated guesses per account before the
-block, a burst of parallel guesses at most 20 + 3 (the slack of the in-flight bound). What remains observable, accepted: an attacker
+block, a burst of parallel guesses at most 20 + 3 (the slack of the in-flight bound, which is enforced atomically per account by a row lock and holds on SQLite and on PostgreSQL). What remains observable, accepted: an attacker
 bursting exactly 4 parallel probes sees one slot fewer while an owner login is in flight (the bcrypt window); an administrator's
 unlock or a password change ends a block of a real account and has no counterpart for an unused name; while an attack is in
 progress a blocked account refuses a new address even for the owner, and a known-good address keeps working while others are
-refused, which only a holder of that address can see; an attempt whose answer is never produced (a crash) is not charged, its
-token stops counting after 2 minutes. Both account and address windows are bounded by the
+refused, which only a holder of that address can see; an attempt whose answer is never produced (a crash), or that takes longer than 2 minutes, is not charged, its
+token stops counting after 2 minutes; an attacker behind the same NAT as a known-good address gets a fresh per-address budget (5 attempts) after each owner login from it and can see that the owner logged in. Both account and address windows are bounded by the
 24-hour stale-row purge, so the effective account window is min(AccountDecay, StaleAfter); a row can in a narrow window be
 read just before its purge, which is accepted. The state is in table `login_throttle` (migration v29), so it survives
 a restart and is shared by every instance on one database. Rows without a success marker are removed after 24 hours without

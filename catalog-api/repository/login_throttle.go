@@ -23,7 +23,15 @@ import (
 //     observe about an account (the account block and its end, the number of guesses that get evaluated before the block, the
 //     status and Retry-After of every probe) MUST be a function only of attacker-caused events (the failed attempts charged to
 //     the account scope, and time), never of an owner SUCCESS event. Then an existing account and a nonexistent name give the
-//     same trace to every attacker, whatever the owner does and whenever, and the owner's logins leave no mark to read.
+//     same trace to every attacker, whatever the owner does and whenever, and the owner's SUCCESSFUL logins leave no mark to
+//     read. Limits of that claim, stated honestly (F3/F6 of the round-1 review): (a) an owner's own WRONG password from an
+//     address that is not known-good is a completed failure and is charged to the account scope exactly like a guess, so it
+//     is an event the attacker can observe the effect of (it moves the count toward the block); it is rare, but it is not
+//     "attacker-caused". (b) The model test (TestInvariant_*) has an alphabet of attacker probes and owner SUCCESSES only: it
+//     contains no owner failures and no attacker concurrency, so it proves nothing about those two. (c) An attacker behind
+//     the same NAT as a known-good address gets a fresh per-address bucket after every owner login from that address (the
+//     owner's Success clears that address's own charges) and can therefore see that the owner logged in; it is bounded by
+//     the 5 free attempts per address and needs the shared address.
 //     Consequences, each enforced in code and by TestInvariant_* (a model-based test over interleavings):
 //     (1) The ACCOUNT scope counts only completed FAILED attempts (Fail), charged after the password was evaluated. A success
 //     never writes it: not a charge, not a refund, not a reset, so it can neither end a block early (the CAT-LOGIN-LOCK-1
@@ -34,8 +42,13 @@ import (
 //     charge by Fail, so settled state never depends on whether an attempt was the owner's. A token cannot tell owner
 //     from attacker before the password is checked, so the cap is a constant that does not depend on the failure count:
 //     an owner's token then changes what a SERIAL attacker sees only if the attacker already holds MaxInflight-1
-//     concurrent tokens. Cost, stated honestly: evaluated guesses before the first block are at most
-//     AccountFree + MaxInflight - 1 (exactly AccountFree for a serial guesser), not exactly AccountFree.
+//     concurrent tokens. The cap is enforced atomically: takeToken serialises per subject on a row lock (the "slots" row) and
+//     counts tokens by substr(scope,1,5), so it holds on PostgreSQL under READ COMMITTED and under any collation (the first
+//     version used a single INSERT..SELECT..WHERE COUNT < cap and a range comparison on scope, which did not: measured on
+//     real PostgreSQL 15, see docs/qa/login-lock-2-pg-*). Cost, stated honestly: evaluated guesses before the first block are
+//     at most AccountFree + MaxInflight - 1 (exactly AccountFree for a serial guesser), not exactly AccountFree. An attempt
+//     that runs longer than PendingTTL stops counting as in-flight and its Fail finds no token: it is not charged
+//     (accepted, tracked as a follow-up: charging it would need the charge and the token removal in one transaction).
 //     (3) Residual, accepted and documented: an attacker who bursts exactly MaxInflight parallel probes can see one fewer
 //     slot while an owner login is in flight (a contention channel that exists only during the bcrypt window and needs
 //     a burst); an administrator's Clear (unlock, password change) ends a block of a real account and has no counterpart
@@ -51,8 +64,9 @@ import (
 //     the victim's sessions on the attacker's say-so.
 //   - Two scopes. "account": every client together (stops distributed guessing of one account). "ip:<addr>": one client
 //     address against one account (stops one address from using the whole account budget). Plus transient "pend:<nonce>" rows.
-//   - Fail-charged, token-gated. An attempt first takes an in-flight token (atomic insert bounded by MaxInflight, a single
-//     statement) and its per-address bucket is charged by compare-and-swap BEFORE the password is checked; the ACCOUNT charge
+//   - Fail-charged, token-gated. An attempt first takes an in-flight token (insert bounded by MaxInflight, serialised per
+//     subject by a row lock inside one transaction) and its per-address bucket (only that) is charged by compare-and-swap
+//     BEFORE the password is checked; the ACCOUNT charge
 //     is made by Fail, after the check, by compare-and-swap on a version column. Success releases the token and clears that
 //     client address's own bucket; it never writes the account scope.
 //   - Known-good client. A client address that completed a login for this account within KnownGoodTTL (at most MaxKnownGood
@@ -63,7 +77,7 @@ import (
 //     does not reveal whether a name exists. The subject MUST be derived with the same equality the user lookup uses
 //     (UserRepository.GetByUsernameOrEmail matches username or email byte for byte), otherwise a normalisation difference
 //     (case folding, trimming) is an existence oracle: a nonexistent "Victim" would share a budget with "victim" while an
-//     existing "victim" would not. Rows are bounded only by time: at most two persistent rows per distinct submitted string (plus at most MaxInflight transient tokens), purged after
+//     existing "victim" would not. Rows are bounded only by time: at most three persistent rows per distinct submitted string (account, address, and the "slots" row that serialises the in-flight cap) plus at most MaxInflight transient tokens, purged after
 //     StaleAfter (rows that carry a known-good marker live up to KnownGoodTTL), purged in batches. There is no row cap, and the
 //     per-address request limiter does not bound the number of distinct strings under address rotation (IPv6 /64, botnet):
 //     table growth under such an attack is a recorded follow-up.
@@ -224,7 +238,12 @@ type AttemptToken struct {
 // ErrAttemptSubject is returned when a token is settled for a different subject than it was taken for (RV5-4).
 var ErrAttemptSubject = errors.New("login throttle: attempt token belongs to another subject")
 
-const pendPrefix = "pend:"
+// pendPrefix marks an in-flight token row; its length is the 5 in the substr(scope, 1, 5) tests. slotsScope is the per-subject
+// row whose lock serialises takeToken.
+const (
+	pendPrefix = "pend:"
+	slotsScope = "slots"
+)
 
 func newAttemptToken(subject string) (AttemptToken, error) {
 	var b [12]byte
@@ -312,19 +331,53 @@ func (t *LoginThrottle) reserve(ctx context.Context, subject, scope string, free
 	return false, time.Time{}, ErrLoginThrottleBusy
 }
 
-// takeToken inserts an in-flight token unless the subject already has MaxInflight live ones: one statement, so the bound holds
-// on SQLite; on PostgreSQL (read committed) concurrent inserts can overshoot it by the number of racing requests, which is
-// the same order as the slack the bound already allows and is recorded as UNCONFIRMED (no PostgreSQL run here).
+// takeToken inserts an in-flight token unless the subject already has MaxInflight live ones. The bound is serialised per subject
+// by a row lock: inside one transaction the per-subject "slots" row is written first (a write takes its row lock on SQLite and,
+// on PostgreSQL, the row lock that makes a concurrent transaction wait until this one commits), and only then are the live
+// tokens counted and the new one inserted. A plain "INSERT .. SELECT .. WHERE (SELECT COUNT(*) ..) < cap" is NOT enough on
+// PostgreSQL: under READ COMMITTED two concurrent statements both count before either inserts (measured on postgres:15, 40
+// concurrent Begins allowed 6 to 37 against a cap of 4). The tokens are recognised by substr(scope, 1, 5) = 'pend:', never by a
+// range comparison on scope: a range depends on the database collation (it is empty under glibc en_US.utf8, so the cap never
+// applied there).
 func (t *LoginThrottle) takeToken(ctx context.Context, tok AttemptToken, now time.Time, pol LoginThrottlePolicy) (bool, error) {
 	nowMs := now.UnixMilli()
-	res, err := t.db.ExecContext(ctx,
-		`INSERT INTO login_throttle (subject, scope, last_failure_ms) SELECT ?, ?, ? WHERE (SELECT COUNT(*) FROM login_throttle WHERE subject = ? AND scope > ? AND scope < ? AND last_failure_ms > ?) < ?`,
-		tok.subject, tok.scope, nowMs, tok.subject, pendPrefix, "pend;", nowMs-pol.PendingTTL.Milliseconds(), pol.MaxInflight)
+	tx, err := t.db.BeginTx(ctx, nil)
 	if err != nil {
 		return false, err
 	}
-	n, _ := res.RowsAffected()
-	return n == 1, nil
+	defer func() { _ = tx.Rollback() }()
+	locked := false
+	for i := 0; i < 3 && !locked; i++ {
+		if _, err = tx.ExecContext(ctx, t.db.Rewrite(`INSERT OR IGNORE INTO login_throttle (subject, scope) VALUES (?, ?)`), tok.subject, slotsScope); err != nil {
+			return false, err
+		}
+		// Writing the row is what takes the lock; zero rows means a concurrent purge removed it between the two statements.
+		res, uerr := tx.ExecContext(ctx, t.db.Rewrite(`UPDATE login_throttle SET last_failure_ms = ?, version = version + 1 WHERE subject = ? AND scope = ?`), nowMs, tok.subject, slotsScope)
+		if uerr != nil {
+			return false, uerr
+		}
+		if n, _ := res.RowsAffected(); n == 1 {
+			locked = true
+		}
+	}
+	if !locked {
+		return false, ErrLoginThrottleBusy
+	}
+	var live int
+	if err = tx.QueryRowContext(ctx, t.db.Rewrite(`SELECT COUNT(*) FROM login_throttle WHERE subject = ? AND substr(scope, 1, 5) = ? AND last_failure_ms > ?`),
+		tok.subject, pendPrefix, nowMs-pol.PendingTTL.Milliseconds()).Scan(&live); err != nil {
+		return false, err
+	}
+	if live >= pol.MaxInflight {
+		return false, nil
+	}
+	if _, err = tx.ExecContext(ctx, t.db.Rewrite(`INSERT INTO login_throttle (subject, scope, last_failure_ms) VALUES (?, ?, ?)`), tok.subject, tok.scope, nowMs); err != nil {
+		return false, err
+	}
+	if err = tx.Commit(); err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 // dropToken deletes the token row; true when this call removed it (false: already settled, expired and purged, or cleared).
@@ -337,7 +390,8 @@ func (t *LoginThrottle) dropToken(ctx context.Context, tok AttemptToken) (bool, 
 	return n == 1, nil
 }
 
-// Begin decides whether this attempt may be evaluated and charges it. It must be called BEFORE the password is checked.
+// Begin decides whether this attempt may be evaluated. It takes an in-flight token (unless the address is known-good) and charges
+// only the address bucket; the account scope is charged later, by Fail. It must be called BEFORE the password is checked.
 func (t *LoginThrottle) Begin(ctx context.Context, subject, ip string) (Decision, error) {
 	now, pol := t.clock()
 	nowMs := now.UnixMilli()
@@ -491,7 +545,7 @@ func (t *LoginThrottle) maybePurge(ctx context.Context, now time.Time, pol Login
 	t.purge = now
 	t.mu.Unlock()
 	nowMs := now.UnixMilli()
-	_, _ = t.db.ExecContext(ctx, `DELETE FROM login_throttle WHERE scope > ? AND scope < ? AND last_failure_ms < ?`, pendPrefix, "pend;", nowMs-pol.PendingTTL.Milliseconds())
+	_, _ = t.db.ExecContext(ctx, `DELETE FROM login_throttle WHERE substr(scope, 1, 5) = ? AND last_failure_ms < ?`, pendPrefix, nowMs-pol.PendingTTL.Milliseconds())
 	// Bounded work inside a login request: at most purgeBatch rows per run (the rest go on the next run, a minute later).
 	_, _ = t.db.ExecContext(ctx,
 		`DELETE FROM login_throttle WHERE (subject, scope) IN (

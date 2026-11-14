@@ -260,7 +260,7 @@ func TestLoginLock_DecayWindowsHold(t *testing.T) {
 	e2.loginFrom("192.0.2.1", "victim", llPass)
 	var n int
 	require.NoError(t, e2.db.QueryRow(`SELECT COUNT(*) FROM login_throttle WHERE subject LIKE 'n:%'`).Scan(&n))
-	assert.Equal(t, 2, n, "not purged before StaleAfter")
+	assert.Equal(t, 3, n, "not purged before StaleAfter (account, address and the per-subject slots row)")
 }
 
 // N5: at most MaxKnownGood (5) addresses are remembered per account; the oldest are forgotten.

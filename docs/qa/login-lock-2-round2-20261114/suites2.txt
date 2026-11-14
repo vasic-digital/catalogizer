@@ -1,0 +1,3 @@
+ok  	catalogizer/handlers	128.416s
+rc=0
+DONE

@@ -132,7 +132,7 @@ func (e *ErrLoginThrottled) Error() string {
 // ErrLoginThrottleUnavailable is returned when the back-off state cannot be read or written: login fails closed.
 var ErrLoginThrottleUnavailable = errors.New("sign-in temporarily unavailable")
 
-// throttleBegin charges the attempt before the password is checked. nil subject means no throttle is configured.
+// throttleBegin takes the attempt's in-flight token and charges its address bucket before the password is checked (the account scope is charged by a failure, afterwards). nil subject means no throttle is configured.
 func (s *AuthService) throttleBegin(subject, ip string) (repository.Decision, error) {
 	th := s.userRepo.LoginThrottle()
 	if th == nil {
@@ -196,7 +196,7 @@ func (s *AuthService) Login(req models.LoginRequest, ipAddress string, userAgent
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
 
-	// Back-off: every attempt is charged atomically before the password is evaluated (CAT-LOGIN-LOCK-1).
+	// Back-off (CAT-LOGIN-LOCK-2): every attempt takes an in-flight token and its address bucket is charged before the password is evaluated; the account scope is charged only by a completed failure.
 	subject := repository.SubjectForUser(user.ID)
 	decision, terr := s.throttleBegin(subject, ipAddress)
 	if terr != nil {
