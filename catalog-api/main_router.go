@@ -427,27 +427,32 @@ func patternReachesAuthPaths(p string) bool {
 		return false
 	}
 	segs := strings.Split(strings.Trim(clean, "/"), "/")
-	for i, s := range segs {
-		w := strings.IndexAny(s, ":*")
-		if w >= 0 && s[w] == '*' {
-			return true // catch-all: matches the whole rest of the path
+	// Gin routes an EMPTY parameter value (":p" matches "" in "//api/v1/auth"), so a
+	// whole-parameter segment may consume zero request segments and shift the
+	// alignment of everything after it. match(i, j): pattern segment i against wanted
+	// segment j.
+	var match func(i, j int) bool
+	match = func(i, j int) bool {
+		if j == len(want) {
+			return true // segments after the third are free
 		}
-		if i >= len(want) {
-			return true
-		}
-		lit := s
-		if w >= 0 {
-			lit = s[:w]
-			if !strings.HasPrefix(want[i], strings.ToLower(lit)) {
-				return false
-			}
-			continue
-		}
-		if !strings.EqualFold(lit, want[i]) {
+		if i == len(segs) {
 			return false
 		}
+		s := segs[i]
+		w := strings.IndexAny(s, ":*")
+		switch {
+		case w >= 0 && s[w] == '*':
+			return true // catch-all: matches the whole rest of the path
+		case w == 0:
+			return match(i+1, j) || match(i+1, j+1) // empty value, or one real segment
+		case w > 0:
+			return strings.HasPrefix(want[j], strings.ToLower(s[:w])) && match(i+1, j+1)
+		default:
+			return strings.EqualFold(s, want[j]) && match(i+1, j+1)
+		}
 	}
-	return len(segs) >= len(want)
+	return match(0, 0)
 }
 
 // engineChain reads a HandlersChain field of the engine by name (Handlers,

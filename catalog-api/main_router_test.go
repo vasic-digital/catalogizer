@@ -211,10 +211,16 @@ func inAuthSurface(pattern string) bool {
 	}
 	gin.SetMode(gin.TestMode)
 	for _, c := range cands {
-		if strings.Contains(c, "//") {
-			continue // an empty parameter value is not a request path gin routes (and httptest would parse "//x" as a host)
+		// The auth surface is every request path whose CLEANED form (empty segments
+		// dropped, as path.Clean, RedirectFixedPath and normalising proxies do) is under
+		// /api/v1/auth; gin itself routes empty parameter values, so "//api/v1/auth/x"
+		// can be answered by "/:p/api/v1/auth/x" (round-4 review R4-1/R4-2).
+		var cs []string
+		for _, sg := range strings.Split(strings.ToLower(c), "/") {
+			if sg != "" {
+				cs = append(cs, sg)
+			}
 		}
-		cs := strings.Split(strings.ToLower(strings.Trim(c, "/")), "/")
 		if len(cs) < 3 || cs[0] != "api" || cs[1] != "v1" || cs[2] != "auth" {
 			continue
 		}
@@ -391,6 +397,18 @@ func TestVerifyAuthRouteTable_RealEngines(t *testing.T) {
 			e.GET("/api/v1/auth%2Fevil", func(*gin.Context) {})
 		},
 		"FA2_use_escaped_path_flag_only": func(e *gin.Engine) { e.UseEscapedPath = true },
+		// Round-4 review R4-1: an EMPTY parameter value shifts the alignment. gin answers
+		// "//api/v1/auth/me" with "/:p/api/v1/auth/me" (p == "").
+		"X1_leading_param_shift":      func(e *gin.Engine) { e.GET("/:p/api/v1/auth/me", func(*gin.Context) {}) },
+		"X2_group_param_any_catchall": func(e *gin.Engine) { e.Group("/:p").Any("/api/v1/auth/*rest", func(*gin.Context) {}) },
+		"X3_param_between_api_v1":     func(e *gin.Engine) { e.GET("/api/:p/v1/auth/me", func(*gin.Context) {}) },
+		"X4_param_between_v1_auth":    func(e *gin.Engine) { e.GET("/api/v1/:p/auth/me", func(*gin.Context) {}) },
+		"X5_two_leading_params":       func(e *gin.Engine) { e.GET("/:p/:q/api/v1/auth/me", func(*gin.Context) {}) },
+		"X6_leading_param_then_param": func(e *gin.Engine) { e.GET("/:p/api/:q/auth/me", func(*gin.Context) {}) },
+		"X7_leading_catchall":         func(e *gin.Engine) { e.GET("/*rest", func(*gin.Context) {}) },
+		"X8_param_then_catchall":      func(e *gin.Engine) { e.GET("/:p/*rest", func(*gin.Context) {}) },
+		"X9_param_at_auth_position":   func(e *gin.Engine) { e.GET("/api/v1/:p/me", func(*gin.Context) {}) },
+		"X10_param_at_root_only":      func(e *gin.Engine) { e.GET("/:p/v1/auth/me", func(*gin.Context) {}) },
 		// Round-3 review F-C: mixed-case partial parameter (drops ToLower in RM2).
 		"FC_mixed_case_partial_param": func(e *gin.Engine) { e.GET("/api/v1/AUT:x/evil", func(*gin.Context) {}) },
 	} {
@@ -404,7 +422,10 @@ func TestVerifyAuthRouteTable_RealEngines(t *testing.T) {
 				t.Logf("gin refused the registration itself (startup panic): killed by gin")
 				return
 			}
-			require.Error(t, verifyAuthRouteTable(e))
+			err := verifyAuthRouteTable(e)
+			require.Error(t, err)
+			// Every mutant above is refused for one of these specific reasons.
+			require.Regexp(t, `auth route table mismatch|path-matching flags differ|differs from the pinned chain|chain differs from the global middleware`, err.Error())
 		})
 	}
 	// golden-FALSE: a sibling prefix and a non-auth api route must not fire.
@@ -696,9 +717,17 @@ func TestVerifier_RuntimeMutants(t *testing.T) {
 		{"RA4_verifier_ignores_UseEscapedPath", "TestVerifyAuthRouteTable_RealEngines",
 			map[string][][2]string{"main_router.go": {{"e.UseRawPath || e.UseEscapedPath ||", "e.UseRawPath ||"}}}},
 		{"RM2_drop_ToLower_in_partial_param_branch", "TestPatternReachesAuthPaths_AgreesWithOracleOnCorpus",
-			map[string][][2]string{"main_router.go": {{"strings.HasPrefix(want[i], strings.ToLower(lit))", "strings.HasPrefix(want[i], lit)"}}}},
+			map[string][][2]string{"main_router.go": {{"strings.HasPrefix(want[j], strings.ToLower(s[:w]))", "strings.HasPrefix(want[j], s[:w])"}}}},
+		{"R5a_empty_param_skip_removed_corpus", "TestPatternReachesAuthPaths_AgreesWithOracleOnCorpus",
+			map[string][][2]string{"main_router.go": {{"return match(i+1, j) || match(i+1, j+1) // empty value, or one real segment", "return match(i+1, j+1)"}}}},
+		{"R5b_empty_param_skip_removed_class", "TestPatternReachesAuthPaths_EmptyParamShiftClass",
+			map[string][][2]string{"main_router.go": {{"return match(i+1, j) || match(i+1, j+1) // empty value, or one real segment", "return match(i+1, j+1)"}}}},
+		{"R5c_empty_param_skip_removed_verifier_X1", "TestVerifyAuthRouteTable_RealEngines",
+			map[string][][2]string{"main_router.go": {{"return match(i+1, j) || match(i+1, j+1) // empty value, or one real segment", "return match(i+1, j+1)"}}}},
+		{"R5d_X1_route_in_buildRouter", "TestGinEngineFieldsClassified",
+			map[string][][2]string{"main_router.go": {{defn, defn + "\n\trouter.GET(\"/:p/api/v1/auth/me\", func(c *gin.Context) {})"}}}},
 		{"RM2b_caught_by_verifier_case_FC", "TestVerifyAuthRouteTable_RealEngines",
-			map[string][][2]string{"main_router.go": {{"strings.HasPrefix(want[i], strings.ToLower(lit))", "strings.HasPrefix(want[i], lit)"}}}},
+			map[string][][2]string{"main_router.go": {{"strings.HasPrefix(want[j], strings.ToLower(s[:w]))", "strings.HasPrefix(want[j], s[:w])"}}}},
 	}
 	for _, tc := range cases {
 		tc := tc
@@ -706,5 +735,21 @@ func TestVerifier_RuntimeMutants(t *testing.T) {
 			_ = runtimeMutantRun(t, tc.edits, tc.test)
 			t.Logf("KILLED by %s", tc.test)
 		})
+	}
+}
+
+// Round-4 review R4-1: the empty-parameter alignment class, pattern by pattern (also
+// the shapes gin refuses on the full engine, which the engine-level test counts as a
+// gin kill and so does not exercise the verifier on).
+func TestPatternReachesAuthPaths_EmptyParamShiftClass(t *testing.T) {
+	for _, p := range []string{
+		"/:p/api/v1/auth/me", "/:p/api/v1/auth/*rest", "/api/:p/v1/auth/me", "/api/v1/:p/auth/me",
+		"/:p/:q/api/v1/auth/me", "/:p/api/:q/auth/me", "/*rest", "/:p/*rest", "/api/v1/:p/me",
+		"/:p/v1/auth/me", "/:a/:b/:c/api/v1/auth", "/api/:p/:q/v1/auth/x",
+	} {
+		require.True(t, patternReachesAuthPaths(p), "pattern %q must be treated as reaching /api/v1/auth", p)
+	}
+	for _, p := range []string{"/:a/health", "/api/v2/:x/auth", "/api/:v/authors", "/api/v1/files/:id/auth", "/:p/api/v2/auth", "/:p"} {
+		require.False(t, patternReachesAuthPaths(p), "pattern %q must not be treated as reaching /api/v1/auth", p)
 	}
 }

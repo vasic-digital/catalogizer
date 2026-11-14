@@ -1,4 +1,6 @@
-# CAT-CHPW-RL-2 round 4 (on top of round 3, 240050a90)
+# CAT-CHPW-RL-2 round 4 (on top of round 3, 240050a90) - PROVISIONAL
+
+Status: PROVISIONAL (round-4 review verdict NO-GO; superseded by round 5, see chpw-rl-2-round5-20261114).
 
 Item: CAT-CHPW-RL-2. Answers the round-3 review (NO-GO, one important finding).
 
@@ -32,8 +34,10 @@ verify), RE (condition inverted): all killed.
 ## F-C: patternReachesAuthPaths vs oracle
 `TestPatternReachesAuthPaths_AgreesWithOracleOnCorpus` compares it with the
 independent oracle `inAuthSurface` over a generated corpus (more than 5000 patterns).
-The corpus exposed one oracle defect (an empty-parameter candidate parsed by httptest
-as a host); fixed in the oracle, not in production. Verifier case `FC` and runtime
+CORRECTION (round 5): the round-4 text claimed the corpus exposed an oracle defect that
+was fixed in the oracle. That was wrong. The disagreement was a real production defect
+(an empty parameter value shifts the alignment) and the oracle had been edited to hide
+it. Round 5 restores the oracle and fixes production. Verifier case `FC` and runtime
 mutants RM2 and RM2b (drop ToLower) are killed.
 
 ## F-D (not implemented, suggested separate item)
@@ -45,5 +49,8 @@ limiters. Out of scope here.
 The pre-existing Alt-Svc `Use` data race (a Use while the HTTPS goroutine already
 serves) is disclosed in round 3 and left unchanged.
 
-## Results
-See the handback for the counts measured at the tip.
+## Results (measured at 56c35110d)
+- Focused suites: 133 PASS lines (-v).
+- Runtime mutants (CHPW_RUNTIME_MUTANTS=1): 39 killed (32 + 3 + 4); Trimpath not re-run.
+- Full `go test -p 1 -v .`: 315 PASS lines (subtests included), 5 SKIP, 1 FAIL (pre-existing TestSSRF_RealBinary_SyncEndpointURL).
+- Landing note: the branch also carries the four CAT-CHPW-RL-1-FU commits f091b2cf0..4be1f0570, not yet on main.

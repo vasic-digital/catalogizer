@@ -797,26 +797,41 @@ func TestAuthSurfaceGuard_Mutants(t *testing.T) {
 		{"RA2_flag_UseEscapedPath_in_buildRouter", ".UseEscapedPath is banned", func(d string) {
 			edit(t, d, "main_router.go", defn, "router.UseEscapedPath = true\n\t"+defn)
 		}},
-		{"RB_both_verify_calls_deleted", "verifyAuthRouteTable", func(d string) {
+		{"X1_empty_param_shift_engine_route_in_buildRouter", "that can match an /api/v1/auth path (capture, partial parameter or catch-all outside the pinned auth group)", func(d string) {
+			edit(t, d, "main_router.go", defn, defn+"\n\trouter.GET(\"/:p/api/v1/auth/me\", evil)")
+		}},
+		{"X2_group_param_any_catchall_in_buildRouter", "that can match an /api/v1/auth path (capture, partial parameter or catch-all outside the pinned auth group)", func(d string) {
+			edit(t, d, "main_router.go", defn, defn+"\n\trouter.Group(\"/:p\").Any(\"/api/v1/auth/*rest\", evil)")
+		}},
+		{"X3_param_between_api_v1_in_main", "that can match an /api/v1/auth path (capture, partial parameter or catch-all outside the pinned auth group)", func(d string) {
+			edit(t, d, "main.go", recDefn, "router.GET(\"/api/:p/v1/auth/me\", evil)\n\t"+recDefn)
+		}},
+		{"X4_param_between_v1_auth_in_buildRouter", "that can match an /api/v1/auth path (capture, partial parameter or catch-all outside the pinned auth group)", func(d string) {
+			edit(t, d, "main_router.go", defn, defn+"\n\trouter.GET(\"/api/v1/:p/auth/me\", evil)")
+		}},
+		{"X5_two_leading_params_in_buildRouter", "that can match an /api/v1/auth path (capture, partial parameter or catch-all outside the pinned auth group)", func(d string) {
+			edit(t, d, "main_router.go", defn, defn+"\n\trouter.GET(\"/:p/:q/api/v1/auth/me\", evil)")
+		}},
+		{"RB_both_verify_calls_deleted", "found 0 well-formed, 0 mentions", func(d string) {
 			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed\", zap.Error(err))\n\t}", "")
 			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed (after the Alt-Svc middleware)\", zap.Error(err))\n\t}", "")
 		}},
-		{"RB1_first_verify_deleted", "verifyAuthRouteTable", func(d string) {
+		{"RB1_first_verify_deleted", "found 1 well-formed, 1 mentions", func(d string) {
 			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed\", zap.Error(err))\n\t}", "")
 		}},
-		{"RB2_second_verify_deleted", "verifyAuthRouteTable", func(d string) {
+		{"RB2_second_verify_deleted", "found 1 well-formed, 1 mentions", func(d string) {
 			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed (after the Alt-Svc middleware)\", zap.Error(err))\n\t}", "")
 		}},
-		{"RC_first_Fatal_to_Warn", "verifyAuthRouteTable", func(d string) {
+		{"RC_first_Fatal_to_Warn", "found 1 well-formed, 2 mentions", func(d string) {
 			edit(t, d, "main.go", "logger.Fatal(\"Auth route table check failed\", zap.Error(err))", "logger.Warn(\"Auth route table check failed\", zap.Error(err))")
 		}},
-		{"RC2_second_Fatal_to_Warn", "verifyAuthRouteTable", func(d string) {
+		{"RC2_second_Fatal_to_Warn", "found 1 well-formed, 2 mentions", func(d string) {
 			edit(t, d, "main.go", "logger.Fatal(\"Auth route table check failed (after the Alt-Svc middleware)\", zap.Error(err))", "logger.Warn(\"Auth route table check failed (after the Alt-Svc middleware)\", zap.Error(err))")
 		}},
-		{"RD_registration_after_first_verify", "verifyAuthRouteTable", func(d string) {
+		{"RD_registration_after_first_verify", "registers on or hands out the engine", func(d string) {
 			edit(t, d, "main.go", "// Find available port for HTTP server", "router.GET(\"/late\", evil)\n\t// Find available port for HTTP server")
 		}},
-		{"RE_verify_error_ignored", "verifyAuthRouteTable", func(d string) {
+		{"RE_verify_error_ignored", "found 1 well-formed, 2 mentions", func(d string) {
 			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed\", zap.Error(err))", "if err := verifyAuthRouteTable(router); err == nil {\n\t\tlogger.Fatal(\"Auth route table check failed\", zap.Error(err))")
 		}},
 		{"M10_flag_RedirectFixedPath_assignment", ".RedirectFixedPath is banned", func(d string) {
