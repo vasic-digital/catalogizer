@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -187,9 +188,19 @@ func AccessLogRouteParams() gin.HandlerFunc {
 	}
 }
 
-// loggedPath is the request path as it is logged: the RAW (still escaped) path, so a %2F inside a malformed token stays inside
-// its segment and SecretPath redacts the whole segment instead of leaving the later decoded segments (HYG-F4).
-func loggedPath(r *http.Request) string { return r.URL.EscapedPath() }
+// loggedPath is the request path as it is logged, in CANONICAL escaped form: the raw path is split on "/" and every segment is
+// unescaped and escaped again. A %2F inside a malformed token stays inside its segment (SecretPath redacts the whole segment,
+// HYG-F4), while a non-canonical escape (%73hare, %54OKEN) is normalised so secret-segment keys and known secrets still match
+// (HYG-R1-F1). A segment that does not unescape is kept as is.
+func loggedPath(r *http.Request) string {
+	segs := strings.Split(r.URL.EscapedPath(), "/")
+	for i, sg := range segs {
+		if u, err := url.PathUnescape(sg); err == nil {
+			segs[i] = url.PathEscape(u)
+		}
+	}
+	return strings.Join(segs, "/")
+}
 
 // AccessLogFormatter is the gin access-log line format (gin.LoggerWithFormatter): the path+query and the error text are redacted.
 func AccessLogFormatter(p gin.LogFormatterParams) string {
