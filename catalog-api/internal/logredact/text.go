@@ -397,7 +397,13 @@ func redactText(s string, truncated bool) string {
 				return e
 			}
 			k := segEnd(i) // the whole key segment, path parameters included
-			if base, exact, ok := secretKey(s[i:k]); ok {
+			if base, exact, embedded, ok := secretKey(s[i:k]); ok {
+				if embedded {
+					// secret inside the key run after an (encoded) separator: base name stays, the rest of the token goes
+					b.WriteString(base + "/:redacted")
+					i = tokenEnd(k)
+					continue
+				}
 				st := k + 1
 				for st < n && k < n && s[k] == '/' && s[st] == '/' {
 					st++
