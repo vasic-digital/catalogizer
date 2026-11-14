@@ -161,12 +161,16 @@ func TestTokenBucketRedisRateLimit_Unit_Miniredis_RefillAfterEmpty(t *testing.T)
 
 	gin.SetMode(gin.TestMode)
 
-	middleware := TokenBucketRedisRateLimit(
+	// Injected clock (TIERTEST-RLW-F4): the bucket arithmetic must not depend on
+	// the wall-clock second boundary falling between two requests.
+	clock := time.Unix(1_700_000_000, 0)
+	middleware := tokenBucketRedisRateLimit(
 		client,
 		func(c *gin.Context) string { return "test_ip" },
 		5,           // Max tokens
 		1,           // Refill rate: 1 token per second
 		time.Second, // Refill interval
+		func() time.Time { return clock },
 	)
 
 	// Make requests that should consume tokens
@@ -186,8 +190,17 @@ func TestTokenBucketRedisRateLimit_Unit_Miniredis_RefillAfterEmpty(t *testing.T)
 	assert.True(t, c.IsAborted())
 	assert.Equal(t, 429, c.Writer.Status())
 
-	// Fast-forward time in miniredis to simulate token refill
+	// One refill interval later the bucket holds a token again (the key's 2 s TTL has
+	// not elapsed in miniredis, so this proves the refill arithmetic, not key expiry).
+	clock = clock.Add(time.Second)
+	c1, _ := gin.CreateTestContext(httptest.NewRecorder())
+	c1.Request = createTestRequestWithIP()
+	middleware(c1)
+	assert.False(t, c1.IsAborted(), "one interval later one token must have refilled")
+
+	// Fast-forward time in miniredis and the injected clock to simulate a longer idle gap
 	mr.FastForward(time.Second * 2)
+	clock = clock.Add(time.Second * 2)
 
 	// Request should pass again after refill
 	c2, _ := gin.CreateTestContext(httptest.NewRecorder())

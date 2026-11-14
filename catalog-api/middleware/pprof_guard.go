@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"sync/atomic"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -29,7 +29,11 @@ func PprofSamplingGuard(maxSeconds int) gin.HandlerFunc {
 		maxSeconds = 1
 	}
 	slot := make(chan struct{}, 1)
-	var busyUntil atomic.Int64 // unix nanos at which the running sampling window ends
+	// mu makes "take the slot + record its window end" and "slot is full + read the window end" atomic
+	// with respect to each other, so a refused request can never read the end of a PREVIOUS window
+	// (TIERTEST-RLW-F3). busyUntil is unix nanos at which the running window ends, 0 while idle.
+	var mu sync.Mutex
+	var busyUntil int64
 	return func(c *gin.Context) {
 		p := c.Request.URL.Path
 		q := c.Request.URL.Query()
@@ -59,13 +63,22 @@ func PprofSamplingGuard(maxSeconds int) gin.HandlerFunc {
 		if secs > maxSeconds {
 			secs = maxSeconds
 		}
+		mu.Lock()
 		select {
 		case slot <- struct{}{}:
-			busyUntil.Store(time.Now().Add(time.Duration(secs) * time.Second).UnixNano())
-			defer func() { <-slot }()
+			busyUntil = time.Now().Add(time.Duration(secs) * time.Second).UnixNano()
+			mu.Unlock()
+			defer func() {
+				mu.Lock()
+				busyUntil = 0 // never leave a finished window's end for the next reader
+				<-slot
+				mu.Unlock()
+			}()
 		default:
 			// RLW-FU2-F3: the slot frees when the running window ends.
-			c.Header("Retry-After", retryAfterSeconds(time.Until(time.Unix(0, busyUntil.Load()))))
+			end := busyUntil
+			mu.Unlock()
+			c.Header("Retry-After", retryAfterSeconds(time.Until(time.Unix(0, end))))
 			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"error": "another profile or trace is already running"})
 			return
 		}

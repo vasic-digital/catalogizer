@@ -557,6 +557,20 @@ func TokenBucketRedisRateLimit(
 	refillRate int, // Tokens to add per second
 	refillInterval time.Duration, // How often to add tokens
 ) gin.HandlerFunc {
+	return tokenBucketRedisRateLimit(redisClient, keyGenerator, tokens, refillRate, refillInterval, time.Now)
+}
+
+// tokenBucketRedisRateLimit is TokenBucketRedisRateLimit with an injectable clock
+// (TIERTEST-RLW-F4): the bucket arithmetic runs on now().Unix(), so a test that must not
+// depend on the wall-clock second boundary passes its own clock. Production uses time.Now.
+func tokenBucketRedisRateLimit(
+	redisClient *redis.Client,
+	keyGenerator func(*gin.Context) string,
+	tokens int,
+	refillRate int,
+	refillInterval time.Duration,
+	nowFn func() time.Time,
+) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		key := "token_bucket:" + keyGenerator(c)
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 500*time.Millisecond)
@@ -596,7 +610,7 @@ func TokenBucketRedisRateLimit(
 			end
 		`
 
-		now := time.Now().Unix()
+		now := nowFn().Unix()
 		result, err := redisClient.Eval(ctx, luaScript, []string{key},
 			now, tokens, refillRate, refillInterval.Seconds(), 1).Result()
 
