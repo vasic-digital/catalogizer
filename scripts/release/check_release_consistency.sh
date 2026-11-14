@@ -344,8 +344,8 @@ snap_readable() {
   [ "$sz" -le "${RELCHK_MAX_READ:-67108864}" ]
 }
 V_OK=0; V_FAIL=0; C_PATHS=0; C_MISS=0; C_SKIP=0; S_OK=0; S_FAIL=0; S_UNV=0; BLINDS=""
-C_NOMAN=0; U_FILES=0; W_APPLIED=0; W_BAD=0; W_UNUSED=0
-declare -A WV=() WVUSED=()
+C_NOMAN=0; U_FILES=0; W_APPLIED=0; W_BAD=0; W_UNUSED=0; PERM_N=0
+declare -A WV=() WVUSED=() PERMSEEN=()
 SECTION_USED="-"
 note_blind() { BLINDS="$BLINDS ${1}"; echo "BLIND: $1"; }
 
@@ -972,6 +972,9 @@ trim() { local v="$1"; v="${v#"${v%%[![:space:]]*}"}"; v="${v%"${v##*[![:space:]
 #   no-manifest|<evidence path>|<item>|<expires>|<reason>
 #   unlisted|<manifest dir>|<file relative to it>|<item>|<expires>|<reason>
 #   bad-entry|<manifest dir>|<manifest entry>|<item>|<expires>|<reason>   (missing entry only; a mismatch is never waivable)
+#   permanent-risk|<risk key>|<item>|<operator decision id>|<decision date>|<re-affirmation note>|<reason>
+#       (class permanent-operator-accepted: NO expiry, never an evidence-gap waiver; always printed as PERMANENT-RISK and
+#        counted in permanent_risks=; decision id, past-or-today decision date and re-affirmation note are mandatory)
 # '#' lines and blank lines are ignored. Every applied waiver is printed (WAIVED) and counted.
 load_waivers() {
   local f="$WAIVERS" rel explicit=0 n=0 line k reason key item exp today nf i
@@ -997,6 +1000,30 @@ load_waivers() {
     IFS='|' read -r -a F <<< "$line"
     for i in "${!F[@]}"; do F[i]="$(trim "${F[i]}")"; done
     k="${F[0]}"
+    if [ "$k" = permanent-risk ]; then
+      # kind|key|item|decision id|decision date|re-affirmation|reason: the one class that carries no expiry
+      local pkey pitem pdec pdate pre
+      pkey="${F[1]:-}"; pitem="${F[2]:-}"; pdec="${F[3]:-}"; pdate="${F[4]:-}"; pre="${F[5]:-}"
+      reason=""
+      for ((i=6; i<${#F[@]}; i++)); do reason="${reason:+$reason|}${F[i]}"; done
+      reason="$(trim "$reason")"
+      if [ -z "$pkey" ]; then W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n empty risk key"; continue; fi
+      if [ -z "$reason" ]; then W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n missing reason"; continue; fi
+      if ! [[ "$pitem" =~ ^[A-Za-z][A-Za-z0-9]*(-[A-Za-z0-9]+)+$ ]]; then
+        W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n missing or malformed tracked item id '$pitem'"; continue
+      fi
+      if ! [[ "$pdec" =~ ^[A-Za-z][A-Za-z0-9]*(-[A-Za-z0-9]+)+$ ]]; then
+        W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n permanent risk needs an operator decision id (<ALPHA>-<ID>), got '$pdec'"; continue
+      fi
+      if ! [[ "$pdate" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || [ "$(date -d "$pdate" +%F 2>/dev/null)" != "$pdate" ] || [[ "$pdate" > "$today" ]]; then
+        W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n permanent risk needs a real operator decision date (YYYY-MM-DD, not in the future), got '$pdate'"; continue
+      fi
+      if [ -z "$pre" ]; then W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n permanent risk needs a re-affirmation note"; continue; fi
+      if [ -n "${PERMSEEN[$pkey]+x}" ]; then W_BAD=$((W_BAD+1)); echo "BADWAIVER  $rel:$n duplicate permanent risk"; continue; fi
+      PERMSEEN["$pkey"]=1; PERM_N=$((PERM_N+1))
+      echo "PERMANENT-RISK  $pkey: $reason [item $pitem, operator decision $pdec of $pdate, no expiry; re-affirmation: $pre]"
+      continue
+    fi
     case "$k" in
       no-manifest) nf=2 ;;   # kind|path|item|expires|reason
       unlisted|bad-entry) nf=3 ;;   # kind|dir|file|item|expires|reason
@@ -1299,7 +1326,7 @@ case "$CHECK" in
   all) run_versions; run_changelog ;;
 esac
 
-SUMMARY="section=$SECTION_USED version_ok=$V_OK version_fail=$V_FAIL changelog_paths=$C_PATHS miss=$C_MISS skipped=$C_SKIP sha_ok=$S_OK sha_fail=$S_FAIL unverifiable=$S_UNV no_manifest=$C_NOMAN unlisted=$U_FILES waived=$W_APPLIED bad_waivers=$W_BAD unused_waivers=$W_UNUSED"
+SUMMARY="section=$SECTION_USED version_ok=$V_OK version_fail=$V_FAIL changelog_paths=$C_PATHS miss=$C_MISS skipped=$C_SKIP sha_ok=$S_OK sha_fail=$S_FAIL unverifiable=$S_UNV no_manifest=$C_NOMAN unlisted=$U_FILES waived=$W_APPLIED bad_waivers=$W_BAD unused_waivers=$W_UNUSED permanent_risks=$PERM_N"
 if [ $((V_FAIL + C_MISS + S_FAIL + C_NOMAN + U_FILES + W_BAD)) -gt 0 ]; then
   echo "VERDICT: FAIL $SUMMARY"; exit 1
 fi

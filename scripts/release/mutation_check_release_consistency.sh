@@ -301,7 +301,7 @@ case "$JOBS" in ''|*[!0-9]*|0) echo "bad MUT_JOBS '$JOBS'" >&2; exit 2 ;; esac
 run_one() { # run_one <n> <name> <old> <new>; writes $ROOT/m<n>/result (one line)
   local n="$1" name="$2" old="$3" new="$4" d="$ROOT/m$1"
   mkdir -p "$d"
-  cp "$HERE/check_release_consistency.sh" "$HERE/release_fixture.sh" "$HERE/test_check_release_consistency.sh" "$HERE/test_check_release_consistency_rc4.sh" "$d/"
+  cp "$HERE/check_release_consistency.sh" "$HERE/release_fixture.sh" "$HERE/test_check_release_consistency.sh" "$HERE/test_check_release_consistency_rc4.sh" "$HERE/test_permanent_risk.sh" "$d/"
   if ! python3 -I - "$d/check_release_consistency.sh" "$old" "$new" <<'PY'
 import sys
 p, old, new = sys.argv[1:4]
