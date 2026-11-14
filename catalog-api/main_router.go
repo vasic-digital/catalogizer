@@ -86,7 +86,7 @@ func buildRouter(d routerDeps) *gin.Engine {
 	// Setup Gin router
 	// gin.Default() equivalent whose access log redacts credential-bearing query parameters (ticket, access_token, token).
 	router := gin.New()
-	router.Use(gin.LoggerWithFormatter(middleware.AccessLogFormatter), middleware.Recovery(logger))
+	router.Use(gin.LoggerWithFormatter(middleware.AccessLogFormatter), middleware.AccessLogRouteParams(), middleware.Recovery(logger))
 
 	// RULE-GO-005 / Master Plan §4.2 — lock down X-Forwarded-For
 	// handling. Gin's default TrustedProxies is 0.0.0.0/0, which
@@ -315,6 +315,7 @@ func altSvcMiddleware(c *gin.Context) {
 // startup. Changing it is a deliberate edit of this list.
 var wantGlobalChain = []string{
 	"github.com/gin-gonic/gin@v1.12.0/logger.go:LoggerWithConfig",
+	"internal/middleware/middleware.go:AccessLogRouteParams",
 	"internal/middleware/recovery.go:Recovery",
 	"middleware/security_headers.go:SecurityHeadersWithConfig",
 	"middleware/concurrency_limiter.go:ConcurrencyLimiter",

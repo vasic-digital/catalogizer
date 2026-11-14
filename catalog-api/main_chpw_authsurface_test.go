@@ -145,7 +145,7 @@ var (
 	// Engine-level middleware buildRouter installs before the auth group exists
 	// (the runtime tier pins the resulting chains; this list is the cheap source-level twin).
 	allowedRouterUseBeforeAuth = []string{
-		"gin.LoggerWithFormatter,middleware.Recovery",
+		"gin.LoggerWithFormatter,middleware.AccessLogRouteParams,middleware.Recovery",
 		"root_middleware.SecurityHeaders",
 		"root_middleware.ConcurrencyLimiter",
 		"root_middleware.RequestTimeout",
