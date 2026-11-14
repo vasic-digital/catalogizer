@@ -12,14 +12,14 @@ var perfShapes = []string{
 	"://", "@", `"`, `'`, "=", ":", `\`, `\"`, "%", "\n", "\r\n", "[", "]", "{", "}", " ", "\t",
 	"a://b ", "://x@", "x@://", `token="`, `token='`, `token=\"`, `token=\'`, "token=", "token:", "token ", "token\t",
 	"bearer ", "basic ", `basic "`, `bearer "`, "digest x", "negotiate ", "password", "Authorization", "Authorization:",
-	"Cookie:", "cookie: a=", "share/", "/share/", "/share//", "share/x/", "key:", `"key":`, `"token":[`, "token=[", "token=[[",
+	"Cookie:", "cookie: a=", "share/", "/share/", "/share//", "/share/;x", "/share/.%00", "/share;a=b/", "/share/%c0%ae/", "share/x/", "key:", `"key":`, `"token":[`, "token=[", "token=[[",
 	"{token ", "{Key:token Value:", "Key:token ", "token%3D", "%74oken=", "jwt ", "Token ", "password -> ", "=> ", "pass-word=",
 	"\\u0022", "://:@", "://a:b@", "x=\\\\", "'\\", "\"\\", "\n ", "Bearer\n ", "Cookie:\n ",
 }
 
 func timeText(s string) time.Duration {
 	best := time.Duration(1 << 62)
-	for i := 0; i < 2; i++ {
+	for i := 0; i < 5; i++ { // minimum of 5: a load spike or GC pause inflates single samples, not the minimum
 		t0 := time.Now()
 		_ = ErrorText(s)
 		if d := time.Since(t0); d < best {
@@ -38,8 +38,8 @@ func TestTextLinearOnAdversarialShapes(t *testing.T) {
 		if db > budget {
 			t.Errorf("shape %q: %v for %d bytes exceeds the %v budget", shape, db, big, budget)
 		}
-		// 4x input must cost <~6x time (quadratic would be ~16x). A 20ms floor avoids ratio noise on millisecond runs (the hard budget still bounds them).
-		if db > 20*time.Millisecond && float64(db) > 6*float64(ds) {
+		// 4x input must cost <~6x time (quadratic would be ~16x). A 50ms floor avoids ratio noise on millisecond runs (the hard budget still bounds them).
+		if db > 50*time.Millisecond && float64(db) > 6*float64(ds) {
 			t.Errorf("shape %q: 4x input took %.1fx time (%v -> %v)", shape, float64(db)/float64(ds), ds, db)
 		}
 	}
@@ -59,12 +59,20 @@ func TestPerfInstrumentSeesQuadratic(t *testing.T) {
 		_ = c
 	}
 	mk := func(n int) string { return strings.Repeat("a", n) }
-	t0 := time.Now()
-	quad(mk(4000))
-	ds := time.Since(t0)
-	t0 = time.Now()
-	quad(mk(16000))
-	db := time.Since(t0)
+	// Minimum of several runs per size: a load spike inflates one sample, never the minimum, so the ~16x reference ratio stays
+	// discriminating (threshold 8x) on a loaded host.
+	best := func(n int) time.Duration {
+		min := time.Duration(1<<62 - 1)
+		for r := 0; r < 5; r++ {
+			t0 := time.Now()
+			quad(mk(n))
+			if d := time.Since(t0); d < min {
+				min = d
+			}
+		}
+		return min
+	}
+	ds, db := best(4000), best(16000)
 	if float64(db) < 8*float64(ds) {
 		t.Fatalf("instrument blind: quadratic reference ratio only %.1fx", float64(db)/float64(ds))
 	}

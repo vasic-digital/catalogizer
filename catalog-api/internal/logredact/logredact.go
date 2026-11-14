@@ -4,6 +4,7 @@ package logredact
 import (
 	"net/url"
 	"strings"
+	"sync/atomic"
 )
 
 // Sensitive-name policy: ONE list for the access-log query filter (Query) and the free-text scanner (Text), so a name added
@@ -103,6 +104,94 @@ var secretSegmentKeys = map[string]bool{
 	"apikey": true, "api-key": true, "api_key": true, "verify": true, "confirm": true, "activate": true, "magic": true,
 }
 
+// Secret keys and the secret position (HYG-R3-F1, review round 3: ONE structural rule replaces the earlier layered
+// classification). A segment is a secret KEY when its base name is in secretSegmentKeys; the base name is the segment
+// percent-decoded (at most maxSegmentDecodes rounds), stripped of control bytes, cut at the first ";" (path parameters),
+// trimmed of trailing dots and lower-cased. A segment still decodable after the last round is ambiguous and counts as a key.
+//
+// A key is REGULAR when the raw segment is exactly its base name (any case) AND the next non-empty segment is a CLEAN token
+// (cleanToken) directly after it: then only that one segment is the secret. In EVERY other shape (a key with parameters,
+// encodings or control bytes, a dot / param / look-alike / non-token segment after it, empty segments in between) the secret
+// position is everything after the key's base name: the key's parameters and the whole rest of the path are redacted (share
+// tokens are base64url with a prefix, no legitimate content follows). Over-redaction is the deliberate policy: compared with
+// the pre-fix behaviour an irregular segment after a key now also removes the REST of the path (for example
+// "/api/v1/keys/42;v=2/rotate" logs "/api/v1/keys/:redacted"), HYG-R3-F1 round 4 (F4-4). KnownSecrets collects at most
+// maxKnownSecrets values per request (F4-6), which also bounds its work.
+const maxSegmentDecodes = 3
+
+// segmentWork counts the bytes examined by the segment helpers: a deterministic cost oracle for tests (work counted, not time).
+var segmentWork atomic.Int64
+
+// decodeSegment percent-decodes seg at most maxSegmentDecodes rounds; more reports a segment that still decodes afterwards.
+func decodeSegment(seg string) (dec string, more bool) {
+	for i := 0; i < maxSegmentDecodes; i++ {
+		segmentWork.Add(int64(len(seg)) + 1)
+		u, err := url.PathUnescape(seg)
+		if err != nil || u == seg {
+			return seg, false
+		}
+		seg = u
+	}
+	segmentWork.Add(int64(len(seg)) + 1)
+	u, err := url.PathUnescape(seg)
+	return seg, err == nil && u != seg
+}
+
+// secretKey reports whether seg is a secret key; base is its base name ("" for an ambiguous segment) and exact whether the
+// raw segment is exactly that base name.
+func secretKey(seg string) (base string, exact, ok bool) {
+	dec, more := decodeSegment(seg)
+	if more {
+		return "", false, true
+	}
+	if i := strings.IndexByte(dec, ';'); i >= 0 {
+		dec = dec[:i]
+	}
+	if strings.IndexFunc(dec, func(r rune) bool { return r < 0x20 || r == 0x7f }) >= 0 {
+		dec = strings.Map(func(r rune) rune {
+			if r < 0x20 || r == 0x7f {
+				return -1
+			}
+			return r
+		}, dec)
+	}
+	base = strings.TrimRight(strings.ToLower(dec), ".")
+	if !secretSegmentKeys[base] {
+		return "", false, false
+	}
+	return base, strings.EqualFold(seg, base), true
+}
+
+// cleanToken reports whether seg looks like a bare token: non-empty, only [A-Za-z0-9_.~=-], and at least one ASCII
+// alphanumeric (HYG-R3-F1 round 4: a punctuation-only segment such as "~", "-", "=", "_" or dots is not a token, so the key
+// stays irregular and the rest of the path is the secret). No minimum length is imposed: a short alphanumeric segment
+// ("/keys/42/rotate") keeps its pre-fix behaviour; a real share token is prefix+base64url and never punctuation-only.
+func cleanToken(seg string) bool {
+	segmentWork.Add(int64(len(seg)) + 1)
+	alnum := false
+	for i := 0; i < len(seg); i++ {
+		c := seg[i]
+		switch {
+		case c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9':
+			alnum = true
+		case c == '.' || c == '_' || c == '-' || c == '~' || c == '=':
+		default:
+			return false
+		}
+	}
+	return alnum
+}
+
+// secretPosition returns the index of the first non-empty segment after key i (len(segs) when none) and whether the key is in
+// the regular shape (the segment directly after it, a clean token).
+func secretPosition(segs []string, i int) (j int, regular bool) {
+	j = i + 1
+	for j < len(segs) && segs[j] == "" {
+		j++
+	}
+	return j, j == i+1 && j < len(segs) && cleanToken(segs[j])
+}
+
 // SecretPath returns path with every segment that follows a secret-introducing segment (see secretSegmentKeys) replaced by
 // ":redacted". Everything else is preserved. Use it for ANY log field that carries a raw request path.
 func SecretPath(path string) string {
@@ -110,23 +199,27 @@ func SecretPath(path string) string {
 		return path
 	}
 	segs := strings.Split(path, "/")
-	for i := 0; i+1 < len(segs); i++ {
-		if !secretSegmentKeys[strings.ToLower(segs[i])] {
+	for i := 0; i < len(segs); i++ {
+		base, exact, ok := secretKey(segs[i])
+		if !ok {
 			continue
 		}
-		// "/share//S" and "/share///S": empty segments between the key and the secret are skipped; the first non-empty
-		// segment is the secret (a trailing "/share//" with nothing after it stays unchanged).
-		j := i + 1
-		for j < len(segs) && segs[j] == "" {
-			j++
-		}
-		if j < len(segs) {
-			segs[j] = ":redacted"
-			if j > i+1 {
-				// "/share//S": the empty segment is what a decoded %2F at the START of the token leaves ("%2Fenc%2FTok" ->
-				// "/enc/Tok"); the rest of the path may be more of the token, so it is removed too (over-redaction by policy).
-				segs = segs[:j+1]
+		j, regular := secretPosition(segs, i)
+		if !exact {
+			// the key's own parameters are part of the secret position: only its base name is kept
+			if base == "" {
+				segs[i] = ":redacted"
+			} else {
+				segs[i] = base
 			}
+		}
+		if j >= len(segs) {
+			continue // nothing after the key ("/share", "/share//")
+		}
+		segs[j] = ":redacted"
+		if !exact || !regular {
+			segs = segs[:j+1] // everything after the key goes with it
+			break
 		}
 	}
 	return strings.Join(segs, "/")

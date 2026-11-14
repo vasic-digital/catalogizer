@@ -379,19 +379,56 @@ func redactText(s string, truncated bool) string {
 		}
 
 		// 3. secret path segment inside prose: /share/<seg> (extra slashes between the key and the segment are skipped)
-		if i > 0 && s[i-1] == '/' && j < n && s[j] == '/' && secretSegmentKeys[l] {
-			st := j + 1
-			for st < n && s[st] == '/' {
-				st++
+		if i > 0 && s[i-1] == '/' && j < n {
+			segEnd := func(from int) int {
+				e := from
+				for e < n && !isSpaceByte(s[e]) && s[e] != '/' && s[e] != '?' && s[e] != '#' && s[e] != '"' && s[e] != '\'' {
+					e++
+				}
+				segmentWork.Add(int64(e-from) + 1)
+				return e
 			}
-			e := st
-			for e < n && !isSpaceByte(s[e]) && s[e] != '/' && s[e] != '?' && s[e] != '#' && s[e] != '"' && s[e] != '\'' {
-				e++
+			tokenEnd := func(from int) int {
+				e := from
+				for e < n && !isSpaceByte(s[e]) && s[e] != '?' && s[e] != '#' && s[e] != '"' && s[e] != '\'' {
+					e++
+				}
+				segmentWork.Add(int64(e-from) + 1)
+				return e
 			}
-			if e > st {
-				b.WriteString(run + "/:redacted")
-				i = e
-				continue
+			k := segEnd(i) // the whole key segment, path parameters included
+			if base, exact, ok := secretKey(s[i:k]); ok {
+				st := k + 1
+				for st < n && k < n && s[k] == '/' && s[st] == '/' {
+					st++
+				}
+				regular := false
+				e := st
+				if k < n && s[k] == '/' && st < n {
+					e = segEnd(st)
+					regular = exact && st == k+1 && e > st && cleanToken(s[st:e])
+				}
+				switch {
+				case exact && regular:
+					b.WriteString(run + "/:redacted")
+					i = e
+					continue
+				case exact && (e <= st || k >= n || s[k] != '/'):
+					// bare key with nothing after it: fall through to the normal scan
+				default:
+					// irregular: only the base name stays; the key's parameters and the rest of the path are the secret
+					if base == "" {
+						base = redactedMark
+					}
+					b.WriteString(base)
+					if k < n && s[k] == '/' && st < n {
+						b.WriteString("/:redacted")
+						i = tokenEnd(st)
+					} else {
+						i = k
+					}
+					continue
+				}
 			}
 		}
 

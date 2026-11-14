@@ -19,7 +19,7 @@ const (
 	maxKnownSecretLen = 4096
 )
 
-// KnownSecrets returns the credential values carried by one request. params are the route parameters (name -> value).
+// KnownSecrets returns the credential values carried by one request (at most maxKnownSecrets values; the scan is linear). params are the route parameters (name -> value).
 func KnownSecrets(path, rawQuery string, header http.Header, params map[string]string) []string {
 	var out []string
 	add := func(v string) {
@@ -29,18 +29,55 @@ func KnownSecrets(path, rawQuery string, header http.Header, params map[string]s
 	}
 	// path segments after a secret-introducing segment
 	segs := strings.Split(path, "/")
-	for i := 0; i+1 < len(segs); i++ {
-		if !secretSegmentKeys[strings.ToLower(segs[i])] {
+	addSeg := func(sg string) {
+		add(sg)
+		if u, err := url.PathUnescape(sg); err == nil && u != sg {
+			add(u)
+		}
+	}
+scan:
+	for i := 0; i < len(segs) && len(out) < maxKnownSecrets; i++ {
+		segmentWork.Add(int64(len(segs[i])) + 1)
+		_, exact, ok := secretKey(segs[i])
+		if !ok {
 			continue
 		}
-		for j := i + 1; j < len(segs); j++ {
-			if segs[j] != "" {
-				add(segs[j])
-				if u, err := url.PathUnescape(segs[j]); err == nil && u != segs[j] {
-					add(u)
+		j, regular := secretPosition(segs, i)
+		if !exact {
+			// the key's own parameters ("share;token=S", "share;S") are secret values
+			dec, _ := decodeSegment(segs[i])
+			if p := strings.IndexByte(dec, ';'); p >= 0 {
+				for _, prm := range strings.Split(dec[p+1:], ";") {
+					addSeg(prm)
+					if _, v, found := strings.Cut(prm, "="); found {
+						addSeg(v)
+					}
 				}
-				break
 			}
+		}
+		if j >= len(segs) {
+			continue
+		}
+		addSeg(segs[j])
+		if !exact || !regular {
+			// the secret position is everything after the key: collect it ONCE and stop scanning (linear cost)
+			for _, sg := range segs[j:] {
+				segmentWork.Add(int64(len(sg)) + 1)
+				if sg == "" || len(out) >= maxKnownSecrets {
+					continue
+				}
+				addSeg(sg)
+				dec, _ := decodeSegment(sg)
+				for _, prm := range strings.Split(dec, ";") {
+					if prm != dec {
+						addSeg(prm)
+					}
+					if _, v, found := strings.Cut(prm, "="); found {
+						addSeg(v)
+					}
+				}
+			}
+			break scan
 		}
 	}
 	for name, v := range params {
