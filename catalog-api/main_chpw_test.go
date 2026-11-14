@@ -152,6 +152,65 @@ func TestRegisterAuthRoutes_RouteTablePinnedAndProtectedRoutesNeedAuth(t *testin
 	require.Equal(t, 1, *rg.reached)
 }
 
+// Pins WHICH middleware runs, in order, on every route of registerAuthRoutes
+// (CAT-CHPW-RL-1-FU F1). Every dependency is a distinguishable marker that
+// appends its name to a per-request trace; the handlers append "h:<name>".
+// change-password's own failed-attempt limiter is internal to the helper (it
+// sits between "auth" and the handler and is pinned by the lock tests); the
+// trace here pins the externally supplied limiter (DefaultRate) and auth.
+func TestRegisterAuthRoutes_MiddlewareChainPerRoute(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	var trace []string
+	mark := func(name string) gin.HandlerFunc {
+		return func(c *gin.Context) { trace = append(trace, name); c.Next() }
+	}
+	h := func(name string) gin.HandlerFunc {
+		return func(c *gin.Context) { trace = append(trace, "h:"+name); c.Status(http.StatusOK) }
+	}
+	auth := func() gin.HandlerFunc {
+		return func(c *gin.Context) {
+			trace = append(trace, "auth")
+			c.Set("user_id", 7)
+			c.Set("session_id", "1")
+			c.Next()
+		}
+	}
+	r := gin.New()
+	registerAuthRoutes(r.Group("/api/v1/auth"), authRoutesDeps{
+		LoginRate: mark("LoginRate"), AuthRate: mark("AuthRate"), DefaultRate: mark("DefaultRate"), RequireAuth: auth,
+		Login: h("Login"), Register: h("Register"), Refresh: h("Refresh"), Logout: h("Logout"), Me: h("Me"),
+		Status: h("Status"), Permissions: h("Permissions"), InitStatus: h("InitStatus"), ChangePassword: h("ChangePassword"),
+		Sessions: nopSessions{}, Logger: zap.NewNop(),
+	})
+	want := []struct {
+		method, path string
+		chain        []string
+	}{
+		{"POST", "login", []string{"LoginRate", "h:Login"}},
+		{"POST", "register", []string{"LoginRate", "h:Register"}},
+		{"POST", "refresh", []string{"AuthRate", "h:Refresh"}},
+		{"POST", "logout", []string{"AuthRate", "h:Logout"}},
+		{"GET", "me", []string{"AuthRate", "auth", "h:Me"}},
+		{"GET", "status", []string{"AuthRate", "h:Status"}},
+		{"GET", "permissions", []string{"AuthRate", "auth", "h:Permissions"}},
+		{"GET", "profile", []string{"AuthRate", "auth", "h:Me"}},
+		{"GET", "init-status", []string{"DefaultRate", "h:InitStatus"}},
+		{"POST", "change-password", []string{"DefaultRate", "auth", "h:ChangePassword"}},
+	}
+	require.Len(t, r.Routes(), len(want), "route count changed: extend the chain table")
+	for _, w := range want {
+		trace = nil
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, httptest.NewRequest(w.method, "/api/v1/auth/"+w.path, nil))
+		require.Equal(t, http.StatusOK, rec.Code, w.path)
+		require.Equal(t, w.chain, trace, w.method+" "+w.path)
+	}
+}
+
+type nopSessions struct{}
+
+func (nopSessions) DeactivateSession(int) error { return nil }
+
 // foldString evaluates e to a string when it is a literal, a concatenation of
 // foldable parts, a parenthesised foldable, or an identifier bound to one.
 func foldString(e ast.Expr, binds map[string]string) (string, bool) {
@@ -281,26 +340,264 @@ func TestMainPackageChangePasswordWiringSource(t *testing.T) {
 	require.Len(t, helperCalls, 1)
 	args := helperCalls[0].Args
 	require.Len(t, args, 6)
-	require.Equal(t, "g", args[0].(*ast.Ident).Name)
-	rq, ok := args[2].(*ast.CallExpr)
-	require.True(t, ok, "3rd argument must be the d.RequireAuth() call")
-	rqs, ok := rq.Fun.(*ast.SelectorExpr)
-	require.True(t, ok && rqs.Sel.Name == "RequireAuth" && rqs.X.(*ast.Ident).Name == "d")
-	cp, ok := args[3].(*ast.SelectorExpr)
-	require.True(t, ok && cp.Sel.Name == "ChangePassword" && cp.X.(*ast.Ident).Name == "d")
+	if id, ok := args[0].(*ast.Ident); !ok || id.Name != "g" {
+		t.Fatalf("1st argument of registerChangePasswordRoute must be the identifier g")
+	}
+	require.True(t, isSel(args[1], "d", "DefaultRate"), "2nd argument (rate limiter) must be d.DefaultRate")
+	if rq, ok := isCallSel(args[2], "d", "RequireAuth"); !ok || len(rq.Args) != 0 {
+		t.Fatalf("3rd argument must be the d.RequireAuth() call")
+	}
+	if !isSel(args[3], "d", "ChangePassword") {
+		t.Fatalf("4th argument must be d.ChangePassword")
+	}
 
 	require.Len(t, authCalls, 1, "registerAuthRoutes called exactly once")
+	if len(authCalls[0].Args) != 2 {
+		t.Fatalf("registerAuthRoutes must take exactly 2 arguments, got %d", len(authCalls[0].Args))
+	}
 	lit, ok := authCalls[0].Args[1].(*ast.CompositeLit)
-	require.True(t, ok)
+	if !ok {
+		t.Fatalf("2nd argument of registerAuthRoutes must be a composite literal")
+	}
 	found := false
 	for _, el := range lit.Elts {
-		kv := el.(*ast.KeyValueExpr)
-		if kv.Key.(*ast.Ident).Name == "RequireAuth" {
-			sel, ok := kv.Value.(*ast.SelectorExpr)
-			require.True(t, ok && sel.Sel.Name == "RequireAuth" && sel.X.(*ast.Ident).Name == "jwtMiddleware", "RequireAuth must be jwtMiddleware.RequireAuth")
+		kv, ok := el.(*ast.KeyValueExpr)
+		if !ok {
+			t.Fatalf("authRoutesDeps literal must use keyed fields")
+		}
+		key, ok := kv.Key.(*ast.Ident)
+		if !ok {
+			t.Fatalf("authRoutesDeps literal key must be an identifier")
+		}
+		if key.Name == "RequireAuth" {
+			if !isSel(kv.Value, "jwtMiddleware", "RequireAuth") {
+				t.Fatalf("RequireAuth must be jwtMiddleware.RequireAuth")
+			}
 			found = true
 		}
 	}
 	require.True(t, found)
-	require.Equal(t, "authGroup", authCalls[0].Args[0].(*ast.Ident).Name)
+	if id, ok := authCalls[0].Args[0].(*ast.Ident); !ok || id.Name != "authGroup" {
+		t.Fatalf("1st argument of registerAuthRoutes must be authGroup")
+	}
+}
+
+// isSel reports whether e is the selector expression x.sel.
+func isSel(e ast.Expr, x, sel string) bool {
+	se, ok := e.(*ast.SelectorExpr)
+	if !ok || se.Sel.Name != sel {
+		return false
+	}
+	id, ok := se.X.(*ast.Ident)
+	return ok && id.Name == x
+}
+
+// isCallSel reports whether e is a call x.sel(args...) and returns the call.
+func isCallSel(e ast.Expr, x, sel string) (*ast.CallExpr, bool) {
+	c, ok := e.(*ast.CallExpr)
+	if !ok || !isSel(c.Fun, x, sel) {
+		return nil, false
+	}
+	return c, true
+}
+
+func intLit(e ast.Expr) (int, bool) {
+	bl, ok := e.(*ast.BasicLit)
+	if !ok || bl.Kind != token.INT {
+		return 0, false
+	}
+	n, err := strconv.Atoi(bl.Value)
+	return n, err == nil
+}
+
+// Pins, in main.go, (1) which REAL limiter feeds each limiter-bearing field of
+// authRoutesDeps and how each limiter is constructed, and (2) the exact shape of
+// the auth group (CAT-CHPW-RL-1-FU). The limiter-bearing fields of authRoutesDeps
+// are LoginRate, AuthRate and DefaultRate (fields are matched by NAME containing
+// "Rate" or "Limit", not by type; the test fails if a new such field appears
+// without a pinned mapping). Pinned construction (tolerant of formatting, not of
+// values): loginRateLimiter := authMiddleware.RateLimitByUser(30, "1m"),
+// authRateLimiter ... (600, "1m"), defaultRateLimiter ... (2000, "1m"); each
+// ident is assigned exactly once, except that authRateLimiter and
+// defaultRateLimiter are reassigned exactly once, together, from
+// root_middleware.NewRedisTierLimiters(redisClient, authRateLimiter,
+// defaultRateLimiter); loginRateLimiter is never reassigned. The auth group is
+// `authGroup := router.Group("/api/v1/auth")` with that single argument, and no
+// middleware is added to authGroup afterwards (no authGroup.Use / .Group / any
+// other method call on it besides being passed to registerAuthRoutes).
+// Unit-class static guard: it reads source text, it does not run main().
+func TestMainGoAuthLimiterAndGroupWiringSource(t *testing.T) {
+	fset := token.NewFileSet()
+	f, err := parser.ParseFile(fset, "main.go", nil, 0)
+	require.NoError(t, err)
+	// The auth group and registerAuthRoutes call live in buildRouter (main_router.go).
+	rf, err := parser.ParseFile(fset, "main_router.go", nil, 0)
+	require.NoError(t, err)
+
+	// --- struct: the only *Rate* fields are the three pinned ones.
+	pf, err := parser.ParseFile(fset, "main_chpw.go", nil, 0)
+	require.NoError(t, err)
+	var rateFields []string
+	ast.Inspect(pf, func(n ast.Node) bool {
+		ts, ok := n.(*ast.TypeSpec)
+		if !ok || ts.Name.Name != "authRoutesDeps" {
+			return true
+		}
+		st, ok := ts.Type.(*ast.StructType)
+		if !ok {
+			t.Fatalf("authRoutesDeps is not a struct")
+		}
+		for _, fl := range st.Fields.List {
+			for _, nm := range fl.Names {
+				if strings.Contains(nm.Name, "Rate") || strings.Contains(nm.Name, "Limit") {
+					rateFields = append(rateFields, nm.Name)
+				}
+			}
+		}
+		return false
+	})
+	require.ElementsMatch(t, []string{"LoginRate", "AuthRate", "DefaultRate"}, rateFields,
+		"authRoutesDeps limiter-bearing fields changed: pin the new field's mapping here")
+
+	// --- composite literal mapping in main.go.
+	want := map[string]string{"LoginRate": "loginRateLimiter", "AuthRate": "authRateLimiter", "DefaultRate": "defaultRateLimiter"}
+	var lits, groupAssigns int
+	var groupCall *ast.CallExpr
+	ast.Inspect(f, func(n ast.Node) bool {
+		switch v := n.(type) {
+		case *ast.CompositeLit:
+			id, ok := v.Type.(*ast.Ident)
+			if !ok || id.Name != "routerDeps" {
+				return true
+			}
+			lits++
+			got := map[string]string{}
+			for _, el := range v.Elts {
+				kv, ok := el.(*ast.KeyValueExpr)
+				if !ok {
+					t.Fatalf("routerDeps literal must use keyed fields")
+				}
+				k, ok := kv.Key.(*ast.Ident)
+				if !ok {
+					t.Fatalf("routerDeps literal key is not an identifier")
+				}
+				if _, isRate := want[k.Name]; isRate {
+					vi, ok := kv.Value.(*ast.Ident)
+					if !ok {
+						t.Fatalf("%s must be a plain identifier, got %T", k.Name, kv.Value)
+					}
+					got[k.Name] = vi.Name
+				}
+			}
+			require.Equal(t, want, got, "routerDeps limiter fields must map to their exact limiter idents")
+		}
+		return true
+	})
+	ast.Inspect(rf, func(n ast.Node) bool {
+		if v, ok := n.(*ast.AssignStmt); ok && len(v.Lhs) == 1 && len(v.Rhs) == 1 {
+			if id, ok := v.Lhs[0].(*ast.Ident); ok && id.Name == "authGroup" {
+				groupAssigns++
+				c, ok := v.Rhs[0].(*ast.CallExpr)
+				if !ok {
+					t.Fatalf("authGroup must be assigned from a call")
+				}
+				groupCall = c
+			}
+		}
+		return true
+	})
+	require.Equal(t, 1, lits, "exactly one routerDeps literal in main.go")
+
+	// --- limiter construction: classify every assignment to the three idents.
+	type asg struct {
+		define bool
+		lhs    []string
+		rhs    []ast.Expr
+	}
+	byName := map[string][]asg{}
+	ast.Inspect(f, func(n ast.Node) bool {
+		as, ok := n.(*ast.AssignStmt)
+		if !ok {
+			return true
+		}
+		var names []string
+		touched := false
+		for _, l := range as.Lhs {
+			nm := ""
+			if id, ok := l.(*ast.Ident); ok {
+				nm = id.Name
+			}
+			names = append(names, nm)
+			if nm == "loginRateLimiter" || nm == "authRateLimiter" || nm == "defaultRateLimiter" {
+				touched = true
+			}
+		}
+		if touched {
+			a := asg{define: as.Tok == token.DEFINE, lhs: names, rhs: as.Rhs}
+			for _, nm := range names {
+				byName[nm] = append(byName[nm], a)
+			}
+		}
+		return true
+	})
+	for nm, n := range map[string]int{"loginRateLimiter": 30, "authRateLimiter": 600, "defaultRateLimiter": 2000} {
+		as := byName[nm]
+		require.NotEmpty(t, as, nm+" not assigned")
+		first := as[0]
+		require.True(t, first.define && len(first.lhs) == 1 && len(first.rhs) == 1, nm+" must be defined by a single `:=`")
+		c, ok := isCallSel(first.rhs[0], "authMiddleware", "RateLimitByUser")
+		require.True(t, ok && len(c.Args) == 2, nm+" must be authMiddleware.RateLimitByUser(N, \"1m\")")
+		got, ok := intLit(c.Args[0])
+		require.True(t, ok && got == n, "%s limit must be %d", nm, n)
+		per, ok := foldString(c.Args[1], map[string]string{})
+		require.True(t, ok && per == "1m", nm+" window must be \"1m\"")
+		if nm == "loginRateLimiter" {
+			require.Len(t, as, 1, "loginRateLimiter must never be reassigned")
+			continue
+		}
+		require.Len(t, as, 2, nm+": one definition + the single Redis tier reassignment")
+		re := as[1]
+		require.True(t, !re.define && len(re.lhs) == 2 && re.lhs[0] == "authRateLimiter" && re.lhs[1] == "defaultRateLimiter" && len(re.rhs) == 1,
+			nm+": reassignment must be `authRateLimiter, defaultRateLimiter = ...`")
+		rc, ok := isCallSel(re.rhs[0], "root_middleware", "NewRedisTierLimiters")
+		require.True(t, ok && len(rc.Args) == 3, "reassignment must call root_middleware.NewRedisTierLimiters(redisClient, authRateLimiter, defaultRateLimiter)")
+		for i, an := range []string{"redisClient", "authRateLimiter", "defaultRateLimiter"} {
+			id, ok := rc.Args[i].(*ast.Ident)
+			require.True(t, ok && id.Name == an, "NewRedisTierLimiters arg %d must be %s", i, an)
+		}
+	}
+
+	// --- group shape.
+	require.Equal(t, 1, groupAssigns, "authGroup must be defined exactly once with `:=` (a `var authGroup = ...` form is not accepted)")
+	require.NotNil(t, groupCall)
+	require.True(t, func() bool { _, ok := isCallSel(groupCall, "router", "Group"); return ok }(),
+		"authGroup must come directly from router.Group(...)")
+	require.Len(t, groupCall.Args, 1, "router.Group for auth must have no middleware argument")
+	p, ok := foldString(groupCall.Args[0], map[string]string{})
+	require.True(t, ok && p == "/api/v1/auth", "authGroup prefix must be /api/v1/auth, got %q", p)
+	// EVERY identifier named authGroup in main.go: exactly two, the `:=`
+	// definition and the first argument of registerAuthRoutes. This closes alias
+	// (ag := authGroup), deref, slice/struct-field storage, helper-call and
+	// closure uses, whatever the syntactic form.
+	idents := 0
+	ast.Inspect(rf, func(n ast.Node) bool {
+		if id, ok := n.(*ast.Ident); ok && id.Name == "authGroup" {
+			idents++
+		}
+		return true
+	})
+	require.Equal(t, 2, idents, "authGroup must occur exactly twice in main_router.go: its definition and the registerAuthRoutes argument")
+	ac := 0
+	ast.Inspect(rf, func(n ast.Node) bool {
+		if c, ok := n.(*ast.CallExpr); ok {
+			if fn, ok := c.Fun.(*ast.Ident); ok && fn.Name == "registerAuthRoutes" {
+				ac++
+				require.True(t, len(c.Args) >= 1, "registerAuthRoutes call without arguments")
+				id, ok := c.Args[0].(*ast.Ident)
+				require.True(t, ok && id.Name == "authGroup", "registerAuthRoutes first argument must be authGroup")
+			}
+		}
+		return true
+	})
+	require.Equal(t, 1, ac, "registerAuthRoutes called exactly once in main_router.go")
 }

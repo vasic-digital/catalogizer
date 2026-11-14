@@ -235,9 +235,14 @@ func TestDeepHealth_SlowCheckDegraded200(t *testing.T) {
 // main.go mounts the three routes through these constructors with the production wiring (pin against a return of the
 // untestable inline closures).
 func TestMainGoMountsAdminAndDeepHealthRoutesThroughHandlers(t *testing.T) {
-	src, err := os.ReadFile("main.go")
-	require.NoError(t, err)
-	s := string(src)
+	// /health/deep is registered by buildRouter (main_router.go), the admin routes
+	// by main(): the pin reads both files (review round 2, F2).
+	var s string
+	for _, f := range []string{"main.go", "main_router.go"} {
+		src, err := os.ReadFile(f)
+		require.NoError(t, err)
+		s += string(src)
+	}
 	assert.Contains(t, s, `router.GET("/health/deep", root_middleware.CacheHeaders(5), deepHealthHandler(deepHealthChecker, Version, 100*time.Millisecond))`)
 	assert.Contains(t, s, `api.POST("/admin/image-quality/revalidate", jwtMiddleware.RequireAdmin(), root_middleware.RateLimiter(6), imageQualityRevalidateHandler(imageQualityRepo, logger))`)
 	assert.Contains(t, s, `api.POST("/admin/covers/generate-thumbnails", jwtMiddleware.RequireAdmin(), generateThumbnailsHandler(coverArtService, logger))`)

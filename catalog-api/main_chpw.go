@@ -16,7 +16,7 @@ type sessionDeactivator interface {
 
 // registerChangePasswordRoute wires POST /change-password on the auth group
 // with the per-session failed-attempt limiter (CAT-CHPW-RL-1). main.go MUST
-// register this route only through here (TestMainGoRegistersChangePasswordOnlyViaHelper).
+// register this route only through here (TestMainPackageChangePasswordWiringSource).
 // When a session exhausts its failure budget the session is revoked, so the
 // RequireAuth session check rejects that token from then on.
 func registerChangePasswordRoute(authGroup gin.IRoutes, rate, requireAuth, handler gin.HandlerFunc, sessions sessionDeactivator, logger *zap.Logger) {
@@ -52,10 +52,9 @@ type authRoutesDeps struct {
 }
 
 // registerAuthRoutes registers the whole /api/v1/auth group. It is the ONLY place
-// that registers the change-password handler. Unit-class limit: the route-table
-// test walks an engine built through this function, not main()'s router; main()
-// still builds all other routes inline, and that wiring is covered only by the
-// AST source guards (TestMainPackageChangePasswordWiringSource).
+// that registers the change-password handler. buildRouter (main_router.go) calls
+// it; TestBuildRouterAuthSurface walks the engine buildRouter returns and pins
+// every route's full handler chain.
 func registerAuthRoutes(g *gin.RouterGroup, d authRoutesDeps) {
 	// Strict rate limiting for brute-force-prone write operations (30 rpm per IP).
 	g.POST("/login", d.LoginRate, d.Login)
