@@ -82,7 +82,11 @@ func TestSSRF_RealBinary_SyncEndpointURL(t *testing.T) {
 				"name": "ssrf", "type": typ, "url": u, "sync_direction": "upload",
 				"local_path": filepath.Join(syncRoot, "local"), "remote_path": "/"})
 			assert.Equal(t, 400, code, "case %d %s %s must be refused as an invalid URL: %s", i, typ, u, raw)
-			assert.Contains(t, string(raw), "invalid endpoint URL", "refusal must come from the URL check, not another validation: %s", raw)
+			// Since CAT-PXF23-R5B (197eec593) a 400 carries a fixed per-status class text, never the validator's own wording, so the
+			// message can no longer tell WHICH validation refused. The refusal is attributed by the status, the fixed class text, and the
+			// zero-contact assertion below (the URL check runs before any dial).
+			assert.Contains(t, string(raw), "invalid input", "a refusal must be the fixed 400 class text (no validator wording leaked): %s", raw)
+			assert.NotContains(t, string(raw), "invalid endpoint URL", "the validator's own wording must not reach the client: %s", raw)
 		}
 	}
 	assert.Equal(t, int32(0), atomic.LoadInt32(hits), "the internal service must never be contacted")
