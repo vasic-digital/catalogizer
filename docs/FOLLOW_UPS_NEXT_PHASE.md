@@ -2571,3 +2571,14 @@ Retest (scratch copy, PROVISIONAL): go build/vet rc 0; go test 5935 pass / 20 ho
 ## PXF18-FU1..11 docs + PXF23-F2 sweep review (2026-11-14, Opus round 1 GO-with-follow-ups; PROVISIONAL)
 - Landed: corrections for PXF18-FU1..5, FU7..11 (docs/qa/err_error_class_enumeration_20261113.* incl. twins; 14 claims re-measured by reviewer), PXF23-F2 leak sweep extended (error-synonym names, error-typed params/named results/var x error; 0 offenders on real tree, same 8 pre-allow-list hits as before). CLOSED those ids (FU6 closed separately).
 - Open (minor): PXF18DOC-F1 survivors M6 (direct call result gin.H{"m": do()}), M7 (var pe *os.PathError), M8 (closure param) are neither pinned in TestPXF23F2_KnownGaps nor stated in comment/doc; PXF18DOC-F2 synonym regex flags non-error values (bool `fail`): add negative control or record; PXF18DOC-F3 FU9 cites stats_repository.go:511 / models/file.go:158 but function is :448 reading internal/models/file.go:211 ScanHistoryItem; PXF18DOC-F4 panic-recovery grep as written gives 33 hits (0 only excluding _test.go and comments): state exact command; PXF18DOC-F5 typed go/packages scan (169 rows) has no committed source: commit or label unreproducible; PXF18DOC-F6 post-merge reconciliation note (R1 monitoring closed by PXF23-F1, challenge rows by FU6, Recovery call now main_router.go:89). Nit: FU1 cell cites :641-653, function starts :645.
+
+## Batch B landing (2026-11-14, Opus round 1 GO-with-follow-ups, PROVISIONAL, unit-class)
+Landed: PXF18-FU6-F1..F3, PXF18DOC-F1..F6, RLW-FU1. Open minors:
+- RLW-FU1-R1 (minor, test-instrumentation): `api.Use(deps.DefaultRate)` pinned by no test (reviewer M2 survived).
+- RLW-FU1-R2 (minor, test-instrumentation): Redis activation condition unpinned (M1/M3/M4 survive).
+- RLW-FU1-R3 (minor, process-doc): stale comments in main.go ~955-967, main_chpw_test.go ~410-428, handlers/pxf23_f2_bare_err_test.go.
+- RLW-FU1-R4 (nit): AST pin derefs `c` before checking `ok`.
+- PXF18DOC-R5 (nit): stats_repository.go:448 vs select at :467.
+- PXF23F2-R6 (nit): KnownFalsePositives checks count, not which value.
+- Operator 2026-11-14: internal/monitoring stays dormant, tracked as CAT-MONITORING-PKG-1 (wire-or-remove later; nothing deleted).
+- Pre-existing: `./middleware` TestLoginRegisterAreNotRedisTiers fails at base 9e624f09f (reviewer-confirmed); register as CAT-MW-TIERTEST-1.
