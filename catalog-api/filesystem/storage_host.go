@@ -47,9 +47,13 @@ func ValidateStorageHostSyntax(host string) error {
 	return nil
 }
 
-// ValidateNFSExport refuses an export path with a control character (newline, NUL, tab, DEL ...) or a leading '-'. A space or a ',' is a legal
-// part of a share name ("/volume1/My Videos"): the export only ever forms the SOURCE of mount(2) (one string, never option-parsed; the server
-// address always comes first) or one argument of an exec without a shell on darwin, so it cannot inject an option or another argument.
+// ValidateNFSExport refuses an export path with a control character (newline, NUL, tab, DEL ...), a leading '-', or a ',' that is followed
+// anywhere by ':'. A space or a ',' without a later ':' is a legal part of a share name ("/volume1/My Videos", "/a,b"): on linux the export
+// only ever forms the SOURCE of mount(2) (one string, never option-parsed; the server address always comes first), and on darwin one argument
+// of an exec without a shell, so it cannot inject an option or another argument. The ",...:" shape is refused because Apple's mount_nfs parses
+// a source "host1:/path1,host2:/path2" as several server LOCATIONS: a ',' followed by ':' would add an unvetted second server to the darwin
+// mount source, bypassing the operator-class egress policy (and re-opening DNS rebinding). Live macOS behaviour is UNCONFIRMED (no darwin host
+// was available; the rule rests on Apple's published mount_nfs source), so the refusal is applied on every platform.
 func ValidateNFSExport(export string) error {
 	if export == "" || strings.HasPrefix(export, "-") {
 		return fmt.Errorf("invalid nfs export path")
@@ -58,6 +62,9 @@ func ValidateNFSExport(export string) error {
 		if unicode.IsControl(r) {
 			return fmt.Errorf("invalid nfs export path")
 		}
+	}
+	if i := strings.IndexByte(export, ','); i >= 0 && strings.IndexByte(export[i:], ':') >= 0 {
+		return fmt.Errorf("invalid nfs export path")
 	}
 	return nil
 }
