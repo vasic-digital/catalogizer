@@ -2517,3 +2517,14 @@ Rounds 1-4 NO-GO, round 5 GO-with-follow-ups (all open findings minor-class). La
 - F5-3 (nit, process-doc): round-5 README hedges "1 FAIL (the pre-existing ... if listed above)"; name the test (TestSSRF_RealBinary_SyncEndpointURL); focused PASS count 149 vs reviewer 148 is a selection difference.
 - R4-3 (accepted disclosure, to track): trusted-proxy / ForwardedByClientIP / RemoteIPHeaders / TrustedPlatform changes after buildRouter (F-D limiter-key) are not registered by the guard; open item.
 - Known, unchanged: TestSSRF_RealBinary_SyncEndpointURL fails on base (pre-existing); TestD4 flaky; Alt-Svc Use data race (F-F). Author UNCONFIRMED: `//api/v1/auth/me` measured 404 on the real router (reviewer: gin-level class is real; refusal is conservative).
+
+## CAT-LOGIN-LOCK-2 Opus round 5 review (fix/login-lock-2, tip 11dc92c0d): GO-with-follow-ups, PROVISIONAL
+
+Rounds 1-4 NO-GO (F1 PG cap not enforced; F8 Fail dropped token before charging; F14 Fail on blocked account uncharged = 4x guess rate; RV4-1 block-end rule untested), round 5 GO-with-follow-ups (all open findings minor-class). Reviewer re-ran SQLite (26 PASS, unit-class) and PG on both local images (live-class; worst evaluated-before-block 23/23 vs bound 23, 0 errors, collation en_US.utf8 on both), confirmed M1/M7 RED and M5 (same-tx coupling) killed on PG in one timing-dependent run.
+
+- RV5-1 (minor, test-instrumentation): mutant N6 (decay skipped when chargeBlocked) survives; add a test with AccountDecay < StaleAfter checking a Fail after the decay period restarts the count (default policy masks it: AccountDecay = StaleAfter = 24h).
+- RV5-2 (minor, test-instrumentation): mutant N4 (Fail reserve uses 2*Cap) is only killed by the handler-level test; add a repository test that charges a blocked account to Cap and checks end == now + Cap.
+- RV5-3 (nit, source-defect, pre-existing since b91ecc76d, unreachable in production): `delayFor` overflows for Base >= ~4.9h (Base = 2^44+1 ns gave a 1.05 ms block); SetPolicy has no non-test caller. Guard the shift (`d>>exp != base`) and clamp to Cap.
+- RV5-4 (nit, test-instrumentation): N1 (exp clamp 20 -> 5; equivalent under the default 30s/15m policy) and N3 (purge `<` -> `<=`, differs only at the exact 1 ms boundary) survive; add a small-base literal case and an exact-boundary purge case.
+- RV4-2/4/5/6 remainders: AccountDecay < Cap documented (safe via max rule); "never longer than Cap from now" holds under one clock only (cross-instance skew documented); RM2b not mutation-run on PG (UNCONFIRMED).
+- Scale limits (documented): PendingTTL clock skew across instances; Fail-vs-Clear deadlock aborts the admin Clear (PG aborts one side).
