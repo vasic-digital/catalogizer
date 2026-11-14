@@ -4,7 +4,7 @@
 
 Catalogizer is a comprehensive media collection management system that automatically detects, categorizes, and organizes your media files across multiple storage protocols including SMB, FTP, NFS, WebDAV, S3 and local filesystem. It provides real-time monitoring, advanced analytics, and a modern web interface for managing your entire media library.
 
-> **Release status: Catalogizer 2.4.3 is a pre-release and is NOT production-ready.** The release gate state is BLOCKED-NO-BASELINE (no live run on connected hardware, no v2.4.2 baseline), and the full-suite retest of the tag, manual QA and live UI QA have not been run on it; see [`docs/release/RELEASE_NOTES_v2.4.3.md`](docs/release/RELEASE_NOTES_v2.4.3.md) and [`docs/CHANGELOG.md`](docs/CHANGELOG.md) (`[2.4.3]`: VERIFIED / PROVISIONAL / REOPENED / OVERDUE listed separately) and [`docs/CONTINUATION.md`](docs/CONTINUATION.md) (Rev 21).
+> **Release status: Catalogizer 2.4.3 is a pre-release and is NOT production-ready.** The release gate state is BLOCKED-NO-BASELINE (no live run on connected hardware, no v2.4.2 baseline), and the full-suite retest of the tag, manual QA and live UI QA have not been run on it; see [`docs/release/RELEASE_NOTES_v2.4.3.md`](docs/release/RELEASE_NOTES_v2.4.3.md) and [`docs/CHANGELOG.md`](docs/CHANGELOG.md) (`[2.4.3]`: VERIFIED / PROVISIONAL / REOPENED / OVERDUE listed separately) and [`docs/CONTINUATION.md`](docs/CONTINUATION.md) (Rev 21). The v2.5.0 gate list is in [`docs/release/V2_5_0_GATE_CHECKLIST.md`](docs/release/V2_5_0_GATE_CHECKLIST.md).
 
 ## 🚀 Features
 

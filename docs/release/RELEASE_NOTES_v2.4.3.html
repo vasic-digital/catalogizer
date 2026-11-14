@@ -236,17 +236,18 @@ draft).</li>
 <p>Counts (11.4.290(4)): <strong>V counts evidence sets, P counts items,
 so they are not comparable.</strong> V = 3 evidence sets whose hashes
 verify (1 checker-cited, 2 hand-verified; the behaviour they back is
-PROVISIONAL). P = 47 distinct <code>Roadmap-Item</code> ids, derived
+PROVISIONAL). P = 101 distinct <code>Roadmap-Item</code> ids, derived
 with
-<code>git log v2.4.2..b43f5370 --format='%(trailers:key=Roadmap-Item,valueonly,separator=%x2C)'</code>,
-split on commas and spaces, then <code>sort -u | wc -l</code>; of the
-328 commits in the range (75 merges), 286 carry a
-<code>Roadmap-Item:</code> trailer and 42 carry none (merges and some
-docs commits; the items they merge are counted through their own
-commits). Sub-ids named in the lines below (PX-F1..F23, PW-F1..F10 and
-so on) belong to those ids or to the groups that contain them and are
-not counted separately. R = 0 reopened, O = 0 new overdue (the carried
-OVERDUE jobs below remain).</p>
+<code>git log v2.4.2..b43f5370 --format=%B | grep '^Roadmap-Item:'</code>
+(287 lines), split on commas, trimmed, then <code>sort -u | wc -l</code>
+(a trailer-block method undercounts, it reads only the final block); of
+the 328 commits in the range (75 merges), 286 carry a
+<code>Roadmap-Item:</code> line (one has two) and 42 carry none (merges
+and some docs commits; the items they merge are counted through their
+own commits). Sub-ids named in the lines below (PX-F1..F23, PW-F1..F10
+and so on) belong to those ids or to the groups that contain them and
+are not counted separately. R = 0 reopened, O = 0 new overdue (the
+carried OVERDUE jobs below remain).</p>
 <h3
 id="verified-committed-machine-evidence-checked-while-preparing-this-entry">VERIFIED
 (committed machine evidence, checked while preparing this entry)</h3>
