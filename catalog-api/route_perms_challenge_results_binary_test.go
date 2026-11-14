@@ -53,4 +53,13 @@ func TestRoutePerms_RealBinary_ChallengeResultsAdminOnly(t *testing.T) {
 	assert.Equal(t, 403, code, "non-admin must not read challenge results; got body: %.300s", raw)
 	code, raw = c.do("GET", "/api/v1/challenges/results?limit=0", plain, nil)
 	assert.Equal(t, 403, code, "non-admin (limit=0) must not read challenge results; got body: %.300s", raw)
+	// Same class: challenge definitions are diagnostic metadata; admin can, plain cannot.
+	for _, p := range []string{"/api/v1/challenges", "/api/v1/challenges/" + list.Data[0].ID} {
+		code, raw = c.do("GET", p, plain, nil)
+		assert.Equal(t, 403, code, "non-admin GET "+p+": %.200s", raw)
+		code, _ = c.do("GET", p, "", nil)
+		assert.Equal(t, 401, code, "anonymous GET "+p)
+		code, _ = c.do("GET", p, adm, nil)
+		assert.Equal(t, 200, code, "admin GET "+p)
+	}
 }

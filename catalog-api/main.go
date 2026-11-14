@@ -1393,15 +1393,18 @@ func main() {
 			syncGroup.POST("/cleanup", jwtMiddleware.RequireAdmin(), func(c *gin.Context) { getSyncHandler().CleanupOldSessions(c) })
 	}
 
-	// Challenge endpoints
+	// Challenge endpoints (PXF18-FU6): the whole group is administrator-only.
+	// Runs execute server-side code paths (P2), and the definitions and stored
+	// results carry assertion text and captured output, i.e. operator/diagnostic
+	// data. The guard is group-level so a route added here later inherits it.
 	challengeGroup := api.Group("/challenges")
+	challengeGroup.Use(adminGate)
 	{
 			challengeGroup.GET("", challengeHandler.ListChallenges)
 			challengeGroup.GET("/:id", challengeHandler.GetChallenge)
-			// Running challenges executes server-side code paths: administrators only (P2).
-			challengeGroup.POST("/:id/run", jwtMiddleware.RequireAdmin(), challengeHandler.RunChallenge)
-			challengeGroup.POST("/run", jwtMiddleware.RequireAdmin(), challengeHandler.RunAll)
-			challengeGroup.POST("/run/category/:category", jwtMiddleware.RequireAdmin(), challengeHandler.RunByCategory)
+			challengeGroup.POST("/:id/run", challengeHandler.RunChallenge)
+			challengeGroup.POST("/run", challengeHandler.RunAll)
+			challengeGroup.POST("/run/category/:category", challengeHandler.RunByCategory)
 			challengeGroup.GET("/results", challengeHandler.GetResults)
 	}
 

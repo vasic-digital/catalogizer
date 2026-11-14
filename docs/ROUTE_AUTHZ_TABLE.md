@@ -243,12 +243,12 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | POST | `/api/v1/sync/schedules` | RequireAdmin (route) | 401 | 403 | skip |
 | GET | `/api/v1/sync/statistics` | auth | 401 | 200 | 200 |
 | POST | `/api/v1/sync/cleanup` | RequireAdmin (route) | 401 | 403 | skip |
-| GET | `/api/v1/challenges` | auth | 401 | 200 | 200 |
-| GET | `/api/v1/challenges/:id` | auth | 401 | 404 | 404 |
-| POST | `/api/v1/challenges/:id/run` | RequireAdmin (route) | 401 | 403 | skip |
-| POST | `/api/v1/challenges/run` | RequireAdmin (route) | 401 | 403 | skip |
-| POST | `/api/v1/challenges/run/category/:category` | RequireAdmin (route) | 401 | 403 | skip |
-| GET | `/api/v1/challenges/results` | auth | 401 | 200 | 200 |
+| GET | `/api/v1/challenges` | RequireAdmin (group) | 401 | 403 | 200 |
+| GET | `/api/v1/challenges/:id` | RequireAdmin (group) | 401 | 403 | 404 |
+| POST | `/api/v1/challenges/:id/run` | RequireAdmin (group) | 401 | 403 | skip |
+| POST | `/api/v1/challenges/run` | RequireAdmin (group) | 401 | 403 | skip |
+| POST | `/api/v1/challenges/run/category/:category` | RequireAdmin (group) | 401 | 403 | skip |
+| GET | `/api/v1/challenges/results` | RequireAdmin (group) | 401 | 403 | 200 |
 | GET | `/api/v1/browse` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/analytics/stats` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/analytics/duplicates` | auth | 401 | 200 | 200 |
