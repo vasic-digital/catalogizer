@@ -789,6 +789,14 @@ if [[ "$rc4res" =~ ^==\ result:\ ([0-9]+)\ passed,\ ([0-9]+)\ failed$ ]]; then
   PASS=$((PASS+BASH_REMATCH[1])); FAIL=$((FAIL+BASH_REMATCH[2]))
   [ "$rc4rc" = 0 ] || [ "${BASH_REMATCH[2]}" != 0 ] || bad "rc4 suite exited $rc4rc without a failed test"
 else bad "rc4 suite gave no result line (rc=$rc4rc)"; fi
+echo "== permanent-risk class (test_permanent_risk.sh)"
+prout="$(CHECKER="$CHECKER" bash "$HERE/test_permanent_risk.sh" 2>&1)"; prrc=$?
+printf '%s\n' "$prout" | grep -E '^  FAIL:' || true
+prres="$(printf '%s\n' "$prout" | tail -1)"
+if [[ "$prres" =~ ^==\ result:\ ([0-9]+)\ passed,\ ([0-9]+)\ failed$ ]]; then
+  PASS=$((PASS+BASH_REMATCH[1])); FAIL=$((FAIL+BASH_REMATCH[2]))
+  [ "$prrc" = 0 ] || [ "${BASH_REMATCH[2]}" != 0 ] || bad "permanent-risk suite exited $prrc without a failed test"
+else bad "permanent-risk suite gave no result line (rc=$prrc)"; fi
 echo "== selftest (11.4.273 control needles built into the tool)"
 out="$("$CHECKER" --selftest 2>&1)"; got=$?
 if [ "$got" = 0 ] && printf '%s\n' "$out" | grep -q '^VERDICT: PASS selftest'; then ok; else bad "selftest rc=$got"; fi

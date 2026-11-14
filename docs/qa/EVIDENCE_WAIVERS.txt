@@ -2,6 +2,9 @@
 # Format and rules: scripts/release/README.md. Fields: kind|path fields|tracked item|expires (YYYY-MM-DD)|reason.
 # Waivers are path-scoped (they apply wherever the path is cited, in any changelog section) and expire.
 # Every applied waiver is printed as WAIVED and makes the verdict PASS-WITH-WAIVERS.
+# Class permanent-risk (no expiry): permanent-risk|<risk key>|<item>|<operator decision id>|<decision date>|<re-affirmation note>|<reason>
+# It is never an evidence-gap waiver, is always printed as PERMANENT-RISK and counted in permanent_risks=, and FAILs when a decision field is missing.
+permanent-risk|key-rotation|CAT-KEYROT-WAIVER-1|BG-OPQ-2026-11-14b|2026-11-14|re-affirm at every release review (v2.5.0 gate G6 and each later release); the operator may close it or set an expiry at any time|key rotation is an operator-accepted open risk that never expires; recorded as a permanent operator-accepted risk by the operator decision of 2026-11-14 (no expiry date is set or invented)
 no-manifest|docs/qa/live-pprof-20261111|CAT-REL-CHECK-1|2026-12-12|evidence directory has no SHA256SUMS, SHA256SUMS.txt or MANIFEST*.sha256 at all
 no-manifest|docs/qa/new1-cover-thumbnails/green_main5c48.txt|CAT-REL-CHECK-1|2026-12-12|docs/qa/new1-cover-thumbnails has no manifest; this single evidence file is not covered by any
 bad-entry|docs/qa/stack3-rebuild-live-20261105|live_storage_done.txt|CAT-REL-CHECK-1|2026-12-12|listed in MANIFEST.sha256 but the evidence file was never committed; the file is missing and was not recreated
