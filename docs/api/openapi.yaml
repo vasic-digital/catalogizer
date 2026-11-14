@@ -6501,6 +6501,8 @@ paths:
       security:
         - BearerAuth: []
       responses:
+        '403':
+          description: Administrator role required (system.admin)
         '200':
           description: Challenges list
           content:
@@ -6530,6 +6532,8 @@ paths:
           schema:
             type: string
       responses:
+        '403':
+          description: Administrator role required (system.admin)
         '200':
           description: Challenge details
         '404':
@@ -6624,6 +6628,8 @@ paths:
       security:
         - BearerAuth: []
       responses:
+        '403':
+          description: Administrator role required (system.admin)
         '200':
           description: Stored results
           content:

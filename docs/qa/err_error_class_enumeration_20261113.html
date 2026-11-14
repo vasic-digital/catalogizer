@@ -4082,6 +4082,22 @@ partial typed scan found no live instance</td>
 </tr>
 </tbody>
 </table>
+<p><strong>Post-merge reconciliation (PXF18DOC-F6, 2026-11-14, main @
+5a199fe36).</strong> Three statements above were true at their
+measurement base and changed afterwards: (1) R1 / H2
+(<code>internal/monitoring/monitoring.go:251</code>, latent leak) is
+CLOSED by PXF23-F1 (the error is redacted; the package is still
+unimported, so the wiring decision stays open). (2) R3 and the challenge
+rows B20 to B24: <code>GET /api/v1/challenges</code>,
+<code>/challenges/:id</code> and <code>/challenges/results</code> are
+now admin-only through the group gate (PXF18-FU6), so the "gating of
+results was not established" remark is superseded; the response text
+there is operator-only. (3) The panic-recovery call
+<code>middleware.Recovery(logger)</code> is at main_router.go:89 (was
+:93 at 9e624f09f). Evidence:
+<code>grep -n Recovery catalog-api/main_router.go</code> at 5a199fe36;
+closures taken from the 2026-11-14 follow-up register, not re-derived
+here (UNCONFIRMED beyond that register).</p>
 <h3 id="reconciliation-of-the-310-sink-scan-rows-fu4">Reconciliation of
 the 310 sink-scan rows (FU4)</h3>
 <p>Commands: build <code>astscan_sinks.go.txt</code>, run on
@@ -4208,12 +4224,11 @@ surfaces and scope exclusions (FU9)</h3>
 <tbody>
 <tr>
 <td>panic recovery</td>
-<td><code>grep -rn "gin.Recovery|gin.Default()" --include=*.go</code>
-outside <code>testdata</code>: 0 hits;
-<code>middleware.Recovery(logger)</code> is installed at
-main_router.go:93; <code>internal/middleware/recovery.go</code> logs a
-redacted panic and answers <code>c.AbortWithStatus(500)</code> with no
-body</td>
+<td>exact command and control needle in the note "Panic-recovery grep
+(PXF18DOC-F4)" below: 0 hits. <code>middleware.Recovery(logger)</code>
+is installed at main_router.go:89 (was :93 at 9e624f09f, PXF18DOC-F6);
+<code>internal/middleware/recovery.go</code> logs a redacted panic and
+answers <code>c.AbortWithStatus(500)</code> with no body</td>
 <td>SAFE</td>
 </tr>
 <tr>
@@ -4241,8 +4256,15 @@ outside tests: only database/migrations_sqlite.go:183
 (<code>UPDATE scan_history SET storage_root_id</code>);
 <code>AliasHandler.ScanHistory</code> (alias_routes.go:116) does not
 select the column; <code>StatsRepository.GetScanHistory</code>
-(stats_repository.go:511) reads it into models/file.go:158 and
-<code>GET /stats/scans</code> serves it</td>
+(repository/stats_repository.go:448, selecting
+<code>sh.error_message</code>) reads it into
+<code>internal/models/file.go:211</code> (<code>ScanHistoryItem</code>,
+type at :199; not <code>catalog-api/models/file.go:158</code>, which is
+the different struct <code>ScanHistory</code>) and
+<code>GET /stats/scans</code> serves it (corrected 2026-11-14,
+PXF18DOC-F3; measured with <code>sed -n 448p</code>,
+<code>grep -n ErrorMessage internal/models/file.go models/file.go</code>
+at 5a199fe36)</td>
 <td>writer-less in catalog-api non-test Go (an external writer to the
 database is not excluded: UNCONFIRMED); nothing writes error text into
 it today</td>
@@ -4262,6 +4284,14 @@ them is made</td>
 </tr>
 </tbody>
 </table>
+<p>Panic-recovery grep (PXF18DOC-F4). Run in <code>catalog-api/</code>
+at 5a199fe36; the result is 0 hits:</p>
+<pre><code>grep -rn &quot;gin.Recovery\|gin.Default()&quot; --include=*.go . | grep -v testdata | grep -v &#39;_test.go:&#39; | grep -v -E &#39;^\S+:[0-9]+:\s*//&#39;</code></pre>
+<p>Without the last two filters the same grep prints 33 lines. Control
+needle: without only the comment filter it prints exactly 2 non-test
+lines, both comments (main_router.go:87 and
+internal/middleware/recovery.go:19), so the instrument does see non-test
+matches and the 0 is real.</p>
 <h3 id="instrument-blind-spots-measured-2026-11-14-fu8-fu11">Instrument
 blind spots measured 2026-11-14 (FU8, FU11)</h3>
 <p>Six fixture functions were written to a scratch directory (never
@@ -4331,7 +4361,16 @@ inside <code>c.JSON</code></td>
 S5) and the reviewer's three fixtures R1 to R3 are real blind spots of
 all three instruments. A typed scan was built to check the tree: a
 <code>go/packages</code> program (golang.org/x/tools v0.52.0, built
-offline in a scratch module) that lists every expression whose type
+offline in a scratch module; source committed as
+<code>docs/qa/err_error_class_scan/typed_scan_gopackages.go.txt</code>,
+PXF18DOC-F5; re-run 2026-11-14 on
+<code>git archive 713a4f380 catalog-api</code> with
+<code>GOPROXY=off</code>: 169 tab-separated rows, 168
+<code>errname</code> + 1 <code>NOT-errname</code>
+(repository/asset_repository.go:202 <code>json.Unmarshal</code>),
+identical to the figures below; the scratch module's go.mod/go.sum are
+not committed, UNCONFIRMED that the committed file is byte-identical to
+the original run's source) that lists every expression whose type
 implements <code>error</code>, as an identifier or selector, in a
 sink-named call (same name list as instrument 1), skipping tests and
 <code>challenges/</code>. Run on an archive of 713a4f380 without
@@ -4348,8 +4387,18 @@ therefore for the packages that type-checked and is otherwise
 UNCONFIRMED. The handler sweep <code>TestPXF23R5b_SourceSweep</code>
 (PXF23-F2) gained the same declared-type and error-synonym detection on
 2026-11-14 (handlers/pxf23_f2_bare_err_test.go); it still does not see a
-struct field or an arbitrary-named multi-value result (pinned by
-<code>TestPXF23F2_KnownGaps</code>).</p>
+struct field, an arbitrary-named multi-value result, a direct call
+result in a sink (<code>gin.H{"m": do()}</code>), or a variable /
+closure parameter of a concrete error-implementing type other than
+<code>error</code> (<code>var pe *os.PathError</code>); all five are
+pinned by <code>TestPXF23F2_KnownGaps</code> (PXF18DOC-F1). Known
+false-positive class (PXF18DOC-F2, measured 2026-11-14): the
+error-synonym name heuristic also fires on a NON-error value that
+carries a synonym name, e.g. <code>n, fail := lookup()</code> with a
+bool <code>fail</code> passed to a sink (1 report on the fixture); it
+over-reports (fails closed) and is pinned by
+<code>TestPXF23F2_KnownFalsePositives</code>; the bool <code>ok</code>
+negative control stays silent.</p>
 <h2
 id="limits-of-the-instruments-measured-unconfirmed-where-stated">Limits
 of the instruments (measured, UNCONFIRMED where stated)</h2>

@@ -459,8 +459,9 @@ func TestMainGoAuthLimiterAndGroupWiringSource(t *testing.T) {
 	require.ElementsMatch(t, []string{"LoginRate", "AuthRate", "DefaultRate"}, rateFields,
 		"authRoutesDeps limiter-bearing fields changed: pin the new field's mapping here")
 
-	// --- composite literal mapping in main.go.
-	want := map[string]string{"LoginRate": "loginRateLimiter", "AuthRate": "authRateLimiter", "DefaultRate": "defaultRateLimiter"}
+	// --- composite literal in main.go (RLW-FU1): the routerDeps literal carries NO limiter field; the three
+	// tiers are filled in by newRouterDeps (main_ratetiers.go), the function the behavioural test also calls.
+	limiterKeys := map[string]bool{"LoginRate": true, "AuthRate": true, "DefaultRate": true}
 	var lits, groupAssigns int
 	var groupCall *ast.CallExpr
 	ast.Inspect(f, func(n ast.Node) bool {
@@ -471,7 +472,6 @@ func TestMainGoAuthLimiterAndGroupWiringSource(t *testing.T) {
 				return true
 			}
 			lits++
-			got := map[string]string{}
 			for _, el := range v.Elts {
 				kv, ok := el.(*ast.KeyValueExpr)
 				if !ok {
@@ -481,15 +481,8 @@ func TestMainGoAuthLimiterAndGroupWiringSource(t *testing.T) {
 				if !ok {
 					t.Fatalf("routerDeps literal key is not an identifier")
 				}
-				if _, isRate := want[k.Name]; isRate {
-					vi, ok := kv.Value.(*ast.Ident)
-					if !ok {
-						t.Fatalf("%s must be a plain identifier, got %T", k.Name, kv.Value)
-					}
-					got[k.Name] = vi.Name
-				}
+				require.False(t, limiterKeys[k.Name], "main.go must not set %s in the routerDeps literal: newRouterDeps owns the limiter tiers", k.Name)
 			}
-			require.Equal(t, want, got, "routerDeps limiter fields must map to their exact limiter idents")
 		}
 		return true
 	})
@@ -508,71 +501,104 @@ func TestMainGoAuthLimiterAndGroupWiringSource(t *testing.T) {
 	})
 	require.Equal(t, 1, lits, "exactly one routerDeps literal in main.go")
 
-	// --- limiter construction: classify every assignment to the three idents.
-	type asg struct {
-		define bool
-		lhs    []string
-		rhs    []ast.Expr
-	}
-	byName := map[string][]asg{}
+	// --- main.go: the old limiter variables are gone, newRouterDeps(<literal>, authMiddleware, redisClient,
+	// redisRateLimit) is the single source of deps and its result alone goes to buildRouter.
+	var calls, buildCalls int
 	ast.Inspect(f, func(n ast.Node) bool {
-		as, ok := n.(*ast.AssignStmt)
-		if !ok {
-			return true
-		}
-		var names []string
-		touched := false
-		for _, l := range as.Lhs {
-			nm := ""
-			if id, ok := l.(*ast.Ident); ok {
-				nm = id.Name
+		switch v := n.(type) {
+		case *ast.Ident:
+			require.NotContains(t, []string{"loginRateLimiter", "authRateLimiter", "defaultRateLimiter"}, v.Name,
+				"main.go must not keep its own limiter variable: use deps.DefaultRate")
+		case *ast.CallExpr:
+			if id, ok := v.Fun.(*ast.Ident); ok && id.Name == "newRouterDeps" {
+				calls++
+				require.Len(t, v.Args, 4)
+				lit, ok := v.Args[0].(*ast.CompositeLit)
+				require.True(t, ok, "newRouterDeps first argument must be the routerDeps literal")
+				lid, ok := lit.Type.(*ast.Ident)
+				require.True(t, ok && lid.Name == "routerDeps")
+				for i, an := range []string{"authMiddleware", "redisClient", "redisRateLimit"} {
+					aid, ok := v.Args[i+1].(*ast.Ident)
+					require.True(t, ok && aid.Name == an, "newRouterDeps arg %d must be %s", i+1, an)
+				}
 			}
-			names = append(names, nm)
-			if nm == "loginRateLimiter" || nm == "authRateLimiter" || nm == "defaultRateLimiter" {
-				touched = true
-			}
-		}
-		if touched {
-			a := asg{define: as.Tok == token.DEFINE, lhs: names, rhs: as.Rhs}
-			for _, nm := range names {
-				byName[nm] = append(byName[nm], a)
+			if id, ok := v.Fun.(*ast.Ident); ok && id.Name == "buildRouter" {
+				buildCalls++
+				aid, ok := v.Args[0].(*ast.Ident)
+				require.True(t, ok && aid.Name == "deps", "buildRouter must receive deps (the newRouterDeps result)")
 			}
 		}
 		return true
 	})
-	// PKGC-FU4-F1: the three tiers are built by newAuthRateTiers (main_ratetiers.go);
-	// main.go must define all three from ONE call, in that order.
-	for _, nm := range []string{"loginRateLimiter", "authRateLimiter", "defaultRateLimiter"} {
-		as := byName[nm]
-		require.NotEmpty(t, as, nm+" not assigned")
-		first := as[0]
-		require.True(t, first.define && len(first.lhs) == 3 && len(first.rhs) == 1, nm+" must be defined by `loginRateLimiter, authRateLimiter, defaultRateLimiter := newAuthRateTiers(authMiddleware)`")
-		require.Equal(t, []string{"loginRateLimiter", "authRateLimiter", "defaultRateLimiter"}, first.lhs)
-		c, ok := first.rhs[0].(*ast.CallExpr)
-		require.True(t, ok, nm+": rhs must be a call")
-		fid, ok := c.Fun.(*ast.Ident)
-		require.True(t, ok && fid.Name == "newAuthRateTiers" && len(c.Args) == 1, nm+": must call newAuthRateTiers(authMiddleware)")
-		aid, ok := c.Args[0].(*ast.Ident)
-		require.True(t, ok && aid.Name == "authMiddleware")
-		if nm == "loginRateLimiter" {
-			require.Len(t, as, 1, "loginRateLimiter must never be reassigned")
-			continue
-		}
-		require.Len(t, as, 2, nm+": one definition + the single Redis tier reassignment")
-		re := as[1]
-		require.True(t, !re.define && len(re.lhs) == 2 && re.lhs[0] == "authRateLimiter" && re.lhs[1] == "defaultRateLimiter" && len(re.rhs) == 1,
-			nm+": reassignment must be `authRateLimiter, defaultRateLimiter = ...`")
-		rc, ok := isCallSel(re.rhs[0], "root_middleware", "NewRedisTierLimiters")
-		require.True(t, ok && len(rc.Args) == 3, "reassignment must call root_middleware.NewRedisTierLimiters(redisClient, authRateLimiter, defaultRateLimiter)")
-		for i, an := range []string{"redisClient", "authRateLimiter", "defaultRateLimiter"} {
-			id, ok := rc.Args[i].(*ast.Ident)
-			require.True(t, ok && id.Name == an, "NewRedisTierLimiters arg %d must be %s", i, an)
+	require.Equal(t, 1, calls, "main.go calls newRouterDeps exactly once")
+	require.Equal(t, 1, buildCalls, "main.go calls buildRouter exactly once")
+
+	// --- newRouterDeps (main_ratetiers.go): one newAuthRateTiers call, the Redis reassignment (auth and default
+	// only, login never reassigned), and one assignment of the three tiers to the three fields in matching order.
+	nf, err := parser.ParseFile(fset, "main_ratetiers.go", nil, 0)
+	require.NoError(t, err)
+	var fd *ast.FuncDecl
+	for _, dcl := range nf.Decls {
+		if x, ok := dcl.(*ast.FuncDecl); ok && x.Name.Name == "newRouterDeps" {
+			fd = x
 		}
 	}
+	require.NotNil(t, fd, "newRouterDeps missing")
+	var defs, redisAsg, fieldAsg int
+	ast.Inspect(fd.Body, func(n ast.Node) bool {
+		as, ok := n.(*ast.AssignStmt)
+		if !ok {
+			return true
+		}
+		names := func(es []ast.Expr) string {
+			var out []string
+			for _, e := range es {
+				switch x := e.(type) {
+				case *ast.Ident:
+					out = append(out, x.Name)
+				case *ast.SelectorExpr:
+					out = append(out, r5SelName(x))
+				default:
+					out = append(out, "?")
+				}
+			}
+			return strings.Join(out, ",")
+		}
+		switch {
+		case as.Tok == token.DEFINE:
+			require.Equal(t, "login,authTier,def", names(as.Lhs))
+			c, ok := as.Rhs[0].(*ast.CallExpr)
+			fid, _ := c.Fun.(*ast.Ident)
+			require.True(t, ok && fid != nil && fid.Name == "newAuthRateTiers" && len(c.Args) == 1, "tiers must come from newAuthRateTiers(am)")
+			defs++
+		case names(as.Lhs) == "authTier,def":
+			rc, ok := isCallSel(as.Rhs[0], "root_middleware", "NewRedisTierLimiters")
+			require.True(t, ok && len(rc.Args) == 3, "Redis reassignment must call root_middleware.NewRedisTierLimiters(redisClient, authTier, def)")
+			for i, an := range []string{"redisClient", "authTier", "def"} {
+				id, ok := rc.Args[i].(*ast.Ident)
+				require.True(t, ok && id.Name == an, "NewRedisTierLimiters arg %d must be %s", i, an)
+			}
+			redisAsg++
+		case names(as.Lhs) == "d.LoginRate,d.AuthRate,d.DefaultRate":
+			require.Equal(t, "login,authTier,def", names(as.Rhs), "tiers must map login->LoginRate, authTier->AuthRate, def->DefaultRate")
+			fieldAsg++
+		default:
+			t.Fatalf("unexpected assignment in newRouterDeps: %s", names(as.Lhs))
+		}
+		return true
+	})
+	require.Equal(t, [3]int{1, 1, 1}, [3]int{defs, redisAsg, fieldAsg}, "newRouterDeps: one definition, one Redis reassignment, one field assignment")
 
 	// --- tier construction inside newAuthRateTiers (main_ratetiers.go).
-	tf, err := parser.ParseFile(fset, "main_ratetiers.go", nil, 0)
+	tfAll, err := parser.ParseFile(fset, "main_ratetiers.go", nil, 0)
 	require.NoError(t, err)
+	tf := &ast.File{Name: tfAll.Name}
+	for _, dcl := range tfAll.Decls {
+		if x, ok := dcl.(*ast.FuncDecl); ok && x.Name.Name == "newAuthRateTiers" {
+			tf.Decls = append(tf.Decls, x)
+		}
+	}
+	require.Len(t, tf.Decls, 1, "newAuthRateTiers missing")
 	wantN := map[string]int{"login": 30, "authTier": 600, "def": 2000}
 	seenN := map[string]int{}
 	var rets int
@@ -641,4 +667,12 @@ func TestMainGoAuthLimiterAndGroupWiringSource(t *testing.T) {
 		return true
 	})
 	require.Equal(t, 1, ac, "registerAuthRoutes called exactly once in main_router.go")
+}
+
+// r5SelName renders x.Sel for a selector on an identifier.
+func r5SelName(x *ast.SelectorExpr) string {
+	if id, ok := x.X.(*ast.Ident); ok {
+		return id.Name + "." + x.Sel.Name
+	}
+	return "?." + x.Sel.Name
 }
