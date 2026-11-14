@@ -1,0 +1,61 @@
+=== RUN   TestLoginThrottlePostgres_InflightCapHolds
+=== RUN   TestLoginThrottlePostgres_InflightCapHolds/docker.io/library/postgres:15-alpine
+    login_throttle_pg_test.go:35: image docker.io/library/postgres:15-alpine: datcollate=en_US.utf8
+    login_throttle_pg_test.go:50: serial control: 4 of 10 allowed (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 0: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 1: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 2: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 3: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 4: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 5: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 6: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 7: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 8: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 9: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 10: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 11: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:90: max allowed in any concurrent round: 4; pend rows after purge: 0
+=== RUN   TestLoginThrottlePostgres_InflightCapHolds/docker.io/library/postgres:15
+    login_throttle_pg_test.go:35: image docker.io/library/postgres:15: datcollate=en_US.utf8
+    login_throttle_pg_test.go:50: serial control: 4 of 10 allowed (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 0: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 1: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 2: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 3: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 4: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 5: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 6: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 7: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 8: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 9: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 10: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 11: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:90: max allowed in any concurrent round: 4; pend rows after purge: 0
+--- PASS: TestLoginThrottlePostgres_InflightCapHolds (34.86s)
+    --- PASS: TestLoginThrottlePostgres_InflightCapHolds/docker.io/library/postgres:15-alpine (14.81s)
+    --- PASS: TestLoginThrottlePostgres_InflightCapHolds/docker.io/library/postgres:15 (20.05s)
+=== RUN   TestLoginThrottlePostgres_EvaluatedBeforeBlockBound
+=== RUN   TestLoginThrottlePostgres_EvaluatedBeforeBlockBound/docker.io/library/postgres:15-alpine
+    login_throttle_pg_test.go:158: image docker.io/library/postgres:15-alpine: worst evaluated before the block over 20 rounds: 22 (bound 23); Begin errors 0, Fail errors 0
+=== RUN   TestLoginThrottlePostgres_EvaluatedBeforeBlockBound/docker.io/library/postgres:15
+    login_throttle_pg_test.go:158: image docker.io/library/postgres:15: worst evaluated before the block over 20 rounds: 23 (bound 23); Begin errors 0, Fail errors 0
+--- PASS: TestLoginThrottlePostgres_EvaluatedBeforeBlockBound (55.57s)
+    --- PASS: TestLoginThrottlePostgres_EvaluatedBeforeBlockBound/docker.io/library/postgres:15-alpine (28.50s)
+    --- PASS: TestLoginThrottlePostgres_EvaluatedBeforeBlockBound/docker.io/library/postgres:15 (27.07s)
+=== RUN   TestLoginThrottlePostgres_ChargeEveryEvaluatedAndCapWindow
+=== RUN   TestLoginThrottlePostgres_ChargeEveryEvaluatedAndCapWindow/docker.io/library/postgres:15-alpine
+    login_throttle_pg_test.go:220: image docker.io/library/postgres:15-alpine window 0: evaluated 4, charged 4
+    login_throttle_pg_test.go:220: image docker.io/library/postgres:15-alpine window 1: evaluated 4, charged 4
+    login_throttle_pg_test.go:220: image docker.io/library/postgres:15-alpine window 2: evaluated 4, charged 4
+    login_throttle_pg_test.go:220: image docker.io/library/postgres:15-alpine window 3: evaluated 4, charged 4
+=== RUN   TestLoginThrottlePostgres_ChargeEveryEvaluatedAndCapWindow/docker.io/library/postgres:15
+    login_throttle_pg_test.go:220: image docker.io/library/postgres:15 window 0: evaluated 4, charged 4
+    login_throttle_pg_test.go:220: image docker.io/library/postgres:15 window 1: evaluated 4, charged 4
+    login_throttle_pg_test.go:220: image docker.io/library/postgres:15 window 2: evaluated 4, charged 4
+    login_throttle_pg_test.go:220: image docker.io/library/postgres:15 window 3: evaluated 4, charged 4
+--- PASS: TestLoginThrottlePostgres_ChargeEveryEvaluatedAndCapWindow (24.52s)
+    --- PASS: TestLoginThrottlePostgres_ChargeEveryEvaluatedAndCapWindow/docker.io/library/postgres:15-alpine (12.70s)
+    --- PASS: TestLoginThrottlePostgres_ChargeEveryEvaluatedAndCapWindow/docker.io/library/postgres:15 (11.81s)
+PASS
+ok  	catalogizer/repository	115.157s
+EXIT 0

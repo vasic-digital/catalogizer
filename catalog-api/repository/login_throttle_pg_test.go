@@ -1,7 +1,7 @@
 package repository
 
-// CAT-LOGIN-LOCK-2 round 1 finding F1: the in-flight token cap against a REAL PostgreSQL (no stub), on a byte-order collation
-// (postgres:15-alpine) and on glibc en_US.utf8 (postgres:15, Debian). Skipped (never faked) when podman or the image is missing.
+// CAT-LOGIN-LOCK-2 round 1 finding F1: the in-flight token cap against a REAL PostgreSQL (no stub), on postgres:15-alpine and postgres:15 (Debian).
+// Measured in round 4: BOTH images report datcollate=en_US.utf8; no C/byte-order collation image has been exercised here. Skipped (never faked) when podman or the image is missing.
 
 import (
 	"context"

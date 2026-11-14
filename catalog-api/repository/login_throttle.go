@@ -604,7 +604,10 @@ func (t *LoginThrottle) Success(ctx context.Context, subject, ip string, remembe
 // store error on PostgreSQL (both write the same rows, a deadlock aborts one of them: an administrator's unlock or password
 // change can therefore return an error and must be retried; the caller of Fail logs its error and the request is refused).
 // Across instances sharing one database the cap and the purge compare tokens' timestamps with each instance's own clock: clocks
-// that differ by more than PendingTTL make the cap count too many or too few tokens and the purge remove live ones.
+// that differ by more than PendingTTL make the cap count too many or too few tokens and the purge remove live ones. The same
+// holds for Fail's block end: "never longer than Cap from now" is true under ONE clock only; an end set by an instance whose
+// clock is ahead is kept (max rule) by an instance whose clock is behind. AccountDecay below Cap is safe: a charge on a blocked
+// account never shortens the block (TestRV4_BlockedChargeNeverShortensAfterDecay).
 func (t *LoginThrottle) Clear(ctx context.Context, userID int) error {
 	_, err := t.db.ExecContext(ctx, `DELETE FROM login_throttle WHERE subject = ?`, SubjectForUser(userID))
 	return err

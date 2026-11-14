@@ -25,7 +25,7 @@ func Start(t testing.TB) (dsn, container string) {
 }
 
 // ImageGlibc is a Debian-based PostgreSQL 15 image whose default database collation is glibc en_US.utf8 (Image is the musl/alpine
-// one, byte-order). A test whose result may depend on collation runs against both.
+// one; measured in CAT-LOGIN-LOCK-2 round 4: it too reported datcollate=en_US.utf8, so no byte-order/C collation is exercised). A test whose result may depend on collation runs against both.
 const ImageGlibc = "docker.io/library/postgres:15"
 
 // StartImage is Start for an explicit image; it SKIPs when podman or that image is unavailable locally (nothing is pulled).

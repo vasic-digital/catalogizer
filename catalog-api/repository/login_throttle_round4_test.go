@@ -60,9 +60,10 @@ func TestInvariant_R4_EveryEvaluatedAttemptIsCharged(t *testing.T) {
 	require.Equal(t, totalEvaluated, totalCharged, "every evaluated attempt after the first block must be charged")
 }
 
-// F14 sanity: charging an already blocked account never shortens the block, never exceeds Cap from now, and grows by the
-// doubling rule per charged attempt.
-func TestInvariant_R4_ChargingBlockedAccountFollowsDoublingAndCap(t *testing.T) {
+// F14 sanity: charging an already blocked account never shortens the block, never exceeds Cap from now, and raises the failure
+// count by one per charged attempt. It does NOT assert the doubling of the block end (it cannot fail on a mutant that keeps the
+// old end): that is TestRV4_BlockedChargeExtendsBlockByDoubling (round-4 review RV4-1).
+func TestInvariant_R4_ChargingBlockedAccountIsMonotoneAndCapped(t *testing.T) {
 	w := newWorld(t, "u:1")
 	ctx := context.Background()
 	pol := w.th.pol
@@ -162,4 +163,17 @@ func TestInvariant_R4_PurgeBoundaryOfInflightTokens(t *testing.T) {
 	w.th.mu.Unlock()
 	w.th.maybePurge(ctx, *w.now, pol)
 	require.Equal(t, 1, r4Count(t, w, `SELECT COUNT(*) FROM login_throttle WHERE subject='u:1' AND scope=?`, young.Attempt.scope), "inside TTL: not purged")
+}
+
+// Pins delayFor with literal values (the RV4 tests use delayFor as their own oracle, so they cannot kill a change inside it):
+// kills reviewer mutants M3 (extra doubling) and M4 (cap doubled). Unit-class.
+func TestInvariant_R4_DelayForLiteralValues(t *testing.T) {
+	base, cap := 30*time.Second, 15*time.Minute
+	require.Equal(t, time.Duration(0), delayFor(19, 20, base, cap))
+	require.Equal(t, 30*time.Second, delayFor(20, 20, base, cap))
+	require.Equal(t, 60*time.Second, delayFor(21, 20, base, cap))
+	require.Equal(t, 120*time.Second, delayFor(22, 20, base, cap))
+	require.Equal(t, 15*time.Minute, delayFor(25, 20, base, cap)) // 30s<<5 = 16m, just over Cap
+	require.Equal(t, cap, delayFor(40, 20, base, cap))
+	require.Equal(t, cap, delayFor(1000, 20, base, cap))
 }
