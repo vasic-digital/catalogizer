@@ -534,6 +534,7 @@ func TestUserRepository_LockUnlockAccount(t *testing.T) {
 	t.Run("lock account", func(t *testing.T) {
 		repo, mock := newMockUserRepo(t)
 		lockUntil := time.Now().Add(1 * time.Hour)
+		mock.ExpectQuery("FROM roles").WillReturnRows(sqlmock.NewRows([]string{"id", "name", "description", "permissions", "is_system", "created_at", "updated_at"}))
 		mock.ExpectExec("UPDATE users SET is_locked = 1").
 			WithArgs(lockUntil, 1, true).
 			WillReturnResult(sqlmock.NewResult(0, 1))

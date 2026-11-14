@@ -450,7 +450,8 @@ func (r *UserRepository) LockAccount(userID int, lockUntil time.Time) error {
 	if err != nil {
 		return err
 	}
-	guarded := len(adminIDs) > 0
+	// A lock that is already expired removes nobody, so it is not guarded.
+	guarded := len(adminIDs) > 0 && lockUntil.After(time.Now())
 	if guarded {
 		ph := make([]string, len(adminIDs))
 		for i, id := range adminIDs {
