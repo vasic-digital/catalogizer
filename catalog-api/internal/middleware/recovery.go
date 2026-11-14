@@ -32,7 +32,7 @@ func Recovery(logger *zap.Logger) gin.HandlerFunc {
 			if logger != nil {
 				logger.Error("panic recovered",
 					zap.String("method", c.Request.Method),
-					zap.String("path", logredact.Path(c.Request.URL.Path, c.Request.URL.RawQuery)),
+					zap.String("path", logredact.PathKnown(c.Request.URL.Path, c.Request.URL.RawQuery, requestKnownSecrets(c))),
 					zap.String("panic", panicText(c, rec)),
 					zap.Bool("broken_connection", broken),
 					zap.ByteString("stack", debug.Stack()),
@@ -71,11 +71,7 @@ func panicText(c *gin.Context, rec any) string {
 	default:
 		return fmt.Sprintf("%T (value not logged)", rec)
 	}
-	params := make(map[string]string, len(c.Params))
-	for _, p := range c.Params {
-		params[p.Key] = p.Value
-	}
-	return logredact.ErrorTextKnown(text, logredact.KnownSecrets(c.Request.URL.Path, c.Request.URL.RawQuery, c.Request.Header, params))
+	return logredact.ErrorTextKnown(text, requestKnownSecrets(c))
 }
 
 func isBrokenConnection(rec any) bool {

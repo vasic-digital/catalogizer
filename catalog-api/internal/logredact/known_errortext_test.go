@@ -52,3 +52,25 @@ func TestErrorTextKnown_BoundedCost(t *testing.T) {
 		t.Fatalf("ErrorTextKnown over 16 MiB took %v", best)
 	}
 }
+
+// HANDLERS-RED-1-F3 (c): an encoded slash (%2F) inside the share token decodes into extra path segments; none of them may survive.
+func TestSecretPath_DecodedSlashesInsideSecretDoNotLeak(t *testing.T) {
+	for in, want := range map[string]string{
+		"/logs/share//enc/Tok":        "/logs/share//:redacted",
+		"/api/v1/logs/share//a/b/c":   "/api/v1/logs/share//:redacted",
+		"/reset///S1/x":               "/reset///:redacted",
+		"/api/v1/logs/share/Tok/more": "/api/v1/logs/share/:redacted/more",
+		"/api/v1/logs/share//":        "/api/v1/logs/share//",
+	} {
+		if got := SecretPath(in); got != want {
+			t.Errorf("SecretPath(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
+
+func TestPathKnown_RemovesKnownSecretFromAnySegment(t *testing.T) {
+	got := PathKnown("/zz/items/Rt5Bw8KZq9Xv7Lm2/x", "ticket=AbCd1234", []string{"Rt5Bw8KZq9Xv7Lm2"})
+	if strings.Contains(got, "Rt5Bw8K") || !strings.Contains(got, "/zz/items/") || strings.Contains(got, "AbCd1234") {
+		t.Errorf("PathKnown = %q", got)
+	}
+}
