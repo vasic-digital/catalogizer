@@ -29,37 +29,53 @@ func KnownSecrets(path, rawQuery string, header http.Header, params map[string]s
 	}
 	// path segments after a secret-introducing segment
 	segs := strings.Split(path, "/")
-	for i := 0; i+1 < len(segs); i++ {
-		if !isSecretSegmentKey(segs[i]) {
+	addSeg := func(sg string) {
+		add(sg)
+		if u, err := url.PathUnescape(sg); err == nil && u != sg {
+			add(u)
+		}
+	}
+scan:
+	for i := 0; i < len(segs) && len(out) < maxKnownSecrets; i++ {
+		_, exact, ok := secretKey(segs[i])
+		if !ok {
 			continue
 		}
-		for j := i + 1; j < len(segs); j++ {
-			k := classifySegment(segs[j])
-			if k == segSkip {
-				continue
-			}
-			addSeg := func(sg string) {
-				add(sg)
-				if u, err := url.PathUnescape(sg); err == nil && u != sg {
-					add(u)
-				}
-			}
-			addSeg(segs[j])
-			if k == segWide {
-				// param values (";token=X", ";X") and, as the path is removed with it, every later segment
-				for _, prm := range strings.Split(decodeSegment(segs[j]), ";")[1:] {
+		j, regular := secretPosition(segs, i)
+		if !exact {
+			// the key's own parameters ("share;token=S", "share;S") are secret values
+			dec, _ := decodeSegment(segs[i])
+			if p := strings.IndexByte(dec, ';'); p >= 0 {
+				for _, prm := range strings.Split(dec[p+1:], ";") {
 					addSeg(prm)
-					if _, v, ok := strings.Cut(prm, "="); ok {
+					if _, v, found := strings.Cut(prm, "="); found {
 						addSeg(v)
 					}
 				}
-				for _, rest := range segs[j+1:] {
-					if rest != "" {
-						addSeg(rest)
+			}
+		}
+		if j >= len(segs) {
+			continue
+		}
+		addSeg(segs[j])
+		if !exact || !regular {
+			// the secret position is everything after the key: collect it ONCE and stop scanning (linear cost)
+			for _, sg := range segs[j:] {
+				if sg == "" || len(out) >= maxKnownSecrets {
+					continue
+				}
+				addSeg(sg)
+				dec, _ := decodeSegment(sg)
+				for _, prm := range strings.Split(dec, ";") {
+					if prm != dec {
+						addSeg(prm)
+					}
+					if _, v, found := strings.Cut(prm, "="); found {
+						addSeg(v)
 					}
 				}
 			}
-			break
+			break scan
 		}
 	}
 	for name, v := range params {

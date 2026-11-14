@@ -379,38 +379,54 @@ func redactText(s string, truncated bool) string {
 		}
 
 		// 3. secret path segment inside prose: /share/<seg> (extra slashes between the key and the segment are skipped)
-		if i > 0 && s[i-1] == '/' && j < n && (s[j] == '/' || s[j] == ';' || s[j] == '=') {
-			k := j // end of the whole key segment, path parameters included ("/share;x=1/S", "/share%3Bx=1/S")
-			for k < n && !isSpaceByte(s[k]) && s[k] != '/' && s[k] != '?' && s[k] != '#' && s[k] != '"' && s[k] != '\'' {
-				k++
-			}
-			if !isSecretSegmentKey(s[i:k]) {
-				k = n
-			}
-			if k < n && s[k] == '/' {
-				st, e := k+1, k+1
-				for { // skip extra slashes and dot / param-only segments between the key and the secret
-					for st < n && s[st] == '/' {
-						st++
-					}
-					e = st
-					for e < n && !isSpaceByte(s[e]) && s[e] != '/' && s[e] != '?' && s[e] != '#' && s[e] != '"' && s[e] != '\'' {
-						e++
-					}
-					if e > st && isSkippableSegment(s[st:e]) {
-						st = e
-						continue
-					}
-					break
+		if i > 0 && s[i-1] == '/' && j < n {
+			segEnd := func(from int) int {
+				e := from
+				for e < n && !isSpaceByte(s[e]) && s[e] != '/' && s[e] != '?' && s[e] != '#' && s[e] != '"' && s[e] != '\'' {
+					e++
 				}
-				if e > st {
-					if classifySegment(s[st:e]) == segWide { // the rest of the path goes with it
-						for e < n && !isSpaceByte(s[e]) && s[e] != '?' && s[e] != '#' && s[e] != '"' && s[e] != '\'' {
-							e++
-						}
-					}
+				segmentWork.Add(int64(e-from) + 1)
+				return e
+			}
+			tokenEnd := func(from int) int {
+				e := from
+				for e < n && !isSpaceByte(s[e]) && s[e] != '?' && s[e] != '#' && s[e] != '"' && s[e] != '\'' {
+					e++
+				}
+				segmentWork.Add(int64(e-from) + 1)
+				return e
+			}
+			k := segEnd(i) // the whole key segment, path parameters included
+			if base, exact, ok := secretKey(s[i:k]); ok {
+				st := k + 1
+				for st < n && k < n && s[k] == '/' && s[st] == '/' {
+					st++
+				}
+				regular := false
+				e := st
+				if k < n && s[k] == '/' && st < n {
+					e = segEnd(st)
+					regular = exact && st == k+1 && e > st && cleanToken(s[st:e])
+				}
+				switch {
+				case exact && regular:
 					b.WriteString(run + "/:redacted")
 					i = e
+					continue
+				case exact && (e <= st || k >= n || s[k] != '/'):
+					// bare key with nothing after it: fall through to the normal scan
+				default:
+					// irregular: only the base name stays; the key's parameters and the rest of the path are the secret
+					if base == "" {
+						base = redactedMark
+					}
+					b.WriteString(base)
+					if k < n && s[k] == '/' && st < n {
+						b.WriteString("/:redacted")
+						i = tokenEnd(st)
+					} else {
+						i = k
+					}
 					continue
 				}
 			}

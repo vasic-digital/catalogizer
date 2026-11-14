@@ -47,6 +47,12 @@ var r3f1Probes = []string{
 	"/api/v1/logs/share/;token=LIVEsecret",
 	"/share/%2525252e/LIVEsecret",
 	"/share/.%00/LIVEsecret",
+	"/share/%c0%ae/LIVEsecret",
+	"/share/%e2%80%a4/LIVEsecret",
+	"/share/%20/LIVEsecret",
+	"/share%00/LIVEsecret",
+	"/share;LIVEsecret/next",
+	"/share;token=LIVEsecret/next",
 }
 
 const r3f1Leak = "LIVEsecret"
@@ -111,13 +117,27 @@ func TestHygR3F1_SecretKeyVariantsRedactedInAllSinks(t *testing.T) {
 
 // Negative control: a segment that is not a secret key stays unchanged (the fix is not a blanket redaction), also with ";" and ".".
 func TestHygR3F1_NonSecretSegmentUnchanged(t *testing.T) {
-	for _, target := range []string{"/other;x=1/LIVEsecret", "/other./LIVEsecret", "/sharex;x=1/LIVEsecret", "/xshare./LIVEsecret", "/sharing/;/LIVEsecret", "/api/v1/media/42/./LIVEsecret", "/x.share/;/LIVEsecret", "/other/./LIVEsecret"} {
+	for _, target := range []string{"/other;x=1/LIVEsecret", "/other./LIVEsecret", "/sharex;x=1/LIVEsecret", "/xshare./LIVEsecret", "/sharing/;/LIVEsecret", "/api/v1/media/42/./LIVEsecret", "/x.share/;/LIVEsecret", "/other/./LIVEsecret", "/api/v1/media/42/;x/LIVEsecret", "/api/v1/collections/9/files/;v=2/LIVEsecret"} {
 		for sink, text := range r3f1Sinks(t, target) {
 			if !strings.Contains(text, r3f1Leak) {
 				t.Errorf("%s %s: non-secret segment was redacted: %q", sink, target, text)
 			}
 			if strings.Contains(text, ":redacted") {
 				t.Errorf("%s %s: unexpected marker: %q", sink, target, text)
+			}
+		}
+	}
+}
+
+// Key parameters with nothing after the key: no marker is required, the value must not be logged.
+func TestHygR3F1_KeyParamOnlyNoLeak(t *testing.T) {
+	for _, target := range []string{"/share;LIVEsecret", "/share;token=LIVEsecret", "/share%3BLIVEsecret"} {
+		for sink, text := range r3f1Sinks(t, target) {
+			if text == "" {
+				t.Fatalf("%s %s: control needle: sink wrote nothing", sink, target)
+			}
+			if strings.Contains(text, r3f1Leak) {
+				t.Errorf("%s %s: key parameter leaked: %q", sink, target, text)
 			}
 		}
 	}

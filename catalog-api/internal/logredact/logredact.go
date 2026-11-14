@@ -4,6 +4,7 @@ package logredact
 import (
 	"net/url"
 	"strings"
+	"sync/atomic"
 )
 
 // Sensitive-name policy: ONE list for the access-log query filter (Query) and the free-text scanner (Text), so a name added
@@ -103,86 +104,87 @@ var secretSegmentKeys = map[string]bool{
 	"apikey": true, "api-key": true, "api_key": true, "verify": true, "confirm": true, "activate": true, "magic": true,
 }
 
-// canonicalSegment is the form of a path segment that is compared with secretSegmentKeys: percent-decoded (at most
-// maxSegmentDecodes rounds), lower-cased, cut at the first ";" (a path parameter, "share;x=1") and stripped of trailing dots
-// ("share.", "share.."). A router that ignores path parameters or dot suffixes would otherwise serve the secret that follows
-// while the logger did not recognise the key (HYG-R3-F1). overflow reports that the segment still decoded after the last
-// round (a deeper escape than any sink handles): callers treat such a segment as a key (over-redaction, HYG-R3-F2).
+// Secret keys and the secret position (HYG-R3-F1, review round 3: ONE structural rule replaces the earlier layered
+// classification). A segment is a secret KEY when its base name is in secretSegmentKeys; the base name is the segment
+// percent-decoded (at most maxSegmentDecodes rounds), stripped of control bytes, cut at the first ";" (path parameters),
+// trimmed of trailing dots and lower-cased. A segment still decodable after the last round is ambiguous and counts as a key.
+//
+// A key is REGULAR when the raw segment is exactly its base name (any case) AND the next non-empty segment is a CLEAN token
+// (cleanToken) directly after it: then only that one segment is the secret. In EVERY other shape (a key with parameters,
+// encodings or control bytes, a dot / param / look-alike / non-token segment after it, empty segments in between) the secret
+// position is everything after the key's base name: the key's parameters and the whole rest of the path are redacted (share
+// tokens are base64url with a prefix, no legitimate content follows). Over-redaction is the deliberate policy.
 const maxSegmentDecodes = 3
 
-func canonicalSegment(seg string) (canon string, overflow bool) {
+// segmentWork counts the bytes examined by the segment helpers: a deterministic cost oracle for tests (work counted, not time).
+var segmentWork atomic.Int64
+
+// decodeSegment percent-decodes seg at most maxSegmentDecodes rounds; more reports a segment that still decodes afterwards.
+func decodeSegment(seg string) (dec string, more bool) {
 	for i := 0; i < maxSegmentDecodes; i++ {
+		segmentWork.Add(int64(len(seg)) + 1)
 		u, err := url.PathUnescape(seg)
 		if err != nil || u == seg {
-			break
+			return seg, false
 		}
 		seg = u
 	}
-	if u, err := url.PathUnescape(seg); err == nil && u != seg {
-		return "", true
-	}
-	if i := strings.IndexByte(seg, ';'); i >= 0 {
-		seg = seg[:i]
-	}
-	return strings.TrimRight(strings.ToLower(seg), "."), false
+	segmentWork.Add(int64(len(seg)) + 1)
+	u, err := url.PathUnescape(seg)
+	return seg, err == nil && u != seg
 }
 
-// isSecretSegmentKey reports whether seg introduces a bearer secret in the NEXT segment.
-func isSecretSegmentKey(seg string) bool {
-	c, overflow := canonicalSegment(seg)
-	return overflow || secretSegmentKeys[c]
+// secretKey reports whether seg is a secret key; base is its base name ("" for an ambiguous segment) and exact whether the
+// raw segment is exactly that base name.
+func secretKey(seg string) (base string, exact, ok bool) {
+	dec, more := decodeSegment(seg)
+	if more {
+		return "", false, true
+	}
+	if i := strings.IndexByte(dec, ';'); i >= 0 {
+		dec = dec[:i]
+	}
+	if strings.IndexFunc(dec, func(r rune) bool { return r < 0x20 || r == 0x7f }) >= 0 {
+		dec = strings.Map(func(r rune) rune {
+			if r < 0x20 || r == 0x7f {
+				return -1
+			}
+			return r
+		}, dec)
+	}
+	base = strings.TrimRight(strings.ToLower(dec), ".")
+	if !secretSegmentKeys[base] {
+		return "", false, false
+	}
+	return base, strings.EqualFold(seg, base), true
 }
 
-// segKind classifies the segment that follows a secret key (HYG-R3-F1 review rounds 1-2).
-type segKind int
-
-const (
-	segPlain segKind = iota // ordinary content: the secret position
-	segSkip                 // no content at all after decoding ("", ".", "..", dots only, a lone ";"): skipped like an empty segment
-	segWide                 // ambiguous or param-with-value (";token=X", ";X", "..;X"), overflow past the decode cap, control byte:
-	// the secret position AND the rest of the path is removed with it (over-redaction, as for the %2F rule)
-)
-
-func classifySegment(seg string) segKind {
-	for i := 0; i < maxSegmentDecodes; i++ {
-		u, err := url.PathUnescape(seg)
-		if err != nil || u == seg {
-			break
-		}
-		seg = u
-	}
-	if u, err := url.PathUnescape(seg); err == nil && u != seg {
-		return segWide
-	}
+// cleanToken reports whether seg looks like a bare token: non-empty, only [A-Za-z0-9_.~=-], and not dots only.
+func cleanToken(seg string) bool {
+	segmentWork.Add(int64(len(seg)) + 1)
+	dots := true
 	for i := 0; i < len(seg); i++ {
-		if seg[i] < 0x20 || seg[i] == 0x7f {
-			return segWide
+		c := seg[i]
+		switch {
+		case c == '.':
+		case c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_' || c == '-' || c == '~' || c == '=':
+			dots = false
+		default:
+			return false
 		}
 	}
-	before, after, hasParam := strings.Cut(seg, ";")
-	if strings.Trim(before, ".") != "" {
-		return segPlain
-	}
-	if hasParam && after != "" {
-		return segWide
-	}
-	return segSkip
+	return !dots && seg != ""
 }
 
-// decodeSegment percent-decodes seg at most maxSegmentDecodes rounds.
-func decodeSegment(seg string) string {
-	for i := 0; i < maxSegmentDecodes; i++ {
-		u, err := url.PathUnescape(seg)
-		if err != nil || u == seg {
-			break
-		}
-		seg = u
+// secretPosition returns the index of the first non-empty segment after key i (len(segs) when none) and whether the key is in
+// the regular shape (the segment directly after it, a clean token).
+func secretPosition(segs []string, i int) (j int, regular bool) {
+	j = i + 1
+	for j < len(segs) && segs[j] == "" {
+		j++
 	}
-	return seg
+	return j, j == i+1 && j < len(segs) && cleanToken(segs[j])
 }
-
-// isSkippableSegment reports whether seg carries no content between a secret key and its secret.
-func isSkippableSegment(seg string) bool { return classifySegment(seg) == segSkip }
 
 // SecretPath returns path with every segment that follows a secret-introducing segment (see secretSegmentKeys) replaced by
 // ":redacted". Everything else is preserved. Use it for ANY log field that carries a raw request path.
@@ -191,24 +193,27 @@ func SecretPath(path string) string {
 		return path
 	}
 	segs := strings.Split(path, "/")
-	for i := 0; i+1 < len(segs); i++ {
-		if !isSecretSegmentKey(segs[i]) {
+	for i := 0; i < len(segs); i++ {
+		base, exact, ok := secretKey(segs[i])
+		if !ok {
 			continue
 		}
-		// "/share//S", "/share/./S", "/share/;x=1/S": empty and dot/param-only segments between the key and the secret are skipped; the first non-empty
-		// segment is the secret (a trailing "/share//" with nothing after it stays unchanged).
-		j := i + 1
-		for j < len(segs) && isSkippableSegment(segs[j]) {
-			j++
-		}
-		if j < len(segs) {
-			wide := classifySegment(segs[j]) == segWide
-			segs[j] = ":redacted"
-			if j > i+1 || wide {
-				// "/share//S": the empty segment is what a decoded %2F at the START of the token leaves ("%2Fenc%2FTok" ->
-				// "/enc/Tok"); the rest of the path may be more of the token, so it is removed too (over-redaction by policy).
-				segs = segs[:j+1]
+		j, regular := secretPosition(segs, i)
+		if !exact {
+			// the key's own parameters are part of the secret position: only its base name is kept
+			if base == "" {
+				segs[i] = ":redacted"
+			} else {
+				segs[i] = base
 			}
+		}
+		if j >= len(segs) {
+			continue // nothing after the key ("/share", "/share//")
+		}
+		segs[j] = ":redacted"
+		if !exact || !regular {
+			segs = segs[:j+1] // everything after the key goes with it
+			break
 		}
 	}
 	return strings.Join(segs, "/")
