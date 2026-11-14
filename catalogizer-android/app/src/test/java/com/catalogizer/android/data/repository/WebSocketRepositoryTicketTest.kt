@@ -156,6 +156,53 @@ class WebSocketRepositoryTicketTest {
         ApiWsTicketMinter(api).mint(jwt)
     }
 
+    @Test
+    fun `WSF2-R2-F2 onClose from a replaced client does not trigger a reconnect`() = runTest {
+        val minter = CountingMinter()
+        val r = repo(this, minter)
+        r.connect(); runCurrent()
+        val oldListener = FakeSocket.lastListener!!
+        r.connect(); runCurrent() // replaces the client while connected
+        assertEquals(2, minter.n)
+        assertEquals(2, FakeSocket.connects.size)
+
+        oldListener.onClose(1000, false) // the replaced client reports its close
+        advanceTimeBy(60_000); runCurrent()
+
+        assertEquals("replaced-client close must not cause reconnect churn", 2, minter.n)
+        assertEquals(2, FakeSocket.connects.size)
+        r.disconnect()
+    }
+
+    @Test
+    fun `WSF2-R2-F2 stale callbacks do not publish events or reset attempts`() = runTest {
+        val minter = CountingMinter()
+        val r = repo(this, minter)
+        r.connect(); runCurrent()
+        val oldListener = FakeSocket.lastListener!!
+        r.connect(); runCurrent()
+        val before = r.events.value
+
+        oldListener.onMessage("""{"type":"stale"}""")
+        oldListener.onError("stale error")
+        oldListener.onOpen("stale open")
+
+        assertEquals(before, r.events.value)
+        r.disconnect()
+    }
+
+    @Test
+    fun `WSF2-R2-F2 current client close still reconnects`() = runTest {
+        val minter = CountingMinter()
+        val r = repo(this, minter)
+        r.connect(); runCurrent()
+        r.connect(); runCurrent()
+        FakeSocket.lastListener!!.onClose(1006, true)
+        advanceTimeBy(1001); runCurrent()
+        assertEquals(3, minter.n)
+        r.disconnect()
+    }
+
     private fun WebSocketRepository.simulateRemoteClose() {
         FakeSocket.lastListener!!.onClose(1006, true)
     }

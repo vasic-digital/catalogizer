@@ -16,6 +16,8 @@ import org.java_websocket.handshake.ServerHandshake
 import java.io.IOException
 import java.net.URI
 import java.net.URLEncoder
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 
 /** Mints a single-use WebSocket ticket (SEC-WS-1 F2). The session token is sent in a header, never in the /ws URL. */
 fun interface WsTicketMinter {
@@ -92,24 +94,29 @@ class WebSocketRepository(
     private val _events = MutableStateFlow<WebSocketEvent>(WebSocketEvent.Disconnected)
     val events: StateFlow<WebSocketEvent> = _events.asStateFlow()
 
+    // WSF2-R2-F2: state is touched from the caller thread, the coroutine pool and the socket threads.
+    // lock guards client/job; intentional is volatile; attempts is atomic.
+    private val lock = Any()
     private var client: WebSocketClient? = null
     private var job: Job? = null
-    private var intentional = false
-    private var attempts = 0
+    @Volatile private var intentional = false
+    private val attempts = AtomicInteger(0)
 
     /** Test seam: builds the socket for a URI; tests substitute a client that does not touch the network. */
     internal var clientFactory: (URI, WsListener) -> WebSocketClient = { uri, l -> WsClient(uri, l) }
 
     fun connect() {
         if (tokenProvider() == null) return
-        intentional = false
-        attempts = 0
-        job?.cancel()
-        open()
+        synchronized(lock) {
+            intentional = false
+            attempts.set(0)
+            job?.cancel()
+            open()
+        }
     }
 
     private fun open() {
-        job = scope.launch {
+        val newJob = scope.launch {
             // Re-read the token on every attempt so a refreshed session is used.
             val token = tokenProvider() ?: return@launch
             val minter = ticketMinter
@@ -127,23 +134,47 @@ class WebSocketRepository(
                 scheduleReconnect()
                 return@launch
             }
-            if (intentional) return@launch
             try {
                 val wsUrl = baseUrl.replace("http://", "ws://").replace("https://", "wss://")
                 val uri = URI("$wsUrl/ws?ticket=${URLEncoder.encode(ticket, "UTF-8")}")
-                client?.close()
-                val c = clientFactory(uri, listener)
-                client = c
+                val holder = AtomicReference<WebSocketClient?>(null)
+                val c = clientFactory(uri, currentOnly(holder))
+                holder.set(c)
+                val old: WebSocketClient?
+                synchronized(lock) {
+                    if (intentional) return@launch
+                    old = client
+                    client = c
+                }
+                old?.close()
                 c.connect()
             } catch (e: Exception) {
                 _events.value = WebSocketEvent.Error(e.message ?: "Connection failed")
             }
         }
+        job = newJob
+    }
+
+    /**
+     * Each socket gets its own listener view: callbacks from a client that is no longer the current one
+     * (replaced by connect(), or dropped by disconnect()) are ignored, so a replaced client's onClose can
+     * never trigger scheduleReconnect or overwrite the event state.
+     */
+    private fun currentOnly(holder: AtomicReference<WebSocketClient?>): WsListener = object : WsListener {
+        private fun current(): Boolean {
+            val me = holder.get() ?: return false
+            return synchronized(lock) { client === me }
+        }
+
+        override fun onOpen(statusMessage: String) { if (current()) listener.onOpen(statusMessage) }
+        override fun onMessage(message: String) { if (current()) listener.onMessage(message) }
+        override fun onClose(code: Int, remote: Boolean) { if (current()) listener.onClose(code, remote) }
+        override fun onError(message: String) { if (current()) listener.onError(message) }
     }
 
     private val listener = object : WsListener {
         override fun onOpen(statusMessage: String) {
-            attempts = 0
+            attempts.set(0)
             _events.value = WebSocketEvent.Connected(statusMessage)
         }
 
@@ -165,21 +196,26 @@ class WebSocketRepository(
     }
 
     private fun scheduleReconnect() {
-        if (intentional || attempts >= maxReconnectAttempts) return
-        val delayMs = reconnectBaseDelayMs * (1L shl attempts)
-        attempts++
-        job = scope.launch {
-            delay(delayMs)
-            if (!intentional) open()
+        synchronized(lock) {
+            if (intentional || attempts.get() >= maxReconnectAttempts) return
+            val delayMs = reconnectBaseDelayMs * (1L shl attempts.getAndIncrement())
+            job = scope.launch {
+                delay(delayMs)
+                synchronized(lock) { if (!intentional) open() }
+            }
         }
     }
 
     fun disconnect() {
-        intentional = true
-        job?.cancel()
-        job = null
-        client?.close()
-        client = null
+        val old: WebSocketClient?
+        synchronized(lock) {
+            intentional = true
+            job?.cancel()
+            job = null
+            old = client
+            client = null
+        }
+        old?.close()
         _events.value = WebSocketEvent.Disconnected
     }
 }
