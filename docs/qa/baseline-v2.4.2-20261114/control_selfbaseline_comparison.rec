@@ -1,0 +1,26 @@
+schema=image_no_worse/1
+verdict=INCOMPARABLE-BASELINE-MISSING
+reasons=new image file-sha256 set equals the baseline's (same image)
+baseline_verdicts_path=/home/milosvasic/.cache/claude-tmp/qabase.1mSVyT/out/verdicts_web_v2.4.2.tsv
+new_verdicts_path=/home/milosvasic/.cache/claude-tmp/qabase.1mSVyT/out/verdicts_web_v2.4.2.tsv
+baseline_verdicts_sha256=c311dea76e3c0c86eba9dd41b2bd8dca6da312c5a9f781edeb5ed6321e63abff
+new_verdicts_sha256=c311dea76e3c0c86eba9dd41b2bd8dca6da312c5a9f781edeb5ed6321e63abff
+baseline_meta_sha256=b272be91b1388f079084dfaa81d53090f72e993f52056dc61307ce4ba606f961
+new_meta_sha256=b272be91b1388f079084dfaa81d53090f72e993f52056dc61307ce4ba606f961
+targets=absent
+board=anton-b149e84ebf7b
+harness=playwright-1.61.0 e2e/live (catalog-web) via docs/qa/stack3 stack catqab
+suite=catalog-web-e2e-live(chromium-desktop,firefox-desktop;N=3 identical)
+command=catalog-web/e2e/live/run_live.sh {chromium-desktop,firefox-desktop} 3
+image_baseline=catqab-api fc8dcf27 bd071396f1f35dd7ebc74050918f97c5c7524426656707e6072581f77749b845
+image_baseline=catqab-web fc8dcf27 2943f5b3d6088452042d3e2eea8bd742fcc1d93238e8c8b3725c8fcf00eca105
+image_new=catqab-api fc8dcf27 bd071396f1f35dd7ebc74050918f97c5c7524426656707e6072581f77749b845
+image_new=catqab-web fc8dcf27 2943f5b3d6088452042d3e2eea8bd742fcc1d93238e8c8b3725c8fcf00eca105
+baseline_total=0
+baseline_pass=0
+baseline_notpass=0
+new_total=66
+new_notpass_on_baseline_set=0
+lost=
+new_tests=
+targets_missing=

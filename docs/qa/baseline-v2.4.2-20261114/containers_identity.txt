@@ -1,0 +1,2 @@
+catqab-api image=localhost/catqab-api:main-fc8dcf27 imageid=bd071396f1f35dd7ebc74050918f97c5c7524426656707e6072581f77749b845 state=running health=healthy
+catqab-web image=localhost/catqab-web:main-fc8dcf27 imageid=2943f5b3d6088452042d3e2eea8bd742fcc1d93238e8c8b3725c8fcf00eca105 state=running health=

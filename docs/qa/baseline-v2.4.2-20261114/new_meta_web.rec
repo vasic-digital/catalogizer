@@ -1,0 +1,6 @@
+board=anton-b149e84ebf7b
+harness=playwright-1.61.0 e2e/live (catalog-web) via docs/qa/stack3 stack catqab
+suite=catalog-web-e2e-live(chromium-desktop,firefox-desktop;N=3 identical)
+command=catalog-web/e2e/live/run_live.sh {chromium-desktop,firefox-desktop} 3
+image=catqab-api fc8dcf27 bd071396f1f35dd7ebc74050918f97c5c7524426656707e6072581f77749b845
+image=catqab-web fc8dcf27 2943f5b3d6088452042d3e2eea8bd742fcc1d93238e8c8b3725c8fcf00eca105
