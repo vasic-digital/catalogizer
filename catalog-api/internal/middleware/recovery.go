@@ -75,8 +75,7 @@ func panicText(c *gin.Context, rec any) string {
 	for _, p := range c.Params {
 		params[p.Key] = p.Value
 	}
-	text = logredact.ReplaceKnown(text, logredact.KnownSecrets(c.Request.URL.Path, c.Request.URL.RawQuery, c.Request.Header, params))
-	return logredact.ErrorText(text)
+	return logredact.ErrorTextKnown(text, logredact.KnownSecrets(c.Request.URL.Path, c.Request.URL.RawQuery, c.Request.Header, params))
 }
 
 func isBrokenConnection(rec any) bool {

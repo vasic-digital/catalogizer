@@ -171,7 +171,5 @@ func requestErrorText(c *gin.Context, err error) string {
 	for _, p := range c.Params {
 		params[p.Key] = p.Value
 	}
-	text := fmt.Sprint(err)
-	text = logredact.ReplaceKnown(text, logredact.KnownSecrets(c.Request.URL.Path, c.Request.URL.RawQuery, c.Request.Header, params))
-	return logredact.ErrorText(text)
+	return logredact.ErrorTextKnown(fmt.Sprint(err), logredact.KnownSecrets(c.Request.URL.Path, c.Request.URL.RawQuery, c.Request.Header, params))
 }
