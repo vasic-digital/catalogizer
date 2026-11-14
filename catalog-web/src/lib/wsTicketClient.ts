@@ -59,6 +59,11 @@ export class TicketWebSocketClient {
   connect(): void {
     if (this.disposed) throw new Error('TicketWebSocketClient has been disposed')
     if (this.opening || this.inner) return
+    // a manual connect() supersedes a pending backoff timer (otherwise the timer would open a second socket) and, after
+    // reconnect_failed, starts a fresh attempt budget
+    if (this.timer) clearTimeout(this.timer)
+    this.timer = null
+    this.attempts = 0
     this.intentional = false
     void this.open()
   }
@@ -96,11 +101,21 @@ export class TicketWebSocketClient {
     }
     this.opening = false
     if (this.disposed || this.intentional) return
-    const client = new BaseWebSocketClient({
-      url: wsUrlWithTicket(this.opts.url, ticket),
-      reconnect: false, // a spent ticket cannot be replayed: this wrapper reconnects with a new one
-      bufferWhileDisconnected: false,
-    })
+    let client: BaseWebSocketClient
+    try {
+      client = new BaseWebSocketClient({
+        url: wsUrlWithTicket(this.opts.url, ticket),
+        reconnect: false, // a spent ticket cannot be replayed: this wrapper reconnects with a new one
+        bufferWhileDisconnected: false,
+      })
+    } catch (e) {
+      // e.g. a SecurityError / SyntaxError from `new WebSocket`: no half-built wrapper is kept; retry through our own loop
+      this.inner = null
+      this.state = 'disconnected'
+      this.emit('error', e)
+      this.scheduleReconnect()
+      return
+    }
     client.on('message', (m: WebSocketMessage) => this.emit('message', m))
     client.on('error', (e: unknown) => this.emit('error', e))
     client.on('connected', () => {
@@ -118,7 +133,15 @@ export class TicketWebSocketClient {
       if (!this.intentional && !this.disposed) this.scheduleReconnect()
     })
     this.inner = client
-    client.connect()
+    try {
+      client.connect()
+    } catch (e) {
+      if (this.inner === client) this.inner = null
+      client.dispose()
+      this.state = 'disconnected'
+      this.emit('error', e)
+      this.scheduleReconnect()
+    }
   }
 
   private scheduleReconnect(): void {

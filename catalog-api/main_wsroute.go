@@ -16,7 +16,7 @@ func registerWebSocketRoute(router gin.IRoutes, mw *root_middleware.JWTMiddlewar
 	// lock and token expiry close the socket and admin-only events stay admin-only.
 	h.SetAuthChecks(root_handlers.WSSessionCheck(mw.SessionCheck()), root_handlers.WSAdminCheck(mw.AdminCheck()))
 	// SEC-WS-1 F2: /ws takes "Authorization: Bearer" or a single-use ?ticket= only; a session JWT in the query is refused.
-	// The ticket is minted by POST /api/v1/ws/ticket (Authorization header only).
-	router.POST("/api/v1/ws/ticket", mw.RequireBearerHeader(), mw.MintWSTicket)
+	// The ticket is minted by POST /api/v1/ws/ticket (Authorization header only), rate limited per user and capped per user (429 + Retry-After).
+	router.POST("/api/v1/ws/ticket", mw.RequireBearerHeader(), mw.WSTicketMintLimit(), mw.MintWSTicket)
 	router.GET("/ws", mw.RequireWSAuth(), h.HandleConnection)
 }

@@ -144,7 +144,8 @@ class TestWebSocketClient {
       return
     }
 
-    const wsUrl = this.token ? `${this.wsUrl}?token=${this.token}` : this.wsUrl
+    // SEC-WS-1 F2: the session JWT is never put in the URL; the caller passes a single-use ticket (see wsTicketClient.ts)
+    const wsUrl = this.token ? `${this.wsUrl}?ticket=${encodeURIComponent(this.token)}` : this.wsUrl
 
     try {
       this.ws = new WebSocket(wsUrl)
@@ -263,11 +264,11 @@ describe('WebSocketClient', () => {
       expect(wsInstances[0].url).toBe('ws://localhost:8080/ws')
     })
 
-    it('appends token to WebSocket URL when provided', () => {
+    it('appends a ticket (never a ?token= JWT) to the WebSocket URL when provided', () => {
       const client = new TestWebSocketClient(WS_URL, 'my-auth-token')
       client.connect()
 
-      expect(wsInstances[0].url).toBe('ws://localhost:8080/ws?token=my-auth-token')
+      expect(wsInstances[0].url).toBe('ws://localhost:8080/ws?ticket=my-auth-token')
     })
 
     it('falls back to localStorage token when not provided in constructor', () => {
@@ -278,7 +279,7 @@ describe('WebSocketClient', () => {
       const client = new TestWebSocketClient(WS_URL, 'stored-token')
       client.connect()
 
-      expect(wsInstances[0].url).toBe('ws://localhost:8080/ws?token=stored-token')
+      expect(wsInstances[0].url).toBe('ws://localhost:8080/ws?ticket=stored-token')
     })
 
     it('does not create duplicate connections if already open', () => {

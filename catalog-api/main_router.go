@@ -207,7 +207,7 @@ func buildRouter(d routerDeps) *gin.Engine {
 	deepHealthChecker := metrics.NewHealthChecker(databaseDB, Version)
 	router.GET("/health/deep", root_middleware.CacheHeaders(5), deepHealthHandler(deepHealthChecker, Version, 100*time.Millisecond))
 
-	// WebSocket endpoint: authenticated (Bearer header or ?token=, session-checked) and Origin-checked; see registerWebSocketRoute
+	// WebSocket endpoint: authenticated (Bearer header or a single-use ?ticket= from POST /api/v1/ws/ticket, session-checked) and Origin-checked; see registerWebSocketRoute
 	registerWebSocketRoute(router, jwtMiddleware, wsHandler)
 
 	// Image proxy — serves external images (TMDB, etc.) through the API.
