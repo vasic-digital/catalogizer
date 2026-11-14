@@ -33,3 +33,53 @@ func TestLockAccount_LastAdminRefused_ThenAllowedWithSecondAdmin(t *testing.T) {
 	sa, _ := e.repo.GetByUsername("second_admin")
 	require.True(t, errors.Is(e.repo.LockAccount(sa.ID, time.Now().Add(time.Hour)), repository.ErrLastAdmin))
 }
+
+// lockRacer simulates the concurrent writer of the race: just before the
+// handler's own lock write reaches the real repository, the other administrator
+// is locked (through the real repository), so the handler's target is by then
+// the only effective administrator. Everything else is the real handler,
+// service adapter and repository.
+type lockRacer struct {
+	*AuthServiceAdapter
+	e       *d9Env
+	otherID int
+}
+
+func (l *lockRacer) LockAccount(userID int, until time.Time) error {
+	if err := l.e.repo.LockAccount(l.otherID, until); err != nil {
+		return err
+	}
+	return l.AuthServiceAdapter.LockAccount(userID, until)
+}
+
+func TestLockAccountHTTP_LastAdminIs409_OthersUnchanged(t *testing.T) {
+	e := newD9Env(t)
+	hash, salt, herr := e.authSvc.HashPasswordForUser(rtUserPass)
+	require.NoError(t, herr)
+	ad2ID, cerr := e.repo.Create(&models.User{Username: "second_admin", Email: "sa@example.test", PasswordHash: hash, Salt: salt, RoleID: 1, IsActive: true})
+	require.NoError(t, cerr)
+	adm, err := e.repo.GetByUsername("rtadmin")
+	require.NoError(t, err)
+
+	base := &AuthServiceAdapter{Inner: e.authSvc}
+	e.r.POST("/lk/users/:id/lock", WrapHTTPHandler(NewUserHandler(e.repo, base).LockAccount))
+	e.r.POST("/lkrace/users/:id/lock", WrapHTTPHandler(NewUserHandler(e.repo, &lockRacer{AuthServiceAdapter: base, e: e, otherID: adm.ID}).LockAccount))
+	body := `{"lock_until":"2099-01-01T00:00:00Z"}`
+
+	// Non-admin / no user.manage permission: refused, state unchanged.
+	w := e.do(e.userTok, "POST", "/lk/users/"+rtItoa(ad2ID)+"/lock", body)
+	require.Contains(t, []int{401, 403}, w.Code, w.Body.String())
+	u, _ := e.repo.GetByID(ad2ID)
+	require.False(t, u.IsLocked)
+
+	// Admin locking a non-admin: unchanged behaviour, 200.
+	w = e.do(e.adminTok, "POST", "/lk/users/"+rtItoa(e.userID)+"/lock", body)
+	require.Equal(t, 200, w.Code, w.Body.String())
+
+	// The race: the target became the last effective administrator -> 409, not 500, and it stays unlocked.
+	w = e.do(e.adminTok, "POST", "/lkrace/users/"+rtItoa(ad2ID)+"/lock", body)
+	require.Equal(t, 409, w.Code, w.Body.String())
+	require.Contains(t, w.Body.String(), "last administrator")
+	u, _ = e.repo.GetByID(ad2ID)
+	require.False(t, u.IsLocked, "refused lock must leave the last administrator unlocked")
+}

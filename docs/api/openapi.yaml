@@ -5180,6 +5180,8 @@ paths:
           description: "Caller lacks `user.manage`, or an admin target for a non-admin caller."
         '404':
           description: "No such user, reported to a caller without `system.admin` (the admin-target check looks the user up). For a `system.admin` caller the operation runs without that lookup; its outcome for an unknown id is not measured."
+        '409':
+          description: "The lock would remove the last effective administrator (an active, unlocked account holding `system.admin`): `The last administrator cannot be locked`. Nothing is written and no session is revoked. A lock whose `lock_until` is already in the past removes nobody and is not refused."
         '500':
           description: "Service error."
   /api/v1/users/{id}/unlock:

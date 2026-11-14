@@ -462,7 +462,26 @@ func (r *UserRepository) LockAccount(userID int, lockUntil time.Time) error {
 		query += " AND (role_id NOT IN (" + strings.Join(ph, ",") + ") OR " + clause + ")"
 		args = append(args, cargs...)
 	}
+	// refusedByGuard re-reads the row to tell "the guard held the write back"
+	// from "already suspended / no such user". On PostgreSQL it runs inside the
+	// same transaction (still holding the advisory lock), so the classification
+	// reads the same state the guarded UPDATE saw.
+	type rower interface {
+		QueryRow(query string, args ...interface{}) *sql.Row
+	}
+	refusedByGuard := func(q rower, rewrite bool) bool {
+		sq := `SELECT role_id, COALESCE(is_locked, '0'), locked_until FROM users WHERE id = ?`
+		if rewrite {
+			sq = r.db.Rewrite(sq)
+		}
+		var rid int
+		var locked bool
+		var until *time.Time
+		return q.QueryRow(sq, userID).Scan(&rid, &locked, &until) == nil &&
+			containsInt(adminIDs, rid) && !(locked && until == nil)
+	}
 	var n int64
+	refused := false
 	if guarded && r.db.Dialect().Type == database.DialectPostgres {
 		tx, berr := r.db.Begin()
 		if berr != nil {
@@ -477,6 +496,9 @@ func (r *UserRepository) LockAccount(userID int, lockUntil time.Time) error {
 			return xerr
 		}
 		n, _ = res.RowsAffected()
+		if n == 0 {
+			refused = refusedByGuard(tx, true)
+		}
 		if err = tx.Commit(); err != nil {
 			return err
 		}
@@ -487,15 +509,11 @@ func (r *UserRepository) LockAccount(userID int, lockUntil time.Time) error {
 		}
 		n, _ = res.RowsAffected()
 	}
-	if n == 0 && guarded {
-		// Distinguish "the guard held the write back" from "already suspended / no such user".
-		var rid int
-		var locked bool
-		var until *time.Time
-		if qerr := r.db.QueryRow(`SELECT role_id, COALESCE(is_locked, '0'), locked_until FROM users WHERE id = ?`, userID).Scan(&rid, &locked, &until); qerr == nil &&
-			containsInt(adminIDs, rid) && !(locked && until == nil) {
-			return ErrLastAdmin
-		}
+	if n == 0 && guarded && r.db.Dialect().Type != database.DialectPostgres {
+		refused = refusedByGuard(r.db, false)
+	}
+	if refused {
+		return ErrLastAdmin
 	}
 	// A locked account keeps no session: JWT-only routes check the session row
 	// alone. The lock is written first so no new session can be issued, then

@@ -6,6 +6,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -53,28 +54,31 @@ func TestPGLastAdmin_ConcurrentRemovalsNeverLeaveZero(t *testing.T) {
 		require.NoError(t, cerr)
 		return id
 	}
-	a1, a2 := mk("la1"), mk("la2")
+	seq := 0
+	var admins []int
 	effective := func() int {
 		var n int
 		require.NoError(t, db.QueryRow(`SELECT COUNT(*) FROM users WHERE role_id = 1 AND is_active = TRUE AND (is_locked IS NULL OR is_locked = FALSE OR (locked_until IS NOT NULL AND locked_until <= NOW()))`).Scan(&n))
 		return n
 	}
-	reset := func() {
-		for _, id := range []int{a1, a2} {
-			if _, gerr := repo.GetByID(id); gerr != nil {
-				// deleted by the previous round: recreate under the same name
-				nn := "la" + strconv.Itoa(id)
-				nid, cerr := repo.Create(&models.User{Username: nn + strconv.FormatInt(time.Now().UnixNano(), 10), Email: nn + strconv.FormatInt(time.Now().UnixNano(), 10) + "@x.test", RoleID: 1, IsActive: true, Salt: "s", PasswordHash: "h"})
-				require.NoError(t, cerr)
-				if id == a1 {
-					a1 = nid
-				} else {
-					a2 = nid
-				}
-			}
+	// reset restores exactly n active, unlocked administrators (recreating deleted ones).
+	reset := func(n int) {
+		for len(admins) < n {
+			seq++
+			admins = append(admins, mk(fmt.Sprintf("la%d", seq)))
 		}
-		_, rerr := db.Exec(`UPDATE users SET role_id = 1, is_active = TRUE, is_locked = FALSE, locked_until = NULL WHERE id IN (?, ?)`, a1, a2)
-		require.NoError(t, rerr)
+		for k := 0; k < n; k++ {
+			if _, gerr := repo.GetByID(admins[k]); gerr != nil {
+				seq++
+				admins[k] = mk(fmt.Sprintf("la%d", seq))
+			}
+			_, rerr := db.Exec(`UPDATE users SET role_id = 1, is_active = TRUE, is_locked = FALSE, locked_until = NULL WHERE id = ?`, admins[k])
+			require.NoError(t, rerr)
+		}
+		for _, id := range admins[n:] {
+			_, rerr := db.Exec(`UPDATE users SET role_id = 2 WHERE id = ?`, id)
+			require.NoError(t, rerr)
+		}
 	}
 	demote := func(id int) error {
 		u, gerr := repo.GetByID(id)
@@ -92,26 +96,56 @@ func TestPGLastAdmin_ConcurrentRemovalsNeverLeaveZero(t *testing.T) {
 		"demote":  demote,
 		"delete":  func(id int) error { return repo.Delete(id) },
 	}
-	for _, pair := range [][2]string{{"lock", "lock"}, {"lock", "suspend"}, {"lock", "demote"}, {"lock", "delete"}, {"suspend", "suspend"}, {"demote", "demote"}, {"delete", "delete"}, {"demote", "delete"}} {
-		pair := pair
-		t.Run(pair[0]+"_x_"+pair[1], func(t *testing.T) {
+	variants := [][]string{
+		{"lock", "lock"}, {"lock", "suspend"}, {"lock", "demote"}, {"lock", "delete"},
+		{"suspend", "suspend"}, {"demote", "demote"}, {"delete", "delete"}, {"demote", "delete"},
+		{"lock", "lock", "lock"}, {"lock", "suspend", "demote"}, {"lock", "demote", "delete"}, {"suspend", "suspend", "lock"},
+	}
+	for _, v := range variants {
+		v := v
+		name := ""
+		for k, o := range v {
+			if k > 0 {
+				name += "_x_"
+			}
+			name += o
+		}
+		t.Run(name, func(t *testing.T) {
+			n := len(v)
 			violations := 0
 			for i := 0; i < rounds; i++ {
-				reset()
-				require.Equal(t, 2, effective())
+				reset(n)
+				require.Equal(t, n, effective(), "round %d precondition", i)
+				errs := make([]error, n)
 				var wg sync.WaitGroup
 				start := make(chan struct{})
-				wg.Add(2)
-				go func() { defer wg.Done(); <-start; _ = ops[pair[0]](a1) }()
-				go func() { defer wg.Done(); <-start; _ = ops[pair[1]](a2) }()
+				wg.Add(n)
+				for k := 0; k < n; k++ {
+					k := k
+					go func() { defer wg.Done(); <-start; errs[k] = ops[v[k]](admins[k]) }()
+				}
 				close(start)
 				wg.Wait()
-				if effective() == 0 {
+				lastAdmin, other := 0, 0
+				for _, e := range errs {
+					switch {
+					case e == nil:
+					case errors.Is(e, ErrLastAdmin):
+						lastAdmin++
+					default:
+						other++
+						t.Errorf("round %d: unexpected error %v", i, e)
+					}
+				}
+				// Exactly one administrator survives, exactly one write is refused with
+				// ErrLastAdmin (positive control: the guard really fired), nothing else failed.
+				if got := effective(); got != 1 || lastAdmin != 1 || other != 0 {
 					violations++
+					t.Errorf("round %d: effective=%d last_admin_errors=%d other_errors=%d errs=%v", i, got, lastAdmin, other, errs)
 				}
 			}
-			t.Logf("RESULT pair=%s_x_%s rounds=%d zero_admin_violations=%d", pair[0], pair[1], rounds, violations)
-			require.Zero(t, violations, "concurrent %s x %s left zero effective administrators in %d/%d rounds", pair[0], pair[1], violations, rounds)
+			t.Logf("RESULT pair=%s rounds=%d violations=%d", name, rounds, violations)
+			require.Zero(t, violations)
 		})
 	}
 }
