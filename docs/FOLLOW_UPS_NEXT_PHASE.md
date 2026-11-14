@@ -2689,3 +2689,11 @@ Round-1 findings I-1, M-1..M-4 verified fixed. test_check_release_consistency.sh
 - KRW-F2 (minor, source): check_permanent_register returns 0 silently when register absent from HEAD; fail or print note.
 - KRW-F3 (minor): register rows matched only when starting with "| " unindented; add control needle (count of PERMANENT rows) so reformatting cannot skip enforcement silently.
 - KRW-N (nits N-1/N-2 from round 1) and a full 236-mutant run remain owed.
+
+## SSE-OPQ-1 (scan/storage-root error redaction for non-admins) review (Opus round 2, GO-with-follow-ups, PROVISIONAL, commits 0ebfaff72 5fd58192b)
+Round-1 F1 closed (status endpoint redacted for non-admins, shown on the real binary for all protocols with admin positive controls); no leak found in /browse, /stats, /catalog, /smb, WebSocket relay (admin-only audience); current_path root-relative confirmed by a real scan. catalog-web Settings 33/33, tsc ok, handlers subset ok, root -short ok. Accepted by design: non-admin sees root existence/connectivity and can trigger a probe of an admin-configured host.
+- SSEOPQ-F1 (minor, test-instrumentation): status endpoint TestConnection-failure branch untested (reviewer mutant O2 survives).
+- SSEOPQ-F2 (minor, test-instrumentation): status endpoint not tested with live checker contradicting token (O6 survives); extend TestSSEOPQ1_CheckerDecides_FailsClosed to /storage-roots/:id/status.
+- SSEOPQ-F3 (minor, test-instrumentation): non-failed status with non-empty reason (cancelled) never asserted redacted (O5 survives).
+- SSEOPQ-F4 (nit, process-doc): API_DOCUMENTATION.md ~2114 200 example for GET /storage-roots/:id/status shows wrong fields (pre-existing drift).
+- SSEOPQ-F5 (minor): author F1 test reaches misconfigured vs offline branch depending on TMPDIR; adopt reviewer's all-protocol scratch test TestREV2_StatusAllProtocols (scratchpad rev-opq2/) as permanent.
