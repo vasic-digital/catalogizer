@@ -1,0 +1,17 @@
+/app:
+total 28
+-rwxr-xr-x 1 1001 1001   20 Nov 14 02:53 catalogizer-api
+drwxr-xr-x 1 1001 1001 4096 Nov 14 02:54 challenges
+drwxr-xr-x 2 1001 1001 4096 Nov 14 02:54 data
+drwx------ 2 1001 1001 4096 Nov 14 02:54 keys
+drwxr-xr-x 2 1001 1001 4096 Nov 14 02:54 logs
+drwxr-xr-x 2 1001 1001 4096 Nov 14 02:54 migrations
+drwxr-xr-x 2 1001 1001 4096 Nov 14 02:54 temp
+
+/app/challenges:
+total 4
+drwxr-xr-x 2 1001 1001 4096 Nov 14 02:54 config
+ffmpeg version 7.1.5 Copyright (c) 2000-2026 the FFmpeg developers
+1001:1001 755 /app/catalogizer-api
+1001:1001 755 /app/migrations
+1001:1001 700 /app/keys

@@ -1,4 +1,4 @@
-# Production Dockerfile for Catalogizer API
+# Production Dockerfile for Catalogizer API (slim ffmpeg: see docs/deployment/FFMPEG_MINIMAL.md)
 # Multi-stage build for optimized image size
 #
 # Build from repo root:
@@ -8,6 +8,8 @@
 # UNCONFIRMED whether the CGO build stage is still required for other dependencies; not changed without a build proof)
 # Go floor: go.mod `go 1.25.7` / images.lock.yaml IMG-GO (1.25); override with --build-arg GO_IMAGE=docker.io/library/golang:1.26 (also verified)
 ARG GO_IMAGE=docker.io/library/golang:1.25
+ARG FFMPEG_VERSION=7.1.5
+ARG FFMPEG_SHA256=de668509caf9e35e3cd162473441fdb29538c6d96ed080292b3cf9e6fc5d558f
 FROM ${GO_IMAGE} AS builder
 
 # Install build dependencies
@@ -57,6 +59,33 @@ COPY catalog-api/ /build/catalog-api/
 # Build the application
 RUN go build -a -ldflags="-w -s" -o catalogizer-api .
 
+# ---------------------------------------------------------------------------------------------------
+# CAT-IMG-SLIM-1: minimal ffmpeg/ffprobe, built from the pinned upstream release (the distro ffmpeg links
+# libavfilter -> libplacebo/vulkan -> Mesa gallium + libLLVM + libz3 + flite voices: ~400 MB of the old image).
+# Full capability list / exclusions / rebuild command: docs/deployment/FFMPEG_MINIMAL.md
+# --disable-autodetect keeps GPU/X11/network/audio-device/etc. libraries out; every native decoder, demuxer,
+# muxer, native encoder, parser and filter stays (the code relies on silencedetect, scale, lavfi test sources
+# in tests, all demuxers of the -format_whitelist). Only the external libraries listed below are enabled.
+# ---------------------------------------------------------------------------------------------------
+FROM docker.io/library/debian:trixie-slim AS ffmpeg-build
+ARG FFMPEG_VERSION
+ARG FFMPEG_SHA256
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl xz-utils build-essential nasm pkg-config \
+    libx264-dev libvpx-dev libmp3lame-dev libopus-dev libvorbis-dev libxvidcore-dev libdav1d-dev zlib1g-dev libbz2-dev liblzma-dev \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /src
+RUN curl -fsSL -o ffmpeg.tar.xz "https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz" \
+    && echo "${FFMPEG_SHA256}  ffmpeg.tar.xz" | sha256sum -c - \
+    && tar -xJf ffmpeg.tar.xz --strip-components=1 && rm ffmpeg.tar.xz
+RUN ./configure --prefix=/opt/ffmpeg --enable-gpl --disable-autodetect --disable-doc --disable-debug \
+        --disable-ffplay --enable-pic \
+        --enable-libx264 --enable-libvpx --enable-libmp3lame --enable-libopus --enable-libvorbis \
+        --enable-libxvid --enable-libdav1d \
+        --enable-zlib --enable-bzlib --enable-lzma --enable-iconv \
+        --enable-zlib --enable-bzlib --enable-lzma --enable-iconv \
+    && make -j"$(n=$(nproc); [ "$n" -gt 8 ] && n=8; echo "$n")" && make install && strip /opt/ffmpeg/bin/ffmpeg /opt/ffmpeg/bin/ffprobe
+
 # Stage 2: Runtime (must match builder's glibc version — both use trixie)
 FROM docker.io/library/debian:trixie-slim
 
@@ -67,28 +96,32 @@ FROM docker.io/library/debian:trixie-slim
 # reports a specific error and /health/deep does not claim convert_pdf) are the converter tools the conversion worker execs; without them every conversion
 # job fails with "converter tool ... is not installed" (GET /health/deep -> converters shows what is present).
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates tzdata wget poppler-utils util-linux ffmpeg imagemagick \
+    ca-certificates tzdata wget poppler-utils util-linux imagemagick \
+        libx264-164 libvpx9 libmp3lame0 libopus0 libvorbis0a libvorbisenc2 libxvidcore4 libdav1d7 \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+
+COPY --from=ffmpeg-build /opt/ffmpeg/bin/ffmpeg /opt/ffmpeg/bin/ffprobe /usr/local/bin/
 
 WORKDIR /app
 
+# Dedicated non-root user first, so COPY --chown writes each file once with its final owner (a
+# trailing `chown -R /app` would duplicate the 87 MB binary into a second layer: CAT-IMG-SLIM-1)
+RUN groupadd --system --gid 1001 appgroup && \
+    useradd --system --uid 1001 --gid appgroup --no-create-home appuser
+
 # Copy binary from builder
-COPY --from=builder /build/catalog-api/catalogizer-api /app/catalogizer-api
+COPY --from=builder --chown=appuser:appgroup /build/catalog-api/catalogizer-api /app/catalogizer-api
 
 # Copy runtime configuration files
 # Note: config.json is NOT copied — the app auto-creates defaults and reads
 # auth settings (JWT_SECRET, ADMIN_USERNAME, ADMIN_PASSWORD) from env vars.
-COPY --from=builder /build/catalog-api/migrations /app/migrations
-COPY --from=builder /build/catalog-api/challenges/config /app/challenges/config
+COPY --from=builder --chown=appuser:appgroup /build/catalog-api/migrations /app/migrations
+COPY --from=builder --chown=appuser:appgroup /build/catalog-api/challenges/config /app/challenges/config
 
-# Create a dedicated non-root user
-RUN groupadd --system --gid 1001 appgroup && \
-    useradd --system --uid 1001 --gid appgroup --no-create-home appuser
-
-# Create necessary directories with proper permissions
+# Create necessary directories with proper permissions (small dirs only; no recursive chown of the binary)
 RUN mkdir -p /app/data /app/logs /app/temp /app/keys && \
     chmod 700 /app/keys && \
-    chown -R appuser:appgroup /app
+    chown appuser:appgroup /app /app/data /app/logs /app/temp /app/keys /app/challenges
 
 # Bind address/port for containers: the app defaults to localhost:28080 (unreachable from outside the container, and not the
 # EXPOSEd/health-checked 8080); main.go honours HOST and SERVER_PORT as overrides.

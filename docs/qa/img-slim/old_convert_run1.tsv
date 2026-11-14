@@ -1,0 +1,135 @@
+video v.mp4->mp4	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.mp4->avi	rc=0	mpeg4,video,160,120;mp3,audio,44100,1;avi;	dur=2.3
+video v.mp4->mkv	rc=0	h264,video,160,120;vorbis,audio,44100,1;"matroska,webm";	dur=2.2
+video v.mp4->mov	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.mp4->webm	rc=0	vp9,video,160,120;opus,audio,48000,1;"matroska,webm";	dur=2.2
+video v.mp4->m4v	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.avi->mp4	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.avi->avi	rc=0	mpeg4,video,160,120;mp3,audio,44100,1;avi;	dur=2.3
+video v.avi->mkv	rc=0	h264,video,160,120;vorbis,audio,44100,1;"matroska,webm";	dur=2.2
+video v.avi->mov	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.avi->webm	rc=0	vp9,video,160,120;opus,audio,48000,1;"matroska,webm";	dur=2.2
+video v.avi->m4v	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.mkv->mp4	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.mkv->avi	rc=0	mpeg4,video,160,120;mp3,audio,44100,1;avi;	dur=2.3
+video v.mkv->mkv	rc=0	h264,video,160,120;vorbis,audio,44100,1;"matroska,webm";	dur=2.2
+video v.mkv->mov	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.mkv->webm	rc=0	vp9,video,160,120;opus,audio,48000,1;"matroska,webm";	dur=2.2
+video v.mkv->m4v	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.mov->mp4	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.mov->avi	rc=0	mpeg4,video,160,120;mp3,audio,44100,1;avi;	dur=2.3
+video v.mov->mkv	rc=0	h264,video,160,120;vorbis,audio,44100,1;"matroska,webm";	dur=2.2
+video v.mov->mov	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.mov->webm	rc=0	vp9,video,160,120;opus,audio,48000,1;"matroska,webm";	dur=2.2
+video v.mov->m4v	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.wmv->mp4	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.wmv->avi	rc=0	mpeg4,video,160,120;mp3,audio,44100,1;avi;	dur=2.2
+video v.wmv->mkv	rc=0	h264,video,160,120;vorbis,audio,44100,1;"matroska,webm";	dur=2.2
+video v.wmv->mov	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.wmv->webm	rc=0	vp9,video,160,120;opus,audio,48000,1;"matroska,webm";	dur=2.2
+video v.wmv->m4v	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.flv->mp4	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.flv->avi	rc=0	mpeg4,video,160,120;mp3,audio,44100,1;avi;	dur=2.3
+video v.flv->mkv	rc=0	h264,video,160,120;vorbis,audio,44100,1;"matroska,webm";	dur=2.2
+video v.flv->mov	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.flv->webm	rc=0	vp9,video,160,120;opus,audio,48000,1;"matroska,webm";	dur=2.2
+video v.flv->m4v	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.webm->mp4	rc=0	h264,video,160,120;aac,audio,48000,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.webm->avi	rc=0	mpeg4,video,160,120;mp3,audio,48000,1;avi;	dur=2.3
+video v.webm->mkv	rc=0	h264,video,160,120;vorbis,audio,48000,1;"matroska,webm";	dur=2.2
+video v.webm->mov	rc=0	h264,video,160,120;aac,audio,48000,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.webm->webm	rc=0	vp9,video,160,120;opus,audio,48000,1;"matroska,webm";	dur=2.2
+video v.webm->m4v	rc=0	h264,video,160,120;aac,audio,48000,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.m4v->mp4	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.m4v->avi	rc=0	mpeg4,video,160,120;mp3,audio,44100,1;avi;	dur=2.3
+video v.m4v->mkv	rc=0	h264,video,160,120;vorbis,audio,44100,1;"matroska,webm";	dur=2.2
+video v.m4v->mov	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.m4v->webm	rc=0	vp9,video,160,120;opus,audio,48000,1;"matroska,webm";	dur=2.2
+video v.m4v->m4v	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.3gp->mp4	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.3gp->avi	rc=0	mpeg4,video,160,120;mp3,audio,44100,1;avi;	dur=2.3
+video v.3gp->mkv	rc=0	h264,video,160,120;vorbis,audio,44100,1;"matroska,webm";	dur=2.2
+video v.3gp->mov	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+video v.3gp->webm	rc=0	vp9,video,160,120;opus,audio,48000,1;"matroska,webm";	dur=2.2
+video v.3gp->m4v	rc=0	h264,video,160,120;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.2
+videoq low	rc=0	h264,video,176,144;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.0
+videoq medium	rc=0	h264,video,176,144;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.0
+videoq high	rc=0	h264,video,176,144;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.0
+videoq lossless	rc=0	h264,video,176,144;aac,audio,44100,1;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.0
+audio a.mp3->mp3	rc=0	mp3,audio,44100,2;mp3;	dur=2.0
+audio a.mp3->wav	rc=0	pcm_s16le,audio,44100,2;wav;	dur=2.0
+audio a.mp3->flac	rc=0	flac,audio,44100,2;flac;	dur=2.0
+audio a.mp3->aac	rc=0	aac,audio,44100,2;aac;	dur=2.0
+audio a.mp3->ogg	rc=0	vorbis,audio,44100,2;ogg;	dur=2.0
+audio a.mp3->m4a	rc=0	aac,audio,44100,2;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.0
+audio a.mp3->opus	rc=234	MISSING
+audio a.wav->mp3	rc=0	mp3,audio,44100,2;mp3;	dur=2.0
+audio a.wav->wav	rc=0	pcm_s16le,audio,44100,2;wav;	dur=2.0
+audio a.wav->flac	rc=0	flac,audio,44100,2;flac;	dur=2.0
+audio a.wav->aac	rc=0	aac,audio,44100,2;aac;	dur=2.0
+audio a.wav->ogg	rc=0	vorbis,audio,44100,2;ogg;	dur=2.0
+audio a.wav->m4a	rc=0	aac,audio,44100,2;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.0
+audio a.wav->opus	rc=234	MISSING
+audio a.flac->mp3	rc=0	mp3,audio,44100,2;mp3;	dur=2.0
+audio a.flac->wav	rc=0	pcm_s16le,audio,44100,2;wav;	dur=2.0
+audio a.flac->flac	rc=0	flac,audio,44100,2;flac;	dur=2.0
+audio a.flac->aac	rc=0	aac,audio,44100,2;aac;	dur=2.0
+audio a.flac->ogg	rc=0	vorbis,audio,44100,2;ogg;	dur=2.0
+audio a.flac->m4a	rc=0	aac,audio,44100,2;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.0
+audio a.flac->opus	rc=234	MISSING
+audio a.aac->mp3	rc=0	mp3,audio,44100,2;mp3;	dur=2.1
+audio a.aac->wav	rc=0	pcm_s16le,audio,44100,2;wav;	dur=2.0
+audio a.aac->flac	rc=0	flac,audio,44100,2;flac;	dur=2.0
+audio a.aac->aac	rc=0	aac,audio,44100,2;aac;	dur=2.0
+audio a.aac->ogg	rc=0	vorbis,audio,44100,2;ogg;	dur=2.0
+audio a.aac->m4a	rc=0	aac,audio,44100,2;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.0
+audio a.aac->opus	rc=234	MISSING
+audio a.ogg->mp3	rc=0	mp3,audio,44100,2;mp3;	dur=2.0
+audio a.ogg->wav	rc=0	pcm_s16le,audio,44100,2;wav;	dur=2.0
+audio a.ogg->flac	rc=0	flac,audio,44100,2;flac;	dur=2.0
+audio a.ogg->aac	rc=0	aac,audio,44100,2;aac;	dur=2.0
+audio a.ogg->ogg	rc=0	vorbis,audio,44100,2;ogg;	dur=2.0
+audio a.ogg->m4a	rc=0	aac,audio,44100,2;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.0
+audio a.ogg->opus	rc=234	MISSING
+audio a.wma->mp3	rc=0	mp3,audio,44100,2;mp3;	dur=2.0
+audio a.wma->wav	rc=0	pcm_s16le,audio,44100,2;wav;	dur=2.0
+audio a.wma->flac	rc=0	flac,audio,44100,2;flac;	dur=2.0
+audio a.wma->aac	rc=0	aac,audio,44100,2;aac;	dur=2.0
+audio a.wma->ogg	rc=0	vorbis,audio,44100,2;ogg;	dur=2.0
+audio a.wma->m4a	rc=0	aac,audio,44100,2;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.0
+audio a.wma->opus	rc=234	MISSING
+audio a.m4a->mp3	rc=0	mp3,audio,44100,2;mp3;	dur=2.1
+audio a.m4a->wav	rc=0	pcm_s16le,audio,44100,2;wav;	dur=2.0
+audio a.m4a->flac	rc=0	flac,audio,44100,2;flac;	dur=2.0
+audio a.m4a->aac	rc=0	aac,audio,44100,2;aac;	dur=2.0
+audio a.m4a->ogg	rc=0	vorbis,audio,44100,2;ogg;	dur=2.0
+audio a.m4a->m4a	rc=0	aac,audio,44100,2;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.0
+audio a.m4a->opus	rc=234	MISSING
+audio a.opus->mp3	rc=0	mp3,audio,44100,2;mp3;	dur=2.0
+audio a.opus->wav	rc=0	pcm_s16le,audio,44100,2;wav;	dur=2.0
+audio a.opus->flac	rc=0	flac,audio,44100,2;flac;	dur=2.0
+audio a.opus->aac	rc=0	aac,audio,44100,2;aac;	dur=2.0
+audio a.opus->ogg	rc=0	vorbis,audio,44100,2;ogg;	dur=2.0
+audio a.opus->m4a	rc=0	aac,audio,44100,2;"mov,mp4,m4a,3gp,3g2,mj2";	dur=2.0
+audio a.opus->opus	rc=234	MISSING
+audioq low	rc=0	mp3,audio,44100,1;mp3;	dur=2.0
+audioq medium	rc=0	mp3,audio,44100,1;mp3;	dur=2.0
+audioq high	rc=0	mp3,audio,44100,1;mp3;	dur=2.0
+audioq lossless	rc=0	flac,audio,44100,1;flac;	dur=2.0
+audio-noar a.wav->opus	rc=0	opus,audio,48000,1;ogg;	dur=2.0
+audio-noar a.mp3->opus	rc=0	opus,audio,48000,1;ogg;	dur=2.0
+audio-noar a.flac->opus	rc=0	opus,audio,48000,1;ogg;	dur=2.0
+coverart frame	rc=0	mjpeg,video,176,144;image2;	dur=0.0
+coverart dur	2.000000
+integrity dur	2.000000
+silencedetect	silence_start: 0 silence_end: 2 silence_duration: 1 
+probejson v.mp4	9108b0007e1b3fd1
+probejson v.mkv	8c38ecfb9ee08c43
+probejson a.flac	bd96a280f1624cdf
+caps	nonexist-protocol-refused=[http @ PTR] Protocol 'http' not on whitelist 'file,pipe'! [in#0 @ PTR] Error op
+image png->jpg	rc=0	mjpeg,video,32,24;jpeg_pipe;	dur=0.0
+image png->gif	rc=0	gif,video,32,24;gif;	dur=0.1
+image png->bmp	rc=0	bmp,video,32,24;bmp_pipe;	dur=0.0
+image png->tiff	rc=0	tiff,video,32,24;tiff_pipe;	dur=0.0
+image png->webp	rc=0	webp,video,32,24;webp_pipe;	dur=0.0
+image png->png	rc=0	png,video,32,24;png_pipe;	dur=0.0
