@@ -20,9 +20,9 @@ V verified: 3 evidence sets (evidence exists and sha-verifies; their content is 
 
 ### VERIFIED (committed machine evidence, checked while preparing this entry)
 Checked on this branch with `sha256sum -c` (0 non-OK lines). "VERIFIED" here means the evidence set exists and its hashes verify, not that the behaviour is verified.
-- `docs/qa/anton-smb-n3-20261112/` (Anton SMB N=3 live run; `SHA256SUMS` verifies). No negative control: the run proves reachability at N=3 only.
+- `docs/qa/anton-smb-n3-20261112/run1.log`, `run2.log`, `run3.log` and `README.md` there (Anton SMB N=3 live run; `SHA256SUMS` verifies). No negative control: the run proves reachability at N=3 only.
 - `docs/qa/img-slim/` (CAT-IMG-SLIM-1 minimal-ffmpeg image evidence; `SHA256SUMS.txt` verifies). Container class; the full `catalog-api/Dockerfile` build including the Go stage was not exercised.
-- `docs/qa/secq2-repro-20261112/` (CAT-SECQ2-WD-F1 live WebDAV reproduction: not reproduced, 6/6 ok; `SHA256SUMS` verifies).
+- `docs/qa/secq2-repro-20261112/rep6.json` and `rep6.log.txt` (CAT-SECQ2-WD-F1 live WebDAV reproduction: not reproduced, 6/6 ok; `SHA256SUMS` verifies).
 - Carried from 2.4.2 and earlier, not re-run: the VERIFIED rows of `[2.4.2]`, `[2.4.1]`, `[2.4.0]`.
 - Other evidence directories added since v2.4.2 (`docs/qa/login-lock-2-round*`, `chpw-rl-2-round*`, `sec-ws-1*`, `favr3-fu*`, `stack3`) carry no checkable hash manifest and are treated as PROVISIONAL.
 
