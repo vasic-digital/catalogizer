@@ -1364,21 +1364,33 @@ func (s *SyncService) evictWebDAVClient(id int) {
 func (s *SyncService) getWebDAVClient(endpoint *models.SyncEndpoint) (*WebDAVClient, error) {
 	s.webdavMu.Lock()
 	defer s.webdavMu.Unlock()
-	// Reuse the cached client only if it was built for exactly this URL and credentials:
-	// after a credential or URL change the stale entry is replaced, never reused.
-	if client, exists := s.webdavClients[endpoint.ID]; exists &&
-		client.baseURL == endpoint.URL && client.username == endpoint.Username && client.password == endpoint.Password {
+
+	// The class an endpoint is approved for is read from the store on every call and FAILS CLOSED: an endpoint that is stored but whose
+	// class cannot be read gets no client at all (never a default-private one). Only a not-yet-stored endpoint (ID 0, the create-time
+	// connection test) has no stored class and is built for the default, private; it is never cached.
+	approved := netguard.ClassPrivate
+	if endpoint.ID != 0 {
+		if s.syncRepo == nil {
+			return nil, fmt.Errorf("approved network class unavailable for endpoint %d: no repository", endpoint.ID)
+		}
+		rctx, rcancel := context.WithTimeout(s.ctx, 5*time.Second)
+		c, _, err := s.syncRepo.GetApprovedClass(rctx, endpoint.ID)
+		rcancel()
+		if err != nil {
+			delete(s.webdavClients, endpoint.ID)
+			return nil, fmt.Errorf("approved network class of endpoint %d unreadable (refusing to connect): %w", endpoint.ID, err)
+		}
+		approved = c
+	}
+
+	// Reuse the cached client only if it was built for exactly this URL, credentials AND class:
+	// after a credential, URL or class change the stale entry is replaced, never reused.
+	if client, exists := s.webdavClients[endpoint.ID]; exists && endpoint.ID != 0 &&
+		client.baseURL == endpoint.URL && client.username == endpoint.Username && client.password == endpoint.Password &&
+		client.approved == approved {
 		return client, nil
 	}
 
-	approved := netguard.ClassPrivate // default: the stored class of a stored endpoint, private for one not stored yet
-	if endpoint.ID != 0 && s.syncRepo != nil {
-		rctx, rcancel := context.WithTimeout(s.ctx, 5*time.Second)
-		if c, _, err := s.syncRepo.GetApprovedClass(rctx, endpoint.ID); err == nil {
-			approved = c
-		}
-		rcancel()
-	}
 	client := NewWebDAVClientWithClass(endpoint.URL, endpoint.Username, endpoint.Password, approved)
 	// Every WebDAV request is dialled through the SSRF guard (resolved address checked
 	// and pinned), also for endpoints stored before the URL validation existed.

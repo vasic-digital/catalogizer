@@ -49,10 +49,13 @@ func rootDestination(root *models.StorageRoot) (host, rawURL string, networked b
 	return host, rawURL, host != "" || rawURL != ""
 }
 
+// classifyDestination is the classifier of the create path; tests replace it to hold a name's answer (rebinding test).
+var classifyDestination = netguard.ClassifyEndpoint
+
 // classifyForApproval classifies a destination for the create path. refused is true for an address no endpoint may be approved for.
 // An unresolvable name is not refused and not public: it needs the same confirmation as a private one (unresolved).
 func classifyForApproval(ctx context.Context, host, rawURL string) (class netguard.Class, refused bool) {
-	c, err := netguard.ClassifyEndpoint(ctx, host, rawURL)
+	c, err := classifyDestination(ctx, host, rawURL)
 	if err == nil {
 		return c, false
 	}
@@ -62,35 +65,47 @@ func classifyForApproval(ctx context.Context, host, rawURL string) (class netgua
 	return netguard.ClassPrivate, false
 }
 
-// approveNewRoot stores the class of a freshly inserted root. It returns the stored class, or an error after removing the row
-// (a root must never be left behind with an approval the operator did not make).
+// approveNewRoot stores the class of a freshly inserted root. It classifies the destination AGAIN (the early answer of CreateStorageRoot
+// is preClass): the name may have re-resolved in between, and an approval is only ever stored for what the operator was told. A destination
+// that was public at the early check and is private now is refused (the operator never confirmed a private destination), as is a private one
+// without confirmation. It returns the stored class, or an error after removing the row (a root must never be left behind with an approval
+// the operator did not make). The row exists with the transient default (private, source default) between the insert and this call; no
+// client is built from it in that window, because the root is not reported to the caller until this returns.
 func (h *ScanHandler) approveNewRoot(ctx context.Context, id int64, root *models.StorageRoot, preClass netguard.Class, confirmed bool) (netguard.Class, error) {
 	host, rawURL, networked := rootDestination(root)
 	if !networked {
 		return netguard.ClassPrivate, nil
 	}
-	got, aerr := h.db.AutoClassifyApprovedClass(ctx, database.TableStorageRoots, id, host, rawURL)
-	if aerr != nil {
-		// not classifiable now (unresolvable, or became a never-class address between the early check and now): the stored value is the
-		// default, private. That stands only for a confirmed root.
-		got = netguard.ClassPrivate
-		if errors.Is(aerr, netguard.ErrBlocked) {
+	got, cerr := classifyDestination(ctx, host, rawURL)
+	if cerr != nil {
+		if errors.Is(cerr, netguard.ErrBlocked) {
 			h.deleteRootRow(ctx, id)
 			return netguard.ClassNever, fmt.Errorf("%w: destination refused at classification", netguard.ErrBlocked)
 		}
+		got = netguard.ClassPrivate // not classifiable now: private, and it stands only for a confirmed root
 	}
-	if got == netguard.ClassPrivate && !confirmed {
-		// the answer changed between the early classification and the stored one (a rebound name) or was never public: do not keep it
-		h.deleteRootRow(ctx, id)
-		return netguard.ClassPrivate, errPrivateUnconfirmed
-	}
-	if got == netguard.ClassPrivate && confirmed {
-		if err := h.db.SetApprovedClass(ctx, database.TableStorageRoots, id, netguard.ClassPrivate, database.ApprovedSourceOperator); err != nil {
+	if got == netguard.ClassPublic {
+		if preClass != netguard.ClassPublic && !confirmed {
+			h.deleteRootRow(ctx, id) // was private or unresolved when asked, public now: the operator saw another answer
+			return netguard.ClassPublic, errPrivateUnconfirmed
+		}
+		if err := h.db.SetApprovedClass(ctx, database.TableStorageRoots, id, netguard.ClassPublic, database.ApprovedSourceAuto); err != nil {
 			h.deleteRootRow(ctx, id)
 			return netguard.ClassNever, err
 		}
+		return netguard.ClassPublic, nil
 	}
-	return got, nil
+	// private (or unresolved now)
+	if !confirmed || preClass == netguard.ClassPublic {
+		// unconfirmed, or the destination re-resolved from public to private after the early check: refuse, whatever the confirmation flag says
+		h.deleteRootRow(ctx, id)
+		return netguard.ClassPrivate, errPrivateUnconfirmed
+	}
+	if err := h.db.SetApprovedClass(ctx, database.TableStorageRoots, id, netguard.ClassPrivate, database.ApprovedSourceOperator); err != nil {
+		h.deleteRootRow(ctx, id)
+		return netguard.ClassNever, err
+	}
+	return netguard.ClassPrivate, nil
 }
 
 var errPrivateUnconfirmed = errors.New("private network confirmation required")
@@ -150,6 +165,8 @@ type setApprovedClassRequest struct {
 }
 
 // SetStorageRootApprovedClass handles PUT /api/v1/storage/roots/:id/approved-class.
+// The class is enforced on WebDAV and S3 connections. For SMB, FTP and NFS roots it is stored and reported but NOT enforced yet (their
+// clients are not class-pinned: SECQ1-D), so changing it on such a root has no effect on the connection.
 func (h *ScanHandler) SetStorageRootApprovedClass(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil || id < 1 {
@@ -186,10 +203,16 @@ func (h *ScanHandler) SetStorageRootApprovedClass(c *gin.Context) {
 			c.JSON(http.StatusForbidden, gin.H{"error": "widening the approved network class needs the password of the acting administrator", "code": codeStepUpRequired})
 			return
 		}
+		if wait, blocked := stepUpThrottle.blocked(uid); blocked {
+			respondStepUpThrottled(c, wait, false)
+			return
+		}
 		if !h.verifyStepUp(ctx, uid, req.StepUpPassword) {
+			stepUpThrottle.fail(uid)
 			c.JSON(http.StatusForbidden, gin.H{"error": "step-up authentication failed", "code": codeStepUpFailed})
 			return
 		}
+		stepUpThrottle.ok(uid)
 	}
 	if err := h.db.SetApprovedClass(ctx, database.TableStorageRoots, id, want, database.ApprovedSourceOperator); err != nil {
 		if errors.Is(err, database.ErrEndpointNotFound) {

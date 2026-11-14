@@ -132,10 +132,16 @@ func (h *SyncHandler) UpdateEndpoint(c *gin.Context) {
 	}
 
 	if updates.StepUpPassword != "" {
+		if wait, blocked := stepUpThrottle.blocked(currentUser.ID); blocked {
+			respondStepUpThrottled(c, wait, true)
+			return
+		}
 		if ok, _ := services.CheckPassword(updates.StepUpPassword, currentUser.Salt, currentUser.PasswordHash); !ok {
+			stepUpThrottle.fail(currentUser.ID)
 			c.JSON(http.StatusForbidden, gin.H{"success": false, "error": "step-up authentication failed", "code": codeStepUpFailed})
 			return
 		}
+		stepUpThrottle.ok(currentUser.ID)
 		updates.StepUpVerified = true
 	}
 

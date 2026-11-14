@@ -260,6 +260,7 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | GET | `/api/v1/storage/list/*path` | RequireAdmin (route) | 401 | 403 | 400 |
 | GET | `/api/v1/storage/roots` | auth | 401 | 200 | 200 |
 | POST | `/api/v1/storage/roots` | RequireAdmin (route) | 401 | 403 | skip |
+| PUT | `/api/v1/storage/roots/:id/approved-class` | RequireAdmin (route) | 401 | 403 | skip |
 | GET | `/api/v1/storage-roots` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/storage-roots/:id/status` | auth | 401 | 404 | 404 |
 | POST | `/api/v1/scans` | RequireAdmin (route) | 401 | 403 | skip |

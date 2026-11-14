@@ -68,7 +68,8 @@ func (s *SyncService) approveCreated(endpoint *models.SyncEndpoint, plan syncCla
 		got = netguard.ClassPrivate // not classifiable now: the stored default (private) stands, for a confirmed endpoint only
 	}
 	if got == netguard.ClassPrivate {
-		if !endpoint.ConfirmPrivateNetwork {
+		// unconfirmed, or the name re-resolved from public (plan) to private after the early classification: refuse either way
+		if !endpoint.ConfirmPrivateNetwork || plan.class == netguard.ClassPublic {
 			return fail(ErrPrivateConfirmationRequired)
 		}
 		if err := s.syncRepo.SetApprovedClass(ctx, endpoint.ID, netguard.ClassPrivate, database.ApprovedSourceOperator); err != nil {
@@ -115,6 +116,7 @@ func (s *SyncService) storeURLChangeClass(endpoint *models.SyncEndpoint, plan sy
 	if err := s.syncRepo.ReplaceApprovedClass(ctx, endpoint.ID, plan.class, src); err != nil {
 		return err
 	}
+	s.evictWebDAVClient(endpoint.ID) // a client cached under the previous class must not outlive the class write (CAT-SECQ1-C finding 4)
 	endpoint.ApprovedClass = plan.class.String()
 	return nil
 }

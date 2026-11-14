@@ -23,7 +23,8 @@ type WebDAVClient struct {
 	baseURL   string
 	username  string
 	password  string
-	quotaHTTP *http.Client // GetQuota; shares the client transport (connection reuse, one policy)
+	quotaHTTP *http.Client   // GetQuota; shares the client transport (connection reuse, one policy)
+	approved  netguard.Class // the class this client was built for (public or private); part of the cache identity
 }
 
 type WebDAVFile struct {
@@ -60,6 +61,7 @@ func NewWebDAVClientWithClass(url, username, password string, approved netguard.
 		username:  username,
 		password:  password,
 		quotaHTTP: &http.Client{Timeout: 30 * time.Second, Transport: tr, CheckRedirect: netguard.OperatorCheckRedirectFor(approved)},
+		approved:  approved,
 	}
 }
 
