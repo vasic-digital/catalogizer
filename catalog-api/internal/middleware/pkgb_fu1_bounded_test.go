@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -23,19 +24,20 @@ func TestRequestErrorText_BoundedCostOnHugeText(t *testing.T) {
 	c, _ := gin.CreateTestContext(httptest.NewRecorder())
 	c.Request = req
 	huge := fmt.Errorf("%s", strings.Repeat("filler text without secrets ", (16<<20)/28))
-	best := time.Hour
-	for i := 0; i < 3; i++ {
-		t0 := time.Now()
-		out := requestErrorText(c, huge)
-		if d := time.Since(t0); d < best {
-			best = d
-		}
-		if len(out) > 3000 {
-			t.Fatalf("output not capped: %d", len(out))
-		}
+	// Deterministic oracle (no wall clock; time is only logged). Measured: the fixed path allocates ~2.03x the input
+	// (fmt.Sprint copy + stringified error), the ReplaceKnown-on-uncapped-text path ~4.0x; the bound is 3x.
+	var m0, m1 runtime.MemStats
+	runtime.GC()
+	runtime.ReadMemStats(&m0)
+	t0 := time.Now()
+	out := requestErrorText(c, huge)
+	d := time.Since(t0)
+	runtime.ReadMemStats(&m1)
+	if len(out) > 3000 {
+		t.Fatalf("output not capped: %d", len(out))
 	}
-	t.Logf("best=%v", best)
-	if best > 60*time.Millisecond {
-		t.Fatalf("requestErrorText over 16 MiB took %v (want < 60ms)", best)
+	t.Logf("elapsed=%v alloc=%d", d, m1.TotalAlloc-m0.TotalAlloc)
+	if got := m1.TotalAlloc - m0.TotalAlloc; got > uint64(3*len(huge.Error())) {
+		t.Fatalf("requestErrorText over %d bytes allocated %d bytes (want <= 3x input)", len(huge.Error()), got)
 	}
 }

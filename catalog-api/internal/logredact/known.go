@@ -115,6 +115,14 @@ func ReplaceKnown(s string, secrets []string) string {
 // (2 KiB), far before any pre-cut position, so a secret that straddles the cut cannot appear in the output either way (the margin
 // is defensive; see TestErrorTextKnown_StraddlingSecretNeverExposed).
 func ErrorTextKnown(s string, secrets []string) string {
+	return ErrorText(replaceKnownFn(preCutForKnown(s), secrets))
+}
+
+// replaceKnownFn is ReplaceKnown; a variable only so tests can observe the length of its input (deterministic cost oracle).
+var replaceKnownFn = ReplaceKnown
+
+// preCutForKnown bounds the text handed to ReplaceKnown.
+func preCutForKnown(s string) string {
 	if limit := textPreCapBytes + maxKnownSecretLen; len(s) > limit {
 		cut := limit
 		for cut > 0 && !utf8.RuneStart(s[cut]) {
@@ -122,5 +130,5 @@ func ErrorTextKnown(s string, secrets []string) string {
 		}
 		s = s[:cut]
 	}
-	return ErrorText(ReplaceKnown(s, secrets))
+	return s
 }

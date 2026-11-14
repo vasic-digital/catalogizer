@@ -3,7 +3,6 @@ package logredact
 import (
 	"strings"
 	"testing"
-	"time"
 )
 
 // PKGB-FU1: ErrorTextKnown cuts before ReplaceKnown (bounded cost) without exposing a secret that straddles the cut.
@@ -34,22 +33,44 @@ func TestErrorTextKnown_ReplacesAndCaps(t *testing.T) {
 	}
 }
 
-func TestErrorTextKnown_BoundedCost(t *testing.T) {
-	var secs []string
-	for i := 0; i < 64; i++ {
-		secs = append(secs, strings.Repeat(string(rune('a'+i%26)), 4000)+string(rune('A'+i%26)))
-	}
-	huge := strings.Repeat("filler text without secrets ", (16<<20)/28)
-	best := time.Hour
-	for i := 0; i < 3; i++ {
-		t0 := time.Now()
-		_ = ErrorTextKnown(huge, secs)
-		if d := time.Since(t0); d < best {
-			best = d
+// Deterministic cost oracle (no wall clock): ReplaceKnown never receives more than textPreCapBytes+maxKnownSecretLen bytes.
+func TestErrorTextKnown_ReplaceKnownInputBounded(t *testing.T) {
+	limit := textPreCapBytes + maxKnownSecretLen
+	var seen int
+	old := replaceKnownFn
+	replaceKnownFn = func(s string, secrets []string) string {
+		if len(s) > seen {
+			seen = len(s)
 		}
+		return old(s, secrets)
 	}
-	if best > 60*time.Millisecond {
-		t.Fatalf("ErrorTextKnown over 16 MiB took %v", best)
+	defer func() { replaceKnownFn = old }()
+	huge := strings.Repeat("filler text without secrets ", (16<<20)/28)
+	_ = ErrorTextKnown(huge, []string{"abcdwxyz"})
+	if seen == 0 {
+		t.Fatal("control needle: ReplaceKnown was not called")
+	}
+	if seen > limit {
+		t.Fatalf("ReplaceKnown received %d bytes, limit %d", seen, limit)
+	}
+	if ErrorTextKnown(huge, []string{"abcdwxyz"}) != ErrorTextKnown(huge[:limit], []string{"abcdwxyz"}) {
+		t.Fatal("output differs between huge text and its pre-cut prefix")
+	}
+}
+
+// F2: a ~3000-byte secret starting at ~2000 straddles ErrorTextMaxBytes (2048). A pre-cut at 2048 would leave a 48-byte
+// secret prefix that ReplaceKnown cannot match and that the output keeps.
+func TestErrorTextKnown_SecretStraddlingOutputCapNotExposed(t *testing.T) {
+	secret := strings.Repeat("Qx7", 1000)
+	in := strings.Repeat("a ", 1000) + secret + strings.Repeat(" b", 100)
+	out := ErrorTextKnown(in, []string{secret})
+	if !strings.Contains(out, "a a a") {
+		t.Fatalf("control needle: filler missing from output")
+	}
+	for _, n := range []int{8, 16, 48} {
+		if strings.Contains(out, secret[:n]) {
+			t.Fatalf("secret prefix of %d bytes reached output", n)
+		}
 	}
 }
 
