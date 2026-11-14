@@ -7054,6 +7054,12 @@ paths:
       responses:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
+        '503':
+          description: Could not verify the admin role (the live database admin check failed; RequireAdmin fails closed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '200':
           description: User sync endpoints
           content:
@@ -7097,6 +7103,12 @@ paths:
       responses:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
+        '503':
+          description: Could not verify the admin role (the live database admin check failed; RequireAdmin fails closed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '200':
           description: Sync endpoint details
           content:
@@ -7346,6 +7358,12 @@ paths:
       responses:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
+        '503':
+          description: Could not verify the admin role (the live database admin check failed; RequireAdmin fails closed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '200':
           description: User sync sessions
           content:
@@ -7389,6 +7407,12 @@ paths:
       responses:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
+        '503':
+          description: Could not verify the admin role (the live database admin check failed; RequireAdmin fails closed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '200':
           description: Sync session details
           content:
@@ -7514,6 +7538,12 @@ paths:
       responses:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
+        '503':
+          description: Could not verify the admin role (the live database admin check failed; RequireAdmin fails closed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '200':
           description: Sync statistics
           content:
@@ -10218,6 +10248,12 @@ paths:
       responses:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
+        '503':
+          description: Could not verify the admin role (the live database admin check failed; RequireAdmin fails closed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '501':
           description: Not implemented (no sync conflict store exists); nothing is fabricated
           content:
@@ -10241,6 +10277,12 @@ paths:
       responses:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
+        '503':
+          description: Could not verify the admin role (the live database admin check failed; RequireAdmin fails closed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '501':
           description: Not implemented (no device registry exists); nothing is fabricated
           content:
@@ -10264,6 +10306,12 @@ paths:
       responses:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
+        '503':
+          description: Could not verify the admin role (the live database admin check failed; RequireAdmin fails closed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '200':
           description: Status
           content:
@@ -10295,6 +10343,12 @@ paths:
       responses:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
+        '503':
+          description: Could not verify the admin role (the live database admin check failed; RequireAdmin fails closed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '200':
           description: Providers
           content:
@@ -10334,6 +10388,12 @@ paths:
       responses:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
+        '503':
+          description: Could not verify the admin role (the live database admin check failed; RequireAdmin fails closed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '200':
           description: User sync sessions
           content:
