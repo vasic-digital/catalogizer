@@ -2676,3 +2676,9 @@ Verified: focused tests 35/0 fail, whole module testDebugUnitTest 1051 tests 0 f
 - WSF2B-F3 (minor, source-defect): two concurrent opens can each create a client (see F1).
 - WSF2B-F4 (minor, test-instrumentation): mutations MA/MC/MD/ME/MG survive (disconnect leaves client set, onOpen/connect do not reset attempts, old.close removed, job not cancelled); test name "stale callbacks do not ... reset attempts" asserts nothing about attempts; fake close() not recorded.
 - WSF2B-F5 (nit, process-doc): comment on @Volatile intentional.
+
+## WSF2-B (Android WebSocketRepository follow-ups) review (Opus, GO-with-follow-ups, PROVISIONAL, commit f1c92fc5c)
+F1/F2/F4/F5 of WSF2B verified closed by unit tests (45 focused, whole module 1061 tests 0 failures, assembleDebug ok); Java-WebSocket 1.5.4 close() no-op-before-writeThread proven by javap. Unit-class only; no live /ws or device run, item stays PROVISIONAL.
+- WSF2B2-F1 (minor, test-instrumentation): `if (intentional) return@launch` guard in open() untested (reviewer mutant O2 survives); test: minter whose mint() calls disconnect() then returns a ticket; assert no socket built, state Disconnected.
+- WSF2B2-F2 (minor, source): a cancelled attempt can still install its client after mint returned (no suspension point); use ensureActive()/job identity check inside the lock; also rethrowing every CancellationException would swallow a minter-raised one (e.g. withTimeout): prefer isActive check.
+- WSF2B2-F3 (UNCONFIRMED): ApiWsTicketMinter Bearer-header test flake did not reproduce; hypothesis first mockk init inside runTest 10 s timeout under load; copy failing XML per run if it recurs.
