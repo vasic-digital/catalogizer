@@ -16,6 +16,10 @@ vi.mock('@vasic-digital/websocket-client', () => ({
     getState() { return states.value }
   },
 }))
+// SEC-WS-1 F2: the provider's client mints a one-shot ticket (POST /ws/ticket) before it opens the base client; without
+// this mock the real api.post is called, fails, and the base connect() is never reached (connects stays 0).
+const post = vi.fn()
+vi.mock('@/lib/api', () => ({ api: { post: (...a: any[]) => post(...a) } }))
 vi.mock('@/contexts/AuthContext', () => ({
   useAuth: () => ({ isAuthenticated: true, user: { id: 1 } }),
 }))
@@ -29,6 +33,10 @@ describe('ConnectionStatus with the real WebSocketProvider', () => {
     vi.useFakeTimers()
     states.value = 'disconnected'
     states.connects = 0
+    // useWebSocket().connect() returns early without a stored session token (AuthContext stores it on login)
+    localStorage.setItem('auth_token', 'test-session-token')
+    post.mockReset()
+    post.mockResolvedValue({ data: { ticket: 'tk-1' } })
     render(
       <QueryClientProvider client={new QueryClient()}>
         <WebSocketProvider>
@@ -37,8 +45,10 @@ describe('ConnectionStatus with the real WebSocketProvider', () => {
       </QueryClientProvider>
     )
     await act(async () => { vi.advanceTimersByTime(2500) })
+    expect(post).toHaveBeenCalledWith('/ws/ticket', {})
     expect(states.connects).toBe(1)
     expect(screen.queryByText(/disconnected/i)).not.toBeInTheDocument()
     vi.useRealTimers()
+    localStorage.removeItem('auth_token')
   })
 })
