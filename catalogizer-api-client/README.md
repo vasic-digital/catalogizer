@@ -240,7 +240,24 @@ console.log('Files:', contents.files);
 
 ## Real-time Updates
 
-The client supports WebSocket connections for real-time updates:
+The client supports WebSocket connections for real-time updates.
+
+**Authentication (SEC-WS-1 F2).** The session token is never placed in the `/ws` URL (URLs leak into proxy and
+server logs). `CatalogizerClient` calls `POST /api/v1/ws/ticket` (token in the `Authorization` header) before every
+connection attempt, reconnects included, and opens the socket with `?ticket=<single-use ticket>`. A ticket is valid
+for 30 seconds and can be redeemed once, so a reconnect always mints a new one. A `401` from the ticket request is
+final (no reconnect loop); other failures are retried with backoff. Servers with this change refuse `?token=`, so
+the client must be upgraded together with the server. Using `WebSocketClient` directly:
+
+```typescript
+import { WebSocketClient } from '@catalogizer/api-client';
+
+const ws = new WebSocketClient('wss://host/ws', {
+  ticketProvider: async () => (await http.post('/ws/ticket', {})).ticket,
+});
+await ws.connect(sessionToken); // sessionToken only gates the ticket path; it is not sent in the URL
+// Without a ticketProvider the token is sent as an `Authorization: Bearer` header (Node `ws`).
+```
 
 ```typescript
 // Listen for download progress

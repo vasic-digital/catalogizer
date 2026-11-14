@@ -52,7 +52,14 @@ export class CatalogizerClient extends EventEmitter {
       return;
     }
 
-    this.ws = new WebSocketClient(this.config.webSocketURL);
+    this.ws = new WebSocketClient(this.config.webSocketURL, {
+      // SEC-WS-1 F2: a fresh single-use ticket per connection attempt; the session token never goes in the URL.
+      ticketProvider: async () => {
+        const res = await this.http.post<{ ticket?: string }>('/ws/ticket', {});
+        if (!res?.ticket) throw new Error('websocket ticket missing from response');
+        return res.ticket;
+      },
+    });
 
     // Proxy WebSocket events
     this.ws.on('connection:open', () => {

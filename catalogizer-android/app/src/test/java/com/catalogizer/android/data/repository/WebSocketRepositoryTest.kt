@@ -3,6 +3,7 @@ package com.catalogizer.android.data.repository
 import com.catalogizer.android.data.repository.WebSocketRepository.WebSocketEvent
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.*
@@ -39,9 +40,12 @@ class WebSocketRepositoryTest {
 
     @Test
     fun `connect with invalid URL emits Error event`() = runTest {
-        repository = WebSocketRepository("not a valid url") { "test-token" }
+        repository = WebSocketRepository(
+            "not a valid url", { "test-token" }, WsTicketMinter { "t" }, backgroundScope
+        )
 
         repository.connect()
+        testScheduler.runCurrent()
 
         val event = repository.events.first()
         assertTrue(event is WebSocketEvent.Error)
