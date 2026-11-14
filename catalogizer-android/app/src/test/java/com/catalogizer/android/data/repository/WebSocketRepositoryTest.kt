@@ -19,7 +19,7 @@ class WebSocketRepositoryTest {
 
     @Test
     fun `initial event state is Disconnected`() = runTest {
-        repository = WebSocketRepository("http://localhost:8080") { "token" }
+        repository = WebSocketRepository("http://localhost:8080", tokenProvider = { "token" })
 
         val event = repository.events.first()
 
@@ -30,7 +30,7 @@ class WebSocketRepositoryTest {
 
     @Test
     fun `connect does nothing when tokenProvider returns null`() = runTest {
-        repository = WebSocketRepository("http://localhost:8080") { null }
+        repository = WebSocketRepository("http://localhost:8080", tokenProvider = { null })
 
         repository.connect()
 
@@ -55,7 +55,7 @@ class WebSocketRepositoryTest {
 
     @Test
     fun `disconnect sets event to Disconnected`() = runTest {
-        repository = WebSocketRepository("http://localhost:8080") { "token" }
+        repository = WebSocketRepository("http://localhost:8080", tokenProvider = { "token" })
 
         repository.disconnect()
 
@@ -65,7 +65,7 @@ class WebSocketRepositoryTest {
 
     @Test
     fun `disconnect is safe to call multiple times`() = runTest {
-        repository = WebSocketRepository("http://localhost:8080") { "token" }
+        repository = WebSocketRepository("http://localhost:8080", tokenProvider = { "token" })
 
         repository.disconnect()
         repository.disconnect()
@@ -77,7 +77,7 @@ class WebSocketRepositoryTest {
 
     @Test
     fun `disconnect after failed connect is safe`() = runTest {
-        repository = WebSocketRepository("http://localhost:8080") { null }
+        repository = WebSocketRepository("http://localhost:8080", tokenProvider = { null })
         repository.connect()
 
         repository.disconnect()
@@ -91,14 +91,14 @@ class WebSocketRepositoryTest {
     @Test
     fun `http URL is transformed to ws URL internally`() {
         // Verifying the repository constructs correctly with http URLs
-        repository = WebSocketRepository("http://192.168.1.100:8080") { "token" }
+        repository = WebSocketRepository("http://192.168.1.100:8080", tokenProvider = { "token" })
         assertNotNull(repository.events)
     }
 
     @Test
     fun `https URL is transformed to wss URL internally`() {
         // Verifying the repository constructs correctly with https URLs
-        repository = WebSocketRepository("https://secure.server.com:8443") { "token" }
+        repository = WebSocketRepository("https://secure.server.com:8443", tokenProvider = { "token" })
         assertNotNull(repository.events)
     }
 
@@ -205,7 +205,7 @@ class WebSocketRepositoryTest {
 
     @Test
     fun `events StateFlow exposes current value`() = runTest {
-        repository = WebSocketRepository("http://localhost:8080") { "token" }
+        repository = WebSocketRepository("http://localhost:8080", tokenProvider = { "token" })
 
         val current = repository.events.value
 
