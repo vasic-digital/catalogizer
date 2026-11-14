@@ -11,19 +11,20 @@ Release class: **pre-release** (provisional-eligible, constitution 11.4.290(G)).
 - **The full-suite retest of the tag (11.4.40), the 11.4.185 manual QA and the live UI QA have NOT been run on this candidate.** The release-consistency checker is **advisory** for v2.4.3 (blocking for v2.5.0, see `docs/release/V2_5_0_GATE_CHECKLIST.md`, an unreviewed draft).
 
 ### State summary by label (11.4.290(G))
-V verified: 3 evidence sets (evidence exists and sha-verifies; their content is PROVISIONAL, see below) + P provisional: every item in the PROVISIONAL list (47 distinct `Roadmap-Item` ids in the commit trailers, plus the sub-ids named in the lines) + 0 reopened + 0 overdue-new (the carried OVERDUE jobs below remain).
+V verified: 3 evidence sets (1 checker-cited, 2 hand-verified) (evidence exists and sha-verifies; their content is PROVISIONAL, see below) + P provisional: every item in the PROVISIONAL list (47 distinct `Roadmap-Item` ids in the commit trailers, plus the sub-ids named in the lines) + 0 reopened + 0 overdue-new (the carried OVERDUE jobs below remain).
 
 ### VERIFIED (committed machine evidence, checked while preparing this entry)
 Checked on this branch with `sha256sum -c` (0 non-OK lines). "VERIFIED" here means the evidence set exists and its hashes verify, not that the behaviour is verified.
-- `docs/qa/anton-smb-n3-20261112/run1.log`, `run2.log`, `run3.log` and `README.md` there (Anton SMB N=3 live run; `SHA256SUMS` verifies). No negative control: the run proves reachability at N=3 only.
 - `docs/qa/img-slim/` (CAT-IMG-SLIM-1 minimal-ffmpeg image evidence; `SHA256SUMS.txt` verifies). Container class; the full `catalog-api/Dockerfile` build including the Go stage was not exercised.
-- `docs/qa/secq2-repro-20261112/rep6.json` and `rep6.log.txt` (CAT-SECQ2-WD-F1 live WebDAV reproduction: not reproduced, 6/6 ok; `SHA256SUMS` verifies).
 - Carried from 2.4.2 and earlier, not re-run: the VERIFIED rows of `[2.4.2]`, `[2.4.1]`, `[2.4.0]`.
 - Other evidence directories added since v2.4.2 (`docs/qa/login-lock-2-round*`, `chpw-rl-2-round*`, `sec-ws-1*`, `favr3-fu*`, `stack3`) carry no checkable hash manifest and are treated as PROVISIONAL.
 
 ### PROVISIONAL (landed on `main`; counts as done for planning, NOT verified)
 Each item landed after an Opus review that returned GO-with-follow-ups (minor-class follow-ups tracked in `docs/FOLLOW_UPS_NEXT_PHASE.md`). Evidence class is mostly unit / httptest / SQLite (some PostgreSQL 15/16, container) level; live end-to-end runs are owed. Pending job per row: the full-suite retest, live UI QA and the live hardware baseline listed in `docs/PROVISIONAL_VERIFICATION_PLAN.md`.
 
+Evidence sets hand-verified with `sha256sum -c` (0 non-OK) but not checker-cited, because the checker lists their unhashed README.html/README.pdf twins as UNLISTED (advisory finding, below):
+- docs/qa/anton-smb-n3-20261112/run1.log, run2.log, run3.log and README.md there (Anton SMB N=3 live run; SHA256SUMS verifies). No negative control: the run proves reachability at N=3 only.
+- docs/qa/secq2-repro-20261112/rep6.json and rep6.log.txt (CAT-SECQ2-WD-F1 live WebDAV reproduction: not reproduced, 6/6 ok; SHA256SUMS verifies).
 **Security: authentication, sessions, rate limiting**
 - CAT-D9-SUSPEND (+ D9S-R3-1..4, D9SR3-F1/F2/F3/F4): admin suspension is a permanent lock and revokes sessions; NULL-safe `is_locked` reads; login/refresh non-loginable semantics; unknown/legacy-user login timing.
 - CAT-LOGIN-LOCK-1, CAT-LOGIN-LOCK-2: login back-off redesigned; in-flight attempt cap, every evaluated attempt charged, owner success never writes the account scope; PostgreSQL-verified (both images).
