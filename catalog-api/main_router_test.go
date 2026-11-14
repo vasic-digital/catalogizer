@@ -542,7 +542,7 @@ func TestBuildRouterAuthSurface_RuntimeMutants(t *testing.T) {
 		{"RV3_unclean_double_slash_route", m("main_router.go", defn, defn+"\n\trouter.POST(\"/api//v1/auth/evil\", func(c *gin.Context) {})")},
 		{"RV5_g_Handlers_prepend_in_registerAuthRoutes", m("main_chpw.go", `g.POST("/login", d.LoginRate, d.Login)`, "g.Handlers = append(gin.HandlersChain{func(c *gin.Context) { c.Next() }}, g.Handlers...)\n\tg.POST(\"/login\", d.LoginRate, d.Login)")},
 		{"RV6_engine_Handlers_append_in_applyTrustedProxies", m("trusted_proxies.go", "if err := setTrustedProxies(r, tp); err != nil {", "r.Handlers = append(r.Handlers, func(c *gin.Context) { c.Next() })\n\tif err := setTrustedProxies(r, tp); err != nil {")},
-		{"RV8_method_value_Use_in_ws_helper", m("main_wsroute.go", `router.GET("/ws", mw.RequireAuth(), h.HandleConnection)`, "u := router.Use\n\tu(func(c *gin.Context) { c.Next() })\n\trouter.GET(\"/ws\", mw.RequireAuth(), h.HandleConnection)")},
+		{"RV8_method_value_Use_in_ws_helper", m("main_wsroute.go", `router.GET("/ws", mw.RequireWSAuth(), h.HandleConnection)`, "u := router.Use\n\tu(func(c *gin.Context) { c.Next() })\n\trouter.GET(\"/ws\", mw.RequireWSAuth(), h.HandleConnection)")},
 		{"RV9_RouterGroup_field_Use_in_trusted_proxies", m("trusted_proxies.go", "if err := setTrustedProxies(r, tp); err != nil {", "rg := &r.RouterGroup\n\tf := rg.Use\n\tf(func(c *gin.Context) { c.Next() })\n\tif err := setTrustedProxies(r, tp); err != nil {")},
 		{"N1_limiter_dropped_from_login", m("main_chpw.go", `g.POST("/login", d.LoginRate, d.Login)`, `g.POST("/login", d.Login)`)},
 		{"N2_limiters_swapped_login_uses_auth_rate", m("main_chpw.go", `g.POST("/login", d.LoginRate, d.Login)`, `g.POST("/login", d.AuthRate, d.Login)`)},

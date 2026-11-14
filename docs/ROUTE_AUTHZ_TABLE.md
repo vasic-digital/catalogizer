@@ -35,7 +35,7 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | GET | `/health` | public | 200 | 200 | 200 |
 | GET | `/api/v1/health` | public | 200 | 200 | 200 |
 | GET | `/health/deep` | public | 200 | 200 | 200 |
-| GET | `/ws` | public | 400 | 400 | 400 |
+| GET | `/ws` | RequireWSAuth: `Authorization: Bearer` or single-use `?ticket=` (SEC-WS-1 F2; the session JWT in `?token=`/`?access_token=` is refused with 401; hand-edited, not re-probed) | 401 | 400 | 400 |
 | GET | `/api/v1/image-proxy` | public | 400 | 400 | 400 |
 | GET | `/api/v1/assets/:id` | public | 200 | 200 | 200 |
 | GET | `/api/v1/cover/placeholder/:type` | public | 200 | 200 | 200 |
@@ -64,6 +64,7 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | POST | `/api/v1/download/archive` | auth | 401 | 400 | skip |
 | GET | `/api/v1/stream/:id` | auth, or `?ticket=` (stream ticket, this route and this id only; see note below) | 401 | 404 | skip |
 | POST | `/api/v1/stream/:id/ticket` | auth (bearer; like every RequireAuth route it also still accepts the legacy `?access_token=` query; a stream ticket is NOT accepted here) | 401 | 404 | skip |
+| POST | `/api/v1/ws/ticket` | auth, Authorization header ONLY (RequireBearerHeader; a query JWT is 401; hand-edited, not re-probed) | 401 | 200 | skip |
 | POST | `/api/v1/copy/storage` | RequireAdmin (route) | 401 | 403 | skip |
 | POST | `/api/v1/copy/local` | RequireAdmin (route) | 401 | 403 | skip |
 | POST | `/api/v1/copy/upload` | RequireAdmin (route) | 401 | 403 | skip |
@@ -284,3 +285,7 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 ## Stream tickets (added with the web player fix)
 
 `POST /api/v1/stream/:id/ticket` mints an HMAC-SHA256 ticket (60 s) bound to the media id, the user id and the minting session. `GET /api/v1/stream/:id?ticket=...` accepts it in place of the Authorization header ONLY for that id (middleware/auth.go `streamRoute`); on every other route, method or id the `ticket` parameter is ignored and the request is unauthenticated (401). A ticket dies with its session (logout/revocation is checked at use). The catalogue has no per-user ownership model, so any authenticated user may mint a ticket for any catalogued file, exactly as they may stream it with a bearer token. The legacy `?access_token=` / `?token=` query path stays for native clients (libVLC, ffmpeg) and is a follow-up to remove; both parameters are redacted from the gin and zap access logs (`internal/logredact`). Covered by `catalog-api/stream_ticket_binary_test.go` (real binary).
+
+## WebSocket tickets (SEC-WS-1 F2)
+
+`POST /api/v1/ws/ticket` (Authorization header only) returns 32 random bytes (base64url), 30 s TTL, bound to the user id, username, role and the minting session. The server keeps only the SHA-256 hash (`internal/wsticket`). `GET /ws?ticket=...` redeems it exactly once (the entry is deleted before the TTL and session checks, so a failed attempt also consumes it); the live session check of `RequireAuth` is re-run at redemption. `/ws` no longer accepts a session JWT in the query string (`?token=` / `?access_token=` are 401); the `Authorization: Bearer` path is unchanged. Abuse bounds: per-user mint rate limit (20/min) and per-user live-ticket cap (8) answer 429 with `Retry-After`; the store is capped at 10,000 live tickets; tickets are in-process memory, so a multi-instance deployment needs sticky routing for `POST /api/v1/ws/ticket` and `/ws` (see `docs/deployment/SCALING_GUIDE.md`). The minting token's expiry rides in the ticket and closes the socket like a Bearer socket. Covered by `catalog-api/main_wsticket_test.go` (production route wiring, real HTTP server, real gorilla client) and `internal/wsticket`.

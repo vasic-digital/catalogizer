@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"catalogizer/internal/streamticket"
+	"catalogizer/internal/wsticket"
 	"catalogizer/utils"
 
 	"github.com/gin-gonic/gin"
@@ -32,6 +34,10 @@ type JWTMiddleware struct {
 	permCheck PermissionChecker
 	// tickets, when set, lets the stream route authenticate a short-lived stream ticket (?ticket=) instead of a session token.
 	tickets *streamticket.Signer
+	// wsTickets holds short-lived single-use WebSocket tickets (SEC-WS-1 F2); see WSTickets / RequireWSAuth.
+	wsTickets *wsticket.Store
+	// wsMintLimit bounds POST /api/v1/ws/ticket per user (see WSTicketMintLimit).
+	wsMintLimit *wsticket.Limiter
 }
 
 // SetStreamTicketSigner enables ?ticket= authentication on GET/HEAD /api/v1/stream/:id (and nowhere else).
@@ -102,7 +108,9 @@ type Claims struct {
 // NewJWTMiddleware creates a new JWT middleware
 func NewJWTMiddleware(secretKey string) *JWTMiddleware {
 	return &JWTMiddleware{
-		secretKey: []byte(secretKey),
+		secretKey:   []byte(secretKey),
+		wsTickets:   wsticket.NewStore(),
+		wsMintLimit: wsticket.NewLimiter(wsticket.MintsPerWindow, wsticket.MintWindow),
 	}
 }
 
@@ -383,4 +391,108 @@ func (m *JWTMiddleware) ValidateToken(tokenString string) (*Claims, error) {
 	}
 
 	return claims, nil
+}
+
+// WSTickets returns the WebSocket ticket store (SEC-WS-1 F2).
+func (m *JWTMiddleware) WSTickets() *wsticket.Store { return m.wsTickets }
+
+// RequireBearerHeader is RequireAuth restricted to the Authorization header: a session token in the query string is NOT
+// accepted (401), so it can never be minted into, or used on, a route that must not take URL credentials.
+func (m *JWTMiddleware) RequireBearerHeader() gin.HandlerFunc {
+	inner := m.RequireAuth()
+	return func(c *gin.Context) {
+		if c.GetHeader("Authorization") == "" {
+			utils.SendErrorResponse(c, http.StatusUnauthorized, "Authorization header required", nil)
+			c.Abort()
+			return
+		}
+		inner(c)
+	}
+}
+
+// RequireWSAuth authenticates the /ws upgrade: either "Authorization: Bearer <jwt>" or a single-use "?ticket=" minted by
+// POST /api/v1/ws/ticket. A session JWT in the query string (?token= / ?access_token=) is NOT accepted. A ticket is consumed
+// by the attempt (success or not) and is checked against the live session like a bearer token.
+func (m *JWTMiddleware) RequireWSAuth() gin.HandlerFunc {
+	bearer := m.RequireBearerHeader()
+	return func(c *gin.Context) {
+		if c.GetHeader("Authorization") != "" {
+			bearer(c)
+			return
+		}
+		tk := c.Query("ticket")
+		if tk == "" {
+			utils.SendErrorResponse(c, http.StatusUnauthorized, "Authorization header or ticket required", nil)
+			c.Abort()
+			return
+		}
+		cl, err := m.wsTickets.Redeem(tk)
+		if err == nil && m.sessionCheck != nil && (cl.SessionID == "" || m.sessionCheck(c.Request.Context(), cl.SessionID, cl.UserID) != nil) {
+			err = wsticket.ErrInvalid
+		}
+		if err != nil {
+			utils.SendErrorResponse(c, http.StatusUnauthorized, "Invalid or expired websocket ticket", nil)
+			c.Abort()
+			return
+		}
+		c.Set("username", cl.Username)
+		c.Set("role_id", cl.RoleID)
+		c.Set("session_id", cl.SessionID)
+		if uid, err := strconv.Atoi(cl.UserID); err == nil {
+			c.Set("user_id", uid)
+		} else {
+			c.Set("user_id", cl.UserID)
+		}
+		if !cl.TokenExpiry.IsZero() {
+			c.Set("token_expires_at", cl.TokenExpiry) // the socket closes at the minting token's expiry, like a Bearer socket
+		}
+		c.Set("auth_via_ws_ticket", true)
+		c.Next()
+	}
+}
+
+// WSTicketMintLimit rate limits POST /api/v1/ws/ticket per authenticated user (it must run after RequireBearerHeader). Over the
+// limit it answers 429 with Retry-After. Counters live in this process: with several API instances the effective limit is
+// per instance (see docs/deployment/SCALING_GUIDE.md).
+func (m *JWTMiddleware) WSTicketMintLimit() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		uid, _ := c.Get("user_id")
+		if ok, retry := m.wsMintLimit.Allow(fmt.Sprint(uid)); !ok {
+			secs := int(retry.Seconds()) + 1
+			c.Header("Retry-After", strconv.Itoa(secs))
+			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"error": "rate limit exceeded", "retry_after": secs})
+			return
+		}
+		c.Next()
+	}
+}
+
+// MintWSTicket handles POST /api/v1/ws/ticket (Authorization header only).
+func (m *JWTMiddleware) MintWSTicket(c *gin.Context) {
+	uid, ok := c.Get("user_id")
+	if !ok || fmt.Sprint(uid) == "" {
+		utils.SendErrorResponse(c, http.StatusUnauthorized, "Authentication required", nil)
+		return
+	}
+	str := func(v interface{}) string { s, _ := v.(string); return s }
+	un, _ := c.Get("username")
+	sid, _ := c.Get("session_id")
+	rid, _ := c.Get("role_id")
+	role, _ := rid.(int)
+	var tokenExp time.Time
+	if v, ok := c.Get("token_expires_at"); ok {
+		tokenExp, _ = v.(time.Time)
+	}
+	tk, exp, err := m.wsTickets.Issue(wsticket.Claims{UserID: fmt.Sprint(uid), Username: str(un), SessionID: str(sid), RoleID: role, TokenExpiry: tokenExp})
+	if errors.Is(err, wsticket.ErrUserBusy) {
+		c.Header("Retry-After", strconv.Itoa(int(wsticket.TTL.Seconds())))
+		c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"error": "too many pending websocket tickets; redeem or wait"})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "websocket tickets are temporarily unavailable"})
+		return
+	}
+	c.Header("Cache-Control", "no-store")
+	c.JSON(http.StatusOK, gin.H{"ticket": tk, "expires_at": exp.UTC().Format(time.RFC3339), "expires_in": int(wsticket.TTL.Seconds())})
 }
