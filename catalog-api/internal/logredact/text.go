@@ -404,6 +404,11 @@ func redactText(s string, truncated bool) string {
 					break
 				}
 				if e > st {
+					if classifySegment(s[st:e]) == segWide { // the rest of the path goes with it
+						for e < n && !isSpaceByte(s[e]) && s[e] != '?' && s[e] != '#' && s[e] != '"' && s[e] != '\'' {
+							e++
+						}
+					}
 					b.WriteString(run + "/:redacted")
 					i = e
 					continue

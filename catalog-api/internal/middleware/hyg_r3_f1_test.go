@@ -41,6 +41,12 @@ var r3f1Probes = []string{
 	// F-2: escapes deeper than the decode cap are keys in all three sinks
 	"/share%2525253Bx/LIVEsecret",
 	"/share/%25252525LIVEsecret",
+	"/share/;LIVEsecret",
+	"/share/;token=LIVEsecret",
+	"/share/..;LIVEsecret",
+	"/api/v1/logs/share/;token=LIVEsecret",
+	"/share/%2525252e/LIVEsecret",
+	"/share/.%00/LIVEsecret",
 }
 
 const r3f1Leak = "LIVEsecret"
@@ -105,7 +111,7 @@ func TestHygR3F1_SecretKeyVariantsRedactedInAllSinks(t *testing.T) {
 
 // Negative control: a segment that is not a secret key stays unchanged (the fix is not a blanket redaction), also with ";" and ".".
 func TestHygR3F1_NonSecretSegmentUnchanged(t *testing.T) {
-	for _, target := range []string{"/other;x=1/LIVEsecret", "/other./LIVEsecret", "/sharex;x=1/LIVEsecret", "/xshare./LIVEsecret"} {
+	for _, target := range []string{"/other;x=1/LIVEsecret", "/other./LIVEsecret", "/sharex;x=1/LIVEsecret", "/xshare./LIVEsecret", "/sharing/;/LIVEsecret", "/api/v1/media/42/./LIVEsecret", "/x.share/;/LIVEsecret", "/other/./LIVEsecret"} {
 		for sink, text := range r3f1Sinks(t, target) {
 			if !strings.Contains(text, r3f1Leak) {
 				t.Errorf("%s %s: non-secret segment was redacted: %q", sink, target, text)

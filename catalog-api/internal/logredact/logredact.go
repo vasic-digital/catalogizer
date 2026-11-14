@@ -133,12 +133,56 @@ func isSecretSegmentKey(seg string) bool {
 	return overflow || secretSegmentKeys[c]
 }
 
-// isSkippableSegment reports whether seg carries no content between a secret key and its secret: empty, ".", "..", a
-// param-only segment (";x=1", "..;") or the percent-encoded forms of these. Such segments are skipped like empty ones.
-func isSkippableSegment(seg string) bool {
-	c, overflow := canonicalSegment(seg)
-	return !overflow && c == ""
+// segKind classifies the segment that follows a secret key (HYG-R3-F1 review rounds 1-2).
+type segKind int
+
+const (
+	segPlain segKind = iota // ordinary content: the secret position
+	segSkip                 // no content at all after decoding ("", ".", "..", dots only, a lone ";"): skipped like an empty segment
+	segWide                 // ambiguous or param-with-value (";token=X", ";X", "..;X"), overflow past the decode cap, control byte:
+	// the secret position AND the rest of the path is removed with it (over-redaction, as for the %2F rule)
+)
+
+func classifySegment(seg string) segKind {
+	for i := 0; i < maxSegmentDecodes; i++ {
+		u, err := url.PathUnescape(seg)
+		if err != nil || u == seg {
+			break
+		}
+		seg = u
+	}
+	if u, err := url.PathUnescape(seg); err == nil && u != seg {
+		return segWide
+	}
+	for i := 0; i < len(seg); i++ {
+		if seg[i] < 0x20 || seg[i] == 0x7f {
+			return segWide
+		}
+	}
+	before, after, hasParam := strings.Cut(seg, ";")
+	if strings.Trim(before, ".") != "" {
+		return segPlain
+	}
+	if hasParam && after != "" {
+		return segWide
+	}
+	return segSkip
 }
+
+// decodeSegment percent-decodes seg at most maxSegmentDecodes rounds.
+func decodeSegment(seg string) string {
+	for i := 0; i < maxSegmentDecodes; i++ {
+		u, err := url.PathUnescape(seg)
+		if err != nil || u == seg {
+			break
+		}
+		seg = u
+	}
+	return seg
+}
+
+// isSkippableSegment reports whether seg carries no content between a secret key and its secret.
+func isSkippableSegment(seg string) bool { return classifySegment(seg) == segSkip }
 
 // SecretPath returns path with every segment that follows a secret-introducing segment (see secretSegmentKeys) replaced by
 // ":redacted". Everything else is preserved. Use it for ANY log field that carries a raw request path.
@@ -158,8 +202,9 @@ func SecretPath(path string) string {
 			j++
 		}
 		if j < len(segs) {
+			wide := classifySegment(segs[j]) == segWide
 			segs[j] = ":redacted"
-			if j > i+1 {
+			if j > i+1 || wide {
 				// "/share//S": the empty segment is what a decoded %2F at the START of the token leaves ("%2Fenc%2FTok" ->
 				// "/enc/Tok"); the rest of the path may be more of the token, so it is removed too (over-redaction by policy).
 				segs = segs[:j+1]

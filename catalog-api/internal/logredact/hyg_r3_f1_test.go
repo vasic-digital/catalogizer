@@ -13,10 +13,12 @@ var r3Secret = []string{
 	"/api/v1/logs/share/./S3cretVal", "/share/;/S3cretVal", "/share/%2e/S3cretVal", "/share/..;/S3cretVal", "/share/./S3cretVal",
 	"/share/;x=1/S3cretVal", "/share/../S3cretVal", "/share/.;/S3cretVal", "/share./%2E/S3cretVal", "/share//./;/S3cretVal",
 	// F-2: deeper escapes than the decode cap are treated as keys
+	"/share/;S3cretVal", "/share/;token=S3cretVal", "/share/..;S3cretVal", "/api/v1/logs/share/;token=S3cretVal", "/share/%3BS3cretVal",
+	"/share/%2525252e/S3cretVal", "/share/.%00/S3cretVal", "/share/.%00/x/S3cretVal", "/share/;x=1/a/S3cretVal",
 	"/share%2525253Bx/S3cretVal", "/share/%25252525S3cretVal", "/share%25252525252E/S3cretVal",
 }
 
-var r3Plain = []string{"/other;x=1/S3cretVal", "/sharing./S3cretVal", "/x.share/S3cretVal", "/share-x;1/S3cretVal", "/other/./S3cretVal", "/a%2541/S3cretVal"}
+var r3Plain = []string{"/other;x=1/S3cretVal", "/sharing./S3cretVal", "/x.share/S3cretVal", "/share-x;1/S3cretVal", "/other/./S3cretVal", "/sharing/;/S3cretVal", "/api/v1/media/42/./S3cretVal", "/x.share/;/S3cretVal", "/a%2541/S3cretVal"}
 
 func TestHygR3F1_SecretPathVariants(t *testing.T) {
 	for _, in := range r3Secret {

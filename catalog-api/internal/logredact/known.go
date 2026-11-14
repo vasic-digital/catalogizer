@@ -34,13 +34,32 @@ func KnownSecrets(path, rawQuery string, header http.Header, params map[string]s
 			continue
 		}
 		for j := i + 1; j < len(segs); j++ {
-			if !isSkippableSegment(segs[j]) {
-				add(segs[j])
-				if u, err := url.PathUnescape(segs[j]); err == nil && u != segs[j] {
+			k := classifySegment(segs[j])
+			if k == segSkip {
+				continue
+			}
+			addSeg := func(sg string) {
+				add(sg)
+				if u, err := url.PathUnescape(sg); err == nil && u != sg {
 					add(u)
 				}
-				break
 			}
+			addSeg(segs[j])
+			if k == segWide {
+				// param values (";token=X", ";X") and, as the path is removed with it, every later segment
+				for _, prm := range strings.Split(decodeSegment(segs[j]), ";")[1:] {
+					addSeg(prm)
+					if _, v, ok := strings.Cut(prm, "="); ok {
+						addSeg(v)
+					}
+				}
+				for _, rest := range segs[j+1:] {
+					if rest != "" {
+						addSeg(rest)
+					}
+				}
+			}
+			break
 		}
 	}
 	for name, v := range params {

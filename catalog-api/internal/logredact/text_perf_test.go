@@ -59,12 +59,20 @@ func TestPerfInstrumentSeesQuadratic(t *testing.T) {
 		_ = c
 	}
 	mk := func(n int) string { return strings.Repeat("a", n) }
-	t0 := time.Now()
-	quad(mk(4000))
-	ds := time.Since(t0)
-	t0 = time.Now()
-	quad(mk(16000))
-	db := time.Since(t0)
+	// Minimum of several runs per size: a load spike inflates one sample, never the minimum, so the ~16x reference ratio stays
+	// discriminating (threshold 8x) on a loaded host.
+	best := func(n int) time.Duration {
+		min := time.Duration(1<<62 - 1)
+		for r := 0; r < 5; r++ {
+			t0 := time.Now()
+			quad(mk(n))
+			if d := time.Since(t0); d < min {
+				min = d
+			}
+		}
+		return min
+	}
+	ds, db := best(4000), best(16000)
 	if float64(db) < 8*float64(ds) {
 		t.Fatalf("instrument blind: quadratic reference ratio only %.1fx", float64(db)/float64(ds))
 	}
