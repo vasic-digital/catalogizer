@@ -208,6 +208,7 @@ func TestInvariant_InflightTokensAreBounded(t *testing.T) {
 	d, _ := w.th.Begin(ctx, "u:1", "10.0.2.1")
 	require.True(t, d.Allowed)
 	*w.now = w.now.Add(3 * time.Minute)
+	w.th.purge = *w.now // the purge must not be what makes the slots free: the count itself ignores expired tokens
 	for i := 0; i < 4; i++ {
 		x, err := w.th.Begin(ctx, "u:1", fmt.Sprintf("10.0.3.%d", i))
 		require.NoError(t, err)
@@ -216,23 +217,37 @@ func TestInvariant_InflightTokensAreBounded(t *testing.T) {
 }
 
 // A refusal at the per-address step releases the token it already took (otherwise refusals would fill the in-flight bound).
+// The bucket becomes blocked between Begin's first read of it and its charge (a parallel request from the same address).
 func TestInvariant_BucketRefusalReleasesToken(t *testing.T) {
 	w := newWorld(t, "u:1")
 	ctx := context.Background()
-	for i := 0; i < 5; i++ {
-		d, err := w.th.Begin(ctx, "u:1", "203.0.113.1")
+	w.th.testAfterAccountRead = func() {
+		_, err := w.raw.Exec(`INSERT OR REPLACE INTO login_throttle (subject, scope, failures, blocked_until_ms, last_failure_ms, version) VALUES ('u:1', 'ip:203.0.113.1', 5, ?, ?, 3)`,
+			w.now.Add(time.Minute).UnixMilli(), w.now.UnixMilli())
 		require.NoError(t, err)
-		require.True(t, d.Allowed)
-		require.NoError(t, w.th.Fail(ctx, "u:1", d.Attempt))
 	}
-	for i := 0; i < 6; i++ {
-		d, err := w.th.Begin(ctx, "u:1", "203.0.113.1")
-		require.NoError(t, err)
-		require.False(t, d.Allowed, "the address bucket (5 free) is spent")
-	}
+	d, err := w.th.Begin(ctx, "u:1", "203.0.113.1")
+	require.NoError(t, err)
+	require.False(t, d.Allowed, "the address bucket was blocked after the first read")
 	var n int
 	require.NoError(t, w.raw.QueryRow(`SELECT COUNT(*) FROM login_throttle WHERE subject='u:1' AND scope LIKE 'pend:%'`).Scan(&n))
-	assert.Equal(t, 0, n, "refused attempts leave no token")
+	assert.Equal(t, 0, n, "a refused attempt leaves no token")
+}
+
+// An attempt refused because the in-flight slots are taken answers the same first-block length a back-off does, so the answer
+// does not differ between an existing account and a nonexistent name.
+func TestInvariant_InflightRefusalAnswersBaseDelay(t *testing.T) {
+	w := newWorld(t, "n:ghost")
+	ctx := context.Background()
+	for i := 0; i < 4; i++ {
+		d, err := w.th.Begin(ctx, "n:ghost", fmt.Sprintf("10.0.4.%d", i))
+		require.NoError(t, err)
+		require.True(t, d.Allowed)
+	}
+	d, err := w.th.Begin(ctx, "n:ghost", "10.0.4.99")
+	require.NoError(t, err)
+	require.False(t, d.Allowed)
+	assert.Equal(t, 30*time.Second, d.RetryAfter)
 }
 
 // ---- model-based interleaving test -------------------------------------------------------------------------------------
