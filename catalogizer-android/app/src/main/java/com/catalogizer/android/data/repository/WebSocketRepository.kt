@@ -1,6 +1,7 @@
 package com.catalogizer.android.data.repository
 
 import com.catalogizer.android.data.remote.CatalogizerApi
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -99,6 +100,7 @@ class WebSocketRepository(
     private val lock = Any()
     private var client: WebSocketClient? = null
     private var job: Job? = null
+    // @Volatile: read lock-free by socket threads in the listener's onClose; written under lock.
     @Volatile private var intentional = false
     private val attempts = AtomicInteger(0)
 
@@ -129,6 +131,8 @@ class WebSocketRepository(
             } catch (e: WsTicketUnauthorizedException) {
                 _events.value = WebSocketEvent.Error(e.message ?: "Unauthorized")
                 return@launch // a 401 is final: no reconnect loop with a token the server refuses
+            } catch (e: CancellationException) {
+                throw e // connect()/disconnect() cancelled this attempt: not a mint failure, no Error, no reconnect
             } catch (e: Exception) {
                 _events.value = WebSocketEvent.Error(e.message ?: "Ticket request failed")
                 scheduleReconnect()
@@ -161,12 +165,18 @@ class WebSocketRepository(
      * never trigger scheduleReconnect or overwrite the event state.
      */
     private fun currentOnly(holder: AtomicReference<WebSocketClient?>): WsListener = object : WsListener {
+        private fun me(): WebSocketClient? = holder.get()
+
         private fun current(): Boolean {
-            val me = holder.get() ?: return false
+            val me = me() ?: return false
             return synchronized(lock) { client === me }
         }
 
-        override fun onOpen(statusMessage: String) { if (current()) listener.onOpen(statusMessage) }
+        override fun onOpen(statusMessage: String) {
+            // An in-flight replaced/disconnected client can still complete its handshake (Java-WebSocket 1.5.4
+            // close() is a no-op until its writeThread is set), so close it here or it stays open and subscribes.
+            if (current()) listener.onOpen(statusMessage) else me()?.close()
+        }
         override fun onMessage(message: String) { if (current()) listener.onMessage(message) }
         override fun onClose(code: Int, remote: Boolean) { if (current()) listener.onClose(code, remote) }
         override fun onError(message: String) { if (current()) listener.onError(message) }
