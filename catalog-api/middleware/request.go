@@ -109,7 +109,10 @@ func RateLimiter(requestsPerMinute int) gin.HandlerFunc {
 		b.lastCheck = now
 
 		if b.tokens < 1.0 {
+			// Time until one whole token has refilled (RLW-FU2-F3, RFC 9110 §10.2.3).
+			wait := time.Duration((1.0 - b.tokens) / rate * float64(time.Second))
 			mu.Unlock()
+			c.Header("Retry-After", retryAfterSeconds(wait))
 			c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{
 				"error": "rate limit exceeded",
 			})
