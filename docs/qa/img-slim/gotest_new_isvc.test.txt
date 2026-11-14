@@ -1,0 +1,450 @@
+=== RUN   TestSubtitleParseASS_EmptyEvents
+--- PASS: TestSubtitleParseASS_EmptyEvents (0.00s)
+=== RUN   TestSubtitleParseASS_NoDialogue
+--- PASS: TestSubtitleParseASS_NoDialogue (0.00s)
+=== RUN   TestSubtitleParseSRT_InvalidTimestamp
+--- PASS: TestSubtitleParseSRT_InvalidTimestamp (0.00s)
+=== RUN   TestSubtitleParseVTT_ValidMultipleCues
+--- PASS: TestSubtitleParseVTT_ValidMultipleCues (0.00s)
+=== RUN   TestCacheService_GetMediaMetadata_NotFound_Coverage
+--- PASS: TestCacheService_GetMediaMetadata_NotFound_Coverage (0.00s)
+=== RUN   TestCacheService_GetThumbnail_NotFound_Coverage
+--- PASS: TestCacheService_GetThumbnail_NotFound_Coverage (0.00s)
+=== RUN   TestCacheService_SetSubtitle
+--- PASS: TestCacheService_SetSubtitle (0.00s)
+=== RUN   TestCacheService_GetSubtitle
+--- PASS: TestCacheService_GetSubtitle (0.00s)
+=== RUN   TestCacheService_SetCoverArt
+--- PASS: TestCacheService_SetCoverArt (0.00s)
+=== RUN   TestCacheService_GetCoverArt
+--- PASS: TestCacheService_GetCoverArt (0.00s)
+=== RUN   TestCoverArtProvider_Constants
+--- PASS: TestCoverArtProvider_Constants (0.00s)
+=== RUN   TestCoverArtQuality_Constants
+--- PASS: TestCoverArtQuality_Constants (0.00s)
+=== RUN   TestCoverArtService_SearchCoverArt_DefaultProviders
+--- PASS: TestCoverArtService_SearchCoverArt_DefaultProviders (0.00s)
+=== RUN   TestCoverArtService_SearchCoverArt_SpecificProviders
+--- PASS: TestCoverArtService_SearchCoverArt_SpecificProviders (0.00s)
+=== RUN   TestCoverArtService_SearchCoverArt_UnsupportedProvider
+--- PASS: TestCoverArtService_SearchCoverArt_UnsupportedProvider (0.00s)
+=== RUN   TestCoverArtService_SearchCoverArt_WithAlbum
+--- PASS: TestCoverArtService_SearchCoverArt_WithAlbum (0.00s)
+=== RUN   TestCoverArtService_SearchMusicBrainz_NotFabricated
+--- PASS: TestCoverArtService_SearchMusicBrainz_NotFabricated (0.00s)
+=== RUN   TestCoverArtService_SearchLastFM_NotFabricated
+--- PASS: TestCoverArtService_SearchLastFM_NotFabricated (0.00s)
+=== RUN   TestCoverArtService_SearchITunes_NotFabricated
+--- PASS: TestCoverArtService_SearchITunes_NotFabricated (0.00s)
+=== RUN   TestCoverArtService_DownloadImage
+--- PASS: TestCoverArtService_DownloadImage (0.00s)
+=== RUN   TestCoverArtService_DownloadImage_HTTPError
+--- PASS: TestCoverArtService_DownloadImage_HTTPError (0.00s)
+=== RUN   TestCoverArtService_DownloadImage_InvalidURL
+--- PASS: TestCoverArtService_DownloadImage_InvalidURL (0.00s)
+=== RUN   TestCoverArtService_GenerateTimestamps_ZeroCountDefault
+--- PASS: TestCoverArtService_GenerateTimestamps_ZeroCountDefault (0.00s)
+=== RUN   TestCoverArtService_GenerateTimestamps_NegativeCountDefault
+--- PASS: TestCoverArtService_GenerateTimestamps_NegativeCountDefault (0.00s)
+=== RUN   TestCoverArtService_GenerateTimestamps_EvenlyDistributed
+--- PASS: TestCoverArtService_GenerateTimestamps_EvenlyDistributed (0.00s)
+=== RUN   TestCoverArtService_SortCoverArtResults_EqualScores
+--- PASS: TestCoverArtService_SortCoverArtResults_EqualScores (0.00s)
+=== RUN   TestCoverArtService_SortCoverArtResults_EmptySlice
+--- PASS: TestCoverArtService_SortCoverArtResults_EmptySlice (0.00s)
+=== RUN   TestCoverArtService_SortCoverArtResults_Single
+--- PASS: TestCoverArtService_SortCoverArtResults_Single (0.00s)
+=== RUN   TestCoverArtService_ResizeImage_ExactDimensions
+--- PASS: TestCoverArtService_ResizeImage_ExactDimensions (0.00s)
+=== RUN   TestCoverArtService_ResizeImage_PreserveAspect
+--- PASS: TestCoverArtService_ResizeImage_PreserveAspect (0.00s)
+=== RUN   TestCoverArtService_ProcessImage_JPEG
+--- PASS: TestCoverArtService_ProcessImage_JPEG (0.02s)
+=== RUN   TestCoverArtService_ProcessImage_PNG
+--- PASS: TestCoverArtService_ProcessImage_PNG (0.00s)
+=== RUN   TestCoverArtService_ProcessImage_NonexistentInput
+--- PASS: TestCoverArtService_ProcessImage_NonexistentInput (0.00s)
+=== RUN   TestCoverArtService_ScanLocalCoverArt_NoFiles
+--- PASS: TestCoverArtService_ScanLocalCoverArt_NoFiles (0.00s)
+=== RUN   TestCoverArtService_ScanLocalCoverArt_NonexistentDir
+--- PASS: TestCoverArtService_ScanLocalCoverArt_NonexistentDir (0.00s)
+=== RUN   TestCoverArtService_GetCoverArtDownloadInfo_NilDB
+--- PASS: TestCoverArtService_GetCoverArtDownloadInfo_NilDB (0.00s)
+=== RUN   TestCoverArtSearchRequest_Fields
+--- PASS: TestCoverArtSearchRequest_Fields (0.00s)
+=== RUN   TestCoverArtProcessingOptions_Fields
+--- PASS: TestCoverArtProcessingOptions_Fields (0.00s)
+=== RUN   TestCoverArtService_SearchCoverArt_AllProvidersFailIsError
+--- PASS: TestCoverArtService_SearchCoverArt_AllProvidersFailIsError (0.00s)
+=== RUN   TestCoverURLRequest_Struct
+--- PASS: TestCoverURLRequest_Struct (0.00s)
+=== RUN   TestGetCoverURL_NilDB
+--- PASS: TestGetCoverURL_NilDB (0.00s)
+=== RUN   TestGetCoverURLsBatch_Empty
+--- PASS: TestGetCoverURLsBatch_Empty (0.00s)
+=== RUN   TestGetCoverURLsBatch_NilDB_PlaceholderFallback
+--- PASS: TestGetCoverURLsBatch_NilDB_PlaceholderFallback (0.00s)
+=== RUN   TestCoverArtFFprobe_PlaylistToLocalFileIsRefused
+--- PASS: TestCoverArtFFprobe_PlaylistToLocalFileIsRefused (0.11s)
+=== RUN   TestCoverArtFFmpeg_PlaylistToLocalFileMakesNoThumbnail
+--- PASS: TestCoverArtFFmpeg_PlaylistToLocalFileMakesNoThumbnail (0.09s)
+=== RUN   TestCoverArtFFCommands_DirectURLInputDoesNotReachNetwork
+--- PASS: TestCoverArtFFCommands_DirectURLInputDoesNotReachNetwork (0.22s)
+=== RUN   TestCoverArtFFCommands_GuardArguments
+--- PASS: TestCoverArtFFCommands_GuardArguments (0.00s)
+=== RUN   TestCoverArtMaxBytes_ProductionDefaultIs32MiB
+--- PASS: TestCoverArtMaxBytes_ProductionDefaultIs32MiB (0.00s)
+=== RUN   TestCoverArtDemuxers_MatchConverterHardeningList
+--- PASS: TestCoverArtDemuxers_MatchConverterHardeningList (0.00s)
+=== RUN   TestCoverArtService_DownloadCoverArt_Success
+--- PASS: TestCoverArtService_DownloadCoverArt_Success (0.00s)
+=== RUN   TestCoverArtService_DownloadCoverArt_DownloadFailure
+--- PASS: TestCoverArtService_DownloadCoverArt_DownloadFailure (0.00s)
+=== RUN   TestCoverArtService_DownloadCoverArt_SetAsDefault
+--- PASS: TestCoverArtService_DownloadCoverArt_SetAsDefault (0.00s)
+=== RUN   TestCoverArtService_ProcessAndSaveCoverArt_InvalidImageData
+--- PASS: TestCoverArtService_ProcessAndSaveCoverArt_InvalidImageData (0.00s)
+=== RUN   TestCoverArtService_ScanLocalCoverArt_WithCoverFiles
+--- PASS: TestCoverArtService_ScanLocalCoverArt_WithCoverFiles (0.00s)
+=== RUN   TestCoverArtService_ScanLocalCoverArt_Recursive
+--- PASS: TestCoverArtService_ScanLocalCoverArt_Recursive (0.00s)
+=== RUN   TestCoverArtService_ScanLocalCoverArt_NonImageFile
+--- PASS: TestCoverArtService_ScanLocalCoverArt_NonImageFile (0.00s)
+=== RUN   TestCoverArtService_GetCoverURL_FromCoverArtTable
+--- PASS: TestCoverArtService_GetCoverURL_FromCoverArtTable (0.00s)
+=== RUN   TestCoverArtService_GetCoverURL_FromLocalPath
+--- PASS: TestCoverArtService_GetCoverURL_FromLocalPath (0.00s)
+=== RUN   TestCoverArtService_GetCoverURL_FromExternalMetadata
+--- PASS: TestCoverArtService_GetCoverURL_FromExternalMetadata (0.00s)
+=== RUN   TestCoverArtService_GetCoverURL_Placeholder
+--- PASS: TestCoverArtService_GetCoverURL_Placeholder (0.00s)
+=== RUN   TestCoverArtService_GetCoverURL_NilDB
+--- PASS: TestCoverArtService_GetCoverURL_NilDB (0.00s)
+=== RUN   TestCoverArtService_GetCoverURLsBatch_Empty
+--- PASS: TestCoverArtService_GetCoverURLsBatch_Empty (0.00s)
+=== RUN   TestCoverArtService_GetCoverURLsBatch_NilDB
+--- PASS: TestCoverArtService_GetCoverURLsBatch_NilDB (0.00s)
+=== RUN   TestCoverArtService_GetCoverURLsBatch_WithData
+--- PASS: TestCoverArtService_GetCoverURLsBatch_WithData (0.00s)
+=== RUN   TestCoverArtService_GetCoverURLsBatch_CoverArtOverridesExternal
+--- PASS: TestCoverArtService_GetCoverURLsBatch_CoverArtOverridesExternal (0.00s)
+=== RUN   TestCoverArtService_GetCoverURLsBatch_LocalPathFallback
+--- PASS: TestCoverArtService_GetCoverURLsBatch_LocalPathFallback (0.00s)
+=== RUN   TestGeneratePlaceholderSVG_KnownTypes_Coverage
+=== RUN   TestGeneratePlaceholderSVG_KnownTypes_Coverage/movie
+=== RUN   TestGeneratePlaceholderSVG_KnownTypes_Coverage/tv_show
+=== RUN   TestGeneratePlaceholderSVG_KnownTypes_Coverage/tv_season
+=== RUN   TestGeneratePlaceholderSVG_KnownTypes_Coverage/tv_episode
+=== RUN   TestGeneratePlaceholderSVG_KnownTypes_Coverage/music_artist
+=== RUN   TestGeneratePlaceholderSVG_KnownTypes_Coverage/music_album
+=== RUN   TestGeneratePlaceholderSVG_KnownTypes_Coverage/song
+=== RUN   TestGeneratePlaceholderSVG_KnownTypes_Coverage/game
+=== RUN   TestGeneratePlaceholderSVG_KnownTypes_Coverage/software
+=== RUN   TestGeneratePlaceholderSVG_KnownTypes_Coverage/book
+=== RUN   TestGeneratePlaceholderSVG_KnownTypes_Coverage/comic
+--- PASS: TestGeneratePlaceholderSVG_KnownTypes_Coverage (0.00s)
+    --- PASS: TestGeneratePlaceholderSVG_KnownTypes_Coverage/movie (0.00s)
+    --- PASS: TestGeneratePlaceholderSVG_KnownTypes_Coverage/tv_show (0.00s)
+    --- PASS: TestGeneratePlaceholderSVG_KnownTypes_Coverage/tv_season (0.00s)
+    --- PASS: TestGeneratePlaceholderSVG_KnownTypes_Coverage/tv_episode (0.00s)
+    --- PASS: TestGeneratePlaceholderSVG_KnownTypes_Coverage/music_artist (0.00s)
+    --- PASS: TestGeneratePlaceholderSVG_KnownTypes_Coverage/music_album (0.00s)
+    --- PASS: TestGeneratePlaceholderSVG_KnownTypes_Coverage/song (0.00s)
+    --- PASS: TestGeneratePlaceholderSVG_KnownTypes_Coverage/game (0.00s)
+    --- PASS: TestGeneratePlaceholderSVG_KnownTypes_Coverage/software (0.00s)
+    --- PASS: TestGeneratePlaceholderSVG_KnownTypes_Coverage/book (0.00s)
+    --- PASS: TestGeneratePlaceholderSVG_KnownTypes_Coverage/comic (0.00s)
+=== RUN   TestGeneratePlaceholderSVG_UnknownType_Coverage
+--- PASS: TestGeneratePlaceholderSVG_UnknownType_Coverage (0.00s)
+=== RUN   TestCoverArtService_ProcessLocalCoverArt_Success
+--- PASS: TestCoverArtService_ProcessLocalCoverArt_Success (0.00s)
+=== RUN   TestCoverArtService_ProcessLocalCoverArt_NonexistentFile
+--- PASS: TestCoverArtService_ProcessLocalCoverArt_NonexistentFile (0.00s)
+=== RUN   TestCoverArtService_ProcessLocalCoverArt_InvalidImage
+--- PASS: TestCoverArtService_ProcessLocalCoverArt_InvalidImage (0.00s)
+=== RUN   TestCoverURLRequest_Fields
+--- PASS: TestCoverURLRequest_Fields (0.00s)
+=== RUN   TestCoverArtService_GetCoverArt_Found
+--- PASS: TestCoverArtService_GetCoverArt_Found (0.00s)
+=== RUN   TestCoverArtService_GetCoverArt_NotFound
+--- PASS: TestCoverArtService_GetCoverArt_NotFound (0.00s)
+=== RUN   TestCoverArtService_GetCoverArt_NullableFields
+--- PASS: TestCoverArtService_GetCoverArt_NullableFields (0.00s)
+=== RUN   TestCoverArtService_GetCoverArt_OnlyReturnsDefault
+--- PASS: TestCoverArtService_GetCoverArt_OnlyReturnsDefault (0.00s)
+=== RUN   TestCoverArtService_SearchCoverArt_WithCachedResult
+--- PASS: TestCoverArtService_SearchCoverArt_WithCachedResult (0.00s)
+=== RUN   TestCoverArtService_SearchCoverArt_CacheMiss
+--- PASS: TestCoverArtService_SearchCoverArt_CacheMiss (0.00s)
+=== RUN   TestCoverArtService_SearchCoverArt_WithSpecificProviders
+--- PASS: TestCoverArtService_SearchCoverArt_WithSpecificProviders (0.00s)
+=== RUN   TestCoverArtService_SearchCoverArt_AllDefaultProviders
+--- PASS: TestCoverArtService_SearchCoverArt_AllDefaultProviders (0.00s)
+=== RUN   TestCoverArtService_SetDefaultCoverArt
+--- PASS: TestCoverArtService_SetDefaultCoverArt (0.00s)
+=== RUN   TestCoverArtService_GetCoverArtDownloadInfo_FromDB
+--- PASS: TestCoverArtService_GetCoverArtDownloadInfo_FromDB (0.00s)
+=== RUN   TestCoverArtService_GetCoverArtDownloadInfo_NotInDB
+--- PASS: TestCoverArtService_GetCoverArtDownloadInfo_NotInDB (0.00s)
+=== RUN   TestCoverArtService_SortCoverArtResults_SameScore
+--- PASS: TestCoverArtService_SortCoverArtResults_SameScore (0.00s)
+=== RUN   TestCoverArtService_SortCoverArtResults_Empty
+--- PASS: TestCoverArtService_SortCoverArtResults_Empty (0.00s)
+=== RUN   TestCoverArtService_SortCoverArtResults_SingleItem
+--- PASS: TestCoverArtService_SortCoverArtResults_SingleItem (0.00s)
+=== RUN   TestCoverArtService_GenerateTimestamps_ZeroCount
+--- PASS: TestCoverArtService_GenerateTimestamps_ZeroCount (0.00s)
+=== RUN   TestCoverArtService_GenerateTimestamps_NegativeCount
+--- PASS: TestCoverArtService_GenerateTimestamps_NegativeCount (0.00s)
+=== RUN   TestCoverArtService_GenerateTimestamps_Values
+--- PASS: TestCoverArtService_GenerateTimestamps_Values (0.00s)
+=== RUN   TestCoverArtService_ResizeImage
+--- PASS: TestCoverArtService_ResizeImage (0.03s)
+=== RUN   TestCoverArtService_ResizeImage_NoPreserve
+--- PASS: TestCoverArtService_ResizeImage_NoPreserve (0.02s)
+=== RUN   TestCoverArtService_ResizeImage_TallImage
+--- PASS: TestCoverArtService_ResizeImage_TallImage (0.02s)
+=== RUN   TestCoverArtService_GenerateCacheKey_Deterministic
+--- PASS: TestCoverArtService_GenerateCacheKey_Deterministic (0.00s)
+=== RUN   TestCoverArtService_GenerateCacheKey_DifferentInputs
+--- PASS: TestCoverArtService_GenerateCacheKey_DifferentInputs (0.00s)
+=== RUN   TestCoverArtService_GenerateCacheKey_WithAlbum
+--- PASS: TestCoverArtService_GenerateCacheKey_WithAlbum (0.00s)
+=== RUN   TestCoverArtService_SearchProvider_Unsupported
+--- PASS: TestCoverArtService_SearchProvider_Unsupported (0.00s)
+=== RUN   TestCoverArtService_GetCoverArt_NilDB
+--- PASS: TestCoverArtService_GetCoverArt_NilDB (0.00s)
+=== RUN   TestCoverArtService_GenerateCacheKey
+=== RUN   TestCoverArtService_GenerateCacheKey/basic_request
+=== RUN   TestCoverArtService_GenerateCacheKey/empty_fields
+=== RUN   TestCoverArtService_GenerateCacheKey/special_characters
+--- PASS: TestCoverArtService_GenerateCacheKey (0.00s)
+    --- PASS: TestCoverArtService_GenerateCacheKey/basic_request (0.00s)
+    --- PASS: TestCoverArtService_GenerateCacheKey/empty_fields (0.00s)
+    --- PASS: TestCoverArtService_GenerateCacheKey/special_characters (0.00s)
+=== RUN   TestCoverArtService_GenerateCacheKey_Uniqueness
+--- PASS: TestCoverArtService_GenerateCacheKey_Uniqueness (0.00s)
+=== RUN   TestCoverArtService_GenerateTimestamps
+=== RUN   TestCoverArtService_GenerateTimestamps/normal_video
+=== RUN   TestCoverArtService_GenerateTimestamps/short_video
+=== RUN   TestCoverArtService_GenerateTimestamps/zero_duration
+--- PASS: TestCoverArtService_GenerateTimestamps (0.00s)
+    --- PASS: TestCoverArtService_GenerateTimestamps/normal_video (0.00s)
+    --- PASS: TestCoverArtService_GenerateTimestamps/short_video (0.00s)
+    --- PASS: TestCoverArtService_GenerateTimestamps/zero_duration (0.00s)
+=== RUN   TestCoverArtService_SortCoverArtResults
+--- PASS: TestCoverArtService_SortCoverArtResults (0.00s)
+=== RUN   TestCoverArtService_GenerateCoverArtID
+--- PASS: TestCoverArtService_GenerateCoverArtID (0.00s)
+=== RUN   TestDuplicateDetectionService_CalculateBookMetadataSimilarity_Coverage
+=== RUN   TestDuplicateDetectionService_CalculateBookMetadataSimilarity_Coverage/same_author_and_year
+=== RUN   TestDuplicateDetectionService_CalculateBookMetadataSimilarity_Coverage/same_ISBN
+=== RUN   TestDuplicateDetectionService_CalculateBookMetadataSimilarity_Coverage/empty_metadata
+--- PASS: TestDuplicateDetectionService_CalculateBookMetadataSimilarity_Coverage (0.00s)
+    --- PASS: TestDuplicateDetectionService_CalculateBookMetadataSimilarity_Coverage/same_author_and_year (0.00s)
+    --- PASS: TestDuplicateDetectionService_CalculateBookMetadataSimilarity_Coverage/same_ISBN (0.00s)
+    --- PASS: TestDuplicateDetectionService_CalculateBookMetadataSimilarity_Coverage/empty_metadata (0.00s)
+=== RUN   TestDuplicateDetectionService_CalculateSoftwareMetadataSimilarity_Coverage
+=== RUN   TestDuplicateDetectionService_CalculateSoftwareMetadataSimilarity_Coverage/same_file_size
+=== RUN   TestDuplicateDetectionService_CalculateSoftwareMetadataSimilarity_Coverage/different_file_sizes
+=== RUN   TestDuplicateDetectionService_CalculateSoftwareMetadataSimilarity_Coverage/empty_metadata
+--- PASS: TestDuplicateDetectionService_CalculateSoftwareMetadataSimilarity_Coverage (0.00s)
+    --- PASS: TestDuplicateDetectionService_CalculateSoftwareMetadataSimilarity_Coverage/same_file_size (0.00s)
+    --- PASS: TestDuplicateDetectionService_CalculateSoftwareMetadataSimilarity_Coverage/different_file_sizes (0.00s)
+    --- PASS: TestDuplicateDetectionService_CalculateSoftwareMetadataSimilarity_Coverage/empty_metadata (0.00s)
+=== RUN   TestDuplicateDetectionService_CalculateGenericMetadataSimilarity_Coverage
+=== RUN   TestDuplicateDetectionService_CalculateGenericMetadataSimilarity_Coverage/identical_files
+=== RUN   TestDuplicateDetectionService_CalculateGenericMetadataSimilarity_Coverage/different_format_same_name
+=== RUN   TestDuplicateDetectionService_CalculateGenericMetadataSimilarity_Coverage/empty_items
+--- PASS: TestDuplicateDetectionService_CalculateGenericMetadataSimilarity_Coverage (0.00s)
+    --- PASS: TestDuplicateDetectionService_CalculateGenericMetadataSimilarity_Coverage/identical_files (0.00s)
+    --- PASS: TestDuplicateDetectionService_CalculateGenericMetadataSimilarity_Coverage/different_format_same_name (0.00s)
+    --- PASS: TestDuplicateDetectionService_CalculateGenericMetadataSimilarity_Coverage/empty_items (0.00s)
+=== RUN   TestGameSoftwareRecognitionProvider_GetIGDBImageURL_Coverage
+--- PASS: TestGameSoftwareRecognitionProvider_GetIGDBImageURL_Coverage (0.00s)
+=== RUN   TestMediaPlayerService_FindSubtitleByLanguage
+=== RUN   TestMediaPlayerService_FindSubtitleByLanguage/find_by_language_name
+=== RUN   TestMediaPlayerService_FindSubtitleByLanguage/find_by_language_code
+=== RUN   TestMediaPlayerService_FindSubtitleByLanguage/not_found
+--- PASS: TestMediaPlayerService_FindSubtitleByLanguage (0.00s)
+    --- PASS: TestMediaPlayerService_FindSubtitleByLanguage/find_by_language_name (0.00s)
+    --- PASS: TestMediaPlayerService_FindSubtitleByLanguage/find_by_language_code (0.00s)
+    --- PASS: TestMediaPlayerService_FindSubtitleByLanguage/not_found (0.00s)
+=== RUN   TestMediaPlayerService_FindSubtitleByID
+=== RUN   TestMediaPlayerService_FindSubtitleByID/existing_subtitle
+=== RUN   TestMediaPlayerService_FindSubtitleByID/non-existing_subtitle
+--- PASS: TestMediaPlayerService_FindSubtitleByID (0.00s)
+    --- PASS: TestMediaPlayerService_FindSubtitleByID/existing_subtitle (0.00s)
+    --- PASS: TestMediaPlayerService_FindSubtitleByID/non-existing_subtitle (0.00s)
+=== RUN   TestSubtitleService_DownloadContent_RedirectToBlockedHostIsNotFollowed
+--- PASS: TestSubtitleService_DownloadContent_RedirectToBlockedHostIsNotFollowed (0.00s)
+=== RUN   TestSubtitleService_IgnoresOperatorAllowList
+--- PASS: TestSubtitleService_IgnoresOperatorAllowList (0.00s)
+=== RUN   TestSubtitleService_DownloadContent_NonSuccessStatusIsError
+--- PASS: TestSubtitleService_DownloadContent_NonSuccessStatusIsError (0.00s)
+=== RUN   TestSubtitleService_DownloadContent_BoundedBody
+--- PASS: TestSubtitleService_DownloadContent_BoundedBody (0.03s)
+=== RUN   TestCoverArtFFmpegCommands_ProtocolWhitelist
+--- PASS: TestCoverArtFFmpegCommands_ProtocolWhitelist (0.00s)
+=== RUN   TestCoverArtFFmpeg_PlaylistDoesNotReachNetwork
+--- PASS: TestCoverArtFFmpeg_PlaylistDoesNotReachNetwork (0.23s)
+=== RUN   TestCoverArtArchiveResolver_RequiresMusicBrainzID
+--- PASS: TestCoverArtArchiveResolver_RequiresMusicBrainzID (0.00s)
+=== RUN   TestCoverArtArchiveResolver_RejectsNonMusicEntities
+--- PASS: TestCoverArtArchiveResolver_RejectsNonMusicEntities (0.00s)
+=== RUN   TestSanitizeCoverFields_StripsEveryValue
+--- PASS: TestSanitizeCoverFields_StripsEveryValue (0.00s)
+=== RUN   TestSanitizeCoverFields_PreservesKeys
+--- PASS: TestSanitizeCoverFields_PreservesKeys (0.00s)
+=== RUN   TestAllowPublicURLLocal_NewCoverage
+--- PASS: TestAllowPublicURLLocal_NewCoverage (0.00s)
+=== RUN   TestFFmpegArgs_NoPipeProtocolFilePrefixedNicedAndSingleThread
+--- PASS: TestFFmpegArgs_NoPipeProtocolFilePrefixedNicedAndSingleThread (0.00s)
+=== RUN   TestDeleteSubtitle_InvalidatesTranslationCacheAndTranslateChecksExistenceFirst
+--- PASS: TestDeleteSubtitle_InvalidatesTranslationCacheAndTranslateChecksExistenceFirst (0.00s)
+=== RUN   TestDeleteSubtitle_NonOwnerIsNotFoundNotForbidden
+--- PASS: TestDeleteSubtitle_NonOwnerIsNotFoundNotForbidden (0.00s)
+=== RUN   TestSubtitleService_GetSubtitles_Empty
+--- PASS: TestSubtitleService_GetSubtitles_Empty (0.00s)
+=== RUN   TestSubtitleService_GetSubtitles_MultipleResults
+--- PASS: TestSubtitleService_GetSubtitles_MultipleResults (0.00s)
+=== RUN   TestSubtitleService_GetSubtitleTrack_Found
+--- PASS: TestSubtitleService_GetSubtitleTrack_Found (0.00s)
+=== RUN   TestSubtitleService_GetSubtitleTrack_NotFound
+--- PASS: TestSubtitleService_GetSubtitleTrack_NotFound (0.00s)
+=== RUN   TestSubtitleService_SaveSubtitleTrack
+--- PASS: TestSubtitleService_SaveSubtitleTrack (0.00s)
+=== RUN   TestSubtitleService_SaveSubtitleTrack_NilContentAndPath
+--- PASS: TestSubtitleService_SaveSubtitleTrack_NilContentAndPath (0.00s)
+=== RUN   TestSubtitleService_ParseSubtitleLines_SRT
+--- PASS: TestSubtitleService_ParseSubtitleLines_SRT (0.00s)
+=== RUN   TestSubtitleService_ParseSubtitleLines_EmptyContent
+--- PASS: TestSubtitleService_ParseSubtitleLines_EmptyContent (0.00s)
+=== RUN   TestSubtitleService_ReconstructSubtitle_SRT
+--- PASS: TestSubtitleService_ReconstructSubtitle_SRT (0.00s)
+=== RUN   TestSubtitleService_ReconstructSubtitle_UnsupportedFormat
+--- PASS: TestSubtitleService_ReconstructSubtitle_UnsupportedFormat (0.00s)
+=== RUN   TestSubtitleService_ReconstructSubtitle_EmptyLines
+--- PASS: TestSubtitleService_ReconstructSubtitle_EmptyLines (0.00s)
+=== RUN   TestSubtitleService_ParseSRT_MultilineText
+--- PASS: TestSubtitleService_ParseSRT_MultilineText (0.00s)
+=== RUN   TestSubtitleService_ParseSRT_Empty
+--- PASS: TestSubtitleService_ParseSRT_Empty (0.00s)
+=== RUN   TestSubtitleService_ParseSubtitle_CaseInsensitiveFormat
+--- PASS: TestSubtitleService_ParseSubtitle_CaseInsensitiveFormat (0.00s)
+=== RUN   TestSubtitleService_SRT_Roundtrip
+--- PASS: TestSubtitleService_SRT_Roundtrip (0.00s)
+=== RUN   TestSubtitleService_SaveUploadedSubtitle
+--- PASS: TestSubtitleService_SaveUploadedSubtitle (0.00s)
+=== RUN   TestSubtitleService_SaveUploadedSubtitle_AsDefault
+--- PASS: TestSubtitleService_SaveUploadedSubtitle_AsDefault (0.00s)
+=== RUN   TestSubtitleService_SaveUploadedSubtitle_MediaNotFound
+--- PASS: TestSubtitleService_SaveUploadedSubtitle_MediaNotFound (0.00s)
+=== RUN   TestSubtitleService_Close
+--- PASS: TestSubtitleService_Close (0.00s)
+=== RUN   TestGetSubtitleStringValue
+--- PASS: TestGetSubtitleStringValue (0.00s)
+=== RUN   TestSubtitleService_ExtractSamplePoints_FewLines
+--- PASS: TestSubtitleService_ExtractSamplePoints_FewLines (0.00s)
+=== RUN   TestSubtitleService_ExtractSamplePoints_EmptyLines
+--- PASS: TestSubtitleService_ExtractSamplePoints_EmptyLines (0.00s)
+=== RUN   TestSubtitleService_CalculateSyncOffset_EmptyPoints
+--- PASS: TestSubtitleService_CalculateSyncOffset_EmptyPoints (0.00s)
+=== RUN   TestSubtitleService_CalculateSyncOffset_SinglePoint
+--- PASS: TestSubtitleService_CalculateSyncOffset_SinglePoint (0.00s)
+=== RUN   TestSubtitleService_SearchProvider_Unsupported
+--- PASS: TestSubtitleService_SearchProvider_Unsupported (0.00s)
+=== RUN   TestNewSubtitleService
+--- PASS: TestNewSubtitleService (0.00s)
+=== RUN   TestSubtitleService_SearchSubtitles_NoFabricatedResults
+--- PASS: TestSubtitleService_SearchSubtitles_NoFabricatedResults (0.00s)
+=== RUN   TestSubtitleService_ParseSRT
+--- PASS: TestSubtitleService_ParseSRT (0.00s)
+=== RUN   TestSubtitleService_ParseSubtitle
+--- PASS: TestSubtitleService_ParseSubtitle (0.00s)
+=== RUN   TestSubtitleService_ReconstructSRT
+--- PASS: TestSubtitleService_ReconstructSRT (0.00s)
+=== RUN   TestSubtitleService_SortSubtitleResults
+--- PASS: TestSubtitleService_SortSubtitleResults (0.00s)
+=== RUN   TestSubtitleService_GetDownloadInfo_OpenSubtitles
+--- PASS: TestSubtitleService_GetDownloadInfo_OpenSubtitles (0.00s)
+=== RUN   TestSubtitleService_DownloadContent_NoCannedBody
+--- PASS: TestSubtitleService_DownloadContent_NoCannedBody (0.25s)
+=== RUN   TestSubtitleService_GetDownloadInfo_SubDB
+--- PASS: TestSubtitleService_GetDownloadInfo_SubDB (0.00s)
+=== RUN   TestSubtitleService_GetDownloadInfo_InvalidFormat
+--- PASS: TestSubtitleService_GetDownloadInfo_InvalidFormat (0.00s)
+=== RUN   TestSubtitleService_GetDownloadInfo_UnsupportedProvider
+--- PASS: TestSubtitleService_GetDownloadInfo_UnsupportedProvider (0.00s)
+=== RUN   TestSubtitleService_ExtractSamplePoints
+--- PASS: TestSubtitleService_ExtractSamplePoints (0.00s)
+=== RUN   TestSubtitleService_CalculateSyncOffset
+--- PASS: TestSubtitleService_CalculateSyncOffset (0.00s)
+=== RUN   TestGenerateSubtitleID
+--- PASS: TestGenerateSubtitleID (0.00s)
+=== RUN   TestSubtitleService_ParseVTT
+--- PASS: TestSubtitleService_ParseVTT (0.00s)
+=== RUN   TestSubtitleService_ParseVTT_WithCueIdentifiers
+--- PASS: TestSubtitleService_ParseVTT_WithCueIdentifiers (0.00s)
+=== RUN   TestSubtitleService_ParseVTT_WithCueSettings
+--- PASS: TestSubtitleService_ParseVTT_WithCueSettings (0.00s)
+=== RUN   TestSubtitleService_ParseVTT_WithTags
+--- PASS: TestSubtitleService_ParseVTT_WithTags (0.00s)
+=== RUN   TestSubtitleService_ParseVTT_ShortTimestamps
+--- PASS: TestSubtitleService_ParseVTT_ShortTimestamps (0.00s)
+=== RUN   TestSubtitleService_ParseVTT_MissingHeader
+--- PASS: TestSubtitleService_ParseVTT_MissingHeader (0.00s)
+=== RUN   TestSubtitleService_ParseVTT_EmptyCues
+--- PASS: TestSubtitleService_ParseVTT_EmptyCues (0.00s)
+=== RUN   TestSubtitleService_ParseASS
+--- PASS: TestSubtitleService_ParseASS (0.00s)
+=== RUN   TestSubtitleService_ParseASS_WithFormattingCodes
+--- PASS: TestSubtitleService_ParseASS_WithFormattingCodes (0.00s)
+=== RUN   TestSubtitleService_ParseASS_WithNewlines
+--- PASS: TestSubtitleService_ParseASS_WithNewlines (0.00s)
+=== RUN   TestSubtitleService_ParseASS_WithCommasInText
+--- PASS: TestSubtitleService_ParseASS_WithCommasInText (0.00s)
+=== RUN   TestSubtitleService_ParseASS_MissingEvents
+--- PASS: TestSubtitleService_ParseASS_MissingEvents (0.00s)
+=== RUN   TestSubtitleService_ParseASS_EmptyDialogues
+--- PASS: TestSubtitleService_ParseASS_EmptyDialogues (0.00s)
+=== RUN   TestSubtitleService_ParseASS_Timestamp
+--- PASS: TestSubtitleService_ParseASS_Timestamp (0.00s)
+=== RUN   TestSubtitleService_ParseSubtitle_VTT
+--- PASS: TestSubtitleService_ParseSubtitle_VTT (0.00s)
+=== RUN   TestSubtitleService_ParseSubtitle_ASS
+--- PASS: TestSubtitleService_ParseSubtitle_ASS (0.00s)
+=== RUN   TestSubtitleService_ParseSubtitle_SSA
+--- PASS: TestSubtitleService_ParseSubtitle_SSA (0.00s)
+=== RUN   TestD11b_ScanImportsSidecarSubtitles
+--- PASS: TestD11b_ScanImportsSidecarSubtitles (0.10s)
+=== RUN   TestSubtitleParseSRT_Empty
+--- PASS: TestSubtitleParseSRT_Empty (0.00s)
+=== RUN   TestSubtitleParseSRT_MultiLineText
+--- PASS: TestSubtitleParseSRT_MultiLineText (0.00s)
+=== RUN   TestSubtitleParseVTT_WithBOM
+--- PASS: TestSubtitleParseVTT_WithBOM (0.00s)
+=== RUN   TestSubtitleParseVTT_ShortTimestamp
+--- PASS: TestSubtitleParseVTT_ShortTimestamp (0.00s)
+=== RUN   TestSubtitleParseVTT_NoCues
+--- PASS: TestSubtitleParseVTT_NoCues (0.00s)
+=== RUN   TestSubtitleParseASS_WithBOM
+--- PASS: TestSubtitleParseASS_WithBOM (0.00s)
+=== RUN   TestGetSubtitleStringValue_Util
+--- PASS: TestGetSubtitleStringValue_Util (0.00s)
+=== RUN   TestSubtitleSortResults
+--- PASS: TestSubtitleSortResults (0.00s)
+=== RUN   TestSubtitleSortResults_TieBreaker
+--- PASS: TestSubtitleSortResults_TieBreaker (0.00s)
+=== RUN   TestVideoPlayerService_loadSubtitles
+--- PASS: TestVideoPlayerService_loadSubtitles (0.00s)
+=== RUN   TestWF22_R1_CoverArtThumbnailCopyBuildsEveryProtocolThroughTheSingleMapping
+--- PASS: TestWF22_R1_CoverArtThumbnailCopyBuildsEveryProtocolThroughTheSingleMapping (0.00s)
+=== RUN   TestWF22R3_N6_CoverArtResolvesTheSMBIdentityLikeEveryOtherCaller
+--- PASS: TestWF22R3_N6_CoverArtResolvesTheSMBIdentityLikeEveryOtherCaller (0.00s)
+=== RUN   TestReviewProbe_R1_CoverArtRemoteCopyRejectedByStrictFactory
+    wf22_review_probe_test.go:61: R1 ftp -> failed to connect filesystem client: failed to connect to FTP server: dial tcp 127.0.0.1:1: connect: connection refused
+    wf22_review_probe_test.go:61: R1 nfs -> failed to create filesystem client: failed to create NFS client: mount point is required
+    wf22_review_probe_test.go:61: R1 webdav -> failed to connect filesystem client: failed to connect to WebDAV server: Propfind "/media": unsupported protocol scheme ""
+--- PASS: TestReviewProbe_R1_CoverArtRemoteCopyRejectedByStrictFactory (0.00s)
+PASS

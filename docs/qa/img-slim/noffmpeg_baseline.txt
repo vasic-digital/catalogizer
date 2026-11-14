@@ -1,0 +1,26 @@
+187804	/
+18457	coreutils
+13226	libc6
+8115	libssl3t64
+7815	perl-base
+7196	bash
+7177	libmagickcore-7.q16-10
+6587	dpkg
+5010	gnupg-l10n
+4986	util-linux
+4858	libpoppler147
+4758	passwd
+4481	apt
+ffmpeg:
+  Installed: (none)
+  Candidate: 7:7.1.5-0+deb13u1
+libx264-dev:
+  Candidate: 2:0.164.3108+git31e19f9-2+b1
+libvpx-dev:
+  Candidate: 1.15.0-2.1+deb13u1
+libmp3lame-dev:
+  Candidate: 3.100-6+b3
+libopus-dev:
+  Candidate: 1.5.2-2
+libvorbis-dev:
+  Candidate: 1.3.7-3

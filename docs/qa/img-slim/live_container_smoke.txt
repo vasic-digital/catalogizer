@@ -1,0 +1,28 @@
+$ curl -sS -i http://127.0.0.1:38977/health
+HTTP/1.1 200 OK
+Access-Control-Allow-Headers: Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With
+Access-Control-Allow-Methods: POST, OPTIONS, GET, PUT, DELETE
+Cache-Control: public, max-age=5
+Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'
+Content-Type: application/json; charset=utf-8
+Cross-Origin-Embedder-Policy: require-corp
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Etag: "d170457895592058435aa5a77e3494abff83957e1320e32813c9a76790b0d334"
+Permissions-Policy: camera=(), microphone=(), geolocation=()
+Referrer-Policy: strict-origin-when-cross-origin
+
+$ curl /health/deep
+{"status":"healthy","timestamp":"2026-11-14T02:47:29.271242665Z","version":"70d10721dde373d70e6e4d171cced36c81f99ee9","uptime":"1.025211736s","components":{"database":{"status":"healthy","latency":"312.192µs"}},"converters":{"convert":true,"convert_pdf":false,"convert_svg":false,"ffmpeg":true,"pdftotext":true}}
+$ podman healthcheck run
+Error: container 3a4746b2bf5ced2526240ea2ea00f1901e393f00f91db8088229db93e4806923 has no defined healthcheck
+hc rc=125
+$ podman exec id
+uid=1001(appuser) gid=1001(appgroup) groups=1001(appgroup)
+running health=Error: template: inspect:1:44: executing "inspect" at <.State.Health.Status>: nil pointer evaluating *define.HealthCheckResults.Status
+{"level":"info","timestamp":"2026-11-14T02:47:29.221Z","caller":"gin@v1.12.0/context.go:192","msg":"HTTP Request","method":"GET","path":"/health","status":200,"ip":"192.168.1.17","latency":0.00009671,
+{"level":"info","timestamp":"2026-11-14T02:47:29.272Z","caller":"gin@v1.12.0/context.go:192","msg":"HTTP Request","method":"GET","path":"/health/deep","status":200,"ip":"192.168.1.17","latency":0.0015
+[GIN] 2026/11/14 - 02:47:29 | 200 |    1.710056ms |    192.168.1.17 | GET     "/health/deep"
+$ HEALTHCHECK command from the Dockerfile, executed in the container (podman default OCI format drops HEALTHCHECK metadata for old and new image alike)
+2026-11-14 02:47:47 URL:http://127.0.0.1:8080/health [193/193] -> "/dev/null" [1]
+rc=0

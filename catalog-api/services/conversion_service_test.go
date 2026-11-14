@@ -541,6 +541,27 @@ func TestConversionService_BuildFFmpegAudioArgs(t *testing.T) {
 			expected: []string{"-i", "/input/audio.wav", "-y", "-ab", "192k", "/output/audio.mp3"},
 		},
 		{
+			name: "ogg target drops cover picture (CAT-IMG-SLIM-1)",
+			job: &models.ConversionJob{
+				SourcePath: "/input/art.mp3", TargetPath: "/output/art.ogg", TargetFormat: "ogg", Quality: "medium",
+			},
+			expected: []string{"-i", "/input/art.mp3", "-y", "-vn", "-ab", "192k", "/output/art.ogg"},
+		},
+		{
+			name: "m4a target drops cover picture, format taken from the extension",
+			job: &models.ConversionJob{
+				SourcePath: "/input/art.flac", TargetPath: "/output/art.M4A", Quality: "lossless",
+			},
+			expected: []string{"-i", "/input/art.flac", "-y", "-vn", "-c:a", "flac", "/output/art.M4A"},
+		},
+		{
+			name: "mp3 keeps the cover picture (no -vn)",
+			job: &models.ConversionJob{
+				SourcePath: "/input/art.flac", TargetPath: "/output/art.mp3", TargetFormat: "mp3", Quality: "medium",
+			},
+			expected: []string{"-i", "/input/art.flac", "-y", "-ab", "192k", "/output/art.mp3"},
+		},
+		{
 			name: "nil settings",
 			job: &models.ConversionJob{
 				SourcePath:   "/input/audio.wav",

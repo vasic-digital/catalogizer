@@ -1,0 +1,76 @@
+# Required ffmpeg capabilities derived from the catalog-api code (class:name). Checked by check_caps.sh.
+# encoders: chosen by target extension in services/conversion_service.go (mp4/mkv/mov/m4v->libx264, webm->libvpx-vp9,
+# avi->mpeg4/libxvid, mp3->libmp3lame, aac, ogg->libvorbis, opus->libopus, flac, wav->pcm_s16le), frame grab -> mjpeg, image2 muxer
+encoder:libx264
+encoder:libvpx-vp9
+encoder:libxvid
+encoder:mpeg4
+encoder:libmp3lame
+encoder:aac
+encoder:libvorbis
+encoder:libopus
+encoder:flac
+encoder:pcm_s16le
+encoder:mjpeg
+encoder:png
+# decoders: every input in allVideoInput/allAudioInput plus realistic streams (AV1, HEVC, MPEG-2, AC3, subtitles)
+decoder:h264
+decoder:hevc
+decoder:libdav1d
+decoder:vp9
+decoder:mpeg2video
+decoder:mpeg4
+decoder:wmv2
+decoder:flv
+decoder:h263
+decoder:mp3
+decoder:aac
+decoder:flac
+decoder:vorbis
+decoder:opus
+decoder:ac3
+decoder:mp2
+decoder:wmav2
+decoder:png
+decoder:mjpeg
+decoder:ass
+decoder:subrip
+# muxers: targets (m4a is written by the ipod muxer), null for silencedetect, image2 for frame grabs
+muxer:mp4
+muxer:matroska
+muxer:mov
+muxer:avi
+muxer:webm
+muxer:ogg
+muxer:mp3
+muxer:wav
+muxer:flac
+muxer:ipod
+muxer:adts
+muxer:opus
+muxer:null
+muxer:image2
+# demuxers: the -format_whitelist list of converter_hardening.go / cover_art_service.go that this build must know
+demuxer:mov
+demuxer:matroska
+demuxer:avi
+demuxer:asf
+demuxer:flv
+demuxer:mpegts
+demuxer:mpeg
+demuxer:ogg
+demuxer:wav
+demuxer:flac
+demuxer:mp3
+demuxer:aac
+demuxer:ac3
+demuxer:amr
+demuxer:aiff
+demuxer:ivf
+demuxer:obu
+demuxer:h264
+demuxer:hevc
+demuxer:image2
+# filters used by the code
+filter:silencedetect
+filter:scale

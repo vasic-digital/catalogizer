@@ -1,0 +1,13 @@
+MUTANT dav1d build rc=0
+MUTANT dav1d caps rc=1 required=69 missing=1
+MUTANT dav1d smoke rc=1 rows=170 failures=7 SMOKE FAIL 
+MUTANT dav1d diffrc=1
+MUTANT libopus build rc=0
+MUTANT libopus caps rc=1 required=69 missing=1
+MUTANT libopus smoke rc=1 rows=170 failures=13 SMOKE FAIL 
+MUTANT libopus diffrc=1
+MUTANT libvpx build rc=0
+MUTANT libvpx caps rc=1 required=69 missing=1
+MUTANT libvpx smoke rc=1 rows=170 failures=13 SMOKE FAIL 
+MUTANT libvpx diffrc=1
+DONE

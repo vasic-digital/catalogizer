@@ -1,0 +1,180 @@
+video v.mp4->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.mp4->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.mp4->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.mp4->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.mp4->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.mp4->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.avi->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.avi->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.avi->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.avi->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.avi->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.avi->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.mkv->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.mkv->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.mkv->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.mkv->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.mkv->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.mkv->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.mov->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.mov->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.mov->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.mov->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.mov->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.mov->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.wmv->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.wmv->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.wmv->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.wmv->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.wmv->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.wmv->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.flv->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.flv->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.flv->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.flv->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.flv->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.flv->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.webm->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.webm->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.webm->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.webm->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.webm->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.webm->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.m4v->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.m4v->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.m4v->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.m4v->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.m4v->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.m4v->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.3gp->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.3gp->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.3gp->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.3gp->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.3gp->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+video v.3gp->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+videoq low	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+videoq medium	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+videoq high	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+videoq lossless	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.mp3->mp3	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.mp3->wav	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.mp3->flac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.mp3->aac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.mp3->ogg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.mp3->m4a	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.mp3->opus	rc=127	MISSING
+audio a.wav->mp3	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.wav->wav	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.wav->flac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.wav->aac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.wav->ogg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.wav->m4a	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.wav->opus	rc=127	MISSING
+audio a.flac->mp3	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.flac->wav	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.flac->flac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.flac->aac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.flac->ogg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.flac->m4a	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.flac->opus	rc=127	MISSING
+audio a.aac->mp3	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.aac->wav	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.aac->flac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.aac->aac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.aac->ogg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.aac->m4a	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.aac->opus	rc=127	MISSING
+audio a.ogg->mp3	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.ogg->wav	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.ogg->flac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.ogg->aac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.ogg->ogg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.ogg->m4a	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.ogg->opus	rc=127	MISSING
+audio a.wma->mp3	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.wma->wav	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.wma->flac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.wma->aac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.wma->ogg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.wma->m4a	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.wma->opus	rc=127	MISSING
+audio a.m4a->mp3	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.m4a->wav	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.m4a->flac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.m4a->aac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.m4a->ogg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.m4a->m4a	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.m4a->opus	rc=127	MISSING
+audio a.opus->mp3	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.opus->wav	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.opus->flac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.opus->aac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.opus->ogg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.opus->m4a	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio a.opus->opus	rc=127	MISSING
+audioq low	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audioq medium	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audioq high	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audioq lossless	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio-noar a.wav->opus	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio-noar a.mp3->opus	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+audio-noar a.flac->opus	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+coverart frame	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+coverart dur	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short
+integrity dur	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short
+silencedetect	
+ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short
+probejson v.mp4	e3b0c44298fc1c14
+ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short
+probejson v.mkv	e3b0c44298fc1c14
+ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short
+probejson a.flac	e3b0c44298fc1c14
+caps	nonexist-protocol-refused=ffmpeg: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc
+image png->jpg	rc=0	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+image png->gif	rc=0	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+image png->bmp	rc=0	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+image png->tiff	rc=0	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+image png->webp	rc=0	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+image png->png	rc=0	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;	dur=0.0
+cover-audio art.mp3->mp3	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+cover-audio art.mp3->wav	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+cover-audio art.mp3->flac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+cover-audio art.mp3->aac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+cover-audio art.mp3->ogg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+cover-audio art.mp3->m4a	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+cover-audio art.mp3->opus	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+cover-audio artpng.flac->mp3	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+cover-audio artpng.flac->wav	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+cover-audio artpng.flac->flac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+cover-audio artpng.flac->aac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+cover-audio artpng.flac->ogg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+cover-audio artpng.flac->m4a	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+cover-audio artpng.flac->opus	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video sub.mkv->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video sub.mkv->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video sub.mkv->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video sub.mkv->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video sub.mkv->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video sub.mkv->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-frame sub.mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video hevc10.mkv->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video hevc10.mkv->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video hevc10.mkv->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video hevc10.mkv->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video hevc10.mkv->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video hevc10.mkv->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-frame hevc10.mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video av1.mkv->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video av1.mkv->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video av1.mkv->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video av1.mkv->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video av1.mkv->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video av1.mkv->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-frame av1.mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video v.mpg->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video v.mpg->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video v.mpg->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video v.mpg->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video v.mpg->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-video v.mpg->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;
+real-frame v.mpg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvorbisenc.so.2: file too short;

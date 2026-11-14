@@ -1,0 +1,11 @@
+ffmpeg version 7.1.5 Copyright (c) 2000-2026 the FFmpeg developers
+built with gcc 14 (Debian 14.2.0-19)
+ffprobe version 7.1.5 Copyright (c) 2007-2026 the FFmpeg developers
+Version: ImageMagick 7.1.1-43 Q16 x86_64 22550 https://imagemagick.org
+13
+uid=1001(appuser) gid=1001(appgroup) groups=1001(appgroup)
+/usr/bin/pdftotext
+/usr/bin/pdftoppm
+/usr/bin/prlimit
+/usr/bin/nice
+/usr/bin/wget

@@ -9,6 +9,34 @@
 #     --build-arg BINARY_PATH=releases/catalog-api/linux-amd64/v2.3.0-build.25/catalog-api \
 #     -t localhost/catalogizer-api:latest .
 
+# ---------------------------------------------------------------------------------------------------
+# CAT-IMG-SLIM-1: minimal ffmpeg/ffprobe, built from the pinned upstream release (the distro ffmpeg links
+# libavfilter -> libplacebo/vulkan -> Mesa gallium + libLLVM + libz3 + flite voices: ~400 MB of the old image).
+# Full capability list / exclusions / rebuild command: docs/deployment/FFMPEG_MINIMAL.md
+# --disable-autodetect keeps GPU/X11/network/audio-device/etc. libraries out; every native decoder, demuxer,
+# muxer, native encoder, parser and filter stays (the code relies on silencedetect, scale, lavfi test sources
+# in tests, all demuxers of the -format_whitelist). Only the external libraries listed below are enabled.
+# ---------------------------------------------------------------------------------------------------
+ARG FFMPEG_VERSION=7.1.5
+ARG FFMPEG_SHA256=de668509caf9e35e3cd162473441fdb29538c6d96ed080292b3cf9e6fc5d558f
+FROM docker.io/library/debian:trixie-slim AS ffmpeg-build
+ARG FFMPEG_VERSION
+ARG FFMPEG_SHA256
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl xz-utils build-essential nasm pkg-config \
+    libx264-dev libvpx-dev libmp3lame-dev libopus-dev libvorbis-dev libxvidcore-dev libdav1d-dev zlib1g-dev libbz2-dev liblzma-dev \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /src
+RUN curl -fsSL -o ffmpeg.tar.xz "https://ffmpeg.org/releases/ffmpeg-${FFMPEG_VERSION}.tar.xz" \
+    && echo "${FFMPEG_SHA256}  ffmpeg.tar.xz" | sha256sum -c - \
+    && tar -xJf ffmpeg.tar.xz --strip-components=1 && rm ffmpeg.tar.xz
+RUN ./configure --prefix=/opt/ffmpeg --enable-gpl --disable-autodetect --disable-doc --disable-debug \
+        --disable-ffplay --enable-pic \
+        --enable-libx264 --enable-libvpx --enable-libmp3lame --enable-libopus --enable-libvorbis \
+        --enable-libxvid --enable-libdav1d \
+        --enable-zlib --enable-bzlib --enable-lzma --enable-iconv \
+    && make -j"$(n=$(nproc); [ "$n" -gt 8 ] && n=8; echo "$n")" && make install && strip /opt/ffmpeg/bin/ffmpeg /opt/ffmpeg/bin/ffprobe
+
 FROM docker.io/library/debian:trixie-slim
 
 ARG BINARY_PATH=releases/catalog-api/linux-amd64/latest/catalog-api
@@ -19,21 +47,27 @@ ARG BINARY_PATH=releases/catalog-api/linux-amd64/latest/catalog-api
 # imagemagick = the conversion worker's audio/video/image converters (no ghostscript on purpose: PDF pages
 # are rasterised by poppler pdftoppm; the converters run under a built-in ImageMagick policy, prlimit caps and an ffmpeg protocol allowlist), see GET /health/deep -> converters)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates tzdata wget poppler-utils util-linux ffmpeg imagemagick \
+    ca-certificates tzdata wget poppler-utils util-linux imagemagick \
+        libx264-164 libvpx9 libmp3lame0 libopus0 libvorbis0a libvorbisenc2 libogg0 libxvidcore4 libdav1d7 \
+        zlib1g libbz2-1.0 liblzma5 \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+
+COPY --from=ffmpeg-build /opt/ffmpeg/bin/ffmpeg /opt/ffmpeg/bin/ffprobe /usr/local/bin/
 
 WORKDIR /app
 
-COPY ${BINARY_PATH} /app/catalogizer-api
-COPY catalog-api/migrations /app/migrations
-COPY catalog-api/challenges/config /app/challenges/config
-
 RUN groupadd --system --gid 1001 appgroup && \
-    useradd --system --uid 1001 --gid appgroup --no-create-home appuser && \
-    chmod +x /app/catalogizer-api && \
-    mkdir -p /app/data /app/logs /app/temp /app/keys && \
+    useradd --system --uid 1001 --gid appgroup --no-create-home appuser
+
+# COPY --chown: each file is written once with its final owner (no trailing recursive chown that
+# would duplicate the binary into another layer: CAT-IMG-SLIM-1)
+COPY --chown=appuser:appgroup --chmod=0755 ${BINARY_PATH} /app/catalogizer-api
+COPY --chown=appuser:appgroup catalog-api/migrations /app/migrations
+COPY --chown=appuser:appgroup catalog-api/challenges/config /app/challenges/config
+
+RUN mkdir -p /app/data /app/logs /app/temp /app/keys && \
     chmod 700 /app/keys && \
-    chown -R appuser:appgroup /app
+    chown appuser:appgroup /app /app/data /app/logs /app/temp /app/keys /app/challenges
 
 # Bind address/port for containers: the app defaults to localhost:28080 (unreachable from outside the container, and not the
 # EXPOSEd/health-checked 8080); main.go honours HOST and SERVER_PORT as overrides.

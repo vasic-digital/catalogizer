@@ -1,0 +1,166 @@
+FAIL: video v.mp4->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.mp4->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.mp4->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.mp4->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.mp4->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.mp4->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.avi->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.avi->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.avi->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.avi->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.avi->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.avi->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.mkv->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.mkv->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.mkv->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.mkv->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.mkv->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.mkv->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.mov->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.mov->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.mov->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.mov->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.mov->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.mov->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.wmv->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.wmv->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.wmv->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.wmv->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.wmv->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.wmv->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.flv->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.flv->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.flv->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.flv->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.flv->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.flv->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.webm->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.webm->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.webm->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.webm->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.webm->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.webm->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.m4v->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.m4v->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.m4v->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.m4v->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.m4v->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.m4v->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.3gp->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.3gp->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.3gp->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.3gp->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.3gp->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: video v.3gp->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: videoq low	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: videoq medium	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: videoq high	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: videoq lossless	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.mp3->mp3	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.mp3->wav	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.mp3->flac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.mp3->aac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.mp3->ogg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.mp3->m4a	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.mp3->opus	rc=127	MISSING
+FAIL: audio a.wav->mp3	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.wav->wav	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.wav->flac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.wav->aac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.wav->ogg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.wav->m4a	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.wav->opus	rc=127	MISSING
+FAIL: audio a.flac->mp3	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.flac->wav	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.flac->flac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.flac->aac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.flac->ogg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.flac->m4a	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.flac->opus	rc=127	MISSING
+FAIL: audio a.aac->mp3	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.aac->wav	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.aac->flac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.aac->aac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.aac->ogg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.aac->m4a	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.aac->opus	rc=127	MISSING
+FAIL: audio a.ogg->mp3	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.ogg->wav	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.ogg->flac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.ogg->aac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.ogg->ogg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.ogg->m4a	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.ogg->opus	rc=127	MISSING
+FAIL: audio a.wma->mp3	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.wma->wav	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.wma->flac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.wma->aac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.wma->ogg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.wma->m4a	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.wma->opus	rc=127	MISSING
+FAIL: audio a.m4a->mp3	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.m4a->wav	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.m4a->flac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.m4a->aac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.m4a->ogg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.m4a->m4a	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.m4a->opus	rc=127	MISSING
+FAIL: audio a.opus->mp3	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.opus->wav	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.opus->flac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.opus->aac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.opus->ogg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.opus->m4a	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio a.opus->opus	rc=127	MISSING
+FAIL: audioq low	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audioq medium	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audioq high	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audioq lossless	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio-noar a.wav->opus	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio-noar a.mp3->opus	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: audio-noar a.flac->opus	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: coverart frame	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;	dur=0.0
+FAIL: cover-audio art.mp3->mp3	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: cover-audio art.mp3->wav	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: cover-audio art.mp3->flac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: cover-audio art.mp3->aac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: cover-audio art.mp3->ogg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: cover-audio art.mp3->m4a	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: cover-audio art.mp3->opus	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: cover-audio artpng.flac->mp3	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: cover-audio artpng.flac->wav	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: cover-audio artpng.flac->flac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: cover-audio artpng.flac->aac	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: cover-audio artpng.flac->ogg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: cover-audio artpng.flac->m4a	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: cover-audio artpng.flac->opus	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video sub.mkv->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video sub.mkv->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video sub.mkv->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video sub.mkv->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video sub.mkv->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video sub.mkv->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-frame sub.mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video hevc10.mkv->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video hevc10.mkv->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video hevc10.mkv->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video hevc10.mkv->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video hevc10.mkv->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video hevc10.mkv->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-frame hevc10.mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video av1.mkv->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video av1.mkv->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video av1.mkv->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video av1.mkv->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video av1.mkv->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video av1.mkv->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-frame av1.mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video v.mpg->mp4	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video v.mpg->mkv	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video v.mpg->mov	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video v.mpg->webm	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video v.mpg->avi	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-video v.mpg->m4v	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+FAIL: real-frame v.mpg	rc=127	ffprobe: error while loading shared libraries: /lib/x86_64-linux-gnu/libvpx.so.9: file too short;
+rows=170 failures=164
+SMOKE FAIL

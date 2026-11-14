@@ -1,0 +1,15 @@
+FAIL: video v.mp4->webm	rc=8	vp9,video,160,120;vorbis,audio,44100,1;"matroska,webm";	dur=2.2
+FAIL: video v.avi->webm	rc=8	vp9,video,160,120;vorbis,audio,44100,1;"matroska,webm";	dur=2.2
+FAIL: video v.mkv->webm	rc=8	vp9,video,160,120;vorbis,audio,44100,1;"matroska,webm";	dur=2.2
+FAIL: video v.mov->webm	rc=8	vp9,video,160,120;vorbis,audio,44100,1;"matroska,webm";	dur=2.2
+FAIL: video v.wmv->webm	rc=8	vp9,video,160,120;vorbis,audio,44100,1;"matroska,webm";	dur=2.2
+FAIL: video v.flv->webm	rc=8	vp9,video,160,120;vorbis,audio,44100,1;"matroska,webm";	dur=2.2
+FAIL: video v.webm->webm	rc=8	vp9,video,160,120;vorbis,audio,48000,1;"matroska,webm";	dur=2.2
+FAIL: video v.m4v->webm	rc=8	vp9,video,160,120;vorbis,audio,44100,1;"matroska,webm";	dur=2.2
+FAIL: video v.3gp->webm	rc=8	vp9,video,160,120;vorbis,audio,44100,1;"matroska,webm";	dur=2.2
+FAIL: real-video sub.mkv->webm	rc=8	vp9,video,176,144,0;vorbis,audio,0;webvtt,subtitle,N/A,N/A,0;
+FAIL: real-video hevc10.mkv->webm	rc=8	vp9,video,176,144,0;
+FAIL: real-video av1.mkv->webm	rc=8	vp9,video,176,144,0;
+FAIL: real-video v.mpg->webm	rc=8	vp9,video,176,144,0;
+rows=170 failures=13
+SMOKE FAIL
