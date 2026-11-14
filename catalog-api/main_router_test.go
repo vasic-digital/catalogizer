@@ -211,6 +211,9 @@ func inAuthSurface(pattern string) bool {
 	}
 	gin.SetMode(gin.TestMode)
 	for _, c := range cands {
+		if strings.Contains(c, "//") {
+			continue // an empty parameter value is not a request path gin routes (and httptest would parse "//x" as a host)
+		}
 		cs := strings.Split(strings.ToLower(strings.Trim(c, "/")), "/")
 		if len(cs) < 3 || cs[0] != "api" || cs[1] != "v1" || cs[2] != "auth" {
 			continue
@@ -381,6 +384,15 @@ func TestVerifyAuthRouteTable_RealEngines(t *testing.T) {
 		"M12_redirect_trailing_off": func(e *gin.Engine) { e.RedirectTrailingSlash = false },
 		"M13_use_raw_path":          func(e *gin.Engine) { e.UseRawPath = true },
 		"M14_unescape_values_off":   func(e *gin.Engine) { e.UnescapePathValues = false },
+		// Round-3 review F-A: the %2F probe. With UseEscapedPath a route spelled
+		// "/api/v1/auth%2Fevil" answers a request whose URL.Path is /api/v1/auth/evil.
+		"FA_use_escaped_path": func(e *gin.Engine) {
+			e.UseEscapedPath = true
+			e.GET("/api/v1/auth%2Fevil", func(*gin.Context) {})
+		},
+		"FA2_use_escaped_path_flag_only": func(e *gin.Engine) { e.UseEscapedPath = true },
+		// Round-3 review F-C: mixed-case partial parameter (drops ToLower in RM2).
+		"FC_mixed_case_partial_param": func(e *gin.Engine) { e.GET("/api/v1/AUT:x/evil", func(*gin.Context) {}) },
 	} {
 		mut := mut
 		t.Run(name, func(t *testing.T) {
@@ -581,4 +593,118 @@ func TestAltSvcAndHandlerKey_RuntimeMutants(t *testing.T) {
 	t.Run("HK1_handlerKey_depends_on_directory_name_under_trimpath", func(t *testing.T) {
 		runtimeMutantRun(t, map[string][][2]string{"main_router.go": {{"\tif root := moduleRootDir(); root != \"\" && strings.HasPrefix(file, root) {\n\t\treturn file[len(root):]", "\tif i := strings.LastIndex(file, \"/catalog-api/\"); i >= 0 {\n\t\treturn file[i+len(\"/catalog-api/\"):]"}}}, "TestHandlerKeyIndependentOfCheckoutPath", "-trimpath")
 	})
+}
+
+// Round-3 review F-A (class-wide): every field of gin.Engine, exported or not, is
+// classified. A matching-relevant field must be pinned to its default by the verifier
+// (each is flipped here and must be refused); an irrelevant one carries its reason.
+// A field gin adds later is unclassified and fails this test.
+var ginEngineFieldClass = map[string]string{
+	// matching-relevant bool flags: (name -> default value)
+	"RedirectTrailingSlash": "match:true", "RedirectFixedPath": "match:false", "HandleMethodNotAllowed": "match:false",
+	"UseRawPath": "match:false", "UseEscapedPath": "match:false", "UnescapePathValues": "match:true",
+	"RemoveExtraSlash": "match:false", "UseH2C": "match:false",
+	// matching-relevant chains/trees: pinned by the chain checks and the route table
+	"RouterGroup": "pinned: Handlers chain via wantGlobalChain, basePath only prefixes registrations",
+	"allNoRoute":  "pinned: must equal the global chain", "allNoMethod": "pinned: must equal the global chain",
+	"noRoute": "pinned: folded into allNoRoute", "noMethod": "pinned: folded into allNoMethod",
+	"trees": "the route table itself (verifyAuthRouteTable reads it through Routes())",
+	// irrelevant to which handler a path reaches
+	"routeTreesUpdated": "once-guard", "ForwardedByClientIP": "client IP only (F-D, separate item)",
+	"AppEngine": "client IP header trust only (deprecated)", "RemoteIPHeaders": "client IP only (F-D)",
+	"TrustedPlatform": "client IP only (F-D)", "trustedProxies": "client IP only (F-D)", "trustedCIDRs": "client IP only (F-D)",
+	"MaxMultipartMemory": "body parsing only", "ContextWithFallback": "context deadline/value fallback only",
+	"delims": "html templates", "secureJSONPrefix": "JSON rendering", "HTMLRender": "html templates", "FuncMap": "html templates",
+	"pool": "context pool", "maxParams": "allocation sizing", "maxSections": "allocation sizing",
+}
+
+func TestGinEngineFieldsClassified(t *testing.T) {
+	rt := reflect.TypeOf(gin.Engine{})
+	seen := map[string]bool{}
+	for i := 0; i < rt.NumField(); i++ {
+		n := rt.Field(i).Name
+		seen[n] = true
+		require.Contains(t, ginEngineFieldClass, n, "gin.Engine field %q is not classified: decide whether it changes which handler a path reaches, and pin it in verifyAuthRouteTable if so", n)
+	}
+	for n := range ginEngineFieldClass {
+		require.True(t, seen[n], "classified field %q no longer exists in gin.Engine", n)
+	}
+	gin.SetMode(gin.TestMode)
+	for n, c := range ginEngineFieldClass {
+		if !strings.HasPrefix(c, "match:") {
+			continue
+		}
+		def := c == "match:true"
+		require.NoError(t, verifyAuthRouteTable(buildRouter(routerTestDeps())), "control")
+		e := buildRouter(routerTestDeps())
+		reflect.ValueOf(e).Elem().FieldByName(n).SetBool(!def)
+		require.Error(t, verifyAuthRouteTable(e), "flipping %s must be refused", n)
+		// and gin's own New() default equals the table (the claim "default" is checked, not asserted)
+		require.Equal(t, def, reflect.ValueOf(gin.New()).Elem().FieldByName(n).Bool(), "default of %s", n)
+	}
+}
+
+// Round-3 review F-C: patternReachesAuthPaths agrees with the independent oracle
+// (inAuthSurface: witness instantiation + a real gin engine) over a generated corpus
+// of patterns (mixed case, partial parameters, params, catch-alls).
+func TestPatternReachesAuthPaths_AgreesWithOracleOnCorpus(t *testing.T) {
+	alpha := []string{"api", "API", "v1", "V1", "auth", "AUTH", "aut:x", "AUT:x", ":p", "*r", "zz"}
+	var corpus []string
+	var gen func(prefix []string, depth int)
+	gen = func(prefix []string, depth int) {
+		if len(prefix) > 0 {
+			corpus = append(corpus, "/"+strings.Join(prefix, "/"))
+		}
+		if depth == 0 {
+			return
+		}
+		for _, a := range alpha {
+			if len(prefix) > 0 && strings.HasPrefix(prefix[len(prefix)-1], "*") {
+				continue // nothing follows a catch-all
+			}
+			gen(append(append([]string{}, prefix...), a), depth-1)
+		}
+	}
+	gen(nil, 4)
+	n := 0
+	for _, p := range corpus {
+		segs := strings.Split(strings.Trim(p, "/"), "/")
+		if l := strings.ToLower(segs[0]); l == "auth" || (l == "api" && len(segs) > 1 && strings.EqualFold(segs[1], "auth")) {
+			continue // the oracle's conservative root-/auth extras are not part of the reach property
+		}
+		n++
+		require.Equal(t, inAuthSurface(p), patternReachesAuthPaths(p), "pattern %q", p)
+	}
+	require.Greater(t, n, 5000, "corpus control")
+}
+
+// Round-4 (review F-A/F-C): runtime overlay mutants of the verifier itself. Opt-in
+// (CHPW_RUNTIME_MUTANTS=1); each compiles the package with one production edit and the
+// named test must FAIL.
+func TestVerifier_RuntimeMutants(t *testing.T) {
+	if os.Getenv("CHPW_RUNTIME_MUTANTS") != "1" {
+		t.Skip("opt-in (compiles the package): set CHPW_RUNTIME_MUTANTS=1")
+	}
+	const defn = `authGroup := router.Group("/api/v1/auth")`
+	cases := []struct {
+		name  string
+		test  string
+		edits map[string][][2]string
+	}{
+		{"RA3_UseEscapedPath_set_in_buildRouter", "TestGinEngineFieldsClassified",
+			map[string][][2]string{"main_router.go": {{defn, "router.UseEscapedPath = true\n\t" + defn}}}},
+		{"RA4_verifier_ignores_UseEscapedPath", "TestVerifyAuthRouteTable_RealEngines",
+			map[string][][2]string{"main_router.go": {{"e.UseRawPath || e.UseEscapedPath ||", "e.UseRawPath ||"}}}},
+		{"RM2_drop_ToLower_in_partial_param_branch", "TestPatternReachesAuthPaths_AgreesWithOracleOnCorpus",
+			map[string][][2]string{"main_router.go": {{"strings.HasPrefix(want[i], strings.ToLower(lit))", "strings.HasPrefix(want[i], lit)"}}}},
+		{"RM2b_caught_by_verifier_case_FC", "TestVerifyAuthRouteTable_RealEngines",
+			map[string][][2]string{"main_router.go": {{"strings.HasPrefix(want[i], strings.ToLower(lit))", "strings.HasPrefix(want[i], lit)"}}}},
+	}
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			_ = runtimeMutantRun(t, tc.edits, tc.test)
+			t.Logf("KILLED by %s", tc.test)
+		})
+	}
 }

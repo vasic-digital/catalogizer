@@ -166,7 +166,7 @@ var (
 	// Engine members that install a fallback handler, serve a context again or
 	// change path matching; none is used by package main (CAT-CHPW-RL-2 F1).
 	bannedEngineSel = map[string]bool{
-		"NoRoute": true, "NoMethod": true, "HandleContext": true, "UseRawPath": true,
+		"NoRoute": true, "NoMethod": true, "HandleContext": true, "UseRawPath": true, "UseEscapedPath": true,
 		"RemoveExtraSlash": true, "RedirectTrailingSlash": true, "RedirectFixedPath": true,
 		"HandleMethodNotAllowed": true, "UnescapePathValues": true, "UseH2C": true,
 	}
@@ -557,6 +557,7 @@ func scanAuthSurface(fset *token.FileSet, files map[string]*ast.File) []string {
 	if prefixGroups["api/v1"] == 0 || matched < 20 {
 		add("expected groups/registrations not found (api/v1 group %d, matched calls %d): scan matched nothing, fail closed", prefixGroups["api/v1"], matched)
 	}
+	out = append(out, scanMainVerifySequence(fset, files)...)
 	return out
 }
 
@@ -790,6 +791,34 @@ func TestAuthSurfaceGuard_Mutants(t *testing.T) {
 		{"M9_unfoldable_group_prefix_then_route", "cannot be constant-folded", func(d string) {
 			edit(t, d, "main_router.go", defn, defn+"\n\trouter.Group(os.Getenv(\"G\")).GET(\"/auth/x\", evil)")
 		}},
+		{"RA_flag_UseEscapedPath_in_main", ".UseEscapedPath is banned", func(d string) {
+			edit(t, d, "main.go", "// Fail closed: the auth surface of the finished engine must be exactly the", "router.UseEscapedPath = true\n\t// Fail closed: the auth surface of the finished engine must be exactly the")
+		}},
+		{"RA2_flag_UseEscapedPath_in_buildRouter", ".UseEscapedPath is banned", func(d string) {
+			edit(t, d, "main_router.go", defn, "router.UseEscapedPath = true\n\t"+defn)
+		}},
+		{"RB_both_verify_calls_deleted", "verifyAuthRouteTable", func(d string) {
+			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed\", zap.Error(err))\n\t}", "")
+			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed (after the Alt-Svc middleware)\", zap.Error(err))\n\t}", "")
+		}},
+		{"RB1_first_verify_deleted", "verifyAuthRouteTable", func(d string) {
+			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed\", zap.Error(err))\n\t}", "")
+		}},
+		{"RB2_second_verify_deleted", "verifyAuthRouteTable", func(d string) {
+			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed (after the Alt-Svc middleware)\", zap.Error(err))\n\t}", "")
+		}},
+		{"RC_first_Fatal_to_Warn", "verifyAuthRouteTable", func(d string) {
+			edit(t, d, "main.go", "logger.Fatal(\"Auth route table check failed\", zap.Error(err))", "logger.Warn(\"Auth route table check failed\", zap.Error(err))")
+		}},
+		{"RC2_second_Fatal_to_Warn", "verifyAuthRouteTable", func(d string) {
+			edit(t, d, "main.go", "logger.Fatal(\"Auth route table check failed (after the Alt-Svc middleware)\", zap.Error(err))", "logger.Warn(\"Auth route table check failed (after the Alt-Svc middleware)\", zap.Error(err))")
+		}},
+		{"RD_registration_after_first_verify", "verifyAuthRouteTable", func(d string) {
+			edit(t, d, "main.go", "// Find available port for HTTP server", "router.GET(\"/late\", evil)\n\t// Find available port for HTTP server")
+		}},
+		{"RE_verify_error_ignored", "verifyAuthRouteTable", func(d string) {
+			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed\", zap.Error(err))", "if err := verifyAuthRouteTable(router); err == nil {\n\t\tlogger.Fatal(\"Auth route table check failed\", zap.Error(err))")
+		}},
 		{"M10_flag_RedirectFixedPath_assignment", ".RedirectFixedPath is banned", func(d string) {
 			edit(t, d, "main_router.go", defn, "router.RedirectFixedPath = true\n\t"+defn)
 		}},
@@ -950,4 +979,138 @@ func TestRouteHelpersNoAuthOrCaptureFirstSegment(t *testing.T) {
 	require.NoError(t, err)
 	got, _ := scanRouteHelpers(fset, map[string]*ast.File{"g.go": f})
 	require.Empty(t, got, "golden-FALSE: sibling prefix and a capture below a static segment")
+}
+
+// scanMainVerifySequence pins, in main(), the fail-closed call sequence that makes
+// verifyAuthRouteTable a real gate (round-3 review F-B: deleting both calls, or
+// downgrading logger.Fatal to Warn, used to leave every other guard green):
+//   - exactly two `if err := verifyAuthRouteTable(router); err != nil { logger.Fatal(...) }`
+//     statements at the top level of main(), and no other mention of the verifier;
+//   - the first comes after the last statement that registers on, or hands out, the
+//     engine, and before every ListenAndServe*; the single router.Use(altSvcMiddleware)
+//     follows it, and the second verify follows that Use and precedes srv.ListenAndServe.
+func scanMainVerifySequence(fset *token.FileSet, files map[string]*ast.File) []string {
+	var out []string
+	add := func(format string, a ...any) { out = append(out, fmt.Sprintf(format, a...)) }
+	f := files["main.go"]
+	if f == nil {
+		return []string{"main.go not found for the verify-sequence pin"}
+	}
+	var mainFn *ast.FuncDecl
+	for _, d := range f.Decls {
+		if fd, ok := d.(*ast.FuncDecl); ok && fd.Recv == nil && fd.Name.Name == "main" {
+			mainFn = fd
+		}
+	}
+	if mainFn == nil || mainFn.Body == nil {
+		return []string{"main() not found for the verify-sequence pin"}
+	}
+	isVerifyIf := func(st ast.Stmt) bool {
+		is, ok := st.(*ast.IfStmt)
+		if !ok {
+			return false
+		}
+		as, ok := is.Init.(*ast.AssignStmt)
+		if !ok || len(as.Rhs) != 1 || exprText(fset, as.Rhs[0]) != "verifyAuthRouteTable(router)" {
+			return false
+		}
+		if exprText(fset, is.Cond) != "err != nil" || len(is.Body.List) == 0 {
+			return false
+		}
+		es, ok := is.Body.List[0].(*ast.ExprStmt)
+		if !ok {
+			return false
+		}
+		ce, ok := es.X.(*ast.CallExpr)
+		return ok && exprText(fset, ce.Fun) == "logger.Fatal"
+	}
+	mentions := 0
+	ast.Inspect(mainFn.Body, func(n ast.Node) bool {
+		if id, ok := n.(*ast.Ident); ok && id.Name == "verifyAuthRouteTable" {
+			mentions++
+		}
+		return true
+	})
+	var verifyIdx []int
+	var altPos token.Pos
+	altCount := 0
+	ast.Inspect(mainFn.Body, func(n ast.Node) bool {
+		if ce, ok := n.(*ast.CallExpr); ok && exprText(fset, ce) == "router.Use(altSvcMiddleware)" {
+			altPos = ce.Pos()
+			altCount++
+		}
+		return true
+	})
+	for i, st := range mainFn.Body.List {
+		if isVerifyIf(st) {
+			verifyIdx = append(verifyIdx, i)
+		}
+	}
+	if len(verifyIdx) != 2 || mentions != 2 {
+		add("main.go: main() must contain exactly two top-level `if err := verifyAuthRouteTable(router); err != nil { logger.Fatal(...) }` statements and no other mention of the verifier (found %d well-formed, %d mentions)", len(verifyIdx), mentions)
+		return out
+	}
+	if altCount != 1 || !(mainFn.Body.List[verifyIdx[0]].End() < altPos && altPos < mainFn.Body.List[verifyIdx[1]].Pos()) {
+		add("main.go: the single router.Use(altSvcMiddleware) must sit between the first and the second verifyAuthRouteTable call")
+	}
+	touchesRouter := func(st ast.Stmt) bool {
+		hit := false
+		ast.Inspect(st, func(n ast.Node) bool {
+			ce, ok := n.(*ast.CallExpr)
+			if !ok {
+				return true
+			}
+			if exprText(fset, ce) == "router.Use(altSvcMiddleware)" {
+				return false // the one allowed late Use, ordered by the rule above
+			}
+			if se, ok := ce.Fun.(*ast.SelectorExpr); ok && exprText(fset, se.X) == "router" {
+				hit = true
+			}
+			for _, a := range ce.Args {
+				if id, ok := a.(*ast.Ident); ok && id.Name == "router" {
+					hit = true
+				}
+			}
+			return true
+		})
+		return hit
+	}
+	for i := verifyIdx[0] + 1; i < len(mainFn.Body.List); i++ {
+		if i == verifyIdx[1] {
+			continue
+		}
+		if touchesRouter(mainFn.Body.List[i]) {
+			add("main.go:%d: a statement after the first verifyAuthRouteTable call registers on or hands out the engine", fset.Position(mainFn.Body.List[i].Pos()).Line)
+		}
+	}
+	var firstServe, srvServe token.Pos
+	ast.Inspect(mainFn.Body, func(n ast.Node) bool {
+		ce, ok := n.(*ast.CallExpr)
+		if !ok {
+			return true
+		}
+		se, ok := ce.Fun.(*ast.SelectorExpr)
+		if !ok || !strings.HasPrefix(se.Sel.Name, "ListenAndServe") {
+			return true
+		}
+		if firstServe == 0 || ce.Pos() < firstServe {
+			firstServe = ce.Pos()
+		}
+		if se.Sel.Name == "ListenAndServe" && exprText(fset, se.X) == "srv" {
+			srvServe = ce.Pos()
+		}
+		return true
+	})
+	v1, v2 := mainFn.Body.List[verifyIdx[0]], mainFn.Body.List[verifyIdx[1]]
+	if firstServe == 0 || srvServe == 0 {
+		add("main.go: ListenAndServe calls not found for the verify-sequence pin")
+	} else {
+		if v1.End() > firstServe {
+			add("main.go: the first verifyAuthRouteTable call must precede every ListenAndServe*")
+		}
+		if v2.End() > srvServe {
+			add("main.go: the second verifyAuthRouteTable call must precede srv.ListenAndServe")
+		}
+	}
+	return out
 }

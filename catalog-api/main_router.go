@@ -473,9 +473,9 @@ func sameHandlers(a, b gin.HandlersChain) bool {
 }
 
 // verifyAuthRouteTable returns an error unless, for the finished engine, ALL of:
-//   - the engine's path-matching flags are gin's defaults (no fixed-path redirect,
-//     no extra-slash removal, no 405 handling, no raw-path matching, no h2c, trailing
-//     slash redirect on, path values unescaped);
+//   - the engine's path-matching flags are pinned to the values gin.New() sets (every gin.Engine field is classified in TestGinEngineFieldsClassified: no fixed-path redirect,
+//     no extra-slash removal, no 405 handling, no raw-path matching, no h2c, no escaped-path
+//     matching, trailing slash redirect on, path values unescaped);
 //   - the global handler chain is exactly wantGlobalChain (optionally followed by
 //     altSvcMiddleware), and the NoRoute and NoMethod chains equal it (so no
 //     fallback or global handler can answer an unmatched /api/v1/auth path);
@@ -488,10 +488,10 @@ func sameHandlers(a, b gin.HandlersChain) bool {
 // package main) nor anything outside gin's engine (a wrapper around the engine in
 // http.Server.Handler is refused by the AST scan, not here).
 func verifyAuthRouteTable(e *gin.Engine) error {
-	if !e.RedirectTrailingSlash || e.RedirectFixedPath || e.HandleMethodNotAllowed || e.UseRawPath ||
+	if !e.RedirectTrailingSlash || e.RedirectFixedPath || e.HandleMethodNotAllowed || e.UseRawPath || e.UseEscapedPath ||
 		e.RemoveExtraSlash || !e.UnescapePathValues || e.UseH2C {
-		return fmt.Errorf("engine path-matching flags are not gin's defaults (RedirectTrailingSlash=%t RedirectFixedPath=%t HandleMethodNotAllowed=%t UseRawPath=%t RemoveExtraSlash=%t UnescapePathValues=%t UseH2C=%t)",
-			e.RedirectTrailingSlash, e.RedirectFixedPath, e.HandleMethodNotAllowed, e.UseRawPath, e.RemoveExtraSlash, e.UnescapePathValues, e.UseH2C)
+		return fmt.Errorf("engine path-matching flags differ from the pinned values (RedirectTrailingSlash=%t RedirectFixedPath=%t HandleMethodNotAllowed=%t UseRawPath=%t UseEscapedPath=%t RemoveExtraSlash=%t UnescapePathValues=%t UseH2C=%t)",
+			e.RedirectTrailingSlash, e.RedirectFixedPath, e.HandleMethodNotAllowed, e.UseRawPath, e.UseEscapedPath, e.RemoveExtraSlash, e.UnescapePathValues, e.UseH2C)
 	}
 	global, err := engineChain(e, "Handlers")
 	if err != nil {

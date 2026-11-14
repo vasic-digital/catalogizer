@@ -11,8 +11,7 @@ and source-mutant evidence; no live deployment claimed. Status: PROVISIONAL.
   `*catchall` segments are handled; every pattern whose first three segments are
   compatible, or that has an earlier catch-all, counts. Method-independent.
   `verifyAuthRouteTable` requires that set to equal `authRouteTable`.
-- `verifyAuthRouteTable` additionally requires (a) gin's default path-matching
-  flags, (b) the global handler chain to equal the pinned `wantGlobalChain`
+- `verifyAuthRouteTable` additionally requires (a) the path-matching flags pinned to the values gin.New() sets (round 4: this now includes UseEscapedPath; see chpw-rl-2-round4-20261114), (b) the global handler chain to equal the pinned `wantGlobalChain`
   (optionally followed by `altSvcMiddleware`), (c) NoRoute/NoMethod chains equal to it.
   main() calls it twice: after the routes and again after its one late `Use`.
 - main()'s late `Use` is now the named `altSvcMiddleware`; the AST scan allows in
