@@ -1,0 +1,6 @@
+sourcemaps=50 sources=1058 needle_present(react)=True needle_absent(fake)=False
+react                    copies=1 ['repo/catalog-web/node_modules/react']
+react-dom                copies=1 ['repo/catalog-web/node_modules/react-dom']
+@tanstack/react-query    copies=1 ['repo/catalog-web/node_modules/@tanstack/react-query']
+axios                    copies=1 ['repo/catalog-web/node_modules/axios']
+RESULT PASS
