@@ -2357,9 +2357,9 @@ paths:
         Requires authentication: either `Authorization: Bearer <jwt>` (native clients) or a
         single-use `ticket` query parameter minted by `POST /api/v1/ws/ticket` (browsers, which
         cannot set headers on a WebSocket). **Breaking change (SEC-WS-1 F2):** the session JWT in the
-        `token` / `access_token` query parameter is no longer accepted on `/ws` (401); clients that
-        still send it (the Android app, `WebSocketRepository.kt`) must switch to a ticket or to the
-        header. A ticket is valid for 30 seconds, bound to the minting user and session, and is
+        `token` / `access_token` query parameter is no longer accepted on `/ws` (401); a client that
+        still sends it must use a ticket or the header instead (the web client and the Android app,
+        `WebSocketRepository.kt`, have already switched to a ticket). A ticket is valid for 30 seconds, bound to the minting user and session, and is
         consumed by the first upgrade attempt, successful or not; a replayed, expired or revoked-session
         ticket is 401. The session behind the credential must be active and the user not suspended.
         A request carrying a browser `Origin` header

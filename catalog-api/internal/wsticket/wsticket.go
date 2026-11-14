@@ -65,11 +65,13 @@ type queued struct {
 type Store struct {
 	mu      sync.Mutex
 	live    map[[sha256.Size]byte]entry
-	order   []queued
+	order   []queued // order[head:] is the live queue; order[:head] are already-purged slots awaiting compaction
+	head    int
 	perUser map[string]int
 	now     func() time.Time
 	ttl     time.Duration
 	scanned int // queue entries examined by purge (test introspection)
+	moved   int // queue elements copied by compaction (test introspection)
 }
 
 // NewStore returns an empty store using the production TTL and clock.
@@ -96,21 +98,31 @@ func (s *Store) drop(h [sha256.Size]byte) {
 	}
 }
 
-// purge drops expired tickets from the front of the issue queue. Caller holds s.mu.
+// compactMin is the smallest purged prefix worth reclaiming; below it the dead slots are left in place.
+const compactMin = 256
+
+// purge drops expired tickets from the front of the issue queue by advancing a head index (no copying). The dead prefix is
+// reclaimed only when it is at least compactMin slots AND at least as long as the live remainder, so each element is moved
+// O(1) times amortised. Caller holds s.mu.
 func (s *Store) purge(now time.Time) {
-	i := 0
-	for ; i < len(s.order); i++ {
+	for s.head < len(s.order) {
 		s.scanned++
-		q := s.order[i]
+		q := s.order[s.head]
 		if now.Before(q.expires) {
 			break
 		}
 		if e, ok := s.live[q.hash]; ok && !now.Before(e.expires) {
 			s.drop(q.hash)
 		}
+		s.order[s.head] = queued{} // do not retain the hash in the dead prefix
+		s.head++
 	}
-	if i > 0 {
-		s.order = append(s.order[:0], s.order[i:]...)
+	if s.head >= compactMin && s.head >= len(s.order)-s.head {
+		n := len(s.order) - s.head
+		s.moved += n
+		copy(s.order, s.order[s.head:])
+		s.order = s.order[:n]
+		s.head = 0
 	}
 }
 
@@ -164,6 +176,9 @@ func (s *Store) LenForTest() int { s.mu.Lock(); defer s.mu.Unlock(); return len(
 
 // ScannedForTest returns how many queue entries purge has examined in total.
 func (s *Store) ScannedForTest() int { s.mu.Lock(); defer s.mu.Unlock(); return s.scanned }
+
+// MovedForTest returns how many queue elements compaction has copied in total.
+func (s *Store) MovedForTest() int { s.mu.Lock(); defer s.mu.Unlock(); return s.moved }
 
 // ContainsPlaintextForTest reports whether the plaintext ticket (its text or its decoded 32 raw bytes) appears as a stored
 // key, or inside any stored claim string. A hash-only store never does.
