@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"net/url"
 	"sort"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 )
@@ -77,7 +78,7 @@ func KnownSecrets(path, rawQuery string, header http.Header, params map[string]s
 	return out
 }
 
-// ReplaceKnown replaces every occurrence of every known secret in s (longest first), including its URL-escaped form.
+// ReplaceKnown replaces every occurrence of every known secret in s (longest first), including its URL-escaped and %q-quoted (outer quotes stripped) forms.
 func ReplaceKnown(s string, secrets []string) string {
 	if len(secrets) == 0 || s == "" {
 		return s
@@ -90,6 +91,11 @@ func ReplaceKnown(s string, secrets []string) string {
 		}
 		if e := url.PathEscape(sec); e != sec {
 			uniq[e] = true
+		}
+		// %q form (HYG-F6): fmt's %q / strconv.Quote escapes quotes, backslashes and control characters; the text between the
+		// outer quotes is what an error text carries.
+		if q := strconv.Quote(sec); len(q) > 2 && q[1:len(q)-1] != sec {
+			uniq[q[1:len(q)-1]] = true
 		}
 	}
 	list := make([]string, 0, len(uniq))

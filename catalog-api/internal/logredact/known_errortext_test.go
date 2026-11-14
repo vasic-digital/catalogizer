@@ -1,6 +1,7 @@
 package logredact
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -93,5 +94,26 @@ func TestPathKnown_RemovesKnownSecretFromAnySegment(t *testing.T) {
 	got := PathKnown("/zz/items/Rt5Bw8KZq9Xv7Lm2/x", "ticket=AbCd1234", []string{"Rt5Bw8KZq9Xv7Lm2"})
 	if strings.Contains(got, "Rt5Bw8K") || !strings.Contains(got, "/zz/items/") || strings.Contains(got, "AbCd1234") {
 		t.Errorf("PathKnown = %q", got)
+	}
+}
+
+// HYG-F6: a known secret that contains a quote or backslash appears in its %q-quoted form inside an error text
+// (fmt %q escapes it); the quoted form must be removed too.
+func TestReplaceKnown_RemovesQuotedFormOfSecret(t *testing.T) {
+	const sec = `ab"cd12`
+	text := fmt.Errorf("lookup %q failed", sec).Error() // lookup "ab\"cd12" failed
+	if !strings.Contains(text, `ab\"cd12`) {
+		t.Fatalf("control needle: quoted form missing from %q", text)
+	}
+	got := ErrorTextKnown(text, []string{sec})
+	if strings.Contains(got, `cd12`) || strings.Contains(got, `ab`) {
+		t.Fatalf("quoted secret survived: %q", got)
+	}
+	if !strings.Contains(got, `lookup "`+redactedMark+`" failed`) {
+		t.Fatalf("surrounding text lost: %q", got)
+	}
+	// negative control: a secret without special characters has no extra quoted variant and benign text is untouched.
+	if got := ReplaceKnown("keep ab cd12 here", []string{sec}); got != "keep ab cd12 here" {
+		t.Fatalf("unrelated text changed: %q", got)
 	}
 }
