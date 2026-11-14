@@ -49,3 +49,21 @@ func TestHealthChecker_FailingCheckErrorTextNotInResponse(t *testing.T) {
 		t.Fatalf("error not logged server-side: %q", logbuf.String())
 	}
 }
+
+// F7: the logged line is itself redacted (credential-shaped text in a check error never reaches the log verbatim).
+func TestHealthChecker_LoggedErrorTextIsRedacted(t *testing.T) {
+	var logbuf bytes.Buffer
+	old, oldFlags := log.Writer(), log.Flags()
+	log.SetOutput(&logbuf)
+	defer func() { log.SetOutput(old); log.SetFlags(oldFlags) }()
+	hc := NewHealthChecker("t")
+	hc.RegisterCheck("db", func() error { return errors.New("dial failed password=hunter2secretvalue port=5432") })
+	_ = hc.Check()
+	got := logbuf.String()
+	if !strings.Contains(got, "dial failed") {
+		t.Fatalf("control needle: error not logged: %q", got)
+	}
+	if strings.Contains(got, "hunter2secretvalue") {
+		t.Fatalf("credential reached the log: %q", got)
+	}
+}
