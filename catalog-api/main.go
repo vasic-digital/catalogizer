@@ -1522,10 +1522,7 @@ func main() {
 	}()
 
 	// Add Alt-Svc header to advertise HTTP/3 support
-	router.Use(func(c *gin.Context) {
-			c.Header("Alt-Svc", `h3=":28443"; ma=86400`)
-			c.Next()
-	})
+	router.Use(altSvcMiddleware)
 
 	// Start HTTP/3 server on UDP port 28443
 	http3Server = &http3.Server{
@@ -1539,6 +1536,12 @@ func main() {
 				logger.Error("HTTP/3 server failed", zap.Error(err))
 			}
 	}()
+	}
+
+	// The one late engine Use (altSvcMiddleware) changed the global chain: verify
+	// again so the pinned chain is checked in its final form too.
+	if err := verifyAuthRouteTable(router); err != nil {
+		logger.Fatal("Auth route table check failed (after the Alt-Svc middleware)", zap.Error(err))
 	}
 
 	// Start server in a goroutine
