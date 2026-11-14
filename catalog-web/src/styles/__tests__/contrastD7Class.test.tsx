@@ -33,6 +33,7 @@ vi.mock('@/lib/identitiesApi', () => ({
   },
 }))
 
+vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ isAdmin: true }) }))
 vi.mock('@/lib/syncApi', () => ({
   syncApi: {
     listEndpoints: vi.fn(() => Promise.resolve([])),
