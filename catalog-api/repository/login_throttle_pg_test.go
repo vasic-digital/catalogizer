@@ -91,3 +91,64 @@ func TestLoginThrottlePostgres_InflightCapHolds(t *testing.T) {
 		})
 	}
 }
+
+// F8 (round 2): the evaluated-before-block bound AccountFree + MaxInflight - 1 under concurrent Begin/Fail loops on real
+// PostgreSQL. With Fail deleting the token and charging in two steps, a new attempt can take the freed slot in between.
+func TestLoginThrottlePostgres_EvaluatedBeforeBlockBound(t *testing.T) {
+	for _, img := range []string{testpg.Image, testpg.ImageGlibc} {
+		img := img
+		t.Run(img, func(t *testing.T) {
+			dsn, _ := testpg.StartImage(t, img)
+			raw, err := sql.Open("postgres", dsn)
+			require.NoError(t, err)
+			raw.SetMaxOpenConns(64)
+			defer raw.Close()
+			db := database.WrapDB(raw, database.DialectPostgres)
+			require.NoError(t, db.RunMigrations(context.Background()))
+			th := NewLoginThrottle(db)
+			now := time.Unix(1_800_000_000, 0)
+			th.SetClock(func() time.Time { return now })
+			ctx := context.Background()
+			pol := th.pol
+			bound := pol.AccountFree + pol.MaxInflight - 1
+			worst := 0
+			for round := 0; round < 20; round++ {
+				subj := fmt.Sprintf("u:%d", 500+round)
+				evaluated := 0
+				for i := 0; i < pol.AccountFree-4; i++ { // serial charges, each from its own address
+					d, err := th.Begin(ctx, subj, fmt.Sprintf("10.5.%d.%d", round, i))
+					require.NoError(t, err)
+					require.True(t, d.Allowed)
+					require.NoError(t, th.Fail(ctx, subj, d.Attempt))
+					evaluated++
+				}
+				var wg sync.WaitGroup
+				var n atomic.Int32
+				start := make(chan struct{})
+				for g := 0; g < 16; g++ {
+					wg.Add(1)
+					go func(g int) {
+						defer wg.Done()
+						<-start
+						for i := 0; i < 6; i++ {
+							d, err := th.Begin(ctx, subj, fmt.Sprintf("10.4.%d.%d.%d", round, g, i))
+							if err != nil || !d.Allowed {
+								continue
+							}
+							n.Add(1)
+							_ = th.Fail(ctx, subj, d.Attempt)
+						}
+					}(g)
+				}
+				close(start)
+				wg.Wait()
+				evaluated += int(n.Load())
+				if evaluated > worst {
+					worst = evaluated
+				}
+				require.LessOrEqual(t, evaluated, bound, "round %d", round)
+			}
+			t.Logf("image %s: worst evaluated before the block over 20 rounds: %d (bound %d)", img, worst, bound)
+		})
+	}
+}

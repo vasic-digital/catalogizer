@@ -437,7 +437,7 @@ charges; an account block, like the block of a nonexistent name, ends only by ex
 token and is never charged to the account (it keeps its own per-address limit). A login from a new address takes a token and, when
 the password is right, only releases it: an owner who logs in from many new addresses with nobody attacking is never charged and so
 never locked out. Consequence for the guess budget: a serial guesser gets exactly 20 evaluated guesses per account before the
-block, a burst of parallel guesses at most 20 + 3 (the slack of the in-flight bound, which is enforced atomically per account by a row lock and holds on SQLite and on PostgreSQL). What remains observable, accepted: an attacker
+block, a burst of parallel guesses at most 20 + 3 (AccountFree + MaxInflight - 1). Both the in-flight cap and the hand-off from an in-flight token to the account charge are serialised per account by a row lock inside one transaction, so the bound does not depend on timing; it was measured on real PostgreSQL 15 (worst case over 20 rounds of 16 concurrent guessers: 23, on a byte-order and on a glibc en_US.utf8 image) and replayed on SQLite. An attempt that stays in flight longer than 2 minutes (a stalled or crashed request) stops counting and is not charged. What remains observable, accepted: an attacker
 bursting exactly 4 parallel probes sees one slot fewer while an owner login is in flight (the bcrypt window); an administrator's
 unlock or a password change ends a block of a real account and has no counterpart for an unused name; while an attack is in
 progress a blocked account refuses a new address even for the owner, and a known-good address keeps working while others are
