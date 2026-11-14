@@ -249,7 +249,7 @@ func r5bIsSentinel(e ast.Expr) bool {
 	return false
 }
 
-func r5bUsesErr(n ast.Node) bool {
+func r5bUsesErr(n ast.Node, errLike map[string]bool) bool {
 	found := false
 	ast.Inspect(n, func(x ast.Node) bool {
 		switch v := x.(type) {
@@ -262,13 +262,66 @@ func r5bUsesErr(n ast.Node) bool {
 			}
 		case *ast.Ident:
 			l := strings.ToLower(v.Name)
-			if l == "err" || strings.HasSuffix(l, "err") {
+			if l == "err" || strings.HasSuffix(l, "err") || errLike[v.Name] {
 				found = true
 			}
 		}
 		return true
 	})
 	return found
+}
+
+func r5bIsErrorType(e ast.Expr) bool {
+	id, ok := e.(*ast.Ident)
+	return ok && id.Name == "error"
+}
+
+// r5bErrSynonymRE: names that, in this code base, only ever hold an error value (PXF23-F2). go/ast has no type
+// information, so a value of type error that is not declared as such and has no such name stays invisible.
+var r5bErrSynonymRE = regexp.MustCompile(`^(e[0-9]?|fail|failure|cause|fault|exc|exception|boom|oops)$`)
+
+// r5bErrLikeNames returns the identifiers of fn that hold an error value although their name does not say so:
+// parameters, named results and `var x error` declarations of type error (exact: read from the declaration), and
+// assignment targets with an error-synonym name (`failure := do()`, `_, boom := pair()`). A bare nil comparison or the
+// last result of a multi-value call is NOT used: measured on the handler packages, both flag slices, maps and
+// authored-text results (jobs, roots, msg) and would need an allow-list entry per site.
+func r5bErrLikeNames(fn *ast.FuncDecl) map[string]bool {
+	set := map[string]bool{}
+	fields := func(fl *ast.FieldList) {
+		if fl == nil {
+			return
+		}
+		for _, f := range fl.List {
+			if r5bIsErrorType(f.Type) {
+				for _, nm := range f.Names {
+					set[nm.Name] = true
+				}
+			}
+		}
+	}
+	fields(fn.Type.Params)
+	fields(fn.Type.Results)
+	if fn.Body == nil {
+		return set
+	}
+	ast.Inspect(fn.Body, func(n ast.Node) bool {
+		switch v := n.(type) {
+		case *ast.ValueSpec:
+			if v.Type != nil && r5bIsErrorType(v.Type) {
+				for _, nm := range v.Names {
+					set[nm.Name] = true
+				}
+			}
+		case *ast.AssignStmt:
+			for _, l := range v.Lhs {
+				if id, ok := l.(*ast.Ident); ok && r5bErrSynonymRE.MatchString(id.Name) {
+					set[id.Name] = true
+				}
+			}
+		}
+		return true
+	})
+	return set
 }
 
 func r5bRecv(e ast.Expr) string {
@@ -289,7 +342,12 @@ func r5bSweepSource(name, src string) ([]string, error) {
 		return nil, err
 	}
 	var out []string
-	ast.Inspect(af, func(n ast.Node) bool {
+	errLike := map[string]bool{}
+	var inspect func(n ast.Node) bool
+	inspect = func(n ast.Node) bool {
+		if fd, ok := n.(*ast.FuncDecl); ok {
+			errLike = r5bErrLikeNames(fd)
+		}
 		c, ok := n.(*ast.CallExpr)
 		if !ok {
 			return true
@@ -315,13 +373,14 @@ func r5bSweepSource(name, src string) ([]string, error) {
 			if callee == "SendErrorResponse" && i != 2 {
 				continue
 			}
-			if r5bUsesErr(a) {
+			if r5bUsesErr(a, errLike) {
 				out = append(out, fmt.Sprintf("%s:%d", filepath.Base(name), fset.Position(c.Pos()).Line))
 				break
 			}
 		}
 		return true
-	})
+	}
+	ast.Inspect(af, inspect)
 	return out, nil
 }
 
