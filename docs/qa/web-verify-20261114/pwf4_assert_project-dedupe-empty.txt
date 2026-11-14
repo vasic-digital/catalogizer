@@ -4,3 +4,4 @@ react-dom                copies=1 ['repo/catalog-web/node_modules/react-dom']
 @tanstack/react-query    copies=1 ['repo/catalog-web/node_modules/@tanstack/react-query']
 axios                    copies=1 ['repo/catalog-web/node_modules/axios']
 RESULT PASS
+assert rc=0

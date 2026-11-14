@@ -1,7 +1,7 @@
 // FU2-1: live-browser paint-order check for HistoryDrawer (real component, real Tailwind CSS, real chromium layout).
 // usage: node fu2_1_paint_order.mjs <repo-root> <out-dir> [--mutate]
 // PASS: document.elementFromPoint(dialog centre) is inside [role=dialog]. --mutate lowers the dialog z-index below the backdrop; must FAIL (exit 1).
-// Exit: 0 PASS, 1 FAIL, 2 BLIND/SKIP. Control needle: a known-present element (#fu21-probe-under) must be hit at ITS centre, and the dialog centre must NOT report a fake id.
+// Exit: 0 PASS, 1 FAIL, 2 BLIND/SKIP. Controls (both gate the verdict): (1) the fixed probe #fu21-probe-under sits UNDER the full-screen overlay, so elementFromPoint at its centre must NOT return the probe (proves hit testing sees the overlay); (2) a known-absent id (#fu21-absent-zq) must not be found.
 import fs from 'node:fs'; import path from 'node:path'; import crypto from 'node:crypto';
 import { createRequire } from 'node:module';
 const [root, out, flag] = [process.argv[2], process.argv[3], process.argv[4]];
@@ -37,7 +37,7 @@ try {
     const t = document.getElementById('history-drawer-title').getBoundingClientRect();
     const th = document.elementFromPoint(t.left + t.width / 2, t.top + t.height / 2);
     const p = document.getElementById('fu21-probe-under').getBoundingClientRect();
-    const ph = document.elementFromPoint(p.left + 5, p.top + 5);
+    const ph = document.elementFromPoint(p.left + p.width / 2, p.top + p.height / 2);
     return { rect: [b.left, b.top, b.width, b.height].map(Math.round), centreInsideDialog: !!hit && d.contains(hit), titleHitInsideDialog: !!th && d.contains(th), hits,
       backdropHit: !!hit && hit.getAttribute('data-testid') === 'history-drawer-backdrop',
       // control: the probe sits under the backdrop+overlay; ordinary stacking says the fixed overlay covers it
@@ -46,7 +46,7 @@ try {
   const png = path.join(out, mutate ? 'drawer_mutated.png' : 'drawer.png');
   await page.screenshot({ path: png });
   const sha = crypto.createHash('sha256').update(fs.readFileSync(png)).digest('hex');
-  const ok = r.centreInsideDialog && r.titleHitInsideDialog && !r.backdropHit && !r.fakeNeedleFound;
+  const ok = r.centreInsideDialog && r.titleHitInsideDialog && !r.backdropHit && !r.fakeNeedleFound && r.probeHitIsOverlayNotProbe;
   console.log(JSON.stringify({ mutate, ...r, screenshotSha256: sha, verdict: ok ? 'PASS' : 'FAIL' }));
   code = ok ? 0 : 1;
 } catch (e) { console.log('BLIND/SKIP: ' + String(e).split('\n')[0]); code = 2; }

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$1/repo"
+source scripts/lib/project-config.sh
+source "$BUILD_PROJECT_ROOT/Build/lib/common.sh"
+source "$BUILD_PROJECT_ROOT/Build/lib/version.sh"
+source "$BUILD_PROJECT_ROOT/Build/lib/hash.sh"
+source scripts/lib/build-catalog-web.sh
+export BUILD_SKIP_TESTS=true NODE_OPTIONS=--max-old-space-size=3072
+build_catalog_web 0.0.0 0 v0.0.0-webchk deadbeef
