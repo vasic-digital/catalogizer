@@ -1,0 +1,108 @@
+package main
+
+import (
+	"fmt"
+	"go/ast"
+	"go/types"
+	"os"
+	"strings"
+
+	"golang.org/x/tools/go/packages"
+)
+
+var sinkWords = []string{"json", "abortwith", "string", "write", "send", "respond", "errorresponse", "badrequest", "servererror", "encode", "http.error", "html", "data", "emit", "broadcast", "notify"}
+
+func isSink(name string) bool {
+	l := strings.ToLower(name)
+	if strings.HasPrefix(l, "fmt.") || strings.HasPrefix(l, "strings.") || strings.HasPrefix(l, "errors.") {
+		return false
+	}
+	for _, w := range sinkWords {
+		if strings.Contains(l, w) {
+			return true
+		}
+	}
+	return false
+}
+
+func calleeName(e ast.Expr) string {
+	switch f := e.(type) {
+	case *ast.Ident:
+		return f.Name
+	case *ast.SelectorExpr:
+		if x, ok := f.X.(*ast.Ident); ok {
+			return x.Name + "." + f.Sel.Name
+		}
+		return f.Sel.Name
+	}
+	return ""
+}
+
+func main() {
+	dir := os.Args[1]
+	cfg := &packages.Config{Mode: packages.NeedName | packages.NeedFiles | packages.NeedSyntax | packages.NeedTypes | packages.NeedTypesInfo | packages.NeedImports | packages.NeedDeps, Dir: dir}
+	pkgs, err := packages.Load(cfg, "./...")
+	if err != nil {
+		fmt.Println("LOAD ERR", err)
+		os.Exit(1)
+	}
+	errT := types.Universe.Lookup("error").Type().Underlying().(*types.Interface)
+	nerr := 0
+	for _, p := range pkgs {
+		nerr += len(p.Errors); for i, e := range p.Errors { if i < 1 { fmt.Fprintln(os.Stderr, "ERRSAMPLE", p.PkgPath, e.Msg) } }
+		if p.TypesInfo == nil {
+			continue
+		}
+		for _, f := range p.Syntax {
+			fn := p.Fset.Position(f.Pos()).Filename
+			if strings.HasSuffix(fn, "_test.go") || strings.Contains(fn, "/challenges/") {
+				continue
+			}
+			ast.Inspect(f, func(n ast.Node) bool {
+				call, ok := n.(*ast.CallExpr)
+				if !ok || !isSink(calleeName(call.Fun)) {
+					return true
+				}
+				for _, a := range call.Args {
+					ast.Inspect(a, func(m ast.Node) bool {
+						e, ok := m.(ast.Expr)
+						if !ok {
+							return true
+						}
+						if _, isCall := e.(*ast.CallExpr); isCall {
+							return true
+						}
+						tv, ok := p.TypesInfo.Types[e]
+						if !ok || tv.Type == nil || tv.IsType() || tv.IsNil() {
+							return true
+						}
+						if _, isIface := tv.Type.Underlying().(*types.Interface); !isIface && !types.Implements(tv.Type, errT) {
+							return true
+						}
+						if !types.Implements(tv.Type, errT) {
+							return true
+						}
+						name := ""
+						switch x := e.(type) {
+						case *ast.Ident:
+							name = x.Name
+						case *ast.SelectorExpr:
+							name = x.Sel.Name
+						default:
+							return true
+						}
+						pos := p.Fset.Position(e.Pos())
+						named := "errname"
+						if !strings.Contains(strings.ToLower(name), "err") {
+							named = "NOT-errname"
+						}
+						fmt.Printf("%s\t%d\t%s\t%s\t%s\n", pos.Filename, pos.Line, calleeName(call.Fun), name, named)
+						return true
+					})
+				}
+				return true
+			})
+		}
+	}
+	fmt.Fprintln(os.Stderr, "pkg errors:", nerr)
+}
