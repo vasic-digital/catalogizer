@@ -2625,3 +2625,10 @@ Retry-After on 429 for in-memory tier + Redis fixed/sliding/token-bucket. Open m
 - SSE-F4-R2 (minor, test-instrumentation): "non-admin: sync section content never rendered" passes on the pre-change file too (catches nothing) and mutation M1 (ungated TabsContent) survives; make it check rendered output or document it as equivalent.
 - SSE-F4-R3 (nit, pre-existing): client isAdmin = role.name==='Admin' || role_id===1 vs server RequireAdmin role_id/adminCheck; a role named Admin with another id shows the tab and gets 403.
 - SSE-F4-R4 (nit): if isAdmin flips false while the Sync tab is active, tab value stays "sync" and the panel goes blank.
+
+## WSF2 follow-ups review (Opus round 1, GO-with-follow-ups, PROVISIONAL)
+- WSFU-I1 (important, pre-existing on main, not caused by this diff): `catalog-web/src/contexts/__tests__/WebSocketContext.connectionStatus.test.tsx` is red on main ("expected 0 to be 1", connects=0). UNCONFIRMED cause: the F2 ticket mint calls `api.post`, which that test does not mock. File as its own item.
+- WSFU-m1 (minor, source-defect): `failOpen` in `wsTicketClient.ts` emits `error` before `scheduleReconnect()`; an `error` handler calling `connect()` yields two concurrent attempt chains (bounded, reconnect_failed emitted twice). Fix: schedule before emitting, or bail in the timer/scheduleReconnect when `opening || inner` is set.
+- WSFU-m2 (minor, test-instrumentation): dead-slot zeroing in the wsticket purge queue (`order[:head]`) is not pinned by any test (reviewer mutation GM2 survives).
+- WSFU-N1 (nit, test-instrumentation): `reconnectAttempts: 0` is removable without a test failing (mutation M1 survives); pin it or soften the comment.
+- WSFU-N2 (nit, test-instrumentation): the N2 access-log test copies the logger wiring instead of calling the production `main_router.go` builder.
