@@ -70,6 +70,14 @@ func (s *SyncService) CreateSyncEndpoint(userID int, endpoint *models.SyncEndpoi
 		return nil, fmt.Errorf("invalid sync endpoint: %w", err)
 	}
 
+	plan, err := planSyncClass(endpoint)
+	if err != nil {
+		return nil, err
+	}
+	if plan.networked && plan.class != netguard.ClassPublic && !endpoint.ConfirmPrivateNetwork {
+		return nil, ErrPrivateConfirmationRequired
+	}
+
 	if err := s.testConnection(endpoint); err != nil {
 		return nil, fmt.Errorf("connection test failed: %w", err)
 	}
@@ -80,6 +88,10 @@ func (s *SyncService) CreateSyncEndpoint(userID int, endpoint *models.SyncEndpoi
 	}
 
 	endpoint.ID = id
+	if err := s.approveCreated(endpoint, plan); err != nil {
+		s.evictWebDAVClient(id)
+		return nil, err
+	}
 	return endpoint, nil
 }
 
@@ -120,6 +132,7 @@ func (s *SyncService) UpdateEndpoint(endpointID int, userID int, updates *models
 		endpoint.Name = updates.Name
 	}
 
+	urlChanged := updates.URL != "" && updates.URL != endpoint.URL
 	if updates.URL != "" {
 		endpoint.URL = updates.URL
 		s.evictWebDAVClient(endpoint.ID) // never keep a client built for the old URL
@@ -170,6 +183,17 @@ func (s *SyncService) UpdateEndpoint(endpointID int, userID int, updates *models
 		return nil, fmt.Errorf("invalid endpoint update: %w", err)
 	}
 
+	var plan syncClassPlan
+	if urlChanged {
+		var perr error
+		if plan, perr = planSyncClass(endpoint); perr != nil {
+			return nil, fmt.Errorf("invalid endpoint update: %w", perr)
+		}
+		if cerr := s.checkURLChange(endpoint.ID, plan, updates); cerr != nil {
+			return nil, cerr
+		}
+	}
+
 	if err := s.testConnection(endpoint); err != nil {
 		return nil, fmt.Errorf("connection test failed: %w", err)
 	}
@@ -177,6 +201,11 @@ func (s *SyncService) UpdateEndpoint(endpointID int, userID int, updates *models
 	err = s.syncRepo.UpdateEndpoint(endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update endpoint: %w", err)
+	}
+	if urlChanged {
+		if cerr := s.storeURLChangeClass(endpoint, plan); cerr != nil {
+			return nil, fmt.Errorf("failed to store the approved class: %w", cerr)
+		}
 	}
 
 	return endpoint, nil
@@ -1342,7 +1371,15 @@ func (s *SyncService) getWebDAVClient(endpoint *models.SyncEndpoint) (*WebDAVCli
 		return client, nil
 	}
 
-	client := NewWebDAVClient(endpoint.URL, endpoint.Username, endpoint.Password)
+	approved := netguard.ClassPrivate // default: the stored class of a stored endpoint, private for one not stored yet
+	if endpoint.ID != 0 && s.syncRepo != nil {
+		rctx, rcancel := context.WithTimeout(s.ctx, 5*time.Second)
+		if c, _, err := s.syncRepo.GetApprovedClass(rctx, endpoint.ID); err == nil {
+			approved = c
+		}
+		rcancel()
+	}
+	client := NewWebDAVClientWithClass(endpoint.URL, endpoint.Username, endpoint.Password, approved)
 	// Every WebDAV request is dialled through the SSRF guard (resolved address checked
 	// and pinned), also for endpoints stored before the URL validation existed.
 	client.client.SetTransport(netguard.Transport())

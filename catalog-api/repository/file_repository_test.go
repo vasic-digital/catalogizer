@@ -577,7 +577,7 @@ func TestFileRepository_GetStorageRoots(t *testing.T) {
 		"id", "name", "protocol", "host", "port", "path", "username", "password", "domain",
 		"mount_point", "options", "url", "enabled", "max_depth",
 		"enable_duplicate_detection", "enable_metadata_extraction", "include_patterns",
-		"exclude_patterns", "created_at", "updated_at", "last_scan_at",
+		"exclude_patterns", "created_at", "updated_at", "last_scan_at", "approved_class",
 	}
 
 	tests := []struct {
@@ -592,7 +592,7 @@ func TestFileRepository_GetStorageRoots(t *testing.T) {
 				mock.ExpectQuery("SELECT .+ FROM storage_roots").
 					WillReturnRows(sqlmock.NewRows(storageRootCols).
 						AddRow(1, "root1", "smb", "host1", 445, "/share", "user", "pass", nil,
-							nil, nil, nil, true, 10, true, true, nil, nil, now, now, nil))
+							nil, nil, nil, true, 10, true, true, nil, nil, now, now, nil, "private"))
 			},
 			want: 1,
 		},

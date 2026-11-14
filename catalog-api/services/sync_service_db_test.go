@@ -70,7 +70,9 @@ func newSyncTestDB(t *testing.T) (*database.DB, func()) {
 		status TEXT NOT NULL DEFAULT 'active',
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-		last_sync_at DATETIME
+		last_sync_at DATETIME,
+		approved_class TEXT NOT NULL DEFAULT 'private',
+		approved_class_source TEXT NOT NULL DEFAULT 'default'
 	);
 
 	CREATE TABLE IF NOT EXISTS sync_sessions (

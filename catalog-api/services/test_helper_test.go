@@ -156,6 +156,8 @@ func setupTestDB(t *testing.T) *database.DB {
 			status TEXT DEFAULT 'active',
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			approved_class TEXT NOT NULL DEFAULT 'private',
+			approved_class_source TEXT NOT NULL DEFAULT 'default',
 			last_sync_at DATETIME,
 			FOREIGN KEY (user_id) REFERENCES users(id)
 		)`,

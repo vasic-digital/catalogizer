@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"catalogizer/database"
+	"catalogizer/internal/netguard"
 	"catalogizer/models"
 )
 
@@ -35,6 +36,27 @@ func (r *SyncRepository) CreateEndpoint(endpoint *models.SyncEndpoint) (int, err
 	}
 
 	return int(id), nil
+}
+
+// GetApprovedClass returns the stored address-class approval of a sync endpoint and its source (CAT-SECQ1-B/C).
+func (r *SyncRepository) GetApprovedClass(ctx context.Context, endpointID int) (netguard.Class, string, error) {
+	return r.db.GetApprovedClass(ctx, database.TableSyncEndpoints, int64(endpointID))
+}
+
+// ReplaceApprovedClass stores an approval and supersedes an operator decision (the URL changed, so the decision no longer applies).
+func (r *SyncRepository) ReplaceApprovedClass(ctx context.Context, endpointID int, class netguard.Class, source string) error {
+	return r.db.ReplaceApprovedClass(ctx, database.TableSyncEndpoints, int64(endpointID), class, source)
+}
+
+// SetApprovedClass stores an approval for a sync endpoint (an auto write never overwrites an operator decision).
+func (r *SyncRepository) SetApprovedClass(ctx context.Context, endpointID int, class netguard.Class, source string) error {
+	return r.db.SetApprovedClass(ctx, database.TableSyncEndpoints, int64(endpointID), class, source)
+}
+
+// AutoClassifyApprovedClass classifies the endpoint's destination and stores the result with source "auto"
+// (database.AutoClassifyApprovedClass); an operator decision is never overwritten.
+func (r *SyncRepository) AutoClassifyApprovedClass(ctx context.Context, endpointID int, rawURL string) (netguard.Class, error) {
+	return r.db.AutoClassifyApprovedClass(ctx, database.TableSyncEndpoints, int64(endpointID), "", rawURL)
 }
 
 func (r *SyncRepository) GetEndpoint(endpointID int) (*models.SyncEndpoint, error) {

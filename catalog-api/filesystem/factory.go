@@ -56,11 +56,16 @@ func (f *DefaultClientFactory) CreateClient(config *StorageConfig) (FileSystemCl
 		return client, nil
 
 	case "webdav":
+		approved, err := ApprovedClassFromSettings(config.Settings)
+		if err != nil {
+			return nil, err
+		}
 		webdavConfig := &WebDAVConfig{
-			URL:      getStringSetting(config.Settings, "url", ""),
-			Username: getStringSetting(config.Settings, "username", ""),
-			Password: getStringSetting(config.Settings, "password", ""),
-			Path:     getStringSetting(config.Settings, "path", ""),
+			ApprovedClass: approved,
+			URL:           getStringSetting(config.Settings, "url", ""),
+			Username:      getStringSetting(config.Settings, "username", ""),
+			Password:      getStringSetting(config.Settings, "password", ""),
+			Path:          getStringSetting(config.Settings, "path", ""),
 		}
 		return NewWebDAVClient(webdavConfig)
 

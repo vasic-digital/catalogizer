@@ -61,8 +61,20 @@ func (db *DB) GetApprovedClass(ctx context.Context, table string, id int64) (net
 }
 
 // SetApprovedClass stores an approval. Only private and public are storable (never approves nothing), and source must be
-// one of default, auto, operator.
+// one of default, auto, operator. A write with source auto never overwrites a row whose stored source is operator (PKGA-FU1):
+// the stored class is kept and nil is returned, exactly like AutoClassifyApprovedClass. Use ReplaceApprovedClass when an
+// operator decision is deliberately superseded (the destination itself changed).
 func (db *DB) SetApprovedClass(ctx context.Context, table string, id int64, class netguard.Class, source string) error {
+	return db.storeApprovedClass(ctx, table, id, class, source, source == ApprovedSourceAuto)
+}
+
+// ReplaceApprovedClass is SetApprovedClass without the operator-decision guard, for the one case where the operator's earlier
+// decision no longer applies (the endpoint's URL changed, so the decision was about another destination).
+func (db *DB) ReplaceApprovedClass(ctx context.Context, table string, id int64, class netguard.Class, source string) error {
+	return db.storeApprovedClass(ctx, table, id, class, source, false)
+}
+
+func (db *DB) storeApprovedClass(ctx context.Context, table string, id int64, class netguard.Class, source string, keepOperator bool) error {
 	if err := checkApprovedTable(table); err != nil {
 		return err
 	}
@@ -74,7 +86,13 @@ func (db *DB) SetApprovedClass(ctx context.Context, table string, id int64, clas
 	default:
 		return fmt.Errorf("%w: source %q", ErrApprovedClassInvalid, source)
 	}
-	res, err := db.ExecContext(ctx, `UPDATE `+table+` SET approved_class = ?, approved_class_source = ? WHERE id = ?`, class.String(), source, id)
+	q := `UPDATE ` + table + ` SET approved_class = ?, approved_class_source = ? WHERE id = ?`
+	args := []interface{}{class.String(), source, id}
+	if keepOperator {
+		q += ` AND approved_class_source <> ?`
+		args = append(args, ApprovedSourceOperator)
+	}
+	res, err := db.ExecContext(ctx, q, args...)
 	if err != nil {
 		return err
 	}
@@ -83,7 +101,10 @@ func (db *DB) SetApprovedClass(ctx context.Context, table string, id int64, clas
 		return err
 	}
 	if n == 0 {
-		return fmt.Errorf("%w: %s id %d", ErrEndpointNotFound, table, id)
+		// Either the row is gone (error) or an operator decision was kept (no error).
+		if _, _, gerr := db.GetApprovedClass(ctx, table, id); gerr != nil {
+			return gerr
+		}
 	}
 	return nil
 }

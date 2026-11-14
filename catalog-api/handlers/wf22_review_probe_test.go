@@ -69,7 +69,7 @@ func TestReviewProbe_H2_CreateStorageRootCannotCreateWebDAVOrPluggable(t *testin
 		r.ServeHTTP(w, req)
 		return w.Code
 	}
-	require.Equal(t, http.StatusCreated, post(`{"name":"d1","protocol":"webdav","url":"http://nas:5005/dav","path":"/movies"}`), "control: webdav accepted")
+	require.Equal(t, http.StatusCreated, post(`{"name":"d1","protocol":"webdav","url":"http://nas:5005/dav","path":"/movies","confirm_private_network":true}`), "control: webdav accepted")
 	var url *string
 	require.NoError(t, db.QueryRow(`SELECT url FROM storage_roots WHERE name='d1'`).Scan(&url))
 	t.Logf("H2 stored url=%v", url)
@@ -81,7 +81,7 @@ func TestReviewProbe_H2_CreateStorageRootCannotCreateWebDAVOrPluggable(t *testin
 		New:  func(map[string]interface{}) (filesystem.FileSystemClient, error) { return nil, nil },
 	}))
 	t.Cleanup(func() { filesystem.UnregisterProtocol("sftp") })
-	code := post(`{"name":"s1","protocol":"sftp","host":"nas","path":"/x"}`)
+	code := post(`{"name":"s1","protocol":"sftp","host":"nas","path":"/x","confirm_private_network":true}`)
 	t.Logf("H2 sftp create -> HTTP %d", code)
 	assert.Equal(t, http.StatusCreated, code, "a registered protocol must be creatable if the scanner advertises it")
 }

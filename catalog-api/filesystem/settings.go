@@ -16,6 +16,7 @@ import (
 	"strings"
 	"sync"
 
+	"catalogizer/internal/netguard"
 	"catalogizer/models"
 	"catalogizer/smb"
 )
@@ -39,6 +40,9 @@ const (
 	KeyCertSHA256         = "cert_sha256"
 	// KeyAllowSymlinkEscape is the per-root opt-out of symlink confinement (local and nfs roots; boolean, default false = confinement ON).
 	KeyAllowSymlinkEscape = "allow_symlink_escape"
+	// KeyApprovedClass is the stored address-class approval of a network root (CAT-SECQ1-C): "private" or "public". Consumed by the
+	// protocols whose client dials through the operator transport (webdav, s3); absent means the default, private.
+	KeyApprovedClass = "approved_class"
 )
 
 // KeyType is the value type of a settings key.
@@ -81,7 +85,7 @@ var builtinSpecs = map[string]ProtocolSpec{
 	"smb":    {Name: "smb", Keys: map[string]KeyType{KeyHost: KeyString, KeyPort: KeyInt, KeyShare: KeyString, KeyUsername: KeyString, KeyPassword: KeyString, KeyDomain: KeyString}, Required: []string{KeyHost, KeyShare}},
 	"ftp":    {Name: "ftp", Keys: map[string]KeyType{KeyHost: KeyString, KeyPort: KeyInt, KeyUsername: KeyString, KeyPassword: KeyString, KeyPath: KeyString}, Required: []string{KeyHost}},
 	"nfs":    {Name: "nfs", Keys: map[string]KeyType{KeyHost: KeyString, KeyPath: KeyString, KeyMountPoint: KeyString, KeyOptions: KeyString, KeyAllowSymlinkEscape: KeyBool}, Required: []string{KeyHost, KeyPath, KeyMountPoint}},
-	"webdav": {Name: "webdav", Keys: map[string]KeyType{KeyURL: KeyString, KeyUsername: KeyString, KeyPassword: KeyString, KeyPath: KeyString}, Required: []string{KeyURL}},
+	"webdav": {Name: "webdav", Keys: map[string]KeyType{KeyURL: KeyString, KeyUsername: KeyString, KeyPassword: KeyString, KeyPath: KeyString, KeyApprovedClass: KeyString}, Required: []string{KeyURL}},
 }
 
 // builtinOrder is the stable order of SupportedProtocols for the built-ins.
@@ -403,6 +407,9 @@ func SettingsFromRoot(root *models.StorageRoot, smbIdentity func(*models.Storage
 		put(KeyUsername, root.Username)
 		put(KeyPassword, root.Password)
 		put(KeyPath, root.Path)
+		if root.ApprovedClass != "" {
+			s[KeyApprovedClass] = root.ApprovedClass
+		}
 	default:
 		spec, ok := specFor(root.Protocol)
 		if !ok {
@@ -436,6 +443,9 @@ func SettingsFromRoot(root *models.StorageRoot, smbIdentity func(*models.Storage
 		if allow(KeyOptions) {
 			put(KeyOptions, root.Options)
 			opts = nil
+		}
+		if allow(KeyApprovedClass) && root.ApprovedClass != "" {
+			s[KeyApprovedClass] = root.ApprovedClass
 		}
 	}
 	for k, v := range opts {
@@ -557,4 +567,25 @@ func StringSetting(settings map[string]interface{}, key, def string) string {
 // IntSetting reads an integer setting (for protocol constructors registered through RegisterProtocol).
 func IntSetting(settings map[string]interface{}, key string, def int) int {
 	return getIntSetting(settings, key, def)
+}
+
+// ApprovedClassFromSettings reads the KeyApprovedClass setting: absent or empty is the default (private); "private" and "public" are
+// the storable approvals; anything else (including "never", which approves nothing) is an error, never silently widened or narrowed.
+func ApprovedClassFromSettings(settings map[string]interface{}) (netguard.Class, error) {
+	raw, ok := settings[KeyApprovedClass]
+	if !ok {
+		return netguard.ClassPrivate, nil
+	}
+	str, isStr := raw.(string)
+	if !isStr {
+		return netguard.ClassNever, fmt.Errorf("invalid %s: not a string", KeyApprovedClass)
+	}
+	if str == "" {
+		return netguard.ClassPrivate, nil
+	}
+	c, parsed := netguard.ParseClass(str)
+	if !parsed || c == netguard.ClassNever {
+		return netguard.ClassNever, fmt.Errorf("invalid %s: want private or public", KeyApprovedClass)
+	}
+	return c, nil
 }

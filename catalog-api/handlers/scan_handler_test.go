@@ -105,15 +105,16 @@ func (suite *ScanHandlerTestSuite) TestNewScanHandler() {
 // TestCreateStorageRoot_ValidRequest tests creating a new storage root
 func (suite *ScanHandlerTestSuite) TestCreateStorageRoot_ValidRequest() {
 	reqBody := map[string]interface{}{
-		"name":      "Test SMB Share",
-		"protocol":  "smb",
-		"host":      "server.example.com",
-		"port":      445,
-		"path":      "/share",
-		"username":  "user",
-		"password":  "pass",
-		"domain":    "WORKGROUP",
-		"max_depth": 5,
+		"name":                    "Test SMB Share",
+		"protocol":                "smb",
+		"host":                    "server.example.com",
+		"confirm_private_network": true,
+		"port":                    445,
+		"path":                    "/share",
+		"username":                "user",
+		"password":                "pass",
+		"domain":                  "WORKGROUP",
+		"max_depth":               5,
 	}
 	body, _ := json.Marshal(reqBody)
 
@@ -161,11 +162,12 @@ func (suite *ScanHandlerTestSuite) TestCreateStorageRoot_InvalidRequest() {
 func (suite *ScanHandlerTestSuite) TestCreateStorageRoot_DuplicateNameRejected() {
 	// First create
 	body1, _ := json.Marshal(map[string]interface{}{
-		"name":      "Existing Share",
-		"protocol":  "smb",
-		"host":      "server.example.com",
-		"path":      "share",
-		"max_depth": 10,
+		"name":                    "Existing Share",
+		"protocol":                "smb",
+		"host":                    "server.example.com",
+		"confirm_private_network": true,
+		"path":                    "share",
+		"max_depth":               10,
 	})
 	req1 := httptest.NewRequest("POST", "/api/v1/storage/roots", bytes.NewReader(body1))
 	req1.Header.Set("Content-Type", "application/json")
@@ -175,10 +177,11 @@ func (suite *ScanHandlerTestSuite) TestCreateStorageRoot_DuplicateNameRejected()
 
 	// Second POST with same name → 409 Conflict (was 201 before fix)
 	body2, _ := json.Marshal(map[string]interface{}{
-		"name":      "Existing Share",
-		"protocol":  "ftp",
-		"host":      "ftp.example.com",
-		"max_depth": 15,
+		"name":                    "Existing Share",
+		"protocol":                "ftp",
+		"host":                    "ftp.example.com",
+		"confirm_private_network": true,
+		"max_depth":               15,
 	})
 	req2 := httptest.NewRequest("POST", "/api/v1/storage/roots", bytes.NewReader(body2))
 	req2.Header.Set("Content-Type", "application/json")
@@ -248,6 +251,7 @@ func (suite *ScanHandlerTestSuite) TestCreateStorageRoot_AllSupportedProtocolsAc
 		case "nfs":
 			req0["host"], req0["path"], req0["mount_point"] = "nas.example", "/export", "/mnt/nas"
 		}
+		req0["confirm_private_network"] = true // example hosts do not resolve: treated as private, needs confirmation (CAT-SECQ1-C)
 		body, _ := json.Marshal(req0)
 		req := httptest.NewRequest("POST", "/api/v1/storage/roots", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
@@ -262,11 +266,12 @@ func (suite *ScanHandlerTestSuite) TestCreateStorageRoot_AllSupportedProtocolsAc
 func (suite *ScanHandlerTestSuite) TestGetStorageRoots() {
 	// Create a storage root first
 	reqBody := map[string]interface{}{
-		"name":      "Test Share",
-		"protocol":  "smb",
-		"host":      "server.example.com",
-		"path":      "share",
-		"max_depth": 10,
+		"name":                    "Test Share",
+		"protocol":                "smb",
+		"host":                    "server.example.com",
+		"confirm_private_network": true,
+		"path":                    "share",
+		"max_depth":               10,
 	}
 	body, _ := json.Marshal(reqBody)
 	req := httptest.NewRequest("POST", "/api/v1/storage/roots", bytes.NewReader(body))
@@ -293,11 +298,12 @@ func (suite *ScanHandlerTestSuite) TestGetStorageRoots() {
 func (suite *ScanHandlerTestSuite) TestQueueScan_ValidRequest() {
 	// Create a storage root first
 	reqBody := map[string]interface{}{
-		"name":      "Scan Test Share",
-		"protocol":  "smb",
-		"host":      "server.example.com",
-		"path":      "share",
-		"max_depth": 10,
+		"name":                    "Scan Test Share",
+		"protocol":                "smb",
+		"host":                    "server.example.com",
+		"confirm_private_network": true,
+		"path":                    "share",
+		"max_depth":               10,
 	}
 	body, _ := json.Marshal(reqBody)
 	req := httptest.NewRequest("POST", "/api/v1/storage/roots", bytes.NewReader(body))

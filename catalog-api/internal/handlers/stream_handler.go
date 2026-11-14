@@ -258,7 +258,7 @@ func (h *StreamHandler) getStorageRootByName(ctx context.Context, name string) (
 		SELECT id, name, protocol, host, port, path, username, password, domain,
 			   mount_point, options, url, enabled, max_depth,
 			   enable_duplicate_detection, enable_metadata_extraction, include_patterns,
-			   exclude_patterns, created_at, updated_at, last_scan_at
+			   exclude_patterns, created_at, updated_at, last_scan_at, approved_class
 		FROM storage_roots
 		WHERE name = ?`
 
@@ -268,7 +268,7 @@ func (h *StreamHandler) getStorageRootByName(ctx context.Context, name string) (
 		&root.Username, &root.Password, &root.Domain, &root.MountPoint, &root.Options,
 		&root.URL, &root.Enabled, &root.MaxDepth, &root.EnableDuplicateDetection,
 		&root.EnableMetadataExtraction, &root.IncludePatterns, &root.ExcludePatterns,
-		&root.CreatedAt, &root.UpdatedAt, &root.LastScanAt,
+		&root.CreatedAt, &root.UpdatedAt, &root.LastScanAt, &root.ApprovedClass,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("storage root %q not found: %w", name, err)

@@ -97,7 +97,9 @@ func runTestMigrations(db *sql.DB) error {
 			exclude_patterns TEXT,
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-			last_scan_at DATETIME
+			last_scan_at DATETIME,
+			approved_class TEXT NOT NULL DEFAULT 'private',
+			approved_class_source TEXT NOT NULL DEFAULT 'default'
 		)`,
 
 		// Albums table

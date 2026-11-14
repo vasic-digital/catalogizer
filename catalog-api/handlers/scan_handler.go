@@ -102,6 +102,9 @@ type createStorageRootRequest struct {
 	Options    *string `json:"options"`
 	// AllowEmpty marks a root that is expected to be empty: its scan may complete with 0 files instead of failing (default false).
 	AllowEmpty bool `json:"allow_empty"`
+	// ConfirmPrivateNetwork is the operator's confirmation that a destination on a private network (or one that cannot be resolved
+	// now) is meant (CAT-SECQ1-C). Without it such a root is refused with 409 private_network_confirmation_required.
+	ConfirmPrivateNetwork bool `json:"confirm_private_network"`
 }
 
 // supportedStorageProtocol reports whether a CreateStorageRoot request may declare protocol. The set IS the set the client factory builds
@@ -209,6 +212,23 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 		req.Path = &resolved // the resolved path is stored, not the symlink the caller named
 	}
 
+	// CAT-SECQ1-C: classify the destination now; a private (or not resolvable) one needs the operator's confirmation before anything is stored.
+	var preClass netguard.Class = netguard.ClassPublic
+	if host, rawURL, networked := rootDestination(candidate); networked {
+		cctx, ccancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
+		cls, refused := classifyForApproval(cctx, host, rawURL)
+		ccancel()
+		if refused {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "storage host is not allowed"})
+			return
+		}
+		preClass = cls
+		if preClass != netguard.ClassPublic && !req.ConfirmPrivateNetwork {
+			respondPrivateConfirmationRequired(c)
+			return
+		}
+	}
+
 	if req.MaxDepth <= 0 {
 		req.MaxDepth = 10
 	}
@@ -241,11 +261,25 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 		return
 	}
 
+	approved, aerr := h.approveNewRoot(c.Request.Context(), newID, candidate, preClass, req.ConfirmPrivateNetwork)
+	if aerr != nil {
+		switch {
+		case errors.Is(aerr, errPrivateUnconfirmed):
+			respondPrivateConfirmationRequired(c)
+		case errors.Is(aerr, netguard.ErrBlocked):
+			c.JSON(http.StatusBadRequest, gin.H{"error": "storage host is not allowed"})
+		default:
+			respondInternal(c, http.StatusInternalServerError, "failed to approve the storage root network class", aerr)
+		}
+		return
+	}
+
 	c.JSON(http.StatusCreated, gin.H{
-		"id":       newID,
-		"name":     req.Name,
-		"protocol": req.Protocol,
-		"message":  "storage root created",
+		"id":             newID,
+		"name":           req.Name,
+		"protocol":       req.Protocol,
+		"approved_class": approved.String(),
+		"message":        "storage root created",
 	})
 }
 

@@ -1210,6 +1210,11 @@ type SyncEndpoint struct {
 	CreatedAt     time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at" db:"updated_at"`
 	LastSyncAt    *time.Time `json:"last_sync_at,omitempty" db:"last_sync_at"`
+	// ConfirmPrivateNetwork is the operator's confirmation that a destination on a private network (or one that cannot be resolved
+	// now) is meant (CAT-SECQ1-C); request-only, never stored as such (the confirmation is recorded as approved_class_source=operator).
+	ConfirmPrivateNetwork bool `json:"confirm_private_network,omitempty" db:"-"`
+	// ApprovedClass is filled on create and update responses with the stored approval ("private" or "public").
+	ApprovedClass string `json:"approved_class,omitempty" db:"-"`
 }
 
 // SyncSession represents a sync session
@@ -1265,6 +1270,12 @@ type UpdateSyncEndpointRequest struct {
 	RemotePath    string  `json:"remote_path,omitempty"`
 	SyncSettings  *string `json:"sync_settings,omitempty"`
 	IsActive      *bool   `json:"is_active,omitempty"`
+	// ConfirmPrivateNetwork confirms a new URL on a private network (CAT-SECQ1-C).
+	ConfirmPrivateNetwork bool `json:"confirm_private_network,omitempty"`
+	// StepUpPassword is the acting user's password, re-presented to widen the approved class (public -> private). The handler verifies it.
+	StepUpPassword string `json:"step_up_password,omitempty"`
+	// StepUpVerified is set by the handler after a successful step-up check; it is never read from the request.
+	StepUpVerified bool `json:"-"`
 }
 
 // Sync Status Constants
