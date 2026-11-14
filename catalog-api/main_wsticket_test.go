@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -15,6 +16,7 @@ import (
 	"catalogizer/database"
 	"catalogizer/internal/wsticket"
 	root_handlers "catalogizer/handlers"
+	internal_middleware "catalogizer/internal/middleware"
 	root_middleware "catalogizer/middleware"
 	"catalogizer/repository"
 
@@ -36,6 +38,7 @@ type rawLog struct {
 }
 
 func (l *rawLog) add(s string) { l.mu.Lock(); l.lines = append(l.lines, s); l.mu.Unlock() }
+func (l *rawLog) Write(p []byte) (int, error) { l.add(string(p)); return len(p), nil }
 func (l *rawLog) all() string  { l.mu.Lock(); defer l.mu.Unlock(); return strings.Join(l.lines, "\n") }
 
 type ticketRig struct {
@@ -45,6 +48,7 @@ type ticketRig struct {
 	mw  *root_middleware.JWTMiddleware
 	tok string
 	log *rawLog
+	app *rawLog // the production access log (gin.LoggerWithFormatter(AccessLogFormatter), as in main_router.go)
 }
 
 func newTicketRig(t *testing.T) *ticketRig {
@@ -63,12 +67,14 @@ func newTicketRig(t *testing.T) *ticketRig {
 	mw := newAuthMiddleware("wire-test-secret", db, repository.NewUserRepository(db))
 	h := root_handlers.NewWebSocketHandlerWithConfig(zap.NewNop(), root_handlers.DefaultWebSocketConfig())
 	lg := &rawLog{}
+	appLog := &rawLog{}
 	r := gin.New()
+	r.Use(gin.LoggerWithConfig(gin.LoggerConfig{Formatter: internal_middleware.AccessLogFormatter, Output: appLog}), internal_middleware.AccessLogRouteParams())
 	r.Use(func(c *gin.Context) { lg.add(c.Request.Method + " " + c.Request.RequestURI); c.Next() })
 	registerWebSocketRoute(r, mw, h)
 	srv := httptest.NewServer(r)
 	t.Cleanup(func() { h.Stop(); srv.Close() })
-	return &ticketRig{srv: srv, h: h, db: db, mw: mw, tok: mintTestToken(t, mw, "7", 2, "1"), log: lg}
+	return &ticketRig{srv: srv, h: h, db: db, mw: mw, tok: mintTestToken(t, mw, "7", 2, "1"), log: lg, app: appLog}
 }
 
 func (r *ticketRig) ws(q string) string {
@@ -115,6 +121,13 @@ func TestWSTicket_QueryJWTRefusedAndNeverReachesLog(t *testing.T) {
 		}
 		assert.Equal(t, http.StatusUnauthorized, code, "a session JWT in the query must not authenticate /ws (%s)", q[:8])
 	}
+	// N2: the production access logger (the one main_router.go installs) recorded both refused requests and redacted the JWT
+	app := r.app.all()
+	assert.Contains(t, app, "401", "control: the access log did record the refused requests")
+	assert.Equal(t, 2, strings.Count(app, "/ws?"), "control: both query-JWT requests are in the log")
+	assert.NotContains(t, app, r.tok, "the session JWT must never reach the application access log")
+	// the raw front-proxy stand-in is NOT redacting: it is the control that the JWT really was on the wire
+	assert.Contains(t, r.log.all(), r.tok, "control: a non-redacting log would have captured the JWT")
 }
 
 // The conforming flow (header mint, ?ticket= upgrade) leaves no JWT in the raw request log of any front proxy; the only
@@ -346,4 +359,60 @@ func TestWSTicket_StoreHoldsOnlyHash(t *testing.T) {
 	_, tk, _ := r.mint(t, r.bearer(), "")
 	require.NotEmpty(t, tk)
 	assert.False(t, r.mw.WSTickets().ContainsPlaintextForTest(tk), "the store must keep only the hash")
+}
+
+// WSF2-R2-F3: the mint limiter is keyed per authenticated USER, not per client IP.
+func (r *ticketRig) addUser(t *testing.T, id, sid int, name string) string {
+	t.Helper()
+	_, err := r.db.Exec(`INSERT INTO users (id, username, email, password_hash, salt, role_id, is_active) VALUES (?, ?, ?, 'h', 's', 2, 1)`, id, name, name+"@x.test")
+	require.NoError(t, err)
+	_, err = r.db.Exec(`INSERT INTO user_sessions (id, user_id, session_token, refresh_token, is_active, expires_at) VALUES (?, ?, ?, 'r', 1, datetime('now','+1 hour'))`, sid, id, name+"-t")
+	require.NoError(t, err)
+	return mintTestToken(t, r.mw, strconv.Itoa(id), 2, strconv.Itoa(sid))
+}
+
+// mintAs mints with the given token and X-Forwarded-For (the router trusts it in the test), redeeming the ticket so the
+// live-ticket cap stays out of the way; it returns the HTTP status.
+func (r *ticketRig) mintAs(t *testing.T, tok, xff string) int {
+	t.Helper()
+	req, _ := http.NewRequest("POST", r.srv.URL+"/api/v1/ws/ticket", nil)
+	req.Header.Set("Authorization", "Bearer "+tok)
+	req.Header.Set("X-Forwarded-For", xff)
+	resp, err := http.DefaultClient.Do(req)
+	require.NoError(t, err)
+	defer resp.Body.Close()
+	var m struct{ Ticket string }
+	_ = json.NewDecoder(resp.Body).Decode(&m)
+	if m.Ticket != "" {
+		_, _ = r.mw.WSTickets().Redeem(m.Ticket)
+	}
+	return resp.StatusCode
+}
+
+func TestWSTicket_MintLimiterKeyedPerUserNotPerIP(t *testing.T) {
+	r := newTicketRig(t)
+	bTok := r.addUser(t, 8, 2, "bee")
+	const ip = "203.0.113.9"
+	// two users behind ONE client IP each get their own full allowance
+	for i := 0; i < wsticket.MintsPerWindow; i++ {
+		require.Equal(t, http.StatusOK, r.mintAs(t, r.tok, ip), "user A mint %d", i+1)
+	}
+	assert.Equal(t, http.StatusTooManyRequests, r.mintAs(t, r.tok, ip), "user A over its own limit")
+	for i := 0; i < wsticket.MintsPerWindow; i++ {
+		require.Equal(t, http.StatusOK, r.mintAs(t, bTok, ip), "user B mint %d must not be charged to A's shared IP", i+1)
+	}
+	assert.Equal(t, http.StatusTooManyRequests, r.mintAs(t, bTok, ip), "user B over its own limit")
+}
+
+func TestWSTicket_MintLimiterOneUserAcrossIPsSharesOneAllowance(t *testing.T) {
+	r := newTicketRig(t)
+	for i := 0; i < wsticket.MintsPerWindow; i++ {
+		ip := "198.51.100.1"
+		if i%2 == 1 {
+			ip = "198.51.100.2"
+		}
+		require.Equal(t, http.StatusOK, r.mintAs(t, r.tok, ip), "mint %d", i+1)
+	}
+	assert.Equal(t, http.StatusTooManyRequests, r.mintAs(t, r.tok, "198.51.100.3"), "rotating the client IP must not reset the user's allowance")
+	assert.Equal(t, http.StatusTooManyRequests, r.mintAs(t, r.tok, "198.51.100.1"))
 }

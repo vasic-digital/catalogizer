@@ -106,6 +106,9 @@ export class TicketWebSocketClient {
       client = new BaseWebSocketClient({
         url: wsUrlWithTicket(this.opts.url, ticket),
         reconnect: false, // a spent ticket cannot be replayed: this wrapper reconnects with a new one
+        // the base client ignores `reconnect: false` when `new WebSocket` throws synchronously (it calls its own scheduleReconnect
+        // inside createConnection); zero attempts keeps it from arming a timer that would replay the spent ticket
+        reconnectAttempts: 0,
         bufferWhileDisconnected: false,
       })
     } catch (e) {
@@ -136,12 +139,22 @@ export class TicketWebSocketClient {
     try {
       client.connect()
     } catch (e) {
-      if (this.inner === client) this.inner = null
-      client.dispose()
-      this.state = 'disconnected'
-      this.emit('error', e)
-      this.scheduleReconnect()
+      this.failOpen(client, e)
+      return
     }
+    // The base client swallows a synchronous `new WebSocket` throw: connect() returns normally with state 'disconnected'
+    // (a live attempt is 'connecting'/'connected'). Treat that as a failed attempt so this wrapper's own loop retries.
+    if (client.getState() === 'disconnected' && this.inner === client) {
+      this.failOpen(client, new Error('WebSocket construction failed'))
+    }
+  }
+
+  private failOpen(client: BaseWebSocketClient, e: unknown): void {
+    if (this.inner === client) this.inner = null
+    client.dispose()
+    this.state = 'disconnected'
+    this.emit('error', e)
+    this.scheduleReconnect()
   }
 
   private scheduleReconnect(): void {

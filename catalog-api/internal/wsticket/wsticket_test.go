@@ -175,3 +175,53 @@ func TestMintLimiter(t *testing.T) {
 	ok, _ = l.Allow("A")
 	assert.True(t, ok, "window slides")
 }
+
+// WSF2-R2-F4: purge compaction must not recopy the whole remaining queue every time something expires.
+func TestPurgeCompactionIsAmortised(t *testing.T) {
+	var cur atomic.Int64
+	base := time.Unix(1_700_000_000, 0)
+	s := NewStore().WithClock(func() time.Time { return base.Add(time.Duration(cur.Load()) * time.Second) })
+	s.ttl = 3000 * time.Second // ~3000 live tickets, one expiring per Issue in steady state
+	const n = 6000
+	for i := 0; i < n; i++ {
+		cur.Store(int64(i))
+		_, _, err := s.Issue(Claims{UserID: fmt.Sprintf("user-%d", i)})
+		require.NoError(t, err)
+	}
+	// behaviour: exactly the unexpired window is live
+	assert.Equal(t, 3000, s.LenForTest())
+	// full-queue recopy per purge would move ~3000*3000 = 9M elements; head-index compaction moves O(n)
+	assert.Less(t, s.MovedForTest(), 4*n, "compaction must be amortised O(1) per Issue")
+	s.mu.Lock()
+	qlen := len(s.order)
+	s.mu.Unlock()
+	assert.Less(t, qlen, 3*3000, "the dead prefix must be reclaimed, not grow without bound")
+}
+
+func TestPurgeReclaimsDeadPrefix(t *testing.T) {
+	var cur atomic.Int64
+	base := time.Unix(1_700_000_000, 0)
+	s := NewStore().WithClock(func() time.Time { return base.Add(time.Duration(cur.Load()) * time.Second) })
+	s.ttl = 100 * time.Second // ~100 live; 6000 issued
+	for i := 0; i < 6000; i++ {
+		cur.Store(int64(i))
+		_, _, err := s.Issue(Claims{UserID: fmt.Sprintf("user-%d", i)})
+		require.NoError(t, err)
+	}
+	s.mu.Lock()
+	qlen := len(s.order)
+	s.mu.Unlock()
+	assert.Equal(t, 100, s.LenForTest())
+	assert.Less(t, qlen, 2*compactMin+200, "the dead prefix must be reclaimed, not retained for the store's lifetime")
+}
+
+func BenchmarkIssueSteadyState(b *testing.B) {
+	var cur atomic.Int64
+	base := time.Unix(1_700_000_000, 0)
+	s := NewStore().WithClock(func() time.Time { return base.Add(time.Duration(cur.Load()) * time.Second) })
+	s.ttl = 3000 * time.Second
+	for i := 0; i < b.N; i++ {
+		cur.Store(int64(i))
+		_, _, _ = s.Issue(Claims{UserID: fmt.Sprintf("user-%d", i)})
+	}
+}
