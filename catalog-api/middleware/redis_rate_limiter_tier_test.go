@@ -3,7 +3,6 @@ package middleware
 import (
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -138,23 +137,9 @@ func TestTierKeysExpireWithinWindow(t *testing.T) {
 	}
 }
 
-// Credential brute-force routes are unchanged: /login and /register use the
-// in-memory loginRateLimiter (30/min, main.go:973,1211-1212), never a Redis
-// tier. Documented here as a route-class table; the wiring is in main.go.
-func TestLoginRegisterAreNotRedisTiers(t *testing.T) {
-	src, err := mainGoSource()
-	require.NoError(t, err)
-	// The auth group is registered by registerAuthRoutes (main_chpw.go), fed
-	// LoginRate: loginRateLimiter from main.go (CAT-CHPW-RL-1).
-	assert.Contains(t, src, `LoginRate:      loginRateLimiter,`)
-	routes, err := os.ReadFile("../main_chpw.go")
-	require.NoError(t, err)
-	assert.Contains(t, string(routes), `g.POST("/login", d.LoginRate,`)
-	assert.Contains(t, string(routes), `g.POST("/register", d.LoginRate,`)
-	assert.Contains(t, src, `loginRateLimiter := authMiddleware.RateLimitByUser(30, "1m")`)
-	assert.Contains(t, src, `NewRedisTierLimiters(redisClient, authRateLimiter, defaultRateLimiter)`)
-	assert.NotContains(t, src, "NewRedisTierLimiters(redisClient, loginRateLimiter")
-}
+// The login/register-never-Redis property is asserted through the real router in
+// catalog-api/main_ratelimit_redis_wiring_test.go (CAT-MW-TIERTEST-1): a source grep
+// of main.go went stale when the wiring moved to main_ratetiers.go.
 
 func TestConfigTierNamesAreUnique(t *testing.T) {
 	_, c := setupMiniredis(t)

@@ -58,6 +58,27 @@ func TestRedisRateLimit_429HasRetryAfterSeconds(t *testing.T) {
 	raCheck(t, raEngine(RedisRateLimit(cfg)), 3, 1, 60)
 }
 
+// RLW-FU2-F1: exact value. Fixed window of 1 minute; the window TTL starts at the first
+// request, miniredis time is advanced 20 s, so exactly 40 s remain -> Retry-After "40".
+// Kills a "configured window" (60) and a "half TTL" (20) mutation.
+func TestRedisRateLimit_429RetryAfterIsExactRemainingTTL(t *testing.T) {
+	mr := miniredis.RunT(t)
+	cfg := DefaultRedisRateLimiterConfig(redis.NewClient(&redis.Options{Addr: mr.Addr()}))
+	cfg.Requests, cfg.Window = 3, time.Minute
+	r := raEngine(RedisRateLimit(cfg))
+	for i := 0; i < 3; i++ {
+		require.Equal(t, http.StatusOK, raGet(r).Code)
+	}
+	mr.FastForward(20 * time.Second)
+	w := raGet(r)
+	require.Equal(t, http.StatusTooManyRequests, w.Code)
+	require.Equal(t, "40", w.Header().Get("Retry-After"))
+	mr.FastForward(30*time.Second + 500*time.Millisecond)
+	w = raGet(r)
+	require.Equal(t, http.StatusTooManyRequests, w.Code)
+	require.Equal(t, "10", w.Header().Get("Retry-After"), "9.5 s remaining rounds UP")
+}
+
 func TestSlidingWindowRedisRateLimit_429HasRetryAfterSeconds(t *testing.T) {
 	cfg := DefaultRedisRateLimiterConfig(raClient(t))
 	cfg.Requests, cfg.Window = 3, time.Minute
