@@ -113,13 +113,14 @@ REPO="$(cd "$REPO" && pwd)"
 # local/global configuration. The working tree is consulted only to say BLIND when it differs from HEAD.
 export GIT_NO_REPLACE_OBJECTS=1
 # CAT-REL-CHECK-3 (N2): every git call is bounded; a hung git is an ordinary git failure (BLIND), never a hang
-RELCHK_GIT_TIMEOUT="${RELCHK_GIT_TIMEOUT:-120}"; export RELCHK_GIT_TIMEOUT
-case "$RELCHK_GIT_TIMEOUT" in ''|*[!0-9]*|0) RELCHK_GIT_TIMEOUT=120 ;; esac
-# CAT-REL-CHECK-3 (F6): every other numeric knob is validated here; a bad value is a clear BLIND, never a silent default
-for _k in RELCHK_SNAP_TIMEOUT RELCHK_MAX_FILES RELCHK_MAX_BYTES RELCHK_MAX_READ; do
+# CAT-REL-CHECK-3 (F6, R2-5, R2-6): every numeric knob is validated here; a bad, zero, leading-zero or absurdly long value is a
+# clear BLIND, never a silent default (unset or empty selects the default)
+for _k in RELCHK_GIT_TIMEOUT RELCHK_SNAP_TIMEOUT RELCHK_MAX_FILES RELCHK_MAX_BYTES RELCHK_MAX_READ; do
   _v="${!_k:-}"
   [ -z "$_v" ] || case "$_v" in *[!0-9]*|0*) blind "$_k must be a positive integer without leading zeros (got '$_v')" ;; esac
+  [ "${#_v}" -le 15 ] || blind "$_k is too large (more than 15 digits)"
 done
+RELCHK_GIT_TIMEOUT="${RELCHK_GIT_TIMEOUT:-120}"; export RELCHK_GIT_TIMEOUT
 git() { command timeout --kill-after=5 "$RELCHK_GIT_TIMEOUT" git "$@"; }
 HEADC="$(git -C "$REPO" rev-parse --verify -q 'HEAD^{commit}' 2>/dev/null)" || blind "'$REPO' has no HEAD commit"
 SNAPBASE="${RELCHK_TMP:-${XDG_CACHE_HOME:-${HOME:?}/.cache}/relchk-tmp}"
@@ -1048,7 +1049,7 @@ raw_tree_check() {
   fi
   # CAT-REL-CHECK-3 (F5): the listing is captured to a file first so that its exit status is checked; read through a process
   # substitution a timed-out or failing ls-tree looked like an empty tree and the check returned 0
-  local lst; lst="$(mktemp "${SNAPBASE:?}/lst.XXXXXX" 2>/dev/null)" || { note_blind "cannot create a scratch file for the manifest tree listing"; return 1; }
+  local lst; lst="$(mktemp "${SNAP:?}/.relchk_lst.XXXXXX" 2>/dev/null)" || { note_blind "cannot create a scratch file for the manifest tree listing"; return 1; }
   if ! git -C "$REPO" ls-tree -r -z HEAD -- "$d/" > "$lst" 2>/dev/null; then
     rm -f -- "${lst:?}"; note_blind "git ls-tree -r failed or timed out for $(printf '%q' "$d"); cannot prove the manifest tree matches HEAD"; return 1
   fi
@@ -1207,12 +1208,11 @@ def esc(t):
     return re.sub(r"[\x00-\x1f\x7f]", lambda m: "\\x%02x" % ord(m.group()), t)
 def entries(path):
     out = set()
-    if True:
-        for ln in snap_text(snap, os.path.relpath(path, snap), errors="surrogateescape").split("\n"):
-            # (no CR strip: open() in text mode already folds \r\n and lone \r into \n)
-            m = re.match(r"^[0-9a-fA-F]{64} [ *](.*)$", ln) or re.match(r"^[A-Za-z0-9-]+ \((.*)\) = [0-9a-fA-F]+$", ln)
-            if m:
-                out.add(os.path.normpath(m.group(1)))
+    for ln in snap_text(snap, os.path.relpath(path, snap), errors="surrogateescape").split("\n"):
+        # (no CR strip: open() in text mode already folds \r\n and lone \r into \n)
+        m = re.match(r"^[0-9a-fA-F]{64} [ *](.*)$", ln) or re.match(r"^[A-Za-z0-9-]+ \((.*)\) = [0-9a-fA-F]+$", ln)
+        if m:
+            out.add(os.path.normpath(m.group(1)))
     return out
 def ls():
     # HEAD's tree only: never the index, never untracked or ignored working-tree files

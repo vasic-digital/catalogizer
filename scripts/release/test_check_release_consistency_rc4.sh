@@ -57,38 +57,39 @@ echo "== I1: snapshot extraction must never write outside the snapshot (class, n
 # esc <label> <extras-builder-function>: fresh repo, hostile HEAD, canary directory that must stay empty
 canary_empty() { [ -z "$(ls -A "$1" 2>/dev/null)" ]; }
 mkcase() { CASE_D="$(fresh)"; CASE_OUT="$(mktemp -d "$ROOT/outside.XXXXXX")"; CASE_TMP="$(mktemp -d "$ROOT/tmpbase.XXXXXX")"; }
-runcase() { # <label> ; extras on stdin ; expects BLIND rc 2 with a snapshot refusal, nothing outside
-  local label="$1"
+runcase() { # <label> <guard message> ; extras on stdin ; expects BLIND rc 2 with THAT guard message (not merely the generic prefix:
+  # an unexpected internal error also carries "cannot write the HEAD snapshot"), nothing written outside
+  local label="$1" needle="$2"
   evil_head "$CASE_D" || { bad "$label: fixture"; return; }
   RELCHK_TMP="$CASE_TMP" run "$CASE_D" --check changelog
-  want "$label -> BLIND" 2 "cannot write the HEAD snapshot"
+  want "$label -> BLIND" 2 "snapshot refused: $needle"
   if canary_empty "$CASE_OUT" && [ -z "$(ls -A "$CASE_TMP")" ]; then ok; else bad "$label: something was written outside the snapshot ($(ls -A "$CASE_OUT" "$CASE_TMP" | tr '\n' ' '))"; fi
 }
 # A1: the reviewer's reproduction: symlink l -> absolute dir, then tree l/ holding pwn
 mkcase; L="$(blob "$CASE_D" "$CASE_OUT")"; P="$(blob "$CASE_D" PWNED)"; SUB="$(printf '100644\tpwn\t%s\n' "$P" | rawtree "$CASE_D")"
-runcase "A1 symlink l then tree l/ (escape reproduction)" < <(printf '120000\tl\t%s\n40000\tl\t%s\n' "$L" "$SUB")
+runcase "A1 symlink l then tree l/ (escape reproduction)" "a path is both an entry and a directory" < <(printf '120000\tl\t%s\n40000\tl\t%s\n' "$L" "$SUB")
 mkcase; L="$(blob "$CASE_D" "$CASE_OUT")"; P="$(blob "$CASE_D" PWNED)"; SUB="$(printf '100644\tpwn\t%s\n' "$P" | rawtree "$CASE_D")"
-runcase "A2 tree l/ then symlink l (other order)" < <(printf '40000\tl\t%s\n120000\tl\t%s\n' "$SUB" "$L")
+runcase "A2 tree l/ then symlink l (other order)" "a path is both an entry and a directory" < <(printf '40000\tl\t%s\n120000\tl\t%s\n' "$SUB" "$L")
 # A3: the same duplicate nested one level down
 mkcase; L="$(blob "$CASE_D" "$CASE_OUT")"; P="$(blob "$CASE_D" PWNED)"; SUB="$(printf '100644\tpwn\t%s\n' "$P" | rawtree "$CASE_D")"
 D2="$(printf '120000\ts\t%s\n40000\ts\t%s\n' "$L" "$SUB" | rawtree "$CASE_D")"
-runcase "A3 nested duplicate link/tree under zz/" < <(printf '40000\tzz\t%s\n' "$D2")
+runcase "A3 nested duplicate link/tree under zz/" "a path is both an entry and a directory" < <(printf '40000\tzz\t%s\n' "$D2")
 # A4: a symlink entry and a flat entry whose name goes THROUGH it (name with a slash), both orders
 mkcase; L="$(blob "$CASE_D" "$CASE_OUT")"; P="$(blob "$CASE_D" PWNED)"
-runcase "A4 symlink m then flat entry m/pwn" < <(printf '120000\tm\t%s\n100644\tm/pwn\t%s\n' "$L" "$P")
+runcase "A4 symlink m then flat entry m/pwn" "a path is both an entry and a directory" < <(printf '120000\tm\t%s\n100644\tm/pwn\t%s\n' "$L" "$P")
 mkcase; L="$(blob "$CASE_D" "$CASE_OUT")"; P="$(blob "$CASE_D" PWNED)"
-runcase "A5 flat entry m/pwn then symlink m" < <(printf '100644\tm/pwn\t%s\n120000\tm\t%s\n' "$P" "$L")
+runcase "A5 flat entry m/pwn then symlink m" "a path is both an entry and a directory" < <(printf '100644\tm/pwn\t%s\n120000\tm\t%s\n' "$P" "$L")
 # A6: duplicate regular entries
 mkcase; P="$(blob "$CASE_D" one)"; Q="$(blob "$CASE_D" two)"
-runcase "A6 two blobs with one name" < <(printf '100644\tdup.txt\t%s\n100644\tdup.txt\t%s\n' "$P" "$Q")
+runcase "A6 two blobs with one name" "duplicate tree entry" < <(printf '100644\tdup.txt\t%s\n100644\tdup.txt\t%s\n' "$P" "$Q")
 # A7: gitlink and tree with one name, and gitlink plus a flat entry below it
 mkcase; P="$(blob "$CASE_D" one)"; H="$(git -C "$CASE_D" rev-parse HEAD)"; SUB="$(printf '100644\tf\t%s\n' "$P" | rawtree "$CASE_D")"
-runcase "A7 gitlink g and tree g/" < <(printf '160000\tg\t%s\n40000\tg\t%s\n' "$H" "$SUB")
+runcase "A7 gitlink g and tree g/" "a path is both an entry and a directory" < <(printf '160000\tg\t%s\n40000\tg\t%s\n' "$H" "$SUB")
 mkcase; P="$(blob "$CASE_D" one)"; H="$(git -C "$CASE_D" rev-parse HEAD)"
-runcase "A8 gitlink g and flat entry g/f" < <(printf '160000\tg\t%s\n100644\tg/f\t%s\n' "$H" "$P")
+runcase "A8 gitlink g and flat entry g/f" "a path is both an entry and a directory" < <(printf '160000\tg\t%s\n100644\tg/f\t%s\n' "$H" "$P")
 # A9: ordinary directory/file clash (file x and tree x/)
 mkcase; P="$(blob "$CASE_D" one)"; SUB="$(printf '100644\tf\t%s\n' "$P" | rawtree "$CASE_D")"
-runcase "A9 file x and tree x/" < <(printf '100644\tx\t%s\n40000\tx\t%s\n' "$P" "$SUB")
+runcase "A9 file x and tree x/" "a path is both an entry and a directory" < <(printf '100644\tx\t%s\n40000\tx\t%s\n' "$P" "$SUB")
 
 echo "== reserved and hostile components (RM1: .git guard)"
 # B1: .git/info/exclude in HEAD naming a manifest entry that is missing (RM1: without the guard, the exclude file hides it -> PASS)
@@ -171,7 +172,7 @@ sd=$(gitstub 'case "$*" in *" status "*) exec sleep 25;; esac'); t0=$SECONDS
 PATH="$sd:$PATH" RELCHK_GIT_TIMEOUT=2 run "$(fresh)" --check changelog
 want "N2e hung git status -> BLIND, bounded" 2 ""
 [ $((SECONDS - t0)) -lt 40 ] && ok || bad "N2e took $((SECONDS - t0))s"
-sd=$(gitstub 'case "$*" in *"ls-tree -r -z --name-only --full-tree HEAD"*) exec sleep 25;; esac'); t0=$SECONDS
+sd=$(gitstub 'case "$*" in *"ls-tree -r -z --name-only --full-tree HEAD"*) exec sleep 80;; esac'); t0=$SECONDS   # longer than the 40 s bound: an unbounded call fails the bound
 PATH="$sd:$PATH" RELCHK_GIT_TIMEOUT=2 run "$(fresh)" --check changelog
 want "N2f hung ls-tree in the changelog helper -> BLIND, bounded" 2 ""
 [ $((SECONDS - t0)) -lt 40 ] && ok || bad "N2f took $((SECONDS - t0))s"
@@ -191,28 +192,30 @@ want_refused() { # <label> : not a PASS, not a hang (rc 124/137), a VERDICT line
   ok
 }
 SPARSE="$ROOT/huge_sparse"; truncate -s 100G "$SPARSE"; FIFO="$ROOT/fifo_outside"; mkfifo "$FIFO"
-lnk() { # <label> <repo-relative file> <symlink target> [check args...]
-  local label="$1" f="$2" tgt="$3"; shift 3
+lnk() { # <label> <repo-relative file> <symlink target> <message the NEW guard prints> [check args...]
+  # the message is what discriminates: the pre-fix checker (4369773168) also ended BLIND/FAIL on some of these through other layers,
+  # but never said this
+  local label="$1" f="$2" tgt="$3" needle="$4"; shift 4
   local d; d=$(fresh); ( cd "$d" && rm -f -- "$f" && ln -s "$tgt" "$f" && git add -A && git commit -q -m lnk )
   runcap "$d" "$@"; want_refused "$label"
+  printf '%s\n' "$OUT_" | grep -qF -- "$needle" && ok || bad "$label: output lacks the guard message '$needle'"
 }
-lnk "F2a versions.json -> /dev/zero" versions.json /dev/zero
-lnk "F2b versions.json -> FIFO outside" versions.json "$FIFO"
-lnk "F2c versions.json -> 100 GiB sparse file outside" versions.json "$SPARSE"
-lnk "F2d docs/CHANGELOG.md -> /dev/zero" docs/CHANGELOG.md /dev/zero --check changelog
-lnk "F2e docs/CHANGELOG.md -> sparse outside" docs/CHANGELOG.md "$SPARSE" --check changelog
-lnk "F2f docs/qa/run2/SHA256SUMS -> /dev/zero" docs/qa/run2/SHA256SUMS /dev/zero --check changelog
-lnk "F2g docs/qa/run2/SHA256SUMS -> sparse outside" docs/qa/run2/SHA256SUMS "$SPARSE" --check changelog
-lnk "F2h docs/qa/run2/SHA256SUMS -> FIFO outside" docs/qa/run2/SHA256SUMS "$FIFO" --check changelog
+lnk "F2a versions.json -> /dev/zero" versions.json /dev/zero "resolves outside the snapshot"
+lnk "F2b versions.json -> FIFO outside" versions.json "$FIFO" "resolves outside the snapshot"
+lnk "F2c versions.json -> 100 GiB sparse file outside" versions.json "$SPARSE" "resolves outside the snapshot"
+lnk "F2d CONTROL (the earlier [ -f ] layer already refuses it; not a discriminator vs 4369773168): docs/CHANGELOG.md -> /dev/zero" docs/CHANGELOG.md /dev/zero "VERDICT:" --check changelog
+lnk "F2e docs/CHANGELOG.md -> sparse outside" docs/CHANGELOG.md "$SPARSE" "resolves outside the snapshot" --check changelog
+lnk "F2f CONTROL (the earlier [ -f ] layer already refuses it; not a discriminator vs 4369773168): docs/qa/run2/SHA256SUMS -> /dev/zero" docs/qa/run2/SHA256SUMS /dev/zero "VERDICT:" --check changelog
+lnk "F2g docs/qa/run2/SHA256SUMS -> sparse outside" docs/qa/run2/SHA256SUMS "$SPARSE" "not a regular file inside the snapshot" --check changelog
+lnk "F2h CONTROL (the earlier [ -f ] layer already refuses it; not a discriminator vs 4369773168): docs/qa/run2/SHA256SUMS -> FIFO outside" docs/qa/run2/SHA256SUMS "$FIFO" "VERDICT:" --check changelog
 OUTC="$ROOT/outside_changelog.md"; cp "$GOLD/docs/CHANGELOG.md" "$OUTC"
-lnk "F2o docs/CHANGELOG.md -> small regular file outside the snapshot (valid changelog bytes)" docs/CHANGELOG.md "$OUTC" --check changelog
-printf '%s\n' "$OUT_" | grep -qF "resolves outside the snapshot" && ok || bad "F2o: the reader did not refuse the target as outside the snapshot"
-d=$(fresh); mkdir -p "$d/docs/qa"; ( cd "$d" && ln -s /dev/zero docs/qa/EVIDENCE_WAIVERS.txt && git add -A && git commit -q -m w ); runcap "$d" --check changelog; want_refused "F2i waiver file -> /dev/zero"
+lnk "F2o docs/CHANGELOG.md -> small regular file outside the snapshot (valid changelog bytes)" docs/CHANGELOG.md "$OUTC" "resolves outside the snapshot" --check changelog
+d=$(fresh); mkdir -p "$d/docs/qa"; ( cd "$d" && ln -s /dev/zero docs/qa/EVIDENCE_WAIVERS.txt && git add -A && git commit -q -m w ); runcap "$d" --check changelog; want_refused "F2i CONTROL waiver file -> /dev/zero (the earlier [ -f ] layer already refuses it; not a discriminator vs 4369773168)"
 d=$(fresh); ( cd "$d" && ln -s "$SPARSE" docs/qa/EVIDENCE_WAIVERS.txt && git add -A && git commit -q -m w ); runcap "$d" --check changelog; want_refused "F2j waiver file -> sparse outside"
+printf '%s\n' "$OUT_" | grep -qF "not a regular file inside the snapshot" && ok || bad "F2j: output lacks the waiver guard message"
 # F2n: a small REGULAR file outside the snapshot, reached through an absolute HEAD symlink, is never read (it holds valid versions.json bytes)
 OUTV="$ROOT/outside_versions.json"; cp "$GOLD/versions.json" "$OUTV"
-lnk "F2n versions.json -> small regular file outside the snapshot" versions.json "$OUTV"
-printf '%s\n' "$OUT_" | grep -qF "resolves outside the snapshot" && ok || bad "F2n: the reader did not refuse the target as outside the snapshot"
+lnk "F2n versions.json -> small regular file outside the snapshot" versions.json "$OUTV" "resolves outside the snapshot"
 d=$(fresh); RELCHK_MAX_READ=10 runcap "$d"; want_refused "F2k a regular snapshot file above RELCHK_MAX_READ is refused"
 d=$(fresh); RELCHK_MAX_READ=10 runcap "$d" --check changelog; want_refused "F2l changelog above RELCHK_MAX_READ is refused"
 d=$(fresh); runcap "$d" --check changelog; want "F2m negative control: the same fixture under the same cap, unmodified -> PASS" 0 "VERDICT: PASS"
@@ -249,6 +252,39 @@ want "F5a hung ls-tree -r in raw_tree_check -> BLIND" 2 "ls-tree -r failed or ti
 sd=$(gitstub 'case "$*" in *"ls-tree -r -z HEAD -- "*) exit 3;; esac')
 PATH="$sd:$PATH" run "$(fresh)"
 want "F5b failing ls-tree -r in raw_tree_check -> BLIND" 2 "ls-tree -r failed or timed out"
+
+echo "== R2-2: sibling-directory prefix (RELCHK_SNAP_DIR=.../snapx next to .../snapx2) and in-snapshot oversize manifest / waiver"
+sibcase() { # <label> <repo-relative file> <content> <needle> [check args...]: HEAD symlink to a file in a SIBLING of the snapshot dir
+  local label="$1" f="$2" content="$3" needle="$4"; shift 4
+  local base d sn; base="$(mktemp -d "$ROOT/sib.XXXXXX")"; sn="$base/snapx"; mkdir "$base/snapx2"
+  printf '%s' "$content" > "$base/snapx2/target"
+  d=$(fresh); mkdir -p "$d/$(dirname "$f")"; ( cd "$d" && rm -f -- "$f" && ln -s "$base/snapx2/target" "$f" && git add -A && git commit -q -m sib )
+  RELCHK_SNAP_DIR="$sn" runcap "$d" "$@"
+  want_refused "$label"
+  printf '%s\n' "$OUT_" | grep -qF -- "$needle" && ok || bad "$label: output lacks '$needle'"
+}
+sibcase "S1 python reader: changelog -> file in a sibling dir sharing the snapshot prefix" docs/CHANGELOG.md "$(cat "$GOLD/docs/CHANGELOG.md")" "resolves outside the snapshot" --check changelog
+sibcase "S2 bash reader: waiver file -> file in a sibling dir sharing the snapshot prefix" docs/qa/EVIDENCE_WAIVERS.txt "# none
+" "not a regular file inside the snapshot" --check changelog
+sibcase "S3 bash reader: manifest -> file in a sibling dir sharing the snapshot prefix" docs/qa/run2/SHA256SUMS "# none
+" "not a regular file inside the snapshot" --check changelog
+big() { head -c 300000 /dev/zero | tr '\0' 'x' | sed 's/^/# /' | fold -w 100; }
+d=$(fresh); { cat "$d/docs/qa/run2/SHA256SUMS"; big | sed 's/^/# /'; } > "$d/m.new"; mv "$d/m.new" "$d/docs/qa/run2/SHA256SUMS"; ( cd "$d" && git add -A && git commit -q -m bigm )
+RELCHK_MAX_READ=200000 runcap "$d" --check changelog; want_refused "S4 manifest above RELCHK_MAX_READ inside the snapshot"
+printf '%s\n' "$OUT_" | grep -qF "exceeds RELCHK_MAX_READ" && ok || bad "S4: output lacks the manifest guard message"
+d=$(fresh); mkdir -p "$d/docs/qa"; big | sed 's/^/# /' > "$d/docs/qa/EVIDENCE_WAIVERS.txt"; ( cd "$d" && git add -A && git commit -q -m bigw )
+RELCHK_MAX_READ=200000 runcap "$d" --check changelog; want_refused "S5 waiver file above RELCHK_MAX_READ inside the snapshot"
+printf '%s\n' "$OUT_" | grep -qF "exceeds RELCHK_MAX_READ" && ok || bad "S5: output lacks the waiver guard message"
+d=$(fresh); RELCHK_MAX_READ=200000 runcap "$d" --check changelog; want "S6 control: same cap, unpadded fixture -> PASS" 0 "VERDICT: PASS"
+
+echo "== R2-3/R2-5/R2-6: no scratch left behind on an early return; every numeric knob is validated"
+d=$(fresh); H="$(git -C "$d" rev-parse HEAD)"; mkdir "$d/docs/qa/run2/gl"; ( cd "$d" && git update-index --add --cacheinfo "160000,$H,docs/qa/run2/gl" && git commit -q -m gl )
+tb="$(mktemp -d "$ROOT/leak.XXXXXX")"; RELCHK_TMP="$tb" run "$d" --check changelog
+want "R2-3a gitlink in a manifest tree -> BLIND (early return of raw_tree_check)" 2 "contains the submodule"
+[ -z "$(ls -A "$tb")" ] && ok || bad "R2-3b scratch left behind in RELCHK_TMP: $(ls -A "$tb" | tr '\n' ' ')"
+for v in abc 0 007 -3; do d=$(fresh); RELCHK_GIT_TIMEOUT=$v run "$d" --check changelog; want "R2-5 RELCHK_GIT_TIMEOUT=$v -> clear BLIND" 2 "RELCHK_GIT_TIMEOUT must be a positive integer"; done
+d=$(fresh); RELCHK_GIT_TIMEOUT= run "$d" --check changelog; want "R2-5 empty RELCHK_GIT_TIMEOUT -> default, PASS" 0 "VERDICT: PASS"
+d=$(fresh); RELCHK_MAX_READ=99999999999999999999 run "$d" --check changelog; want "R2-6 absurdly long RELCHK_MAX_READ -> clear BLIND" 2 "RELCHK_MAX_READ is too large"
 
 echo "== valid snapshot shapes still work (negative controls for the new refusals)"
 d=$(fresh); mkdir -p "$d/docs/other/sub"; echo x > "$d/docs/other/sub/f.txt"; ln -s sub/f.txt "$d/docs/other/lnk"; ln -s sub "$d/docs/other/dlnk"; chmod +x "$d/docs/other/sub/f.txt"

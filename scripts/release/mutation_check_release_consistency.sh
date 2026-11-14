@@ -279,6 +279,12 @@ except subprocess.TimeoutExpired:'
 'CAT-REL-CHECK-3 F6 numeric knob validation off|||*[!0-9]*|0*) blind "$_k must be a positive|||*[!0-9]*|0*) : "$_k must be a positive'
 'CAT-REL-CHECK-3 N4 post-extraction expected-entries check off|||    if found.get(rel) != k:|||    if False:'
 'CAT-REL-CHECK-3 N8 die does not kill the cat-file child|||                ch.kill()|||                pass'
+'CAT-REL-CHECK-3 REV-A python reader sibling-prefix accepted|||rp.startswith(rb + os.sep)|||rp.startswith(rb)'
+'CAT-REL-CHECK-3 REV-B bash snap_readable sibling-prefix accepted|||case "$rp" in "$SNAP_REAL"/*) ;;|||case "$rp" in "$SNAP_REAL"*) ;;'
+'CAT-REL-CHECK-3 REV-C bash snap_readable size bound off|||[ "$sz" -le "${RELCHK_MAX_READ:-67108864}" ]|||true'
+'CAT-REL-CHECK-3 R2-3 raw_tree_check scratch file outside the snapshot|||mktemp "${SNAP:?}/.relchk_lst.XXXXXX"|||mktemp "${SNAPBASE:?}/lst.XXXXXX"'
+'CAT-REL-CHECK-3 R2-5 RELCHK_GIT_TIMEOUT not validated|||for _k in RELCHK_GIT_TIMEOUT RELCHK_SNAP_TIMEOUT|||for _k in RELCHK_SNAP_TIMEOUT'
+'CAT-REL-CHECK-3 R2-6 knob length bound off|||[ "${#_v}" -le 15 ] || blind|||true || blind'
 )
 
 # MUT_JOBS=<n> runs n mutants at once (default 4; each mutant runs the whole suite, ~40 s).
