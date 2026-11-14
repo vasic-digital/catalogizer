@@ -31,7 +31,7 @@ func KnownSecrets(path, rawQuery string, header http.Header, params map[string]s
 	segs := strings.Split(path, "/")
 	addSeg := func(sg string) {
 		add(sg)
-		if u, err := url.PathUnescape(sg); err == nil && u != sg {
+		if u := lenientUnescape(sg); u != sg {
 			add(u)
 		}
 	}
