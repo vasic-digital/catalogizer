@@ -30,7 +30,7 @@ func KnownSecrets(path, rawQuery string, header http.Header, params map[string]s
 	// path segments after a secret-introducing segment
 	segs := strings.Split(path, "/")
 	for i := 0; i+1 < len(segs); i++ {
-		if !secretSegmentKeys[strings.ToLower(segs[i])] {
+		if !isSecretSegmentKey(segs[i]) {
 			continue
 		}
 		for j := i + 1; j < len(segs); j++ {

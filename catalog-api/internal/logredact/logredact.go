@@ -103,6 +103,27 @@ var secretSegmentKeys = map[string]bool{
 	"apikey": true, "api-key": true, "api_key": true, "verify": true, "confirm": true, "activate": true, "magic": true,
 }
 
+// canonicalSegmentKey is the form of a path segment that is looked up in secretSegmentKeys: percent-decoded (to a fixpoint,
+// at most 3 rounds, so double-encoded forms are covered), lower-cased, cut at the first ";" (a path parameter, "share;x=1")
+// and stripped of trailing dots ("share.", "share.."). A router that ignores path parameters or dot suffixes would otherwise
+// serve the secret that follows while the logger did not recognise the key (HYG-R3-F1). Over-matching only over-redacts.
+func canonicalSegmentKey(seg string) string {
+	for i := 0; i < 3; i++ {
+		u, err := url.PathUnescape(seg)
+		if err != nil || u == seg {
+			break
+		}
+		seg = u
+	}
+	if i := strings.IndexByte(seg, ';'); i >= 0 {
+		seg = seg[:i]
+	}
+	return strings.TrimRight(strings.ToLower(seg), ".")
+}
+
+// isSecretSegmentKey reports whether seg introduces a bearer secret in the NEXT segment.
+func isSecretSegmentKey(seg string) bool { return secretSegmentKeys[canonicalSegmentKey(seg)] }
+
 // SecretPath returns path with every segment that follows a secret-introducing segment (see secretSegmentKeys) replaced by
 // ":redacted". Everything else is preserved. Use it for ANY log field that carries a raw request path.
 func SecretPath(path string) string {
@@ -111,7 +132,7 @@ func SecretPath(path string) string {
 	}
 	segs := strings.Split(path, "/")
 	for i := 0; i+1 < len(segs); i++ {
-		if !secretSegmentKeys[strings.ToLower(segs[i])] {
+		if !isSecretSegmentKey(segs[i]) {
 			continue
 		}
 		// "/share//S" and "/share///S": empty segments between the key and the secret are skipped; the first non-empty
