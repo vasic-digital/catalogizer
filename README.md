@@ -4,7 +4,7 @@
 
 Catalogizer is a comprehensive media collection management system that automatically detects, categorizes, and organizes your media files across multiple storage protocols including SMB, FTP, NFS, WebDAV, S3 and local filesystem. It provides real-time monitoring, advanced analytics, and a modern web interface for managing your entire media library.
 
-> **Release status: Catalogizer 2.4.3 is a pre-release and is NOT production-ready.** The release gate state is BLOCKED-NO-BASELINE (no live run on connected hardware, no v2.4.2 baseline), and the full-suite retest of the tag, manual QA and live UI QA have not been run on it; see [`docs/release/RELEASE_NOTES_v2.4.3.md`](docs/release/RELEASE_NOTES_v2.4.3.md) and [`docs/CHANGELOG.md`](docs/CHANGELOG.md) (`[2.4.3]`: VERIFIED / PROVISIONAL / REOPENED / OVERDUE listed separately) and [`docs/CONTINUATION.md`](docs/CONTINUATION.md) (latest revision).
+> **Release status: Catalogizer 2.4.3 is a pre-release and is NOT production-ready.** The release gate state is BLOCKED-NO-BASELINE (no live run on connected hardware, no v2.4.2 baseline), and the full-suite retest of the tag, manual QA and live UI QA have not been run on it; see [`docs/release/RELEASE_NOTES_v2.4.3.md`](docs/release/RELEASE_NOTES_v2.4.3.md) and [`docs/CHANGELOG.md`](docs/CHANGELOG.md) (`[2.4.3]`: VERIFIED / PROVISIONAL / REOPENED / OVERDUE listed separately) and [`docs/CONTINUATION.md`](docs/CONTINUATION.md) (Rev 21).
 
 ## 🚀 Features
 
@@ -37,7 +37,7 @@ Catalogizer is a comprehensive media collection management system that automatic
 | Document | Purpose |
 |---|---|
 | 🚧 **[CHANGELOG](docs/CHANGELOG.md)** | Release notes (also [RELEASE_NOTES_v2.4.3](docs/release/RELEASE_NOTES_v2.4.3.md)); `[2.4.3]` is a **pre-release, NOT production-ready**, with VERIFIED / PROVISIONAL / REOPENED / OVERDUE listed separately |
-| 🔁 **[CONTINUATION](docs/CONTINUATION.md)** | Live work state and resume order (Rev 20) |
+| 🔁 **[CONTINUATION](docs/CONTINUATION.md)** | Live work state and resume order (Rev 21) |
 | 🧾 **[Workable Items Register](docs/WORKABLE_ITEMS_REGISTER.md)**, **[Follow-ups](docs/FOLLOW_UPS_NEXT_PHASE.md)**, **[Provisional Verification Plan](docs/PROVISIONAL_VERIFICATION_PLAN.md)** | Open items, per-finding detail and the plan that turns PROVISIONAL rows into VERIFIED |
 | 🧪 **[QA evidence](docs/qa/README.md)** | Machine evidence per run, e.g. [SonarQube run5](docs/qa/sonarqube-20261111/run5/README.md), [cover-art SSRF live test](docs/qa/coverart/README.md), [partial retest of main](docs/qa/retest-20261112/RETEST_main_563617b1.md) |
 | 📘 **[Docs index](docs/README.md)** | Index of `docs/`; sub-indexes: [`docs/api`](docs/api/), [`docs/architecture`](docs/architecture/), [`docs/guides`](docs/guides/), [`docs/manuals`](docs/manuals/), [`docs/security`](docs/security/), [`docs/runbooks`](docs/runbooks/), [`docs/deployment`](docs/deployment/), [`docs/testing`](docs/testing/) |
@@ -133,7 +133,7 @@ Catalogizer is a comprehensive media collection management system that automatic
     - Analytics dashboard
     - User management interface
 
-3. **Other first-party components** (all at version 2.4.3): `catalogizer-desktop` (Tauri 2 + React desktop app), `installer-wizard` (Tauri installation wizard), `catalogizer-android` (Jetpack Compose, Room, Media3 ExoPlayer), `catalogizer-androidtv` (Android TV, Leanback), `catalogizer-api-client` (TypeScript API client), `Website`, plus `monitoring/` (Prometheus, Alertmanager, Grafana, OpenTelemetry configs), `deployment/` and `docker/` (compose and scripts), `challenges/` and `tests/` (QA suites), `sonarqube/` (on-demand SonarQube QA service) and `specs/` (Spec Kit specifications).
+3. **Other first-party components** (`catalogizer-desktop`, `installer-wizard`, `catalogizer-android` and `catalogizer-androidtv` are at version 2.4.3; `catalogizer-api-client` and `Website` are at 1.0.0 in their `package.json`): `catalogizer-desktop` (Tauri 2 + React desktop app), `installer-wizard` (Tauri installation wizard), `catalogizer-android` (Jetpack Compose, Room, Media3 ExoPlayer), `catalogizer-androidtv` (Android TV, Leanback), `catalogizer-api-client` (TypeScript API client), `Website`, plus `monitoring/` (Prometheus, Alertmanager, Grafana, OpenTelemetry configs), `deployment/` and `docker/` (compose and scripts), `challenges/` and `tests/` (QA suites), `sonarqube/` (on-demand SonarQube QA service) and `specs/` (Spec Kit specifications).
 
 4. **Database Layer**: SQLCipher encrypted SQLite
     - Media metadata storage

@@ -182,11 +182,76 @@ that receives only the prompt <code>continue</code> MUST read this file
 first, then <code>docs/FOLLOW_UPS_NEXT_PHASE.md</code>, then resume the
 §11.4.126 loop with the steps in "RESUME ORDER".</p>
 </blockquote>
-<p><strong>Revision:</strong> 20 <strong>Last modified:</strong>
-2026-11-12 <strong>Exports:</strong> <code>CONTINUATION.html</code> /
-<code>CONTINUATION.pdf</code> regenerated at Rev 20 with
+<p><strong>Revision:</strong> 21 <strong>Last modified:</strong>
+2026-11-14 <strong>Exports:</strong> <code>CONTINUATION.html</code> /
+<code>CONTINUATION.pdf</code> regenerated at Rev 21 with
 <code>pandoc -s</code> (HTML) and <code>weasyprint</code> (PDF) from
 this file; this <code>.md</code> is authoritative.</p>
+<h2
+id="00000-rev-21-delta-since-rev-20-main--b43f5370-release-prep-branch-releasev243-prep">0.0000
+Rev 21 delta (since Rev 20; main = <code>b43f5370</code>; release prep
+branch <code>release/v2.4.3-prep</code>)</h2>
+<ul>
+<li><strong>v2.4.2 is published</strong> (annotated tag object
+<code>26f2e1df</code>, commit <code>fc8dcf27e</code>, pre-release). The
+Rev 20 "prepared, not tagged" wording is superseded.</li>
+<li><strong>v2.4.3 content is prepared, not tagged, not pushed.</strong>
+Branch <code>release/v2.4.3-prep</code> (made from <code>main</code>
+<code>b43f5370</code> in a scratch clone) bumps every product version to
+2.4.3 (Android <code>versionCode</code> 9, Android TV 11), adds
+<code>[2.4.3]</code> to <code>docs/CHANGELOG.md</code> (VERIFIED /
+PROVISIONAL / REOPENED / OVERDUE separate),
+<code>docs/release/RELEASE_NOTES_v2.4.3.md</code>, the "v2.4.3
+additions" section 6 of
+<code>docs/PROVISIONAL_VERIFICATION_PLAN.md</code> (jobs
+<code>VJ243-01..23</code>, due dates proposed by the preparer) and an
+upgrade section in <code>docs/UPGRADE_NOTES.md</code>. Release class:
+pre-release, NOT production-ready.</li>
+<li><strong>Release gate (11.4.298):
+<code>BLOCKED-NO-BASELINE</code>.</strong> No live run on connected
+hardware exists and no v2.4.2 baseline run was done; the 11.4.293
+comparison is impossible until both exist. The checker is advisory for
+v2.4.3 (<code>--version 2.4.3 --prev-tag v2.4.2</code>: PASS, only
+<code>unused_waivers=3</code>) and blocking for v2.5.0
+(<code>docs/release/V2_5_0_GATE_CHECKLIST.md</code>, an unreviewed
+draft).</li>
+<li><strong>Landed on <code>main</code> since Rev 20</strong> (328
+commits, 47 distinct <code>Roadmap-Item</code> ids, all PROVISIONAL,
+Opus GO-with-follow-ups; list in <code>docs/CHANGELOG.md</code>
+<code>[2.4.3]</code>). Wave-1 landings on top: <code>2c799a9f</code>
+(CAT-CHPW-RL-2), <code>3a33fb05</code> (CAT-LOGIN-LOCK-2) and
+<code>b43f5370</code> (CAT-RETEST-STALE-1, NFS export refuses
+<code>,</code> followed by <code>:</code>). The "R_max NO-GO outcomes"
+section of <code>docs/FOLLOW_UPS_NEXT_PHASE.md</code> still describes
+LOGIN-LOCK-2 and CHPW-RL-2 as not landed; <code>main</code> contains
+their merges.</li>
+<li><strong>11.4.40 retest of <code>main</code> <code>3a33fb05</code>
+(partial, scratch copy, PROVISIONAL):</strong> go build/vet rc 0; go
+test 5935 pass / 20 honest skip / 3 fail (two stale tests fixed on
+<code>main</code>, one scratch pollution); catalog-web type-check pass,
+vitest 2796 pass; web lint 1 error + 84 warnings (same as v2.4.2);
+<code>catalog-api/tests/automation</code> fails with connection refused
+instead of SKIP; web production build UNCONFIRMED offline;
+<code>gofmt</code> lists 42 files; anti-bluff-scan 4 ASSERT_TAUTOLOGY in
+third-party/hub code; <code>-race</code> not run.</li>
+<li><strong>Not landed:</strong> CAT-NFS-EMU-1 (R_max NO-GO on
+<code>feat/nfs-emulator</code>); the structural successor
+<strong>CAT-NFS-EMU-2</strong> is open. CAT-PREEXIST-9b (UNREPRODUCED),
+D8-F1, D9-F1 and the SEC-WS-1 follow-ups remain open.</li>
+<li><strong>Owed:</strong> the live hardware baseline run of v2.4.2 and
+the v2.4.3 run with comparison; the 11.4.40 full-suite retest of the
+tag; 11.4.185 manual QA; live UI QA with Vision; every live leg in
+<code>docs/PROVISIONAL_VERIFICATION_PLAN.md</code> section 6 (gaps
+<code>G243-1..18</code>); independent review of <code>V250-GATES</code>.
+Synology stays SKIP <code>hardware_not_present</code>.</li>
+<li><strong>Next steps:</strong> independent review (11.4.209 substrate)
+of the prep branch, merge to <code>main</code> fast-forward (11.4.288),
+then decide the tag <code>v2.4.3</code> (pre-release); then the
+continuous release train opens the next candidate (11.4.230(F)).</li>
+<li>Not verified while writing Rev 21: upstream parity of
+<code>main</code>, whether any stack 3 container is running, and that
+the prep branch has been pushed anywhere (it has not).</li>
+</ul>
 <h2
 id="0000-rev-20-delta-since-rev-19-main--1538ef19-release-prep-branch-releasev242-prep">0.000
 Rev 20 delta (since Rev 19; main = <code>1538ef19</code>; release prep
@@ -745,5 +810,45 @@ Still open: tag form (default <code>v2.4.0</code>); horizontal-authz /
 second-LAN-host measurement; when the Synology drives are powered back
 on; Docker Hub access method for the SonarQube images (login, mirror, or
 wait).</p>
+<h2
+id="7a-operator-decisions-2026-11-12-answered-interactively-bg-opdec-2026-11-12">7a.
+Operator decisions 2026-11-12 (answered interactively;
+BG-OPDEC-2026-11-12)</h2>
+<ol type="1">
+<li>Release: v2.4.2 pre-release is ALREADY published (tag + GitHub
+pre-release 2026-11-12); the Rev 20 "prepared, not tagged" text is
+stale. Next release also a labelled pre-release until retest + manual
+QA.</li>
+<li>Redis limiter: outage falls back to in-memory tiers; /login and
+/register stay in-memory (branch fix/opdec-a, in progress).</li>
+<li>SECQ-1: apply netguard to the WebDAV storage-root client +
+CATALOGIZER_OUTBOUND_ALLOW_CIDRS (fix/opdec-b, in progress).</li>
+<li>R2-N7: another user's job id returns 403 (KEEP current; operator
+chose 403 over the recommended 404).</li>
+<li>Roles: subset rule also compares role 2 (fix/opdec-a). 6. API image
+size 761 MB: accepted for now.</li>
+<li>CAT-QA-SONAR-5: implement wizard template loading (fix/opdec-b). 8.
+Vision QA: stop the decide model via <code>llmctl stop</code>, then
+<code>llmctl start vision</code>; no overrides (pending, host load
+~14).</li>
+<li>FU2-4: remove <code>onActivateKey</code> (fix/opdec-b). 10. Tauri:
+confirm on every server URL change (already done). 11. SonarQube images:
+the operator will docker-login via a 0600 file (waiting). 12. Synology:
+honest SKIP.</li>
+<li>Jev: stays SHADOW (typesafe jev-latest + openrouter jev-1.13
+reachable); <code>jev-calibrate --dry-run</code> found 61046 of 61046
+rows uncalibratable (no question/criteria/state_text recorded), so NO
+threshold can be earned yet; hosted endpoints never enforce. Recording
+state_text in the gate rows is the unblocker (open).</li>
+<li>Mirrors: push_all.sh now lists m3w + codeberg; Codeberg/m3w release
+pages need an API token in a 0600 file (not found; operator to
+supply).</li>
+<li>Hygiene: rotate LLMCTL_API_KEY (operator); GitHub Support text for
+the <code>x@x</code> attribution drafted in
+docs/qa/github_support_x_at_x.md; MarkoLazovicCode accepted as known
+collaborator; scratch clones: ffwire deleted (all 4 commits
+patch-equivalent on main); others kept (helixqa3 backup branch and s1
+<code>.soak/</code> untracked, rev/rr2 merge commits not verified).</li>
+</ol>
 </body>
 </html>

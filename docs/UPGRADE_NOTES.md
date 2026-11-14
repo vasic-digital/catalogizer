@@ -2,6 +2,24 @@
 
 Behaviour changes an operator must know about when upgrading. Newest first.
 
+## Upgrading from 2.4.2 to 2.4.3 (pre-release, NOT production-ready)
+
+Full list with labels and verification jobs: [`release/RELEASE_NOTES_v2.4.3.md`](release/RELEASE_NOTES_v2.4.3.md) and `docs/CHANGELOG.md` section `[2.4.3]`. What an operator must do or expect:
+
+- **Back up the database first; there is no downgrade.** On start the server runs schema migrations v27 (`approved_class` columns on `storage_roots` and `sync_endpoints`), v28 (retires every legacy log-share token) and v29 (creates `login_throttle`). The migration runner has only `Up` steps (`catalog-api/database/migrations.go`), so going back means restoring the backup. Whether a v2.4.2 binary tolerates the new schema is UNCONFIRMED.
+- **Existing log-share links stop working** (migration v28); the creator re-shares. New tokens are random, hashed at rest and shown once; every share failure returns the same 404.
+- **Login:** answers **429** while an account or address is throttled and **503** `sign-in temporarily unavailable` when the throttle state cannot be read or written (it fails closed). Change-password allows 5 failed current-password attempts per 15 minutes per user.
+- **Suspension and unlock:** an admin suspension is a permanent lock and revokes sessions; the user unlock call answers **409** for a suspended account.
+- **Jobs:** another user's conversion job id answers 404, the same as a missing id.
+- **Storage roots:** cloud-metadata addresses are always refused, SMB/FTP/NFS hosts are vetted at create and pinned at dial (an existing root on a now-refused address stops connecting), local and NFS roots refuse escaping symlinks, an NFS export with `,` followed by `:` is refused.
+- **WebSocket:** `/ws` needs authentication and a matching Origin; use the updated shipped nginx confs (they forward `$http_host`).
+- **Redis rate limits:** per-tier keys (auth 600, default 2000 per minute); an outage after startup falls back to the in-memory limiter.
+- **Errors:** responses no longer contain internal error text.
+- **Image:** the API image is 307 MB (was 746 MB); conversions to ogg and m4a drop embedded cover art.
+- **Installation wizard:** the config is merged, never overwritten; `CONFIG_PATH` is the wizard directory, `CATALOG_CONFIG_PATH` the app config file.
+
+---
+
 ## Known limitations and pending removals (docs sync C4, 2026-11-03)
 
 - **Collection sharing is not available.** The server has no `/collections/:id/share*` routes, so the web UI's Create Share Link, Send Invitations, QR Code and Copy Embed Code controls are disabled with a stated reason (`catalog-web/src/components/collections/CollectionSharing.tsx`, `SHARE_API_AVAILABLE`).

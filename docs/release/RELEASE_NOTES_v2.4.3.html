@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc 3.11" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Catalogizer v2.4.3 release notes</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      white-space: pre-wrap;
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+<h1 id="catalogizer-v243-release-notes">Catalogizer v2.4.3 release
+notes</h1>
+<p><strong>Pre-release, NOT production-ready.</strong> Release gate
+state: <code>BLOCKED-NO-BASELINE</code> (no live run on connected
+hardware and no v2.4.2 baseline run exist; the full-suite retest, manual
+QA and live UI QA have not been run). Everything labelled PROVISIONAL
+landed on <code>main</code> and counts as done for planning but is not
+verified. This file carries the same content as <a
+href="../CHANGELOG.md"><code>docs/CHANGELOG.md</code></a> section
+<code>[2.4.3]</code> in release-notes form for GitHub/GitLab release
+pages; the verification jobs for every PROVISIONAL group are scheduled
+in <a
+href="../PROVISIONAL_VERIFICATION_PLAN.md"><code>docs/PROVISIONAL_VERIFICATION_PLAN.md</code></a>
+section 6 (due dates proposed by the release preparer, adjustable by the
+operator). Upgrade steps: see "Behaviour changes and upgrade notes"
+below and <a
+href="../UPGRADE_NOTES.md"><code>docs/UPGRADE_NOTES.md</code></a>.
+Credentials and private hosts are not part of these notes.</p>
+<p>Release class: <strong>pre-release</strong> (provisional-eligible,
+constitution 11.4.290(G)). Prepared on branch
+<code>release/v2.4.3-prep</code> from <code>main</code>
+<code>b43f5370</code> (328 commits since the <code>v2.4.2</code> tag;
+the annotated tag object is <code>26f2e1df</code> and its commit is
+<code>fc8dcf27e</code>; <code>git log v2.4.2..b43f5370</code>). Not
+tagged, not published. Versioning is SemVer. Version files bumped to
+2.4.3: <code>versions.json</code> (global 2.4.3),
+<code>docs/api/openapi.yaml</code>, <code>catalog-web</code>,
+<code>catalogizer-desktop</code> and <code>installer-wizard</code>
+(package.json, package-lock.json, tauri.conf.json, Cargo.toml), Android
+<code>versionName</code> 2.4.3 / <code>versionCode</code> 9 (was 8),
+Android TV <code>versionName</code> 2.4.3 / <code>versionCode</code> 11
+(was 10), the two Android <code>CLAUDE.md</code> version lines, the
+installer-wizard AppImage file name in
+<code>challenges/scripts/desktop_appimage_launch_challenge.sh</code>,
+and the version mentions in <code>README.md</code>,
+<code>docs/CONTRIBUTING.md</code> and
+<code>docs/DEPLOYMENT_GUIDE.md</code>.</p>
+<h3 id="release-gate-constitution-114298-stated-first">Release gate
+(constitution 11.4.298, stated first)</h3>
+<ul>
+<li><strong>Gate state: <code>BLOCKED-NO-BASELINE</code>.</strong> No
+11.4.298 live run of the whole suite on connected target hardware has
+been done for this build, and no baseline run of v2.4.2 exists, so no
+11.4.293 comparison (<code>NO-WORSE-PROVEN</code>) is possible. The live
+baseline run (flash/run v2.4.2, run the suite, then the same on v2.4.3)
+is <strong>owed</strong>. This is a labelled pre-release; it must not be
+deployed to users or called production-ready. The comparator and gate
+tools (<code>image_no_worse</code>, <code>release_gate</code>,
+CAT-WP03-MECH) are gate-logic unit class and are not wired into tagging
+or deploy.</li>
+<li><strong>The full-suite retest of the tag (11.4.40), the 11.4.185
+manual QA and the live UI QA have NOT been run on this
+candidate.</strong> The release-consistency checker is
+<strong>advisory</strong> for v2.4.3 (blocking for v2.5.0, see
+<code>docs/release/V2_5_0_GATE_CHECKLIST.md</code>, an unreviewed
+draft).</li>
+</ul>
+<h3 id="state-summary-by-label-114290g">State summary by label
+(11.4.290(G))</h3>
+<p>Counts (11.4.290(4)): <strong>V counts evidence sets, P counts items,
+so they are not comparable.</strong> V = 3 evidence sets whose hashes
+verify (1 checker-cited, 2 hand-verified; the behaviour they back is
+PROVISIONAL). P = 47 distinct <code>Roadmap-Item</code> ids, derived
+with
+<code>git log v2.4.2..b43f5370 --format='%(trailers:key=Roadmap-Item,valueonly,separator=%x2C)'</code>,
+split on commas and spaces, then <code>sort -u | wc -l</code>; of the
+328 commits in the range (75 merges), 286 carry a
+<code>Roadmap-Item:</code> trailer and 42 carry none (merges and some
+docs commits; the items they merge are counted through their own
+commits). Sub-ids named in the lines below (PX-F1..F23, PW-F1..F10 and
+so on) belong to those ids or to the groups that contain them and are
+not counted separately. R = 0 reopened, O = 0 new overdue (the carried
+OVERDUE jobs below remain).</p>
+<h3
+id="verified-committed-machine-evidence-checked-while-preparing-this-entry">VERIFIED
+(committed machine evidence, checked while preparing this entry)</h3>
+<p>Checked on this branch with <code>sha256sum -c</code> (0 non-OK
+lines). "VERIFIED" here means the evidence set exists and its hashes
+verify, not that the behaviour is verified.</p>
+<ul>
+<li><code>docs/qa/img-slim/</code> (CAT-IMG-SLIM-1 minimal-ffmpeg image
+evidence; <code>SHA256SUMS.txt</code> verifies). Container class; the
+full <code>catalog-api/Dockerfile</code> build including the Go stage
+was not exercised.</li>
+<li>Carried from 2.4.2 and earlier, not re-run: the VERIFIED rows of
+<code>[2.4.2]</code>, <code>[2.4.1]</code>, <code>[2.4.0]</code>. Caveat
+carried with them: the cover-art SSRF live-test evidence set
+(<code>docs/qa/coverart/results/final/</code>) has a
+<code>SHA256SUMS.txt</code> that FAILs <code>sha256sum -c</code>; this
+is the checker's known <code>sha_fail=1</code> under
+<code>--section 2.4.2</code> (see the checker bullet below).</li>
+<li>Other evidence directories added since v2.4.2
+(<code>docs/qa/login-lock-2-round*</code>,
+<code>chpw-rl-2-round*</code>, <code>sec-ws-1*</code>,
+<code>favr3-fu*</code>, <code>stack3</code>) carry no checkable hash
+manifest and are treated as PROVISIONAL.</li>
+</ul>
+<h4 id="hand-verified-evidence-sets-not-checker-cited">Hand-verified
+evidence sets (not checker-cited)</h4>
+<p>Checked with <code>sha256sum -c</code> (0 non-OK lines) by hand. They
+are not cited as backticked paths because the checker would list their
+unhashed README.html and README.pdf twins as UNLISTED. The behaviour
+they back stays PROVISIONAL.</p>
+<ul>
+<li>docs/qa/anton-smb-n3-20261112/run1.log, run2.log, run3.log and
+README.md there (Anton SMB N=3 live run; SHA256SUMS verifies). No
+negative control: the run proves reachability at N=3 only.</li>
+<li>docs/qa/secq2-repro-20261112/rep6.json and rep6.log.txt
+(CAT-SECQ2-WD-F1 live WebDAV reproduction: not reproduced, 6/6 ok;
+SHA256SUMS verifies).</li>
+</ul>
+<h3
+id="provisional-landed-on-main-counts-as-done-for-planning-not-verified">PROVISIONAL
+(landed on <code>main</code>; counts as done for planning, NOT
+verified)</h3>
+<p>Each item landed after an Opus review that returned
+GO-with-follow-ups (minor-class follow-ups tracked in
+<code>docs/FOLLOW_UPS_NEXT_PHASE.md</code>). Evidence class is mostly
+unit / httptest / SQLite (some PostgreSQL 15/16, container) level; live
+end-to-end runs are owed. <strong>Verification jobs
+(11.4.290(1)):</strong>
+<code>docs/PROVISIONAL_VERIFICATION_PLAN.md</code> section 6 schedules
+one job per group below, <code>VJ243-01..VJ243-23</code>, each with its
+target, the existing command (or
+<code>command: owed (no automated check yet)</code>, registered as gap
+<code>G243-n</code>), the evidence class needed for VERIFIED and a due
+date. Group to job: authentication and sessions VJ243-01..06;
+<code>/ws</code> VJ243-07; egress and storage hosts VJ243-08, 11, 12;
+error leakage and redaction VJ243-09; confinement VJ243-10; wizard
+VJ243-13; web VJ243-14; release tooling VJ243-15..18; image VJ243-19;
+stale tests VJ243-20; docs VJ243-21; research and records VJ243-22;
+whole release VJ243-23. <strong>Due dates are proposed by the release
+preparer; the operator may adjust them:</strong> host jobs 2026-11-21,
+runtime and live jobs 2026-11-30 or before <code>v2.5.0-rc.1</code>,
+whichever is first. No job has been run.</p>
+<p><strong>Security: authentication, sessions, rate
+limiting</strong></p>
+<ul>
+<li>CAT-D9-SUSPEND (+ D9S-R3-1..4, D9SR3-F1/F2/F3/F4): admin suspension
+is a permanent lock and revokes sessions; NULL-safe
+<code>is_locked</code> reads; login/refresh non-loginable semantics;
+unknown/legacy-user login timing.</li>
+<li>CAT-LOGIN-LOCK-1, CAT-LOGIN-LOCK-2: login back-off redesigned;
+in-flight attempt cap, every evaluated attempt charged, owner success
+never writes the account scope; PostgreSQL-verified (both images).</li>
+<li>CAT-CHPW-RL-1, CAT-CHPW-RL-1-FU, CAT-CHPW-RL-2, PKGC-FU4-F2:
+change-password per-session failure budget and per-user ceiling, session
+revoke on change, AST wiring guards for the <code>/api/v1/auth</code>
+routes (unit class, in-memory counters per process).</li>
+<li>OPA-1..OPA-5, PKGC-FU4, CAT-OPDEC-A: Redis rate-limit per-limiter
+outage breaker with half-open single probe, per-tier Redis keys (auth
+600 / default 2000 per minute), outage after startup falls back to the
+in-memory limiter; role 2 compared like every other role.</li>
+<li>CAT-LOGSHARE-TOK-1: log-share tokens are 32 random bytes, hashed at
+rest, shown once, uniform 404 on every failure; session-id
+hardening.</li>
+<li>CAT-JOB-404-1: a job id owned by another user returns the same 404
+as a missing id; permission lookup runs before the job lookup.</li>
+<li>SEC-WS-1, SEC-WS-1-F3, SEC-WS-1 F4/F5/F6, SEC-WS-1R3,
+SEC-WS-1R3FU-1/2: <code>/ws</code> behind authentication with an Origin
+policy, post-upgrade auth recheck, audience-filtered broadcasts, nginx
+confs forward <code>$http_host</code> (httptest level; live client/nginx
+run owed).</li>
+</ul>
+<p><strong>Security: egress, error leakage, confinement</strong></p>
+<ul>
+<li>CAT-SECQ1-A, CAT-SECQ1-B (W3), S1A3-1..4, OBF-3, PKGA-FU2,
+PKGA-FU2-F2: outbound address-class pinning; the cloud-metadata
+singleton addresses (including <code>fd20:ce::254</code>) are always
+refused, and SMB host vetting shares the netguard reserved ranges.</li>
+<li>SEC-DIAL-1, SEC-DIAL-1-FU: SMB/FTP/NFS storage hosts are vetted at
+create and pinned at dial; dial errors scrubbed.</li>
+<li>CAT-PXF23, CAT-PXF23-R, CAT-PXF23-R5, CAT-PXF23-R5B, PXF23-R5a/F4,
+CAT-R5-FU, CAT-R5FU-FU, CAT-WP02-ERRLEAK, SVC-PREEXIST-1: internal
+<code>err.Error()</code> text no longer reaches clients (fixed class
+text, request id).</li>
+<li>PX-F1..F23 (PX-F13/F17/F20-F23: unified log/panic redaction, custom
+Recovery, typed leak scanner, KnownSecrets), HANDLERS-RED-1: log
+redaction hardening.</li>
+<li>CAT-FS-SYMLINK-1: symlink confinement for local and NFS filesystem
+clients with a single confined copy path.</li>
+<li>CAT-SEC-CONTRIB-1: <code>.mailmap</code> maps the placeholder agent
+identity to the owner.</li>
+<li>CAT-RETEST-STALE-1: NFS export refuses <code>,</code> followed by
+<code>:</code> (second darwin server location); two stale tests
+fixed.</li>
+</ul>
+<p><strong>Storage connectors</strong></p>
+<ul>
+<li>CAT-SMB-SUBDIR-1: Anton SMB N=3 live logs added (no negative
+control).</li>
+<li>CAT-SECQ2-WD-F1: live WebDAV reproduction, not reproduced (VERIFIED
+evidence, PROVISIONAL conclusion).</li>
+</ul>
+<p><strong>Installation wizard</strong></p>
+<ul>
+<li>OBF-1, OBF-2, OBF-4, OBF-FU, CAT-OPB-FU, CAT-OPB-FU2,
+CAT-QA-SONAR-5: merge-never-overwrite of the config, symlink-resolved
+confinement (dangling links refused), probe temp files,
+<code>CONFIG_PATH</code> (wizard directory) vs
+<code>CATALOG_CONFIG_PATH</code> (app config file) docs, declared
+<code>file_create</code> template loaded.</li>
+</ul>
+<p><strong>Web</strong></p>
+<ul>
+<li>CAT-UI-FAV-1, CAT-UI-FAV-1b, FAVR3-1/2, FAVR3R3FU: favourites open
+the right entity (<code>entity_id</code>/<code>entity_type</code>),
+optimistic update on live keys with rollback; live Playwright run
+owed.</li>
+<li>CAT-QA-SONAR-7-FU2, CAT-OPDEC-B: Enter auto-repeat guard, no block
+content in template buttons, unused <code>onActivateKey</code>
+removed.</li>
+<li>CAT-PREEXIST-7, CAT-PREEXIST-8, CAT-PREEXIST-9, PW-F1..F10
+(CAT-PWF9): vitest alias fallback for dist-less
+<code>@vasic-digital/*</code> packages, jsdom Storage on Node 26.</li>
+</ul>
+<p><strong>Release tooling</strong></p>
+<ul>
+<li>CAT-REL-CHECK-1, CAT-REL-CHECK-2, CAT-REL-CHECK-3: HEAD-snapshot
+release-consistency checker (502 tests; 236 mutants defined, but the
+full 236-mutant set has not been run end to end, per
+<code>docs/FOLLOW_UPS_NEXT_PHASE.md</code>), waivers; advisory for
+v2.4.3.</li>
+<li>CAT-WP03, CAT-WP03-MECH (WP03R3-F1..F7): <code>image_no_worse</code>
+comparator and <code>release_gate</code> scripts (11.4.293 / 11.4.298),
+gate-logic unit class, not wired into tagging or deploy.</li>
+<li>V250-GATES: v2.5.0 gate checklist, an UNREVIEWED draft (independent
+review owed).</li>
+<li>CAT-CONST-BUMP-1, CAT-UPSTREAMS-1: constitution bump
+(<code>helixconstitution-v73.3-397-g02c10935</code>), Codeberg upstream
+recipe.</li>
+</ul>
+<p><strong>Image, QA tooling, tests, docs</strong></p>
+<ul>
+<li>CAT-IMG-SLIM-1: API image 746 MB to 307 MB via minimal ffmpeg
+(container class).</li>
+<li>CAT-PREEXIST-1..6, CAT-PREEXIST-10, CAT-PXF23 follow-ups: stale or
+flaky pre-existing test failures fixed (host-adaptive stress floor,
+nil-slice allowlist, sqlmock expectations, openapi-contract 404).</li>
+<li>CAT-WP10-TRIAGE, WP-10, WP10R4: follow-up triage document and
+generator (<code>docs/FOLLOW_UPS_TRIAGE_2026-11-12.md</code>).</li>
+<li>CONT-DENY-STRUCT (Containers <code>aa99d46</code>),
+BG-NASEMU-2026-11-13 (NAS emulator research and NE-3 seed, Containers
+<code>24ba32c</code>), CAT-DEVEMU (device-emulation plan),
+BG-OPQ-2026-11-13b (operator decisions record), CAT-QA-SONAR /
+CAT-SONAR-REGAUTH (Sonar registry-auth follow-ups),
+DOCS-ORPHANS-2026-11-13 (orphan reachability and PDF renderer),
+CAT-DOCS-README (DeepWiki badge).</li>
+</ul>
+<h3 id="reopened">REOPENED</h3>
+<ul>
+<li>None recorded between <code>v2.4.2</code> and <code>main</code>
+<code>b43f5370</code>: no live rerun FAILed on a previously closed item.
+This is the absence of recorded failures, not proof that nothing
+regressed (the full-suite retest of the tag has not been run).</li>
+</ul>
+<h3 id="overdue">OVERDUE</h3>
+<ul>
+<li>Carried, still overdue: the <code>[2.4.2]</code> and
+<code>[2.4.1]</code> verification jobs (full-suite retest of a tag,
+SonarQube run6 on a tag, 11.4.185 manual QA, live UI QA with Vision,
+Anton <code>Public/Testing</code> SMB runs, cover-art SSRF N&gt;=3
+production-client leg). No new job has an elapsed due date
+recorded.</li>
+</ul>
+<h3
+id="known-failing-unconfirmed-or-not-landed-from-the-11440-partial-retest-of-main-3a33fb05-cat-retest-stale-1-in-docsfollow_ups_next_phasemd">Known
+failing, unconfirmed or not landed (from the 11.4.40 partial retest of
+<code>main</code> <code>3a33fb05</code>, CAT-RETEST-STALE-1, in
+<code>docs/FOLLOW_UPS_NEXT_PHASE.md</code>)</h3>
+<ul>
+<li>Retest (scratch copy, PROVISIONAL): go build/vet rc 0; go test 5935
+pass / 20 honest skip / 3 fail (two new stale tests fixed on
+<code>main</code>; the third was scratch pollution); catalog-web
+type-check pass, vitest 2796 pass.</li>
+<li>Pre-existing lint error: catalog-web lint 1 error + 84 warnings
+(<code>ExternalIntegrations.test.tsx:100</code> unnecessary semicolon,
+same line in v2.4.2).</li>
+<li>The <code>catalog-api/tests/automation</code> module fails with
+connection refused instead of an honest SKIP (same on v2.4.2).</li>
+<li>The catalog-web production build is UNCONFIRMED (offline npm cache
+lacks <code>@vasic-digital/*</code>; ENOTCACHED). <code>gofmt</code>
+lists 42 files (same on v2.4.2). <code>-race</code> (Alt-Svc Use race
+F-F) not run.</li>
+<li>Release checker:
+<code>scripts/release/check_release_consistency.sh --repo . --version 2.4.3 --prev-tag v2.4.2</code>
+(section <code>[2.4.3]</code>) returns PASS with only
+<code>unused_waivers=3</code> (version_ok=19, sha_ok=64, sha_fail=0,
+unlisted=0). The "known 4 findings" (sha_fail=1, no_manifest=1,
+unlisted=1, unused_waivers=3) come from checking the
+<code>[2.4.2]</code> section (<code>--section 2.4.2</code>, the
+cover-art evidence set) and are unchanged. The checker is advisory for
+v2.4.3 and blocking for v2.5.0.</li>
+<li><code>scripts/anti-bluff-scan.sh</code> reports 4
+<code>ASSERT_TAUTOLOGY</code> findings, all in third-party/hub code,
+none in first-party code (carried from the retest, unchanged).</li>
+<li><strong>CAT-NFS-EMU-1 was NOT landed</strong> (R_max NO-GO on
+<code>feat/nfs-emulator</code>); successor
+<strong>CAT-NFS-EMU-2</strong> is open. Likewise not landed or still
+open: CAT-PREEXIST-9b (web load failures, UNREPRODUCED), D8-F1, D9-F1,
+SEC-WS-1 follow-ups, RS-1..RS-4 (minor, from CAT-RETEST-STALE-1). Items
+owed before v2.5.0 are in
+<code>docs/release/V2_5_0_GATE_CHECKLIST.md</code>.</li>
+<li>Synology SMB/FTP/NFS live tests remain SKIPPED (drives powered
+off).</li>
+</ul>
+<h3
+id="behaviour-changes-and-upgrade-notes-read-before-upgrading">Behaviour
+changes and upgrade notes (read before upgrading)</h3>
+<ul>
+<li><strong>Job ids:</strong> a conversion job owned by another user now
+returns 404, identical to a missing id (was distinguishable from a
+missing id).</li>
+<li><strong>Symlink confinement:</strong> local and NFS filesystem roots
+refuse symlinks that escape the root. A per-root option
+<code>allow_symlink_escape</code> (default off) exists; it is not
+reachable from the DB row or config in this release (documented in
+<code>docs/security/PATH_CONFINEMENT.md</code>; UNCONFIRMED how an
+operator sets it).</li>
+<li><strong>Metadata addresses:</strong> the cloud-metadata singletons
+(incl. <code>fd20:ce::254</code>) are always refused for storage roots
+and SMB hosts, with no allow-list. Storage hosts (SMB/FTP/NFS) are
+vetted at create and pinned at dial: an existing root pointing at a
+now-refused address will fail to connect.</li>
+<li><strong>NFS export:</strong> an export string with <code>,</code>
+followed by <code>:</code> is refused (a second server location on
+darwin <code>mount_nfs</code>).</li>
+<li><strong>Redis rate limits:</strong> per-tier keys (<code>auth</code>
+600 / default 2000 per minute); an outage after startup falls back to
+the in-memory limiter; login/register stay on the in-memory 30/min
+limiter.</li>
+<li><strong>Login throttle:</strong> a cap of in-flight password
+evaluations per account; every evaluated failed attempt is charged, also
+on an already blocked account; a successful owner login no longer writes
+the account throttle scope (throttle state is stored in the database;
+PostgreSQL-verified).</li>
+<li><strong>Change password:</strong> failed current-password attempts
+are limited per session and per user (5 per 15 min); a password change
+revokes sessions (see CAT-CHPW-RL-1); the change-password counters are
+in memory per process.</li>
+<li><strong>Suspension:</strong> an admin suspension is a permanent lock
+and revokes sessions (CAT-D9-SUSPEND).</li>
+<li><strong>Log shares:</strong> tokens are new 32-byte random, hashed
+at rest, shown once; every failure returns the same 404; a JWT is
+required to create. Migration v28 retires existing share links (see the
+migrations bullet).</li>
+<li><strong>WebSocket:</strong> <code>/ws</code> requires authentication
+and an Origin policy (host:port and scheme); deployments using the
+shipped nginx configs must pick up the updated confs (they forward
+<code>$http_host</code>).</li>
+<li><strong>Errors:</strong> responses no longer include internal error
+text (fixed class text and a request id).</li>
+<li><strong>Login fails closed:</strong> when the login throttle state
+cannot be read or written, login answers <strong>503</strong>
+<code>sign-in temporarily unavailable</code>
+(<code>ErrLoginThrottleUnavailable</code>,
+<code>handlers/auth_handler.go</code>) instead of letting the attempt
+through. While an account or address is throttled, login answers
+<strong>429</strong>
+(<code>too many failed sign-in attempts, try again later</code>).</li>
+<li><strong>Unlock of a suspended account:</strong> the user unlock call
+answers <strong>409</strong> for a suspended account; only an
+administrator status change to active lifts a suspension
+(<code>handlers/user_handler.go</code>).</li>
+<li><strong>Schema migrations run on upgrade:</strong> v27
+(<code>approved_class</code> columns on <code>storage_roots</code> and
+<code>sync_endpoints</code>, CAT-SECQ1-A), v28 (retires every legacy
+plaintext log-share token: the share row is deactivated and its token
+overwritten, so <strong>existing log-share links stop working and the
+creator must re-share</strong>, CAT-LOGSHARE-TOK-1) and v29 (creates the
+<code>login_throttle</code> table). <strong>Rollback:</strong> the
+in-process migration runner has only <code>Up</code> steps
+(<code>catalog-api/database/migrations.go</code>,
+<code>Migration{Version, Name, Up}</code>), so a downgrade is NOT
+supported; back the database up before upgrading and restore it to go
+back. Whether a v2.4.2 binary tolerates the v27/v29 schema (extra
+columns and table) is UNCONFIRMED, and v28 cannot be undone.</li>
+<li><strong>Roles:</strong> role 2 is compared against the caller like
+any other role.</li>
+<li><strong>Image:</strong> the API image is 307 MB (was 746 MB) with a
+minimal ffmpeg; <strong>conversions to ogg and m4a now drop embedded
+cover art</strong>.</li>
+<li><strong>Wizard:</strong> the config is merged, never overwritten;
+<code>CONFIG_PATH</code> is the wizard directory and
+<code>CATALOG_CONFIG_PATH</code> the app config file.</li>
+<li>The behaviour change under
+<code>Security (outbound address classes, CAT-SECQ1-A)</code> below is
+new in this release. The <code>TRUSTED_PROXIES</code> changes (including
+the compose network upgrade step) are not new: they shipped in
+<code>v2.4.0</code>.</li>
+</ul>
+<h3
+id="new-in-243-from-the-former-unreleased-section-checked-with-git-grep-on-the-earlier-tags">New
+in 2.4.3, from the former <code>[Unreleased]</code> section (checked
+with <code>git grep</code> on the earlier tags)</h3>
+<h3
+id="security-outbound-address-classes-cat-secq1-a-provisional">Security
+(outbound address classes, CAT-SECQ1-A; PROVISIONAL)</h3>
+<ul>
+<li><strong>Behaviour change: storage roots (WebDAV, S3) can no longer
+reach the server's own interface addresses</strong> (for example its LAN
+address) unless allow-listed
+(<code>CATALOGIZER_OUTBOUND_ALLOW_CIDRS=&lt;ip&gt;/32</code>). Other LAN
+addresses keep working.</li>
+<li>Operator transports pin themselves to the address class of their
+first connection (a root on a public address cannot be redirected into
+the LAN, also inside gowebdav); a dial-time check re-validates the
+connected address; 168.63.129.16 is refused; invalid or over-broad
+(<code>/0</code>...<code>/7</code>, also IPv4-mapped) allow-list entries
+are logged and ignored unless
+<code>CATALOGIZER_OUTBOUND_ALLOW_BROAD=1</code>; non-ASCII and numeric
+host spellings are refused on all paths. Details:
+<code>docs/ENV_VARIABLES.md</code>,
+<code>docs/OUTBOUND_HTTP_CLIENTS.md</code>.</li>
+</ul>
+<h3
+id="already-shipped-earlier-listed-for-context-not-new-in-243">Already
+shipped earlier (listed for context, NOT new in 2.4.3)</h3>
+<p>The items below were in the former <code>[Unreleased]</code> section
+but are already contained in earlier tags (checked with
+<code>git tag --contains</code> on their commits and
+<code>git grep</code> on <code>v2.4.0</code>, <code>v2.4.1</code>,
+<code>v2.4.2</code>): TRUSTED_PROXIES hardening (commit
+<code>8c1fb3339</code>, first tag <code>v2.4.0</code>;
+<code>TRUSTED_PROXIES_ALLOW_AUTO</code> is in <code>v2.4.0</code>'s
+<code>.env.example</code>), FTP <code>CopyFile</code> with the
+<code>.ftpcopy-&lt;hex&gt;.part</code> temp file and
+<code>renameGraceAfterCancel</code> (first tag <code>v2.4.0</code>),
+Spec Kit constitution 2.5.0 and <code>docs/GOVERNANCE.md</code> (in
+<code>v2.4.0</code>), and the old <code>Fixed</code> items such as the
+challenge framework, Android TV lint and the axios SSRF fix (first tag
+<code>v2.4.0</code>). They are kept verbatim for context and are not
+part of the v2.4.3 list or counts.</p>
+<h4 id="security-trusted_proxies">Security (TRUSTED_PROXIES)</h4>
+<ul>
+<li><strong><code>TRUSTED_PROXIES=auto</code> is deprecated and refused
+in release mode</strong> (CAT-TRUSTEDPROXIES-AUTO-1): it trusts all
+RFC-1918/ULA ranges, so a client inside one of them could send
+<code>X-Forwarded-For: 9.9.9.9</code> and have the proxy append its own
+address, making <code>ClientIP()</code> 9.9.9.9 (login rate-limit
+bypass; gin skips trusted entries from the right and has no "trust only
+the direct hop" mode). With <code>GIN_MODE=release</code>,
+<code>auto</code> now fails unless
+<code>TRUSTED_PROXIES_ALLOW_AUTO=true</code>; a startup warning is
+logged whenever <code>auto</code> is used. A rejected or invalid
+<code>TRUSTED_PROXIES</code> now <strong>fails closed</strong> (no proxy
+trusted): previously a refused <code>auto</code> left gin's
+trust-everything default in place, and an invalid CIDR list left
+whatever gin had applied before the error (possibly a partial list).
+<strong>Behaviour change:</strong> deployments relying on
+<code>auto</code> in release mode must list explicit proxy CIDRs (or set
+the acknowledgement). <code>catalog-api/.env.example</code> no longer
+enables <code>auto</code>.</li>
+<li><strong>Production compose files now set
+<code>TRUSTED_PROXIES</code></strong> (CAT-TRUSTEDPROXIES-PROD-1):
+<code>docker-compose.yml</code> (nginx, <code>production</code> profile)
+and <code>deployment/docker-compose.yml</code> (<code>web</code>) pin
+the proxy to a fixed address on a fixed-subnet network
+(<code>172.28.0.10</code> / <code>172.29.0.10</code>) and the API trusts
+exactly that <code>/32</code>; previously every client behind nginx
+shared one login rate-limit bucket. Dynamic containers are allocated
+only from the upper half of each subnet (<code>ip_range</code>
+<code>172.28.0.128/25</code> / <code>172.29.0.128/25</code>), so the
+pinned address cannot be taken by another container. Overrides:
+<code>CATALOGIZER_SUBNET</code>, <code>CATALOGIZER_IP_RANGE</code>,
+<code>NGINX_IP</code> (root file) and <code>DOCKER_SUBNET</code>,
+<code>DOCKER_IP_RANGE</code>, <code>WEB_IP</code> (deployment file);
+when you change the address also set <code>TRUSTED_PROXIES</code>. A
+subnet that overlaps a host network fails <code>up</code> with a "Pool
+overlaps"/address-in-use error: pick another subnet via those
+variables.</li>
+<li><strong>Upgrade / migration (existing installs):</strong> compose
+reuses an existing network of the same name and ignores new ipam
+settings, so the pinned address would fail or be ignored. Before the
+first <code>up</code> of this version run <code>compose down</code>: for
+the root file the network is project-scoped
+(<code>&lt;project&gt;_catalogizer-network</code>) and
+<code>compose down</code> removes it (do not remove a bare
+<code>catalogizer-network</code>, it belongs to another project). The
+<code>deployment</code> file's default network name changed from the
+fixed <code>catalogizer-network</code> to
+<code>catalogizer-frontdoor-net</code> (override
+<code>DOCKER_NETWORK</code>) so it does not collide with an older
+network; remove the old <code>catalogizer-network</code> only if no
+other stack uses it.</li>
+<li><code>deployment/docker-compose.yml</code> <code>web</code> now sets
+<code>API_UPSTREAM: catalogizer-server:8080</code>. The web image's
+nginx template (<code>catalog-web/nginx.conf.template</code>, rendered
+by the official nginx entrypoint,
+<code>NGINX_ENVSUBST_FILTER=^API_</code>) proxies to
+<code>API_UPSTREAM</code>, whose default
+<code>host.containers.internal:8080</code> goes via the host and would
+hide the pinned web address from the API. Its <code>/ws</code> location
+now forwards <code>X-Real-IP</code>/<code>X-Forwarded-For</code> too,
+and <code>config/nginx.conf</code> <code>/health</code> does the same (a
+test scans every <code>proxy_pass</code> location).</li>
+<li>A startup warning is logged when <code>TRUSTED_PROXIES</code>
+contains <code>0.0.0.0/0</code> or <code>::/0</code>.</li>
+<li>Verification: <code>ip_range</code> reaching network creation was
+confirmed with a throwaway podman-compose project (pinned
+<code>.10</code> outside the range, a dynamic container got
+<code>.129</code>). Not verified live: the real compose stacks were only
+rendered (<code>podman-compose config</code>), not started; that the
+published <code>catalogizer/web</code> image is built from
+<code>catalog-web/Dockerfile</code> is assumed.</li>
+<li>Tests pin every <code>auto</code> range with both edges, the forgery
+hazard, release-mode refusal, fail-closed behaviour, and the
+compose-to-policy link (CAT-TRUSTEDPROXIES-FU-1).</li>
+</ul>
+<h4 id="governance">Governance</h4>
+<ul>
+<li><strong>Spec Kit constitution 2.5.0</strong> (2026-10-21):
+single-source flat layout (owner mandate: no nested submodule chains);
+canon pin moved <code>4bcb512</code> → <code>a3d80ce</code> (canon
+branch <code>feat/hub-engines-single-source</code> merged and pushed to
+canon <code>main</code>) and then to its follow-up <code>5f8503b</code>
+(pushed to canon <code>main</code>); <code>llmctl</code>
+<code>f42bad6</code> (cleaned,
+<code>CM-LLMCTL-SUBMODULE-NONRECURSIVE</code> PASS), root
+<code>helix_qa</code> <code>ad8b12b</code>; <code>claude_toolkit</code>
+<code>1f6dad3</code> (cleaned: nests only the third-party Go toolchain,
+ships <code>helix-deps.yaml</code>; at <code>a3d80ce</code> it was
+<code>223c702</code> with both gates RED);
+<code>CM-HUB-ENGINE-NO-OWNORG-NESTING</code>,
+<code>CM-HELIX-DEPS-MANIFEST-PRESENT</code> and
+<code>scripts/verify_helix_deps_manifests.sh</code> PASS (pass 54 / fail
+0); index scope re-rendered from DATA (<code>derive_scope.sh</code>,
+<code>scope_to_lumen_json.py</code>, <code>scope_render.py</code>,
+<code>scope_drift_check.sh --regen</code>), drift check passes; root
+<code>helix-deps.yaml</code> refs re-synced to the staged gitlinks;
+<code>scripts/safe_submodule_init.sh</code> warns about leftover
+directories of dropped gitlinks; safe init through
+<code>scripts/safe_submodule_init.sh</code>; 27 flat tool submodules;
+Known Conflicts items 21(d), 25 to 27 and 29 updated (27 and 29
+RESOLVED), items 30 to 32 added. Earlier in the day,
+<strong>2.4.0</strong>: canon pin moved <code>94b8836</code> →
+<code>4bcb512</code>; new section "Constitution Hub Engines" binding the
+vendored <code>llmctl</code>, <code>claude_toolkit</code> and
+<code>open_design</code> (rules HE-1 to HE-8, appendix Part 3); Known
+Conflicts items 21(c)/(d) corrected and items 25 to 29 added (29:
+code-index scope data) (canon's
+<code>CM-LLMCTL-SUBMODULE-NONRECURSIVE</code> gate fails at the new pin;
+<code>claude_toolkit</code> and <code>open_design</code> are not in
+canon's manifest). See <code>docs/GOVERNANCE.md</code>.</li>
+<li>Documentation: safe, non-recursive submodule initialisation through
+<code>constitution/</code> in <code>README.md</code>,
+<code>GETTING_STARTED.md</code>, <code>docs/DEVELOPER_GUIDE.md</code>
+and <code>docs/SUBMODULE_DEPENDENCIES.md</code>; new
+<code>docs/GOVERNANCE.md</code>.</li>
+</ul>
+<h4 id="changed-ftp-copyfile-filesystem-package">Changed (FTP CopyFile,
+filesystem package)</h4>
+<ul>
+<li><strong>FTP <code>CopyFile</code> no longer deletes or overwrites
+the destination in place</strong>
+(<code>catalog-api/filesystem/ftp_client.go</code>). The data is now
+stored under a temp name beside the destination,
+<code>.&lt;base&gt;.ftpcopy-&lt;16 hex&gt;.part</code> (base cut to 200
+bytes on a rune boundary, so the whole name stays under NAME_MAX), and
+renamed onto the destination (RNFR/RNTO) only after the source transfer
+is confirmed. <strong>Behaviour change:</strong> a server that refuses
+rename onto an existing file (some proftpd/pure-ftpd configurations) now
+makes every copy onto an existing destination fail, with the destination
+left unchanged and the temp removed; previously the destination was
+overwritten in place (plain STOR), which such servers allowed. Servers
+with MoveFile-style rename semantics (possibly Windows/IIS FTP,
+UNCONFIRMED) may be affected as well. A failed or cancelled copy never
+touches a pre-existing destination.</li>
+<li><strong>Orphan reporting contract:</strong> if the temp cannot be
+removed after a failure or cancellation, the returned error names it
+(<code>temporary file &lt;path&gt; may remain on the server</code>;
+typed <code>*orphanError</code>, reachable with <code>errors.As</code>,
+also on the cancel path) and a log line is written. Whether a failed
+cleanup DELE means "the temp never existed" is decided from the 550
+reply text: only a text naming a missing file/directory (no such file,
+no such directory, not found, does not exist) counts, and any mention of
+permission, privilege, denial or read-only vetoes it
+(<code>550 No such privilege</code> and
+<code>550 File not found or permission denied</code> are reported as
+possible orphans). The heuristic is imperfect (servers word it
+differently, localised servers differ); an unrecognised or mixed wording
+is reported as a possible orphan rather than ignored, so a miss errs
+towards reporting.</li>
+<li><strong>Known limits:</strong> once the transfer is confirmed the
+cancel watcher is disarmed, so a cancel during the final rename does not
+close the connection at once (a responsive server still commits). A
+rename that then gets no answer is cut off after
+<code>renameGraceAfterCancel</code> (5s after the cancel): the session
+is closed and the error says the rename "may or may not have been
+applied". A connection that dies during the rename is reported the same
+way, not as "left unchanged". The single-session spool fallback has no
+such cut-off. Evidence is unit-class against a fixture server; no
+live-NAS proof.</li>
+<li><strong>Scanner:</strong> the catalogue scanner
+(<code>internal/services/generic_scanner.go</code>, FTP storage only)
+skips <em>files</em> named exactly
+<code>.&lt;anything&gt;.ftpcopy-&lt;16 lowercase hex&gt;.part</code>
+(in-flight or stale <code>CopyFile</code> temps; the pattern also
+matches names containing a newline); a user's own look-alike names such
+as <code>.x.part</code> are still catalogued.
+<code>FTPClient.ListDirectory</code> itself reports every entry, so
+callers that list, move and remove a directory
+(<code>moveDirectory</code> in
+<code>internal/services/protocol_handlers.go</code>) see a stale temp
+instead of failing the final remove with a confusing "not empty". Stale
+temps left by a crashed copy are not removed automatically.</li>
+<li>The single-session fallback spool directory is configurable
+(<code>FTPConfig.SpoolDir</code>, default the OS temp dir); free space
+is computed from <code>f_frsize</code> on linux and <code>f_bsize</code>
+on darwin/freebsd (build-tag split, so darwin builds); other platforms
+report free space as unknown. A negative <code>f_bavail</code> counts as
+0.</li>
+<li>Evidence class: unit tests against a hand-written FTP responder; no
+live-NAS run yet (owed).</li>
+</ul>
+<h4 id="fixed">Fixed</h4>
+<ul>
+<li><strong>Challenge framework</strong>: <code>RunSequence</code> now
+performs Kahn topological sort on dependencies, fixing
+<code>RunByCategory</code> alphabetical-order failures</li>
+<li><strong>Challenge streaming</strong>: <code>RunAll</code> and
+<code>RunByCategory</code> handlers support NDJSON streaming mode
+(<code>?stream=true</code>) to eliminate tens-of-MB buffer blocking</li>
+<li><strong>Challenge timeout</strong>: per-challenge timeout reduced
+from 72h to 30min as a hard ceiling distinct from stale-progress
+detection</li>
+<li><strong>database-connectivity hang</strong>:
+<code>DatabaseConnectivityChallenge</code> now implements progress
+reporting, enabling 5-min stale detection</li>
+<li><strong>Android TV lint</strong>: 49 pre-existing lint errors fixed
+via <code>@SuppressLint</code> for legitimate
+<code>androidx.tvprovider</code> and Media3 API usage</li>
+<li><strong>Android TV package</strong>: challenge config corrected from
+<code>com.vasic.catalogizer.tv</code> to
+<code>com.catalogizer.androidtv</code></li>
+<li><strong>Security</strong>: axios SSRF vulnerability patched in
+<code>Catalogizer-API-Client-TS</code></li>
+<li><strong>PlaybackTracker</strong>: added <code>ensureActive()</code>
+and re-throw <code>CancellationException</code> to prevent coroutine
+leaks</li>
+<li><strong>PlaybackTrackerTest</strong>: stabilized by removing shared
+<code>TestScope</code>, eliminating
+<code>UncompletedCoroutinesError</code></li>
+</ul>
+</body>
+</html>
