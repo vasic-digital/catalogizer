@@ -173,3 +173,10 @@ func requestErrorText(c *gin.Context, err error) string {
 	}
 	return logredact.ErrorTextKnown(fmt.Sprint(err), logredact.KnownSecrets(c.Request.URL.Path, c.Request.URL.RawQuery, c.Request.Header, params))
 }
+
+// AccessLogFormatter is the gin access-log line format (gin.LoggerWithFormatter): the path+query and the error text are redacted.
+func AccessLogFormatter(p gin.LogFormatterParams) string {
+	return fmt.Sprintf("[GIN] %s | %3d | %13v | %15s | %-7s %#v\n%s",
+		p.TimeStamp.Format("2006/01/02 - 15:04:05"), p.StatusCode, p.Latency, p.ClientIP, p.Method, logredact.Path(p.Request.URL.Path, p.Request.URL.RawQuery),
+		logredact.ErrorTextKnown(p.ErrorMessage, logredact.KnownSecrets(p.Request.URL.Path, p.Request.URL.RawQuery, p.Request.Header, nil)))
+}
