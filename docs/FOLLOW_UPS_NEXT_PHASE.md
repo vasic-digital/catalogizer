@@ -2596,3 +2596,8 @@ Retry-After on 429 for in-memory tier + Redis fixed/sliding/token-bucket. Open m
 - TIERTEST-RLW-F2 (minor, test-instrumentation): 58..60 and 9..10 ranges assume little scheduling stall; bracket with measured t0/t1 or inject now().
 - TIERTEST-RLW-F3 (minor, source): pprof_guard.go busyUntil.Store runs after the slot send; a competitor can read a stale previous window (overlong or "1" Retry-After). Store before send or clear on release.
 - TIERTEST-RLW-F4 (minor, pre-existing): TestTokenBucketRedisRateLimit_Unit_Miniredis_RefillAfterEmpty flakes ~3/300 (wall-clock seconds in TokenBucketRedisRateLimit); inject a clock or use Redis TIME. Non-race ./middleware is not reliably green until fixed.
+- HYG-F3/F8 (access-log route-param and error-text redaction) landed PROVISIONAL (Opus round 3 GO-with-follow-ups; rounds 1-2 NO-GO fixed: non-canonical %-encoding leak, startup verifyAuthRouteTable Fatal).
+- HYG-R3-F1 (minor, source): a secret-key segment with suffix or `;` params (`share;x=1`, `share.`) is not treated as a secret key, so the next segment is logged unredacted on unrouted requests; strip `;...` and trailing dots before the secretSegmentKeys lookup.
+- HYG-R3-F2 (minor, test-instrumentation): the round-2 regression is only guarded at buildRouter level; add an automated test driving main()'s full route registration through verifyAuthRouteTable.
+- HYG-R3-F3 (minor, test-instrumentation): logredact timing tests TestTextLinearOnAdversarialShapes and TestPerfInstrumentSeesQuadratic failed under one mutation, likely load-dependent flakiness (UNCONFIRMED).
+- HYG-R3-F4 (nit): ./handlers full package exceeds the 10 min default timeout at GOMAXPROCS=2; use -timeout 45m.
