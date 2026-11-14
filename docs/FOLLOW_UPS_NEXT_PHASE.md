@@ -2591,3 +2591,8 @@ Retry-After on 429 for in-memory tier + Redis fixed/sliding/token-bucket. Open m
 - RLW-FU2-F4: Retry-After/X-RateLimit-* not in Access-Control-Expose-Headers (only if cross-origin browser client needs).
 - RLW-FU2-F5 (nit): in-memory header sends full window not remaining time. F6 (nit): duplicate retryAfterSeconds helper in handlers/auth_handler.go:60.
 - CAT-MW-TIERTEST-1: TestLoginRegisterAreNotRedisTiers is a stale source grep (wiring moved to main_ratetiers.go); fails at base.
+- CAT-MW-TIERTEST-1 / RLW-FU2-F1 / RLW-FU2-F3 landed PROVISIONAL (Opus round 1 GO-with-follow-ups, commit 719db3b8b). RLW-FU2-F3 note: the wired 429s in middleware/request.go and middleware/pprof_guard.go now carry Retry-After.
+- TIERTEST-RLW-F1 (minor, test-instrumentation): TestRateLimiter_429RetryAfterTracksRefillRate can flake if >1s passes across 60 requests; loop until first 429 then assert "1", or inject a clock.
+- TIERTEST-RLW-F2 (minor, test-instrumentation): 58..60 and 9..10 ranges assume little scheduling stall; bracket with measured t0/t1 or inject now().
+- TIERTEST-RLW-F3 (minor, source): pprof_guard.go busyUntil.Store runs after the slot send; a competitor can read a stale previous window (overlong or "1" Retry-After). Store before send or clear on release.
+- TIERTEST-RLW-F4 (minor, pre-existing): TestTokenBucketRedisRateLimit_Unit_Miniredis_RefillAfterEmpty flakes ~3/300 (wall-clock seconds in TokenBucketRedisRateLimit); inject a clock or use Redis TIME. Non-race ./middleware is not reliably green until fixed.
