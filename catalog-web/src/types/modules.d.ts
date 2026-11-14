@@ -268,6 +268,7 @@ declare module '@vasic-digital/websocket-client' {
 
   export interface WebSocketClientOptions {
     url: string
+    reconnect?: boolean
     reconnectAttempts?: number
     reconnectInterval?: number
     bufferWhileDisconnected?: boolean

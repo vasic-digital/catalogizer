@@ -2354,10 +2354,15 @@ paths:
       summary: WebSocket connection
       description: |
         Establishes a WebSocket connection for real-time updates.
-        Requires authentication: a valid access token, sent either as
-        `Authorization: Bearer <jwt>` or (for browsers, which cannot set headers on a
-        WebSocket) as the `token` query parameter. The session behind the token must be
-        active and the user not suspended. A request carrying a browser `Origin` header
+        Requires authentication: either `Authorization: Bearer <jwt>` (native clients) or a
+        single-use `ticket` query parameter minted by `POST /api/v1/ws/ticket` (browsers, which
+        cannot set headers on a WebSocket). **Breaking change (SEC-WS-1 F2):** the session JWT in the
+        `token` / `access_token` query parameter is no longer accepted on `/ws` (401); clients that
+        still send it (the Android app, `WebSocketRepository.kt`) must switch to a ticket or to the
+        header. A ticket is valid for 30 seconds, bound to the minting user and session, and is
+        consumed by the first upgrade attempt, successful or not; a replayed, expired or revoked-session
+        ticket is 401. The session behind the credential must be active and the user not suspended.
+        A request carrying a browser `Origin` header
         must come from the request's own host and port or from the configured
         `CORS_ALLOWED_ORIGINS`; requests without an `Origin` (native clients) are accepted.
         Behind a reverse proxy the client's Host header (including the port) must be
@@ -2365,11 +2370,11 @@ paths:
       security:
         - BearerAuth: []
       parameters:
-        - name: token
+        - name: ticket
           in: query
           schema:
             type: string
-          description: JWT access token (alternative to the Authorization header)
+          description: Single-use WebSocket ticket from POST /api/v1/ws/ticket (alternative to the Authorization header)
       responses:
         '101':
           description: WebSocket connection established
@@ -2379,6 +2384,38 @@ paths:
           description: Origin not allowed
         '503':
           description: Server at connection capacity
+
+  /api/v1/ws/ticket:
+    post:
+      tags: [websocket]
+      summary: Mint a single-use WebSocket ticket
+      description: >-
+        Returns an opaque random ticket for `GET /ws?ticket=...`. Authenticated with the Authorization header ONLY (a session
+        token in the query string is refused here with 401). The server stores only the SHA-256 hash of the ticket; it is valid for
+        30 seconds, bound to the calling user and the minting session (logout revokes it), and can be redeemed exactly once.
+        Mint a new ticket for every connection attempt, reconnects included. The response is not cacheable.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Ticket
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticket:
+                    type: string
+                  expires_at:
+                    type: string
+                    format: date-time
+                  expires_in:
+                    type: integer
+                    description: Seconds (30)
+        '401':
+          description: Missing or invalid Authorization header
+        '503':
+          description: Too many unredeemed tickets are pending
 
   /api/v1/auth/login:
     post:
