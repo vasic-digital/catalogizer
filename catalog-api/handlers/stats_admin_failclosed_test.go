@@ -93,6 +93,14 @@ func TestSSEF1_StatsAdmin_MissingOrInvalidUserIDRedacts(t *testing.T) {
 		"negative":   {setUser: true, userID: -3},
 		"string":     {setUser: true, userID: "5"},
 		"int64 zero": {setUser: true, userID: int64(0)},
+		// SSEFU-F2: kills mutant R2 (case int64 accepts any non-zero id).
+		"int64 negative": {setUser: true, userID: int64(-3)},
+		// SSEFU-F3: kills mutant R3 (other integer/float widths accepted). Only int and int64 are
+		// accepted; uint/float64 fail closed. Note statsActorID accepts int64 while
+		// middleware.RequireAdmin only accepts int; both fail closed, so no production change.
+		"uint 5":    {setUser: true, userID: uint(5)},
+		"uint 0":    {setUser: true, userID: uint(0)},
+		"float64 5": {setUser: true, userID: float64(5)},
 	} {
 		t.Run(name, func(t *testing.T) {
 			assert.Equal(t, scanErrorClassText, sseScanHistory(t, always, cl))
@@ -116,5 +124,50 @@ func TestSSEF1_StatsAdmin_NoCheckerRoleIDFallback(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			assert.Equal(t, scanErrorClassText, sseScanHistory(t, nil, cl))
 		})
+	}
+}
+
+// SSEFU-F1: with an admin checker wired, a missing/invalid user_id must NOT fall back to a stale
+// role_id=1 claim; the response stays redacted. Kills mutant R4 (checker wired but invalid
+// user_id falls back to the role_id claim).
+func TestSSEFU_F1_StatsAdmin_CheckerWiredInvalidUserIgnoresRoleClaim(t *testing.T) {
+	always := func(context.Context, int) (bool, error) { return true, nil }
+	for name, uid := range map[string]interface{}{
+		"missing": nil, "zero": 0, "negative": -3, "string": "5", "int64 negative": int64(-3), "uint 5": uint(5), "float64 5": float64(5),
+	} {
+		t.Run(name, func(t *testing.T) {
+			cl := sseClaims{setRole: true, roleID: 1}
+			if uid != nil {
+				cl.setUser, cl.userID = true, uid
+			}
+			got := sseScanHistory(t, always, cl)
+			assert.Equal(t, scanErrorClassText, got)
+			assert.NotContains(t, got, "nas.internal")
+		})
+	}
+}
+
+// SSEFU2-F1: the checker is true ONLY for the expected uid; the handler must pass the caller's own uid to it
+// (kills a mutant that passes a constant uid to the checker).
+func TestSSEFU2_F1_StatsAdmin_CheckerReceivesCallersOwnUID(t *testing.T) {
+	onlyUID1 := func(_ context.Context, uid int) (bool, error) { return uid == 1, nil }
+	assert.Equal(t, scanErrorClassText, sseScanHistory(t, onlyUID1, sseClaims{setUser: true, userID: 5}), "uid 5 is not admin")
+	assert.Equal(t, scanErrorClassText, sseScanHistory(t, onlyUID1, sseClaims{setUser: true, userID: int64(5)}), "int64 uid 5 is not admin")
+	assert.Equal(t, sseSecretErr, sseScanHistory(t, onlyUID1, sseClaims{setUser: true, userID: 1}), "uid 1 is admin")
+	assert.Equal(t, sseSecretErr, sseScanHistory(t, onlyUID1, sseClaims{setUser: true, userID: int64(1)}), "int64 uid 1 is admin")
+}
+
+// SSEFU2-F3: the database-failure bodies of the sync alias routes are pinned, and carry no driver text.
+func TestSSEFU2_F3_SyncRoutesDBFailureBodyIsPinned(t *testing.T) {
+	r, h := newAliasRouter(t)
+	require.NoError(t, h.db.Close()) // real handler, real (closed) database: every query fails
+	tok := cat001Token(t, 2, "5")
+	for _, path := range []string{"/sync/status", "/sync/providers"} {
+		req := httptest.NewRequest("GET", "/api/v1"+path, nil)
+		req.Header.Set("Authorization", "Bearer "+tok)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusInternalServerError, w.Code, path)
+		assert.JSONEq(t, `{"error":"database query failed"}`, w.Body.String(), path)
 	}
 }
