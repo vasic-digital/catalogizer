@@ -146,3 +146,28 @@ func TestSSEFU_F1_StatsAdmin_CheckerWiredInvalidUserIgnoresRoleClaim(t *testing.
 		})
 	}
 }
+
+// SSEFU2-F1: the checker is true ONLY for the expected uid; the handler must pass the caller's own uid to it
+// (kills a mutant that passes a constant uid to the checker).
+func TestSSEFU2_F1_StatsAdmin_CheckerReceivesCallersOwnUID(t *testing.T) {
+	onlyUID1 := func(_ context.Context, uid int) (bool, error) { return uid == 1, nil }
+	assert.Equal(t, scanErrorClassText, sseScanHistory(t, onlyUID1, sseClaims{setUser: true, userID: 5}), "uid 5 is not admin")
+	assert.Equal(t, scanErrorClassText, sseScanHistory(t, onlyUID1, sseClaims{setUser: true, userID: int64(5)}), "int64 uid 5 is not admin")
+	assert.Equal(t, sseSecretErr, sseScanHistory(t, onlyUID1, sseClaims{setUser: true, userID: 1}), "uid 1 is admin")
+	assert.Equal(t, sseSecretErr, sseScanHistory(t, onlyUID1, sseClaims{setUser: true, userID: int64(1)}), "int64 uid 1 is admin")
+}
+
+// SSEFU2-F3: the database-failure bodies of the sync alias routes are pinned, and carry no driver text.
+func TestSSEFU2_F3_SyncRoutesDBFailureBodyIsPinned(t *testing.T) {
+	r, h := newAliasRouter(t)
+	require.NoError(t, h.db.Close()) // real handler, real (closed) database: every query fails
+	tok := cat001Token(t, 2, "5")
+	for _, path := range []string{"/sync/status", "/sync/providers"} {
+		req := httptest.NewRequest("GET", "/api/v1"+path, nil)
+		req.Header.Set("Authorization", "Bearer "+tok)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusInternalServerError, w.Code, path)
+		assert.JSONEq(t, `{"error":"database query failed"}`, w.Body.String(), path)
+	}
+}

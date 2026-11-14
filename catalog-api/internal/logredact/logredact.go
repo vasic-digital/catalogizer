@@ -1,4 +1,11 @@
 // Package logredact removes credential-bearing query parameters from request targets before they reach an access log.
+//
+// Secret path rule (HYGR3-FU3): after a secret-introducing key segment ("share", "token", "keys" ...) EXACTLY ONE segment is the
+// secret when the shape is regular (the key is written plainly and a clean token follows it directly); only that segment is
+// redacted and the rest of the path is kept ("/keys/42/rotate" -> "/keys/:redacted/rotate"). Every other shape FAILS CLOSED
+// (HYG-F4): a malformed or odd token, an empty or punctuation-only segment, key parameters, encodings, and a '/' or '\' that
+// appears only after decoding ("share%2FTOK", "share%252FTOK", "share%5CTOK", "share\\TOK") redact the secret AND everything after
+// the key's base name. Over-redaction is deliberate.
 package logredact
 
 import (
@@ -137,14 +144,17 @@ func decodeSegment(seg string) (dec string, more bool) {
 	return seg, err == nil && u != seg
 }
 
-// secretKey reports whether seg is a secret key; base is its base name ("" for an ambiguous segment) and exact whether the
-// raw segment is exactly that base name.
-func secretKey(seg string) (base string, exact, ok bool) {
+// secretKey reports whether seg is a secret key; base is its base name ("" for an ambiguous segment), exact whether the
+// raw segment is exactly that base name and embedded whether the DECODED segment carries a path separator ('/' or '\\',
+// also from a percent-encoded or double-encoded form: "share%2FTOK", "share%252FTOK", "share%5CTOK") before any ';':
+// everything after that separator is secret, so the segment is never exact and its tail is part of the secret position.
+func secretKey(seg string) (base string, exact, embedded, ok bool) {
 	dec, more := decodeSegment(seg)
 	if more {
-		return "", false, true
+		return "", false, false, true
 	}
-	if i := strings.IndexByte(dec, ';'); i >= 0 {
+	if i := strings.IndexAny(dec, ";/\\"); i >= 0 {
+		embedded = dec[i] != ';'
 		dec = dec[:i]
 	}
 	if strings.IndexFunc(dec, func(r rune) bool { return r < 0x20 || r == 0x7f }) >= 0 {
@@ -157,9 +167,9 @@ func secretKey(seg string) (base string, exact, ok bool) {
 	}
 	base = strings.TrimRight(strings.ToLower(dec), ".")
 	if !secretSegmentKeys[base] {
-		return "", false, false
+		return "", false, false, false
 	}
-	return base, strings.EqualFold(seg, base), true
+	return base, !embedded && strings.EqualFold(seg, base), embedded, true
 }
 
 // cleanToken reports whether seg looks like a bare token: non-empty, only [A-Za-z0-9_.~=-], and at least one ASCII
@@ -200,9 +210,15 @@ func SecretPath(path string) string {
 	}
 	segs := strings.Split(path, "/")
 	for i := 0; i < len(segs); i++ {
-		base, exact, ok := secretKey(segs[i])
+		base, exact, embedded, ok := secretKey(segs[i])
 		if !ok {
 			continue
+		}
+		if embedded {
+			// the secret sits INSIDE the key segment after an (encoded) separator: keep the base name, drop the rest
+			segs = append(segs[:i+1], ":redacted")
+			segs[i] = base
+			break
 		}
 		j, regular := secretPosition(segs, i)
 		if !exact {

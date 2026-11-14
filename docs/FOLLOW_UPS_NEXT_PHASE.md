@@ -2662,3 +2662,17 @@ All remaining leaks are pre-existing (base 872f6ba88 leaks the same shapes); 0 r
 - HYGR3-FU2 (minor, source-defect): F4-3 ErrorText prose "/share/ /SECRET" leak (text tokenizer vs whitespace).
 - HYGR3-FU3 (nit, process-doc): document the "exactly one segment after the key" rule (R5-1: /share/a/LIVEsecret second segment logged) in the logredact package comment.
 - HYG-F4 (operator decision 2026-11-14): fail closed (truncate after key on malformed token) still owed, same files.
+
+## HYG-F4 + SSEFU2 review (Opus, GO-with-follow-ups, PROVISIONAL, commits 94d6d0ecc 909edffa6)
+No regression, no new leak; all SSEFU2 production mutations killed; root -short ok, logredact -race -count=3 ok.
+- HYGF4-F1 (important, source-defect, PRE-EXISTING, NOT a regression; own item with fresh budget, recurrence-linked to HYG-F4): a key segment containing a valid encoded separator AND an invalid escape (e.g. `/share%2FS3cretVal%ZZ/more`, `/share%2FS3cretVal%Z`, `/share%2FS3cretVal%/more`) is not redacted by SecretPath/Text/KnownSecrets/ErrorTextKnown (url.PathUnescape fails, raw segment kept). net/http rejects invalid escapes with 400 so access-log sinks are probably unreachable (UNCONFIRMED); free-text error sinks are reachable. Fix: lenient decode (decode valid %XX, keep invalid) or treat undecodable segment with key prefix as ambiguous.
+- HYGF4-F2 (minor, test-instrumentation): mutations A3/A4/A7 survive: no test pins values collected by the KnownSecrets embedded branch (`/share%2Fx=S3cretVal` -> ["x=S3cretVal","S3cretVal"], `/share%2FA;S3cretVal`); pin via ErrorTextKnown assertions.
+- HYGF4-F3 (nit): fullwidth/overlong slashes (%EF%BC%8F, %C0%AF) not separators in Go, left as is. HYGF4-F4 (nit, test-instrumentation): SSEFU2-F3 has no in-test positive control (open DB 200).
+
+## WSF2-R2-F2 (Android WebSocketRepository) review (Opus, GO-with-follow-ups, PROVISIONAL, commit 86547226c)
+Verified: focused tests 35/0 fail, whole module testDebugUnitTest 1051 tests 0 failures, assembleDebug ok (apk sha256 f2cf8c6e...23ea); no deadlock found. Not a live /ws run.
+- WSF2B-F1 (important, source-defect, PRE-EXISTING; own item, fresh budget): Java-WebSocket 1.5.4 WebSocketClient.close() is a no-op until writeThread is set (bytecode-proven, runtime UNCONFIRMED), so disconnect()/replacing connect() during connect/handshake leaves a live socket that then sends subscribe frames; fix: in currentOnly.onOpen when !current() call me.close(). Also closes F3.
+- WSF2B-F2 (important, source-defect, PRE-EXISTING): catch (e: Exception) around minter.mint() swallows CancellationException: disconnect during mint ends in Error state, connect during mint triggers extra scheduleReconnect and overwrites job (reproduced on base AND fix by reviewer probe: scratchpad WebSocketRepositoryReviewProbeTest.kt). Fix: rethrow CancellationException first; adopt probe as regression test.
+- WSF2B-F3 (minor, source-defect): two concurrent opens can each create a client (see F1).
+- WSF2B-F4 (minor, test-instrumentation): mutations MA/MC/MD/ME/MG survive (disconnect leaves client set, onOpen/connect do not reset attempts, old.close removed, job not cancelled); test name "stale callbacks do not ... reset attempts" asserts nothing about attempts; fake close() not recorded.
+- WSF2B-F5 (nit, process-doc): comment on @Volatile intentional.
