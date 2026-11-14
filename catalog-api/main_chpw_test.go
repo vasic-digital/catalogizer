@@ -540,17 +540,20 @@ func TestMainGoAuthLimiterAndGroupWiringSource(t *testing.T) {
 		}
 		return true
 	})
-	for nm, n := range map[string]int{"loginRateLimiter": 30, "authRateLimiter": 600, "defaultRateLimiter": 2000} {
+	// PKGC-FU4-F1: the three tiers are built by newAuthRateTiers (main_ratetiers.go);
+	// main.go must define all three from ONE call, in that order.
+	for _, nm := range []string{"loginRateLimiter", "authRateLimiter", "defaultRateLimiter"} {
 		as := byName[nm]
 		require.NotEmpty(t, as, nm+" not assigned")
 		first := as[0]
-		require.True(t, first.define && len(first.lhs) == 1 && len(first.rhs) == 1, nm+" must be defined by a single `:=`")
-		c, ok := isCallSel(first.rhs[0], "authMiddleware", "RateLimitByUser")
-		require.True(t, ok && len(c.Args) == 2, nm+" must be authMiddleware.RateLimitByUser(N, \"1m\")")
-		got, ok := intLit(c.Args[0])
-		require.True(t, ok && got == n, "%s limit must be %d", nm, n)
-		per, ok := foldString(c.Args[1], map[string]string{})
-		require.True(t, ok && per == "1m", nm+" window must be \"1m\"")
+		require.True(t, first.define && len(first.lhs) == 3 && len(first.rhs) == 1, nm+" must be defined by `loginRateLimiter, authRateLimiter, defaultRateLimiter := newAuthRateTiers(authMiddleware)`")
+		require.Equal(t, []string{"loginRateLimiter", "authRateLimiter", "defaultRateLimiter"}, first.lhs)
+		c, ok := first.rhs[0].(*ast.CallExpr)
+		require.True(t, ok, nm+": rhs must be a call")
+		fid, ok := c.Fun.(*ast.Ident)
+		require.True(t, ok && fid.Name == "newAuthRateTiers" && len(c.Args) == 1, nm+": must call newAuthRateTiers(authMiddleware)")
+		aid, ok := c.Args[0].(*ast.Ident)
+		require.True(t, ok && aid.Name == "authMiddleware")
 		if nm == "loginRateLimiter" {
 			require.Len(t, as, 1, "loginRateLimiter must never be reassigned")
 			continue
@@ -566,6 +569,44 @@ func TestMainGoAuthLimiterAndGroupWiringSource(t *testing.T) {
 			require.True(t, ok && id.Name == an, "NewRedisTierLimiters arg %d must be %s", i, an)
 		}
 	}
+
+	// --- tier construction inside newAuthRateTiers (main_ratetiers.go).
+	tf, err := parser.ParseFile(fset, "main_ratetiers.go", nil, 0)
+	require.NoError(t, err)
+	wantN := map[string]int{"login": 30, "authTier": 600, "def": 2000}
+	seenN := map[string]int{}
+	var rets int
+	ast.Inspect(tf, func(n ast.Node) bool {
+		switch v := n.(type) {
+		case *ast.AssignStmt:
+			for i, l := range v.Lhs {
+				id, ok := l.(*ast.Ident)
+				if !ok || wantN[id.Name] == 0 {
+					continue
+				}
+				seenN[id.Name]++
+				require.True(t, v.Tok == token.ASSIGN && len(v.Rhs) == len(v.Lhs), id.Name+" must be assigned with `=`")
+				c, ok := isCallSel(v.Rhs[i], "authMiddleware", "RateLimitByUser")
+				require.True(t, ok && len(c.Args) == 2, id.Name+" must be authMiddleware.RateLimitByUser(N, \"1m\")")
+				got, ok := intLit(c.Args[0])
+				require.True(t, ok && got == wantN[id.Name], "%s limit must be %d", id.Name, wantN[id.Name])
+				per, ok := foldString(c.Args[1], map[string]string{})
+				require.True(t, ok && per == "1m", id.Name+" window must be \"1m\"")
+			}
+		case *ast.ReturnStmt:
+			rets++
+			var names []string
+			for _, r := range v.Results {
+				if id, ok := r.(*ast.Ident); ok {
+					names = append(names, id.Name)
+				}
+			}
+			require.Equal(t, []string{"login", "authTier", "def"}, names, "newAuthRateTiers must return login, authTier, def in that order")
+		}
+		return true
+	})
+	require.Equal(t, map[string]int{"login": 1, "authTier": 1, "def": 1}, seenN, "each tier assigned exactly once")
+	require.Equal(t, 1, rets, "newAuthRateTiers has exactly one return")
 
 	// --- group shape.
 	require.Equal(t, 1, groupAssigns, "authGroup must be defined exactly once with `:=` (a `var authGroup = ...` form is not accepted)")

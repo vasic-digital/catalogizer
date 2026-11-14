@@ -965,9 +965,7 @@ func main() {
 	//     /logout, /status, /me). These are cheap reads and the
 	//     challenge runner hits them heavily.
 	//   - defaultRateLimiter (2000 rpm per IP): everything else.
-	loginRateLimiter := authMiddleware.RateLimitByUser(30, "1m")
-	authRateLimiter := authMiddleware.RateLimitByUser(600, "1m")
-	defaultRateLimiter := authMiddleware.RateLimitByUser(2000, "1m")
+	loginRateLimiter, authRateLimiter, defaultRateLimiter := newAuthRateTiers(authMiddleware)
 
 	// Redis-based distributed rate limiting: activates automatically when
 	// Redis is available AND REDIS_RATE_LIMIT=true is set.
