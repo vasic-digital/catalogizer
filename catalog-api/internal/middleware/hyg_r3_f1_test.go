@@ -51,6 +51,17 @@ var r3f1Probes = []string{
 	"/share/%e2%80%a4/LIVEsecret",
 	"/share/%20/LIVEsecret",
 	"/share%00/LIVEsecret",
+	// round 4 F4-1: %2F-encoded key shapes (unrouted)
+	"/api/v1/logs/share%2FLIVEsecret/extra",
+	"/api/v1/logs%2Fshare%2FLIVEsecret/extra",
+	"/x%2Fshare%2FLIVEsecret",
+	"/api/v1/logs/share%2F/LIVEsecret",
+	"/share%2f%2e%2e/LIVEsecret",
+	// round 4 F4-2: punctuation-only segment after the key is not a token
+	"/api/v1/logs/share/~/LIVEsecret",
+	"/share/-/LIVEsecret",
+	"/share/=/LIVEsecret",
+	"/share/_/LIVEsecret",
 	"/share;LIVEsecret/next",
 	"/share;token=LIVEsecret/next",
 }
@@ -117,7 +128,7 @@ func TestHygR3F1_SecretKeyVariantsRedactedInAllSinks(t *testing.T) {
 
 // Negative control: a segment that is not a secret key stays unchanged (the fix is not a blanket redaction), also with ";" and ".".
 func TestHygR3F1_NonSecretSegmentUnchanged(t *testing.T) {
-	for _, target := range []string{"/other;x=1/LIVEsecret", "/other./LIVEsecret", "/sharex;x=1/LIVEsecret", "/xshare./LIVEsecret", "/sharing/;/LIVEsecret", "/api/v1/media/42/./LIVEsecret", "/x.share/;/LIVEsecret", "/other/./LIVEsecret", "/api/v1/media/42/;x/LIVEsecret", "/api/v1/collections/9/files/;v=2/LIVEsecret"} {
+	for _, target := range []string{"/other;x=1/LIVEsecret", "/other./LIVEsecret", "/sharex;x=1/LIVEsecret", "/xshare./LIVEsecret", "/sharing/;/LIVEsecret", "/api/v1/media/42/./LIVEsecret", "/x.share/;/LIVEsecret", "/other/./LIVEsecret", "/x/42/LIVEsecret", "/api/v1/media/42/;x/LIVEsecret", "/api/v1/collections/9/files/;v=2/LIVEsecret"} {
 		for sink, text := range r3f1Sinks(t, target) {
 			if !strings.Contains(text, r3f1Leak) {
 				t.Errorf("%s %s: non-secret segment was redacted: %q", sink, target, text)

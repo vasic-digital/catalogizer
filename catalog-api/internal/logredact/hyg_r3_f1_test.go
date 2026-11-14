@@ -13,6 +13,7 @@ var r3Secret = []string{
 	"/api/v1/logs/share/./S3cretVal", "/share/;/S3cretVal", "/share/%2e/S3cretVal", "/share/..;/S3cretVal", "/share/./S3cretVal",
 	"/share/;x=1/S3cretVal", "/share/../S3cretVal", "/share/.;/S3cretVal", "/share./%2E/S3cretVal", "/share//./;/S3cretVal",
 	// F-2: deeper escapes than the decode cap are treated as keys
+	"/share/~/S3cretVal", "/share/-/S3cretVal", "/share/=/S3cretVal", "/share/_/S3cretVal", "/share/../S3cretVal", "/share/~./S3cretVal",
 	"/share/;S3cretVal", "/share/;token=S3cretVal", "/share/..;S3cretVal", "/api/v1/logs/share/;token=S3cretVal", "/share/%3BS3cretVal",
 	"/share/%2525252e/S3cretVal", "/share/.%00/S3cretVal", "/share/.%00/x/S3cretVal", "/share/;x=1/a/S3cretVal",
 	"/share%2525253Bx/S3cretVal",
@@ -91,6 +92,10 @@ func TestHygR3F1_RegularShapeUnchanged(t *testing.T) {
 		"/share":                         "/share",
 		"/share/":                        "/share/",
 		"/share//":                       "/share//",
+		"/api/v1/share/list":             "/api/v1/share/:redacted",
+		"/api/v1/keys/42/rotate":         "/api/v1/keys/:redacted/rotate",
+		"/api/v1/keys/42;v=2/rotate":     "/api/v1/keys/:redacted", // irregular next segment: the rest of the path goes (F4-4)
+		"/share/ab/more":                 "/share/:redacted/more",
 	} {
 		if got := SecretPath(in); got != want {
 			t.Errorf("SecretPath(%q) = %q, want %q", in, got, want)
@@ -101,7 +106,7 @@ func TestHygR3F1_RegularShapeUnchanged(t *testing.T) {
 // Deterministic cost oracle (work counted by segmentWork, not wall clock): 4x input must cost at most ~5x work and a
 // bounded work per input byte, for every shape that makes a key look ahead.
 func TestHygR3F1_LinearWork(t *testing.T) {
-	shapes := []string{"/share/;x", "/share/.%00", "/share/a", "/share//", "/share;a=b", "/share/%c0%ae", "/token/x/key", "/share%2525253B", "/share/%25252525"}
+	shapes := []string{"/key/;x", "/key/.", "/share/;x", "/share/.%00", "/share/a", "/share//", "/share;a=b", "/share/%c0%ae", "/token/x/key", "/share%2525253B", "/share/%25252525"}
 	work := func(n int, shape string, f func(string)) int64 {
 		in := strings.Repeat(shape, n/len(shape)+1)[:n]
 		segmentWork.Store(0)

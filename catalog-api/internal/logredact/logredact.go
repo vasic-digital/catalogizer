@@ -113,7 +113,10 @@ var secretSegmentKeys = map[string]bool{
 // (cleanToken) directly after it: then only that one segment is the secret. In EVERY other shape (a key with parameters,
 // encodings or control bytes, a dot / param / look-alike / non-token segment after it, empty segments in between) the secret
 // position is everything after the key's base name: the key's parameters and the whole rest of the path are redacted (share
-// tokens are base64url with a prefix, no legitimate content follows). Over-redaction is the deliberate policy.
+// tokens are base64url with a prefix, no legitimate content follows). Over-redaction is the deliberate policy: compared with
+// the pre-fix behaviour an irregular segment after a key now also removes the REST of the path (for example
+// "/api/v1/keys/42;v=2/rotate" logs "/api/v1/keys/:redacted"), HYG-R3-F1 round 4 (F4-4). KnownSecrets collects at most
+// maxKnownSecrets values per request (F4-6), which also bounds its work.
 const maxSegmentDecodes = 3
 
 // segmentWork counts the bytes examined by the segment helpers: a deterministic cost oracle for tests (work counted, not time).
@@ -159,21 +162,24 @@ func secretKey(seg string) (base string, exact, ok bool) {
 	return base, strings.EqualFold(seg, base), true
 }
 
-// cleanToken reports whether seg looks like a bare token: non-empty, only [A-Za-z0-9_.~=-], and not dots only.
+// cleanToken reports whether seg looks like a bare token: non-empty, only [A-Za-z0-9_.~=-], and at least one ASCII
+// alphanumeric (HYG-R3-F1 round 4: a punctuation-only segment such as "~", "-", "=", "_" or dots is not a token, so the key
+// stays irregular and the rest of the path is the secret). No minimum length is imposed: a short alphanumeric segment
+// ("/keys/42/rotate") keeps its pre-fix behaviour; a real share token is prefix+base64url and never punctuation-only.
 func cleanToken(seg string) bool {
 	segmentWork.Add(int64(len(seg)) + 1)
-	dots := true
+	alnum := false
 	for i := 0; i < len(seg); i++ {
 		c := seg[i]
 		switch {
-		case c == '.':
-		case c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || c == '_' || c == '-' || c == '~' || c == '=':
-			dots = false
+		case c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9':
+			alnum = true
+		case c == '.' || c == '_' || c == '-' || c == '~' || c == '=':
 		default:
 			return false
 		}
 	}
-	return !dots && seg != ""
+	return alnum
 }
 
 // secretPosition returns the index of the first non-empty segment after key i (len(segs) when none) and whether the key is in

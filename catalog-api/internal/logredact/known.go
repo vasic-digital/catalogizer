@@ -19,7 +19,7 @@ const (
 	maxKnownSecretLen = 4096
 )
 
-// KnownSecrets returns the credential values carried by one request. params are the route parameters (name -> value).
+// KnownSecrets returns the credential values carried by one request (at most maxKnownSecrets values; the scan is linear). params are the route parameters (name -> value).
 func KnownSecrets(path, rawQuery string, header http.Header, params map[string]string) []string {
 	var out []string
 	add := func(v string) {
@@ -37,6 +37,7 @@ func KnownSecrets(path, rawQuery string, header http.Header, params map[string]s
 	}
 scan:
 	for i := 0; i < len(segs) && len(out) < maxKnownSecrets; i++ {
+		segmentWork.Add(int64(len(segs[i])) + 1)
 		_, exact, ok := secretKey(segs[i])
 		if !ok {
 			continue
@@ -61,6 +62,7 @@ scan:
 		if !exact || !regular {
 			// the secret position is everything after the key: collect it ONCE and stop scanning (linear cost)
 			for _, sg := range segs[j:] {
+				segmentWork.Add(int64(len(sg)) + 1)
 				if sg == "" || len(out) >= maxKnownSecrets {
 					continue
 				}
