@@ -1,0 +1,3 @@
+Successfully tagged localhost/catqab-api:main-fc8dcf27
+Successfully tagged localhost/catqab-web:main-fc8dcf27
+built localhost/catqab-api:main-fc8dcf27 and localhost/catqab-web:main-fc8dcf27

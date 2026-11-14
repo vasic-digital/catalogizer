@@ -1,0 +1,8 @@
+schema=release_gate/1
+product=synology
+state=BLOCKED-NO-HARDWARE
+reason=no live-run record
+hardware_target_id=none
+hardware_record_sha256=absent
+live_run_record_sha256=absent
+comparison_record_sha256=absent

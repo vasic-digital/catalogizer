@@ -1,0 +1,7 @@
+host=anton
+machine_id_sha256=b149e84ebf7b49024dc631b539ebdce7aa9b7bd5a4678b8ef720dbd91bc6b326
+virt=none
+Linux 7.0.0-43-generic x86_64
+model name	: AMD Ryzen 7 2700X Eight-Core Processor
+podman version 5.7.0
+DEVIATION: stack3 scripts used backend=podman (Containers submodule runtime unavailable), per qa_stack output
