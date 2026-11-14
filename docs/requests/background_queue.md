@@ -98,3 +98,6 @@ Asked in-session (AskUserQuestion), answered 20:55 CET: symlink confinement (kee
 
 ### BG-OPQ-2026-11-14 - operator decision sweep 3 (received 2026-11-14 18:41 CET, status: IN PROGRESS)
 Operator order: gather every operator-blocked item, decision point, blocker and show-stopper and present them as interactive questions with options. Blocker: none (asked in-session via AskUserQuestion). Answers are recorded in docs/requests/history.md and memory when received; unanswered items stay QUEUED and are re-surfaced every session.
+
+### BG-OPQ-2026-11-14b - operator decision sweep 4 (received 2026-11-14 21:15 CET, status: IN PROGRESS)
+Operator order: gather every operator-blocked item, decision point, blocker and show-stopper and present them as interactive questions with options. Blocker: none (asked in-session via AskUserQuestion). Answers are recorded in project memory and in docs/FOLLOW_UPS_NEXT_PHASE.md when given.
