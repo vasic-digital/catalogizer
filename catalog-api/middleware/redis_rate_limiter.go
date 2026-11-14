@@ -408,6 +408,7 @@ func redisRateLimitWithState(config RedisRateLimiterConfig) (gin.HandlerFunc, *o
 				).Warn("Rate limit exceeded")
 			}
 
+			c.Header("Retry-After", retryAfterSeconds(ttl))
 			c.JSON(http.StatusTooManyRequests, gin.H{
 				"error":       "rate_limit_exceeded",
 				"message":     config.Message,
@@ -526,6 +527,7 @@ func slidingWindowWithState(config RedisRateLimiterConfig) (gin.HandlerFunc, *ou
 				).Warn("Sliding window rate limit exceeded")
 			}
 
+			c.Header("Retry-After", retryAfterSeconds(min(ttl, config.Window)))
 			c.JSON(http.StatusTooManyRequests, gin.H{
 				"error":       "rate_limit_exceeded",
 				"message":     config.Message,
@@ -614,6 +616,7 @@ func TokenBucketRedisRateLimit(
 
 			if allowed == 0 {
 				// Rate limit exceeded
+				c.Header("Retry-After", retryAfterSeconds(refillInterval))
 				c.JSON(http.StatusTooManyRequests, gin.H{
 					"error":       "rate_limit_exceeded",
 					"message":     "Rate limit exceeded. Please try again later.",
@@ -644,4 +647,15 @@ func NewRedisTierLimiters(client *redis.Client, authFallback, defaultFallback gi
 	defCfg := DefaultRedisRateLimiterConfig(client)
 	defCfg.Fallback = defaultFallback
 	return RedisRateLimit(authCfg), RedisRateLimit(defCfg)
+}
+
+// retryAfterSeconds renders a back-off as the whole-second integer value of the
+// Retry-After header (RFC 9110 §10.2.3), rounded UP and never below 1 so a
+// client that waits it out is not refused again.
+func retryAfterSeconds(d time.Duration) string {
+	secs := int64((d + time.Second - 1) / time.Second)
+	if secs < 1 {
+		secs = 1
+	}
+	return strconv.FormatInt(secs, 10)
 }
