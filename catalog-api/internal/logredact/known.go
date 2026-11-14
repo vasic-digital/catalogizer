@@ -34,7 +34,7 @@ func KnownSecrets(path, rawQuery string, header http.Header, params map[string]s
 			continue
 		}
 		for j := i + 1; j < len(segs); j++ {
-			if segs[j] != "" {
+			if !isSkippableSegment(segs[j]) {
 				add(segs[j])
 				if u, err := url.PathUnescape(segs[j]); err == nil && u != segs[j] {
 					add(u)

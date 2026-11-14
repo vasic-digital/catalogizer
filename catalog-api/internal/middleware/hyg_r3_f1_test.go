@@ -28,6 +28,19 @@ var r3f1Probes = []string{
 	"/%73hare;x=1/LIVEsecret",
 	"/share%253Bx=1/LIVEsecret",
 	"/api/v1/logs/token./LIVEsecret",
+	// round-1 review F-1: dot / param-only segments between the key and the secret
+	"/api/v1/logs/share/./LIVEsecret",
+	"/share/;/LIVEsecret",
+	"/share/%2e/LIVEsecret",
+	"/share/..;/LIVEsecret",
+	"/share/./LIVEsecret",
+	"/share/;x=1/LIVEsecret",
+	"/share/../LIVEsecret",
+	"/share/.;/LIVEsecret",
+	"/share./%2E/LIVEsecret",
+	// F-2: escapes deeper than the decode cap are keys in all three sinks
+	"/share%2525253Bx/LIVEsecret",
+	"/share/%25252525LIVEsecret",
 }
 
 const r3f1Leak = "LIVEsecret"

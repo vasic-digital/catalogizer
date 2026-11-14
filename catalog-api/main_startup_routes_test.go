@@ -12,6 +12,8 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"catalogizer/internal/logredact"
 )
 
 // HYG-R3-F2: buildRouter-level tests do not see what main() registers AFTER buildRouter (the /api/v1 group, aliases, WebSocket
@@ -55,15 +57,23 @@ func TestMainFullRouteRegistrationPassesVerifyAuthRouteTable(t *testing.T) {
 	dir := t.TempDir()
 	port := r3f2FreePort(t)
 	// Throw-away random secrets: generated here, passed to the child only, never printed.
-	rnd := func() string { return fmt.Sprintf("%d-%d-%d", time.Now().UnixNano(), os.Getpid(), port) + strings.Repeat("x", 24) }
+	n := 0
+	rnd := func() string { n++; return fmt.Sprintf("%d-%d-%d-%d", time.Now().UnixNano(), os.Getpid(), port, n) + strings.Repeat("x", 24) }
+	jwt, admin := rnd(), rnd()
 	cmd := exec.Command(os.Args[0], "-test.run=^TestHelperRunMain$", "-test.v=false")
 	cmd.Dir = dir
 	cmd.Env = []string{
 		"PATH=" + os.Getenv("PATH"), "HOME=" + dir, runMainEnv + "=1", "APP_ENV=development", "GIN_MODE=release",
-		"JWT_SECRET=" + rnd(), "ADMIN_USERNAME=admin", "ADMIN_PASSWORD=" + rnd(),
+		"JWT_SECRET=" + jwt, "ADMIN_USERNAME=admin", "ADMIN_PASSWORD=" + admin, "GOMAXPROCS=2",
 		"DATABASE_TYPE=sqlite", fmt.Sprintf("SERVER_PORT=%d", port), "HOST=127.0.0.1",
 	}
+	// Own process group so the stop path can signal the child's group; the group id is validated (> 1, §11.4.263) before use.
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	out := &syncBuf{}
+	safeTail := func(s string) string { // redacted tail only: never the full child output, never the throw-away secrets
+		s = strings.NewReplacer(jwt, "[secret]", admin, "[secret]").Replace(logredact.Text(tail(s, 3000)))
+		return s
+	}
 	cmd.Stdout, cmd.Stderr = out, out
 	if err := cmd.Start(); err != nil {
 		t.Fatalf("start child: %v", err)
@@ -71,11 +81,15 @@ func TestMainFullRouteRegistrationPassesVerifyAuthRouteTable(t *testing.T) {
 	exited := make(chan error, 1)
 	go func() { exited <- cmd.Wait() }()
 	stop := func() {
-		_ = cmd.Process.Signal(syscall.SIGTERM)
+		if pgid := cmd.Process.Pid; pgid > 1 {
+			_ = syscall.Kill(-pgid, syscall.SIGTERM)
+		}
 		select {
 		case <-exited:
 		case <-time.After(10 * time.Second):
-			_ = cmd.Process.Kill()
+			if pgid := cmd.Process.Pid; pgid > 1 {
+				_ = syscall.Kill(-pgid, syscall.SIGKILL)
+			}
 			<-exited
 		}
 	}
@@ -86,7 +100,7 @@ func TestMainFullRouteRegistrationPassesVerifyAuthRouteTable(t *testing.T) {
 	for time.Now().Before(deadline) {
 		select {
 		case err := <-exited:
-			t.Fatalf("main() exited during startup (%v), the auth route table check or another startup step failed:\n%s", err, tail(out.String(), 3000))
+			t.Fatalf("main() exited during startup (%v), the auth route table check or another startup step failed:\n%s", err, safeTail(out.String()))
 		default:
 		}
 		if resp, err := http.Get(url); err == nil {
@@ -101,10 +115,10 @@ func TestMainFullRouteRegistrationPassesVerifyAuthRouteTable(t *testing.T) {
 	got := out.String()
 	stop()
 	if !healthy {
-		t.Fatalf("main() did not reach a serving state within 90s:\n%s", tail(got, 3000))
+		t.Fatalf("main() did not reach a serving state within 90s:\n%s", safeTail(got))
 	}
 	if strings.Contains(got, "Auth route table check failed") {
-		t.Fatalf("auth route table check failed at startup:\n%s", tail(got, 3000))
+		t.Fatalf("auth route table check failed at startup:\n%s", safeTail(got))
 	}
 	// Control needle: the log is the child's real output (it contains the startup line the success condition required).
 	if !strings.Contains(got, "Starting catalog API server") {

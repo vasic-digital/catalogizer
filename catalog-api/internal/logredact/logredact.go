@@ -103,26 +103,42 @@ var secretSegmentKeys = map[string]bool{
 	"apikey": true, "api-key": true, "api_key": true, "verify": true, "confirm": true, "activate": true, "magic": true,
 }
 
-// canonicalSegmentKey is the form of a path segment that is looked up in secretSegmentKeys: percent-decoded (to a fixpoint,
-// at most 3 rounds, so double-encoded forms are covered), lower-cased, cut at the first ";" (a path parameter, "share;x=1")
-// and stripped of trailing dots ("share.", "share.."). A router that ignores path parameters or dot suffixes would otherwise
-// serve the secret that follows while the logger did not recognise the key (HYG-R3-F1). Over-matching only over-redacts.
-func canonicalSegmentKey(seg string) string {
-	for i := 0; i < 3; i++ {
+// canonicalSegment is the form of a path segment that is compared with secretSegmentKeys: percent-decoded (at most
+// maxSegmentDecodes rounds), lower-cased, cut at the first ";" (a path parameter, "share;x=1") and stripped of trailing dots
+// ("share.", "share.."). A router that ignores path parameters or dot suffixes would otherwise serve the secret that follows
+// while the logger did not recognise the key (HYG-R3-F1). overflow reports that the segment still decoded after the last
+// round (a deeper escape than any sink handles): callers treat such a segment as a key (over-redaction, HYG-R3-F2).
+const maxSegmentDecodes = 3
+
+func canonicalSegment(seg string) (canon string, overflow bool) {
+	for i := 0; i < maxSegmentDecodes; i++ {
 		u, err := url.PathUnescape(seg)
 		if err != nil || u == seg {
 			break
 		}
 		seg = u
 	}
+	if u, err := url.PathUnescape(seg); err == nil && u != seg {
+		return "", true
+	}
 	if i := strings.IndexByte(seg, ';'); i >= 0 {
 		seg = seg[:i]
 	}
-	return strings.TrimRight(strings.ToLower(seg), ".")
+	return strings.TrimRight(strings.ToLower(seg), "."), false
 }
 
 // isSecretSegmentKey reports whether seg introduces a bearer secret in the NEXT segment.
-func isSecretSegmentKey(seg string) bool { return secretSegmentKeys[canonicalSegmentKey(seg)] }
+func isSecretSegmentKey(seg string) bool {
+	c, overflow := canonicalSegment(seg)
+	return overflow || secretSegmentKeys[c]
+}
+
+// isSkippableSegment reports whether seg carries no content between a secret key and its secret: empty, ".", "..", a
+// param-only segment (";x=1", "..;") or the percent-encoded forms of these. Such segments are skipped like empty ones.
+func isSkippableSegment(seg string) bool {
+	c, overflow := canonicalSegment(seg)
+	return !overflow && c == ""
+}
 
 // SecretPath returns path with every segment that follows a secret-introducing segment (see secretSegmentKeys) replaced by
 // ":redacted". Everything else is preserved. Use it for ANY log field that carries a raw request path.
@@ -135,10 +151,10 @@ func SecretPath(path string) string {
 		if !isSecretSegmentKey(segs[i]) {
 			continue
 		}
-		// "/share//S" and "/share///S": empty segments between the key and the secret are skipped; the first non-empty
+		// "/share//S", "/share/./S", "/share/;x=1/S": empty and dot/param-only segments between the key and the secret are skipped; the first non-empty
 		// segment is the secret (a trailing "/share//" with nothing after it stays unchanged).
 		j := i + 1
-		for j < len(segs) && segs[j] == "" {
+		for j < len(segs) && isSkippableSegment(segs[j]) {
 			j++
 		}
 		if j < len(segs) {

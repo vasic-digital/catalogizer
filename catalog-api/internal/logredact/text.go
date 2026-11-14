@@ -379,19 +379,35 @@ func redactText(s string, truncated bool) string {
 		}
 
 		// 3. secret path segment inside prose: /share/<seg> (extra slashes between the key and the segment are skipped)
-		if i > 0 && s[i-1] == '/' && j < n && s[j] == '/' && secretSegmentKeys[l] {
-			st := j + 1
-			for st < n && s[st] == '/' {
-				st++
+		if i > 0 && s[i-1] == '/' && j < n && (s[j] == '/' || s[j] == ';' || s[j] == '=') {
+			k := j // end of the whole key segment, path parameters included ("/share;x=1/S", "/share%3Bx=1/S")
+			for k < n && !isSpaceByte(s[k]) && s[k] != '/' && s[k] != '?' && s[k] != '#' && s[k] != '"' && s[k] != '\'' {
+				k++
 			}
-			e := st
-			for e < n && !isSpaceByte(s[e]) && s[e] != '/' && s[e] != '?' && s[e] != '#' && s[e] != '"' && s[e] != '\'' {
-				e++
+			if !isSecretSegmentKey(s[i:k]) {
+				k = n
 			}
-			if e > st {
-				b.WriteString(run + "/:redacted")
-				i = e
-				continue
+			if k < n && s[k] == '/' {
+				st, e := k+1, k+1
+				for { // skip extra slashes and dot / param-only segments between the key and the secret
+					for st < n && s[st] == '/' {
+						st++
+					}
+					e = st
+					for e < n && !isSpaceByte(s[e]) && s[e] != '/' && s[e] != '?' && s[e] != '#' && s[e] != '"' && s[e] != '\'' {
+						e++
+					}
+					if e > st && isSkippableSegment(s[st:e]) {
+						st = e
+						continue
+					}
+					break
+				}
+				if e > st {
+					b.WriteString(run + "/:redacted")
+					i = e
+					continue
+				}
 			}
 		}
 
