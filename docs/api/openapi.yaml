@@ -10307,11 +10307,21 @@ paths:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '503':
-          description: Could not verify the admin role (the live database admin check failed; RequireAdmin fails closed)
+          description: Could not verify admin role (the live database admin check failed; RequireAdmin fails closed)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '500':
+          description: 'Database query failed; body {"error":"database query failed"}'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: database query failed
         '200':
           description: Status
           content:
@@ -10344,11 +10354,21 @@ paths:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '503':
-          description: Could not verify the admin role (the live database admin check failed; RequireAdmin fails closed)
+          description: Could not verify admin role (the live database admin check failed; RequireAdmin fails closed)
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '500':
+          description: 'Database query failed; body {"error":"database query failed"}'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: database query failed
         '200':
           description: Providers
           content:

@@ -213,6 +213,9 @@ func AccessLogFormatter(p gin.LogFormatterParams) string {
 	}
 	path := loggedPath(p.Request)
 	known := logredact.KnownSecrets(path, p.Request.URL.RawQuery, p.Request.Header, params)
+	// also the DECODED path, as requestKnownSecrets does for the other sinks: a %2F-encoded key shape ("share%2FS") is one escaped
+	// segment in loggedPath but "share/S" decoded (HYG-R3-F1 round 4, F4-1).
+	known = append(known, logredact.KnownSecrets(p.Request.URL.Path, "", nil, nil)...)
 	return fmt.Sprintf("[GIN] %s | %3d | %13v | %15s | %-7s %#v\n%s",
 		p.TimeStamp.Format("2006/01/02 - 15:04:05"), p.StatusCode, p.Latency, p.ClientIP, p.Method,
 		logredact.PathKnown(path, p.Request.URL.RawQuery, known), logredact.ErrorTextKnown(p.ErrorMessage, known))

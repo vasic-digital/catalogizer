@@ -2648,3 +2648,31 @@ Retry-After on 429 for in-memory tier + Redis fixed/sliding/token-bucket. Open m
 - Root cause (reviewer-confirmed, FACT): the test was stale after SEC-WS-1 F2 (auth_token guard in websocket.ts connect() plus the ticket mint); no product defect (web auth is bearer-only; login sets auth_token before the user). Test repaired (token seed + /ws/ticket mock), plus the reviewer's F1 (banner assertion now discriminating), F2 (no-token test), F3 (afterEach cleanup), N1 (comment). The F1-F3 follow-up commit 6462bd8df implements the reviewer's own prescribed fix and was verified by the author's mutations (reviewer M5/M7 killed), but was not itself re-reviewed.
 - Unit-class only, no live end-to-end /ws run (still part of gate G4).
 - Residual (nit): the mocked base client ignores constructor args; ticket-in-URL is pinned by wsTicketClient.test.ts only.
+
+## SSEFU-F1..F5 review (Opus, GO-with-follow-ups, PROVISIONAL, commit 41261d35b)
+- SSEFU2-F1 (important, test-instrumentation): mutation M1b survives; no stats test checks which uid reaches the admin checker (checker ignores uid). Add a checker true only for the expected uid (uid 5 non-admin, uid 1 admin).
+- SSEFU2-F2 (important, test-instrumentation): mutation M7 survives in middleware: no RequireAdmin test uses a checker returning (true, err). Add it (RequirePermission has it, auth_permission_test.go:62).
+- SSEFU2-F3 (minor, test-instrumentation): no test pins the documented bodies {"error":"database query failed"} (sync status/providers) or 503 text "Could not verify admin role".
+- SSEFU2-F4 (minor, process-doc): 503 wording inconsistent across sync GETs ("Could not verify the admin role" on 7 others; API_DOCUMENTATION lines 5277, 5290).
+- SSEFU2-F5 (nit, process-doc): new 500 responses use inline schema, not $ref Error; real 503 body also carries "success":false.
+
+## HYG-R3-F1/F2 review (Opus round 5 of 5, GO-with-follow-ups, PROVISIONAL, commit eb875875d)
+All remaining leaks are pre-existing (base 872f6ba88 leaks the same shapes); 0 regressions, 0 DoS, root `-short` ok.
+- HYGR3-FU1 (minor, source-defect): double/triple-encoded slash (share%252FX) and backslash after key (share%5CX) not treated as separators; cannot reach the share route. Split decoded segment on '/' and '\' in secretKey.
+- HYGR3-FU2 (minor, source-defect): F4-3 ErrorText prose "/share/ /SECRET" leak (text tokenizer vs whitespace).
+- HYGR3-FU3 (nit, process-doc): document the "exactly one segment after the key" rule (R5-1: /share/a/LIVEsecret second segment logged) in the logredact package comment.
+- HYG-F4 (operator decision 2026-11-14): fail closed (truncate after key on malformed token) still owed, same files.
+
+## HYG-F4 + SSEFU2 review (Opus, GO-with-follow-ups, PROVISIONAL, commits 94d6d0ecc 909edffa6)
+No regression, no new leak; all SSEFU2 production mutations killed; root -short ok, logredact -race -count=3 ok.
+- HYGF4-F1 (important, source-defect, PRE-EXISTING, NOT a regression; own item with fresh budget, recurrence-linked to HYG-F4): a key segment containing a valid encoded separator AND an invalid escape (e.g. `/share%2FS3cretVal%ZZ/more`, `/share%2FS3cretVal%Z`, `/share%2FS3cretVal%/more`) is not redacted by SecretPath/Text/KnownSecrets/ErrorTextKnown (url.PathUnescape fails, raw segment kept). net/http rejects invalid escapes with 400 so access-log sinks are probably unreachable (UNCONFIRMED); free-text error sinks are reachable. Fix: lenient decode (decode valid %XX, keep invalid) or treat undecodable segment with key prefix as ambiguous.
+- HYGF4-F2 (minor, test-instrumentation): mutations A3/A4/A7 survive: no test pins values collected by the KnownSecrets embedded branch (`/share%2Fx=S3cretVal` -> ["x=S3cretVal","S3cretVal"], `/share%2FA;S3cretVal`); pin via ErrorTextKnown assertions.
+- HYGF4-F3 (nit): fullwidth/overlong slashes (%EF%BC%8F, %C0%AF) not separators in Go, left as is. HYGF4-F4 (nit, test-instrumentation): SSEFU2-F3 has no in-test positive control (open DB 200).
+
+## WSF2-R2-F2 (Android WebSocketRepository) review (Opus, GO-with-follow-ups, PROVISIONAL, commit 86547226c)
+Verified: focused tests 35/0 fail, whole module testDebugUnitTest 1051 tests 0 failures, assembleDebug ok (apk sha256 f2cf8c6e...23ea); no deadlock found. Not a live /ws run.
+- WSF2B-F1 (important, source-defect, PRE-EXISTING; own item, fresh budget): Java-WebSocket 1.5.4 WebSocketClient.close() is a no-op until writeThread is set (bytecode-proven, runtime UNCONFIRMED), so disconnect()/replacing connect() during connect/handshake leaves a live socket that then sends subscribe frames; fix: in currentOnly.onOpen when !current() call me.close(). Also closes F3.
+- WSF2B-F2 (important, source-defect, PRE-EXISTING): catch (e: Exception) around minter.mint() swallows CancellationException: disconnect during mint ends in Error state, connect during mint triggers extra scheduleReconnect and overwrites job (reproduced on base AND fix by reviewer probe: scratchpad WebSocketRepositoryReviewProbeTest.kt). Fix: rethrow CancellationException first; adopt probe as regression test.
+- WSF2B-F3 (minor, source-defect): two concurrent opens can each create a client (see F1).
+- WSF2B-F4 (minor, test-instrumentation): mutations MA/MC/MD/ME/MG survive (disconnect leaves client set, onOpen/connect do not reset attempts, old.close removed, job not cancelled); test name "stale callbacks do not ... reset attempts" asserts nothing about attempts; fake close() not recorded.
+- WSF2B-F5 (nit, process-doc): comment on @Volatile intentional.
