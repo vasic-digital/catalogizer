@@ -2648,3 +2648,10 @@ Retry-After on 429 for in-memory tier + Redis fixed/sliding/token-bucket. Open m
 - Root cause (reviewer-confirmed, FACT): the test was stale after SEC-WS-1 F2 (auth_token guard in websocket.ts connect() plus the ticket mint); no product defect (web auth is bearer-only; login sets auth_token before the user). Test repaired (token seed + /ws/ticket mock), plus the reviewer's F1 (banner assertion now discriminating), F2 (no-token test), F3 (afterEach cleanup), N1 (comment). The F1-F3 follow-up commit 6462bd8df implements the reviewer's own prescribed fix and was verified by the author's mutations (reviewer M5/M7 killed), but was not itself re-reviewed.
 - Unit-class only, no live end-to-end /ws run (still part of gate G4).
 - Residual (nit): the mocked base client ignores constructor args; ticket-in-URL is pinned by wsTicketClient.test.ts only.
+
+## SSEFU-F1..F5 review (Opus, GO-with-follow-ups, PROVISIONAL, commit 41261d35b)
+- SSEFU2-F1 (important, test-instrumentation): mutation M1b survives; no stats test checks which uid reaches the admin checker (checker ignores uid). Add a checker true only for the expected uid (uid 5 non-admin, uid 1 admin).
+- SSEFU2-F2 (important, test-instrumentation): mutation M7 survives in middleware: no RequireAdmin test uses a checker returning (true, err). Add it (RequirePermission has it, auth_permission_test.go:62).
+- SSEFU2-F3 (minor, test-instrumentation): no test pins the documented bodies {"error":"database query failed"} (sync status/providers) or 503 text "Could not verify admin role".
+- SSEFU2-F4 (minor, process-doc): 503 wording inconsistent across sync GETs ("Could not verify the admin role" on 7 others; API_DOCUMENTATION lines 5277, 5290).
+- SSEFU2-F5 (nit, process-doc): new 500 responses use inline schema, not $ref Error; real 503 body also carries "success":false.
