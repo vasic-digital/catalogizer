@@ -29,6 +29,10 @@ interface CatalogizerApi {
     @POST("auth/change-password")
     suspend fun changePassword(@Body changePasswordRequest: ChangePasswordRequest): Response<Unit>
 
+    /** SEC-WS-1 F2: mint a single-use WebSocket ticket; the session token goes in the Authorization header only. */
+    @POST("ws/ticket")
+    suspend fun mintWsTicket(@Header("Authorization") authorization: String): Response<WsTicketResponse>
+
     @GET("auth/status")
     suspend fun getAuthStatus(): Response<AuthStatus>
 

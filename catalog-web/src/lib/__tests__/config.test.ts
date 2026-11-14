@@ -68,21 +68,21 @@ describe('Configuration and Environment Handling', () => {
       expect(defaultWsUrl).toBe('ws://localhost:8080/ws')
     })
 
-    it('appends token as query parameter when authenticated', () => {
+    it('appends a single-use ticket (not the session token) as query parameter when authenticated', () => {
       const wsUrl = 'ws://localhost:8080/ws'
       const token = 'test-jwt-token-123'
 
       // This mirrors WebSocketClient.connect() behavior
-      const wsUrlWithToken = `${wsUrl}?token=${token}`
-      expect(wsUrlWithToken).toBe('ws://localhost:8080/ws?token=test-jwt-token-123')
+      const wsUrlWithToken = `${wsUrl}?ticket=${token}`
+      expect(wsUrlWithToken).toBe('ws://localhost:8080/ws?ticket=test-jwt-token-123')
     })
 
     it('uses plain URL when no token is available', () => {
       const wsUrl = 'ws://localhost:8080/ws'
       const token = null
 
-      // Mirrors: const wsUrl = this.token ? `${WS_URL}?token=${this.token}` : WS_URL
-      const finalUrl = token ? `${wsUrl}?token=${token}` : wsUrl
+      // Mirrors: const wsUrl = this.ticket ? `${WS_URL}?ticket=${this.ticket}` : WS_URL
+      const finalUrl = token ? `${wsUrl}?ticket=${token}` : wsUrl
       expect(finalUrl).toBe('ws://localhost:8080/ws')
     })
 
@@ -90,8 +90,8 @@ describe('Configuration and Environment Handling', () => {
       const wsUrl = 'wss://api.catalogizer.io/ws'
       const token = 'secure-token'
 
-      const finalUrl = `${wsUrl}?token=${token}`
-      expect(finalUrl).toBe('wss://api.catalogizer.io/ws?token=secure-token')
+      const finalUrl = `${wsUrl}?ticket=${token}`
+      expect(finalUrl).toBe('wss://api.catalogizer.io/ws?ticket=secure-token')
     })
 
     it('constructs WebSocket URL for various environments', () => {

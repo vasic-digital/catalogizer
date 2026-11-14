@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"net/url"
 	"sort"
+	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 // Known-secret substitution (PX-F17 round 3, F3). A free-text pattern cannot recognise a BARE secret ("lookup share S"), but the
@@ -17,7 +19,7 @@ const (
 	maxKnownSecretLen = 4096
 )
 
-// KnownSecrets returns the credential values carried by one request. params are the route parameters (name -> value).
+// KnownSecrets returns the credential values carried by one request (at most maxKnownSecrets values; the scan is linear). params are the route parameters (name -> value).
 func KnownSecrets(path, rawQuery string, header http.Header, params map[string]string) []string {
 	var out []string
 	add := func(v string) {
@@ -27,18 +29,75 @@ func KnownSecrets(path, rawQuery string, header http.Header, params map[string]s
 	}
 	// path segments after a secret-introducing segment
 	segs := strings.Split(path, "/")
-	for i := 0; i+1 < len(segs); i++ {
-		if !secretSegmentKeys[strings.ToLower(segs[i])] {
+	addSeg := func(sg string) {
+		add(sg)
+		if u, err := url.PathUnescape(sg); err == nil && u != sg {
+			add(u)
+		}
+	}
+scan:
+	for i := 0; i < len(segs) && len(out) < maxKnownSecrets; i++ {
+		segmentWork.Add(int64(len(segs[i])) + 1)
+		_, exact, embedded, ok := secretKey(segs[i])
+		if !ok {
 			continue
 		}
-		for j := i + 1; j < len(segs); j++ {
-			if segs[j] != "" {
-				add(segs[j])
-				if u, err := url.PathUnescape(segs[j]); err == nil && u != segs[j] {
-					add(u)
+		if embedded {
+			// secret inside the key segment after an (encoded) separator, plus the whole rest of the path
+			dec, _ := decodeSegment(segs[i])
+			if p := strings.IndexAny(dec, "/\\"); p >= 0 {
+				for _, piece := range strings.FieldsFunc(dec[p+1:], func(r rune) bool { return r == '/' || r == '\\' || r == ';' }) {
+					addSeg(piece)
+					if _, v, found := strings.Cut(piece, "="); found {
+						addSeg(v)
+					}
 				}
-				break
+				addSeg(dec[p+1:])
 			}
+			for _, sg := range segs[i+1:] {
+				segmentWork.Add(int64(len(sg)) + 1)
+				if sg != "" {
+					addSeg(sg)
+				}
+			}
+			break scan
+		}
+		j, regular := secretPosition(segs, i)
+		if !exact {
+			// the key's own parameters ("share;token=S", "share;S") are secret values
+			dec, _ := decodeSegment(segs[i])
+			if p := strings.IndexByte(dec, ';'); p >= 0 {
+				for _, prm := range strings.Split(dec[p+1:], ";") {
+					addSeg(prm)
+					if _, v, found := strings.Cut(prm, "="); found {
+						addSeg(v)
+					}
+				}
+			}
+		}
+		if j >= len(segs) {
+			continue
+		}
+		addSeg(segs[j])
+		if !exact || !regular {
+			// the secret position is everything after the key: collect it ONCE and stop scanning (linear cost)
+			for _, sg := range segs[j:] {
+				segmentWork.Add(int64(len(sg)) + 1)
+				if sg == "" || len(out) >= maxKnownSecrets {
+					continue
+				}
+				addSeg(sg)
+				dec, _ := decodeSegment(sg)
+				for _, prm := range strings.Split(dec, ";") {
+					if prm != dec {
+						addSeg(prm)
+					}
+					if _, v, found := strings.Cut(prm, "="); found {
+						addSeg(v)
+					}
+				}
+			}
+			break scan
 		}
 	}
 	for name, v := range params {
@@ -76,7 +135,7 @@ func KnownSecrets(path, rawQuery string, header http.Header, params map[string]s
 	return out
 }
 
-// ReplaceKnown replaces every occurrence of every known secret in s (longest first), including its URL-escaped form.
+// ReplaceKnown replaces every occurrence of every known secret in s (longest first), including its URL-escaped and %q-quoted (outer quotes stripped) forms.
 func ReplaceKnown(s string, secrets []string) string {
 	if len(secrets) == 0 || s == "" {
 		return s
@@ -89,6 +148,13 @@ func ReplaceKnown(s string, secrets []string) string {
 		}
 		if e := url.PathEscape(sec); e != sec {
 			uniq[e] = true
+		}
+		// %q form (HYG-F6): fmt's %q / strconv.Quote escapes quotes, backslashes and control characters; the text between the
+		// outer quotes is what an error text carries.
+		for _, q := range []string{strconv.Quote(sec), strconv.QuoteToASCII(sec)} { // %q and %+q
+			if len(q) > 2 && q[1:len(q)-1] != sec {
+				uniq[q[1:len(q)-1]] = true
+			}
 		}
 	}
 	list := make([]string, 0, len(uniq))
@@ -106,4 +172,28 @@ func ReplaceKnown(s string, secrets []string) string {
 		pairs = append(pairs, k, redactedMark)
 	}
 	return strings.NewReplacer(pairs...).Replace(s)
+}
+
+// ErrorTextKnown is the ONE pipeline for error text of a request that knows its own credentials (PKGB-FU1/FU2): the input is cut
+// BEFORE ReplaceKnown (its cost is O(n*L); on uncapped text 64 secrets x 4 KiB cost 0.87 s per 4 MiB), then known secrets are
+// replaced, then ErrorText runs. The pre-cut keeps maxKnownSecretLen bytes beyond what Text keeps; the output is capped at ErrorTextMaxBytes
+// (2 KiB), far before any pre-cut position, so a secret that straddles the cut cannot appear in the output either way (the margin
+// is defensive; see TestErrorTextKnown_StraddlingSecretNeverExposed).
+func ErrorTextKnown(s string, secrets []string) string {
+	return ErrorText(replaceKnownFn(preCutForKnown(s), secrets))
+}
+
+// replaceKnownFn is ReplaceKnown; a variable only so tests can observe the length of its input (deterministic cost oracle).
+var replaceKnownFn = ReplaceKnown
+
+// preCutForKnown bounds the text handed to ReplaceKnown.
+func preCutForKnown(s string) string {
+	if limit := textPreCapBytes + maxKnownSecretLen; len(s) > limit {
+		cut := limit
+		for cut > 0 && !utf8.RuneStart(s[cut]) {
+			cut--
+		}
+		s = s[:cut]
+	}
+	return s
 }

@@ -4,6 +4,7 @@ import (
 	"catalogizer/internal/logredact"
 	"context"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"runtime"
@@ -247,9 +248,11 @@ func (h *HealthChecker) Check() *HealthCheck {
 	for name, check := range h.checks {
 		if err := check(); err != nil {
 			result.Status = "unhealthy"
+			// The error text (driver, host, path) is logged redacted and never returned (PXF23-F1).
+			log.Printf("monitoring: health check %q failed: %s", name, logredact.ErrorText(err.Error()))
 			result.Checks[name] = map[string]interface{}{
 				"status": "unhealthy",
-				"error":  err.Error(),
+				"error":  "check failed",
 			}
 		} else {
 			result.Checks[name] = map[string]interface{}{

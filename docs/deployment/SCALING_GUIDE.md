@@ -450,6 +450,20 @@ DATABASE_PORT=6432
 
 Catalogizer uses WebSockets for real-time event updates (media detection events, scan progress). WebSocket connections are stateful and require sticky sessions when scaling horizontally.
 
+### WebSocket tickets are per-instance (SEC-WS-1 F2)
+
+Browsers open `/ws` with a single-use `?ticket=` minted by `POST /api/v1/ws/ticket`. Tickets (and the per-user mint rate
+limiter and live-ticket cap) live **in the memory of the API process that minted them**; nothing is shared through Redis or the
+database. With more than one API instance the mint request and the following `/ws` upgrade MUST reach the same instance:
+
+- route `POST /api/v1/ws/ticket` and `GET /ws` with the same affinity key (the sticky configuration below, applied to both
+  locations; `ip_hash` or a sticky cookie), or
+- run a single API instance, or
+- accept that a ticket redeemed on another instance is refused (401) and the client retries with a fresh one (the web client
+  does, but it will flap).
+
+A restart of the API drops all unredeemed tickets (30 s lifetime; clients re-mint). The mint rate limit (20 per user per minute) and the live-ticket cap (8 per user, 10,000 total) are also per instance.
+
 ### Nginx Sticky Sessions Configuration
 
 Update the `upstream` block in `config/nginx.conf`:

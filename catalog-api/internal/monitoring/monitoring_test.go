@@ -206,7 +206,7 @@ func TestHealthChecker_OneUnhealthy(t *testing.T) {
 	cacheDetail, ok := result.Checks["cache"].(map[string]interface{})
 	require.True(t, ok)
 	assert.Equal(t, "unhealthy", cacheDetail["status"])
-	assert.Equal(t, "connection refused", cacheDetail["error"])
+	assert.Equal(t, "check failed", cacheDetail["error"], "PXF23-F1: error text is logged, not returned")
 }
 
 // ---------------------------------------------------------------------------

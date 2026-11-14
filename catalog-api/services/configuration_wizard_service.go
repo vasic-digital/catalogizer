@@ -1270,6 +1270,11 @@ func (s *ConfigurationWizardService) ensureResolvedInsideConfigDir(target string
 	if err != nil {
 		return fmt.Errorf("cannot resolve configuration directory %s: %w", s.configPath, err)
 	}
+	// A relative CONFIG_PATH (production default ./config) resolves to a relative base, while a resolved in-config link
+	// is absolute: compare in one frame (OBF-FU-F1).
+	if base, err = filepath.Abs(base); err != nil {
+		return fmt.Errorf("cannot make configuration directory %s absolute: %w", s.configPath, err)
+	}
 	rel, err := filepath.Rel(filepath.Clean(s.configPath), target)
 	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
 		return fmt.Errorf("resolves outside the configuration directory")

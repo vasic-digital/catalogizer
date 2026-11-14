@@ -145,7 +145,7 @@ var (
 	// Engine-level middleware buildRouter installs before the auth group exists
 	// (the runtime tier pins the resulting chains; this list is the cheap source-level twin).
 	allowedRouterUseBeforeAuth = []string{
-		"gin.LoggerWithFormatter,middleware.Recovery",
+		"gin.LoggerWithFormatter,middleware.AccessLogRouteParams,middleware.Recovery",
 		"root_middleware.SecurityHeaders",
 		"root_middleware.ConcurrencyLimiter",
 		"root_middleware.RequestTimeout",
@@ -647,7 +647,7 @@ func TestAuthSurfaceGuard_Mutants(t *testing.T) {
 			edit(t, d, "main.go", recDefn, "api.PATCH(os.Getenv(\"P\"), evil)\n\t"+recDefn)
 		}},
 		{"RV8_method_value_Use_in_ws_helper", "method value", func(d string) {
-			edit(t, d, "main_wsroute.go", "router.GET(\"/ws\", mw.RequireAuth(), h.HandleConnection)", "u := router.Use\n\tu(evil)\n\trouter.GET(\"/ws\", mw.RequireAuth(), h.HandleConnection)")
+			edit(t, d, "main_wsroute.go", "router.GET(\"/ws\", mw.RequireWSAuth(), h.HandleConnection)", "u := router.Use\n\tu(evil)\n\trouter.GET(\"/ws\", mw.RequireWSAuth(), h.HandleConnection)")
 		}},
 		{"RV9_RouterGroup_field_Use_in_other_file_value", "direct access to gin's .RouterGroup", func(d string) {
 			edit(t, d, "trusted_proxies.go", setTP, "rg := &r.RouterGroup\n\tf := rg.Use\n\tf(evil)\n\t"+setTP)

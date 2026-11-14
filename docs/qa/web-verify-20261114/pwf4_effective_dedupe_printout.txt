@@ -1,0 +1,4 @@
+VARIANT project EFFECTIVE dedupe= ["react","react-dom","@tanstack/react-query","axios","react","react-dom"]
+VARIANT project-dedupe-empty EFFECTIVE dedupe= ["react","react-dom"]
+stripped dedupe from vite:react-refresh ["react","react-dom"]
+VARIANT effective-none EFFECTIVE dedupe= []

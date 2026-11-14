@@ -1,0 +1,7 @@
+sourcemaps=50 sources=1080 needle_present(react)=True needle_absent(fake)=False
+react                    copies=7 ['repo/catalog-web/node_modules/react', 'repo/submodules/auth_context_react/node_modules/react', 'repo/submodules/collection_manager_react/node_modules/react', 'repo/submodules/dashboard_analytics_react/node_modules/react', 'repo/submodules/media_browser_react/node_modules/react', 'repo/submodules/media_player_react/node_modules/react', 'repo/submodules/websocket_client_ts/node_modules/react']
+react-dom                copies=1 ['repo/catalog-web/node_modules/react-dom']
+@tanstack/react-query    copies=1 ['repo/catalog-web/node_modules/@tanstack/react-query']
+axios                    copies=1 ['repo/catalog-web/node_modules/axios']
+RESULT FAIL
+assert rc=1

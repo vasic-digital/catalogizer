@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -49,7 +50,7 @@ func CORS() gin.HandlerFunc {
 func Logger(logger *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
-		path := c.Request.URL.Path
+		path := loggedPath(c.Request)
 		raw := c.Request.URL.RawQuery
 
 		c.Next()
@@ -59,7 +60,7 @@ func Logger(logger *zap.Logger) gin.HandlerFunc {
 		method := c.Request.Method
 		statusCode := c.Writer.Status()
 
-		path = logredact.Path(path, raw) // never log ticket / access_token values
+		path = logredact.PathKnown(path, raw, requestKnownSecrets(c)) // never log ticket / access_token values or route-param secrets
 
 		logger.Info("HTTP Request",
 			zap.String("method", method),
@@ -87,7 +88,7 @@ func ErrorHandler() gin.HandlerFunc {
 				reqID, _ = c.Get("RequestID")
 			}
 			log.Printf("middleware: request %q %s %q failed (type %d, detail not returned to client): %v",
-				fmt.Sprint(reqID), c.Request.Method, logredact.SecretPath(c.Request.URL.Path), err.Type, requestErrorText(c, err.Err))
+				fmt.Sprint(reqID), c.Request.Method, logredact.PathKnown(loggedPath(c.Request), "", requestKnownSecrets(c)), err.Type, requestErrorText(c, err.Err))
 			switch err.Type {
 			case gin.ErrorTypeBind:
 				c.JSON(http.StatusBadRequest, gin.H{
@@ -167,11 +168,65 @@ func (rl *RateLimiter) Middleware() gin.HandlerFunc {
 // requestErrorText is the loggable text of an error raised while serving c: the request's own credentials are removed first
 // (a bare share token cannot be recognised by shape), then the free-text redactor and cap run.
 func requestErrorText(c *gin.Context, err error) string {
+	return logredact.ErrorTextKnown(fmt.Sprint(err), requestKnownSecrets(c))
+}
+
+// accessLogParamsKey is the gin context key under which AccessLogRouteParams stores the matched route parameters.
+const accessLogParamsKey = "catalogizer.accesslog.route_params"
+
+// AccessLogRouteParams hands the matched route parameters to AccessLogFormatter: gin.LogFormatterParams carries no route
+// parameters, but it carries c.Keys. Register it AFTER the logger (the parameters exist once the route matched; the formatter
+// runs after the handlers). HYG-F3.
+func AccessLogRouteParams() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if len(c.Params) > 0 {
+			params := make(gin.Params, len(c.Params))
+			copy(params, c.Params)
+			c.Set(accessLogParamsKey, params)
+		}
+		c.Next()
+	}
+}
+
+// loggedPath is the request path as it is logged, in CANONICAL escaped form: the raw path is split on "/" and every segment is
+// unescaped and escaped again. A %2F inside a malformed token stays inside its segment (SecretPath redacts the whole segment,
+// HYG-F4), while a non-canonical escape (%73hare, %54OKEN) is normalised so secret-segment keys and known secrets still match
+// (HYG-R1-F1). A segment that does not unescape is kept as is.
+func loggedPath(r *http.Request) string {
+	segs := strings.Split(r.URL.EscapedPath(), "/")
+	for i, sg := range segs {
+		if u, err := url.PathUnescape(sg); err == nil {
+			segs[i] = url.PathEscape(u)
+		}
+	}
+	return strings.Join(segs, "/")
+}
+
+// AccessLogFormatter is the gin access-log line format (gin.LoggerWithFormatter): the path+query and the error text are redacted.
+func AccessLogFormatter(p gin.LogFormatterParams) string {
+	var params map[string]string
+	if rp, ok := p.Keys[accessLogParamsKey].(gin.Params); ok {
+		params = make(map[string]string, len(rp))
+		for _, kv := range rp {
+			params[kv.Key] = kv.Value
+		}
+	}
+	path := loggedPath(p.Request)
+	known := logredact.KnownSecrets(path, p.Request.URL.RawQuery, p.Request.Header, params)
+	// also the DECODED path, as requestKnownSecrets does for the other sinks: a %2F-encoded key shape ("share%2FS") is one escaped
+	// segment in loggedPath but "share/S" decoded (HYG-R3-F1 round 4, F4-1).
+	known = append(known, logredact.KnownSecrets(p.Request.URL.Path, "", nil, nil)...)
+	return fmt.Sprintf("[GIN] %s | %3d | %13v | %15s | %-7s %#v\n%s",
+		p.TimeStamp.Format("2006/01/02 - 15:04:05"), p.StatusCode, p.Latency, p.ClientIP, p.Method,
+		logredact.PathKnown(path, p.Request.URL.RawQuery, known), logredact.ErrorTextKnown(p.ErrorMessage, known))
+}
+
+// requestKnownSecrets are the credential values carried by c's request (path secrets, sensitive route parameters and query
+// values, credential headers).
+func requestKnownSecrets(c *gin.Context) []string {
 	params := make(map[string]string, len(c.Params))
 	for _, p := range c.Params {
 		params[p.Key] = p.Value
 	}
-	text := fmt.Sprint(err)
-	text = logredact.ReplaceKnown(text, logredact.KnownSecrets(c.Request.URL.Path, c.Request.URL.RawQuery, c.Request.Header, params))
-	return logredact.ErrorText(text)
+	return logredact.KnownSecrets(c.Request.URL.Path, c.Request.URL.RawQuery, c.Request.Header, params)
 }

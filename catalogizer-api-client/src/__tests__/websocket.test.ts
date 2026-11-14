@@ -101,7 +101,11 @@ describe('WebSocketClient', () => {
 
       await connectPromise;
 
-      expect(MockWebSocket).toHaveBeenCalledWith('ws://localhost:8080?token=test-token');
+      // SEC-WS-1 F2: the token never goes in the URL; without a ticket provider it is sent as a Bearer header.
+      expect(MockWebSocket).toHaveBeenCalledWith('ws://localhost:8080', {
+        headers: { Authorization: 'Bearer test-token' },
+      });
+      expect(String(MockWebSocket.mock.calls[0][0])).not.toContain('test-token');
     });
 
     it('emits connection:open event on successful connection', async () => {
@@ -521,7 +525,9 @@ describe('WebSocketClient', () => {
       vi.advanceTimersByTime(1000);
 
       // Reconnect uses the authToken stored at connect() time (old-token)
-      expect(MockWebSocket).toHaveBeenLastCalledWith(expect.stringContaining('token=old-token'));
+      expect(MockWebSocket).toHaveBeenLastCalledWith('ws://localhost:8080', {
+        headers: { Authorization: 'Bearer old-token' },
+      });
     });
   });
 

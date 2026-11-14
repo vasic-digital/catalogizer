@@ -408,6 +408,7 @@ func redisRateLimitWithState(config RedisRateLimiterConfig) (gin.HandlerFunc, *o
 				).Warn("Rate limit exceeded")
 			}
 
+			c.Header("Retry-After", retryAfterSeconds(ttl))
 			c.JSON(http.StatusTooManyRequests, gin.H{
 				"error":       "rate_limit_exceeded",
 				"message":     config.Message,
@@ -526,6 +527,7 @@ func slidingWindowWithState(config RedisRateLimiterConfig) (gin.HandlerFunc, *ou
 				).Warn("Sliding window rate limit exceeded")
 			}
 
+			c.Header("Retry-After", retryAfterSeconds(min(ttl, config.Window)))
 			c.JSON(http.StatusTooManyRequests, gin.H{
 				"error":       "rate_limit_exceeded",
 				"message":     config.Message,
@@ -554,6 +556,20 @@ func TokenBucketRedisRateLimit(
 	tokens int, // Maximum tokens in bucket
 	refillRate int, // Tokens to add per second
 	refillInterval time.Duration, // How often to add tokens
+) gin.HandlerFunc {
+	return tokenBucketRedisRateLimit(redisClient, keyGenerator, tokens, refillRate, refillInterval, time.Now)
+}
+
+// tokenBucketRedisRateLimit is TokenBucketRedisRateLimit with an injectable clock
+// (TIERTEST-RLW-F4): the bucket arithmetic runs on now().Unix(), so a test that must not
+// depend on the wall-clock second boundary passes its own clock. Production uses time.Now.
+func tokenBucketRedisRateLimit(
+	redisClient *redis.Client,
+	keyGenerator func(*gin.Context) string,
+	tokens int,
+	refillRate int,
+	refillInterval time.Duration,
+	nowFn func() time.Time,
 ) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		key := "token_bucket:" + keyGenerator(c)
@@ -594,7 +610,7 @@ func TokenBucketRedisRateLimit(
 			end
 		`
 
-		now := time.Now().Unix()
+		now := nowFn().Unix()
 		result, err := redisClient.Eval(ctx, luaScript, []string{key},
 			now, tokens, refillRate, refillInterval.Seconds(), 1).Result()
 
@@ -614,6 +630,7 @@ func TokenBucketRedisRateLimit(
 
 			if allowed == 0 {
 				// Rate limit exceeded
+				c.Header("Retry-After", retryAfterSeconds(refillInterval))
 				c.JSON(http.StatusTooManyRequests, gin.H{
 					"error":       "rate_limit_exceeded",
 					"message":     "Rate limit exceeded. Please try again later.",
@@ -644,4 +661,15 @@ func NewRedisTierLimiters(client *redis.Client, authFallback, defaultFallback gi
 	defCfg := DefaultRedisRateLimiterConfig(client)
 	defCfg.Fallback = defaultFallback
 	return RedisRateLimit(authCfg), RedisRateLimit(defCfg)
+}
+
+// retryAfterSeconds renders a back-off as the whole-second integer value of the
+// Retry-After header (RFC 9110 §10.2.3), rounded UP and never below 1 so a
+// client that waits it out is not refused again.
+func retryAfterSeconds(d time.Duration) string {
+	secs := int64((d + time.Second - 1) / time.Second)
+	if secs < 1 {
+		secs = 1
+	}
+	return strconv.FormatInt(secs, 10)
 }

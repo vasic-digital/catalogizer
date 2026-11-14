@@ -94,8 +94,7 @@ func TestWSRoute_ValidTokenConnectsAndReceives(t *testing.T) {
 		q   string
 		hdr http.Header
 	}{
-		"query token (web + android clients)": {q: "?token=" + r.tok},
-		"bearer header":                       {hdr: http.Header{"Authorization": {"Bearer " + r.tok}}},
+		"bearer header": {hdr: http.Header{"Authorization": {"Bearer " + r.tok}}},
 	} {
 		t.Run(name, func(t *testing.T) {
 			conn, resp, err := dial(t, r.url(tc.q), tc.hdr)
@@ -116,7 +115,7 @@ func TestWSRoute_RevokedSessionRefused(t *testing.T) {
 	r := newWSRig(t)
 	_, err := r.db.Exec(`UPDATE user_sessions SET is_active = 0 WHERE id = 1`)
 	require.NoError(t, err)
-	_, resp, err := dial(t, r.url("?token="+r.tok), nil)
+	_, resp, err := dial(t, r.url(""), http.Header{"Authorization": {"Bearer " + r.tok}})
 	require.Error(t, err)
 	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 }
@@ -125,7 +124,7 @@ func TestWSRoute_SuspendedUserRefused(t *testing.T) {
 	r := newWSRig(t)
 	_, err := r.db.Exec(`UPDATE users SET is_locked = 1, locked_until = NULL WHERE id = 7`)
 	require.NoError(t, err)
-	_, resp, err := dial(t, r.url("?token="+r.tok), nil)
+	_, resp, err := dial(t, r.url(""), http.Header{"Authorization": {"Bearer " + r.tok}})
 	require.Error(t, err)
 	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 }
@@ -145,11 +144,11 @@ func TestWSRoute_OriginPolicy(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			hdr := http.Header{}
+			hdr := http.Header{"Authorization": {"Bearer " + r.tok}}
 			if tc.origin != "" {
 				hdr.Set("Origin", tc.origin)
 			}
-			conn, resp, err := dial(t, r.url("?token="+r.tok), hdr)
+			conn, resp, err := dial(t, r.url(""), hdr)
 			if tc.ok {
 				require.NoError(t, err)
 				conn.Close()
@@ -198,8 +197,8 @@ func TestWSRoute_BehindReverseProxyHostForwarding(t *testing.T) {
 			}
 			px := httptest.NewServer(rp)
 			defer px.Close()
-			hdr := http.Header{"Origin": {px.URL}} // browser on http://127.0.0.1:<port>
-			conn, resp, err := dial(t, "ws"+strings.TrimPrefix(px.URL, "http")+"/ws?token="+r.tok, hdr)
+			hdr := http.Header{"Origin": {px.URL}, "Authorization": {"Bearer " + r.tok}} // browser on http://127.0.0.1:<port>
+			conn, resp, err := dial(t, "ws"+strings.TrimPrefix(px.URL, "http")+"/ws", hdr)
 			if tc.ok {
 				require.NoError(t, err)
 				conn.Close()

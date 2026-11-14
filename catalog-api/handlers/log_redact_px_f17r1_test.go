@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"catalogizer/internal/logging"
+	"catalogizer/internal/logredact"
 	"catalogizer/models"
 
 	"github.com/gorilla/mux"
@@ -18,6 +19,10 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest/observer"
 )
+
+// productionErrorText is the error-text pipeline production logs through (logLogServiceError calls logredact.ErrorTextKnown with the
+// request's known secrets; none are known here). HYG-F8: the tests below exercise THAT path, not the unused redactLogErrorText wrapper.
+func productionErrorText(s string) string { return logredact.ErrorTextKnown(s, nil) }
 
 // PX-F17 review round 1, F2: class-wide credential redaction. Each leak input names the secret that must vanish.
 func TestPXF17R1_RedactLogErrorText_Table(t *testing.T) {
@@ -51,21 +56,21 @@ func TestPXF17R1_RedactLogErrorText_Table(t *testing.T) {
 	}
 	for _, c := range append(leaks, control...) {
 		t.Run(c.name, func(t *testing.T) {
-			out := redactLogErrorText(c.in)
+			out := productionErrorText(c.in)
 			assert.NotContains(t, out, c.secret, "in=%q out=%q", c.in, out)
 			assert.Contains(t, out, "REDACTED")
 		})
 	}
 	// Benign prose without a credential shape stays readable (documented false-positive policy).
 	for _, in := range []string{"connection refused", "token count exceeded", "basic configuration failed", "no session available", "dial tcp 10.0.0.1:5432: i/o timeout", "sql: no rows in result set"} {
-		assert.Equal(t, in, redactLogErrorText(in), "benign text must not change")
+		assert.Equal(t, in, productionErrorText(in), "benign text must not change")
 	}
 	// Non-secret content next to a secret survives.
-	out := redactLogErrorText("host=db1 password=pw123456 port=5432")
+	out := productionErrorText("host=db1 password=pw123456 port=5432")
 	assert.Contains(t, out, "host=db1")
 	assert.Contains(t, out, "port=5432")
 	// A quoted value ends at its closing quote: the text after it survives (the unterminated-quote rule must not take over).
-	out = redactLogErrorText(`password="pass with spaces" next=ok`)
+	out = productionErrorText(`password="pass with spaces" next=ok`)
 	assert.Contains(t, out, "next=ok")
 }
 
@@ -73,17 +78,17 @@ func TestPXF17R1_RedactLogErrorText_Table(t *testing.T) {
 func TestPXF17R1_RedactLogErrorText_Capped(t *testing.T) {
 	big := strings.Repeat("x", 1<<20)
 	start := time.Now()
-	out := redactLogErrorText(big + " password=ENDSECRET")
+	out := productionErrorText(big + " password=ENDSECRET")
 	assert.LessOrEqual(t, len(out), logErrMaxBytes+64)
 	assert.Contains(t, out, "[truncated ")
 	assert.NotContains(t, out, "ENDSECRET")
 	assert.Less(t, time.Since(start), 5*time.Second)
 	// secret that straddles the 2048 boundary
 	pad := strings.Repeat("y", logErrMaxBytes-6)
-	out = redactLogErrorText(pad + " password=STRADDLESECRET tail")
+	out = productionErrorText(pad + " password=STRADDLESECRET tail")
 	assert.NotContains(t, out, "STRAD")
 	// multibyte at the cut stays valid UTF-8
-	out = redactLogErrorText(strings.Repeat("é", 2000))
+	out = productionErrorText(strings.Repeat("é", 2000))
 	assert.True(t, strings.ToValidUTF8(out, "?") == out)
 }
 

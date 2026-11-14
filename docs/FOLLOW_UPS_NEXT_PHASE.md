@@ -2550,3 +2550,129 @@ Retest (scratch copy, PROVISIONAL): go build/vet rc 0; go test 5935 pass / 20 ho
 ## CAT-QA-BASELINE-V242 review (2026-11-14, Opus round 1 NO-GO provenance, round 2 GO-with-follow-ups; PROVISIONAL)
 - Landed: docs/qa/baseline-v2.4.2-20261114/ (first §11.4.298 baseline for product `web`: 33/33 PASS x 6 runs, gate BLOCKED-NO-BASELINE exit 21; android/androidtv/desktop/wizard/synology BLOCKED-NO-HARDWARE exit 20). Branch tip 2fb4fe039.
 - Open: first-baseline acceptance record and product list (operator, G2); N1 (minor, doc): containers_identity.txt is described as 4 containers/template error, actually 2 lines (api, web) with web health printed empty; chromium-390/firefox-390 projects not run; baseline images removed from host so the exact image cannot be redeployed; kind=physical is the author's classification pending G2.
+
+## PXF18-FU6 review (2026-11-14, Opus round 1 GO-with-follow-ups; PROVISIONAL)
+- Landed: GET /api/v1/challenges, /challenges/:id, /challenges/results were readable by any authenticated user (real-binary RED: non-admin 200); now group-level admin gate (challengeGroup.Use(adminGate)); test route_perms_challenge_results_binary_test.go; reviewer mutations M1-M5 all caught. CLOSED: PXF18-FU6.
+- Open (minor, process-doc): PXF18-FU6-F1 docs/api/openapi.yaml GET challenges/{id}/results lack 403 responses (contract sweep gives no second guard); PXF18-FU6-F2 API_DOCUMENTATION.md ~line 5376 says only POST run needs admin; PXF18-FU6-F3 ROUTE_AUTHZ_TABLE.md six rows hand-edited, header provenance note needed or re-run route_enumeration_probe_test.go.
+- Open (operator decision, §11.4.66): GET /api/v1/stats/scans returns raw sh.error_message scan error text (host/path details possible) to any authenticated user; standing decision keeps GET /scans* auth-only; does it cover this? Also unverified: docker-compose.qa.yml:276 probe token for /challenges.
+- Tracker staleness noted: CAT-SECQ1-B (landed fc503116d, 4e7678fff, 105ea60fe), OBF-1..5, OPA-1..5, S1A3-1..4, D9SR3-F3, SEC-WS-1 F4/F5/F6, WP10R4-1..8, PXF23-R5a/F4, PXR-1 are LANDED per 2026-11-14 reconciliation (unit-class, PROVISIONAL); earlier Queued/Open lines are superseded.
+
+## PKGC-FU4-F1 / CHPW-RL-1-F1/F2 review (2026-11-14, Opus round 1 GO-with-follow-ups; PROVISIONAL)
+- Landed: newAuthRateTiers extraction (main_ratetiers.go) + main_ratelimit_wiring_test.go driving real limiters through buildRouter (all 10 auth routes, N ok / N+1 -> 429, tier sharing/isolation, every auth route pinned); reviewer mutations R1-R6 killed (R3 only by source-text test). CLOSED: PKGC-FU4-F1, CHPW-RL-1-F1/F2.
+- Open (minor, test-instrumentation): RLW-FU1 main()'s routerDeps literal is proven only by the AST source pin; build it via a shared newRouterDeps(...) helper used by main() and the test.
+- Open (minor, process-doc/operator decision): RLW-FU2 in-memory and Redis tier limiters send 429 with JSON retry_after only, no Retry-After header (Redis value is a duration string "1m0s"); Website/docs/developer-guide/security.md:91 (also stale: 5/100 per minute, RateLimiter/ submodule) and three non-executable HelixQA bank TODO steps (challenges/helixqa-banks/catalogizer-api-negative-paths-executable.yaml:72,738,1076) expect the header; OpenAPI promises none. Decide: add the header on both tiers (+ assertions) or correct docs/banks.
+
+## Redactor/hygiene batch review (2026-11-14, Opus round 1 GO-with-follow-ups, fixes F1/F2/F5/F7 applied; PROVISIONAL)
+- Landed: PKGB-FU1 (ErrorTextKnown pre-cut), PKGB-FU2 (middleware.AccessLogFormatter applies known secrets), HANDLERS-RED-1-F3 (PathKnown/SecretPath), OBF-FU-F1 (filepath.Abs in wizard symlink check), PXR-2 (README residuals), PXF23-F1 (internal/monitoring error redacted). F1 deterministic cost oracle, F2 output-cap straddle test, F7 monitoring log redaction test added. CLOSED those ids.
+- Open (minor): HYG-F3 AccessLogFormatter builds known secrets with params=nil (gin.LogFormatterParams lacks route params): PathKnown in the access log is untested (reviewer mutant M2 survived); pass c.Params via c.Keys or document. HYG-F4 a %2F inside a malformed token leaks later decoded segments in the path log field; fail closed by running SecretPath over URL.EscapedPath() (operator decision whether to always truncate). HYG-F6 (pre-existing) ReplaceKnown does not cover the %q-quoted secret form despite known.go header comment: add strconv.Quote(sec) minus outer quotes. HYG-F8 (nit) redactLogErrorText (log_management_handler.go:43) used only by PXF17R1 tests: repoint or retire after the 11.4.124 check.
+- Operator decision: internal/monitoring has never been imported by any Go file (added 5c6bf0776, 2026-03-22); wire or remove? Nothing deleted.
+- Env note: internal/logredact TestTypedScan_* / TestInstrumentationImportsAreReviewed need initialised submodules (type-check whole module); they fail in a clone without submodules.
+
+## PXF18-FU1..11 docs + PXF23-F2 sweep review (2026-11-14, Opus round 1 GO-with-follow-ups; PROVISIONAL)
+- Landed: corrections for PXF18-FU1..5, FU7..11 (docs/qa/err_error_class_enumeration_20261113.* incl. twins; 14 claims re-measured by reviewer), PXF23-F2 leak sweep extended (error-synonym names, error-typed params/named results/var x error; 0 offenders on real tree, same 8 pre-allow-list hits as before). CLOSED those ids (FU6 closed separately).
+- Open (minor): PXF18DOC-F1 survivors M6 (direct call result gin.H{"m": do()}), M7 (var pe *os.PathError), M8 (closure param) are neither pinned in TestPXF23F2_KnownGaps nor stated in comment/doc; PXF18DOC-F2 synonym regex flags non-error values (bool `fail`): add negative control or record; PXF18DOC-F3 FU9 cites stats_repository.go:511 / models/file.go:158 but function is :448 reading internal/models/file.go:211 ScanHistoryItem; PXF18DOC-F4 panic-recovery grep as written gives 33 hits (0 only excluding _test.go and comments): state exact command; PXF18DOC-F5 typed go/packages scan (169 rows) has no committed source: commit or label unreproducible; PXF18DOC-F6 post-merge reconciliation note (R1 monitoring closed by PXF23-F1, challenge rows by FU6, Recovery call now main_router.go:89). Nit: FU1 cell cites :641-653, function starts :645.
+
+## Batch B landing (2026-11-14, Opus round 1 GO-with-follow-ups, PROVISIONAL, unit-class)
+Landed: PXF18-FU6-F1..F3, PXF18DOC-F1..F6, RLW-FU1. Open minors:
+- RLW-FU1-R1 (minor, test-instrumentation): `api.Use(deps.DefaultRate)` pinned by no test (reviewer M2 survived).
+- RLW-FU1-R2 (minor, test-instrumentation): Redis activation condition unpinned (M1/M3/M4 survive).
+- RLW-FU1-R3 (minor, process-doc): stale comments in main.go ~955-967, main_chpw_test.go ~410-428, handlers/pxf23_f2_bare_err_test.go.
+- RLW-FU1-R4 (nit): AST pin derefs `c` before checking `ok`.
+- PXF18DOC-R5 (nit): stats_repository.go:448 vs select at :467.
+- PXF23F2-R6 (nit): KnownFalsePositives checks count, not which value.
+- Operator 2026-11-14: internal/monitoring stays dormant, tracked as CAT-MONITORING-PKG-1 (wire-or-remove later; nothing deleted).
+- Pre-existing: `./middleware` TestLoginRegisterAreNotRedisTiers fails at base 9e624f09f (reviewer-confirmed); register as CAT-MW-TIERTEST-1.
+
+## RLW-FU2 landing (2026-11-14, Opus round 1 GO-with-follow-ups, PROVISIONAL, unit-class)
+Retry-After on 429 for in-memory tier + Redis fixed/sliding/token-bucket. Open minors:
+- RLW-FU2-F1 (test-instrumentation): fixed-window test accepts any 1..60 (M5/M6 survive); FastForward miniredis and assert exact remaining.
+- RLW-FU2-F2 (source-defect minor, unwired path): sliding-window body retry_after = key TTL (~2x window) vs header capped at window.
+- RLW-FU2-F3 (source-defect minor): other wired 429s lack Retry-After: middleware/request.go:113 RateLimiter (main.go:1078), middleware/pprof_guard.go:63; optional on 503s (ConcurrencyLimiter, websocket_handler.go:406).
+- RLW-FU2-F4: Retry-After/X-RateLimit-* not in Access-Control-Expose-Headers (only if cross-origin browser client needs).
+- RLW-FU2-F5 (nit): in-memory header sends full window not remaining time. F6 (nit): duplicate retryAfterSeconds helper in handlers/auth_handler.go:60.
+- CAT-MW-TIERTEST-1: TestLoginRegisterAreNotRedisTiers is a stale source grep (wiring moved to main_ratetiers.go); fails at base.
+- CAT-MW-TIERTEST-1 / RLW-FU2-F1 / RLW-FU2-F3 landed PROVISIONAL (Opus round 1 GO-with-follow-ups, commit 719db3b8b). RLW-FU2-F3 note: the wired 429s in middleware/request.go and middleware/pprof_guard.go now carry Retry-After.
+- TIERTEST-RLW-F1 (minor, test-instrumentation): TestRateLimiter_429RetryAfterTracksRefillRate can flake if >1s passes across 60 requests; loop until first 429 then assert "1", or inject a clock.
+- TIERTEST-RLW-F2 (minor, test-instrumentation): 58..60 and 9..10 ranges assume little scheduling stall; bracket with measured t0/t1 or inject now().
+- TIERTEST-RLW-F3 (minor, source): pprof_guard.go busyUntil.Store runs after the slot send; a competitor can read a stale previous window (overlong or "1" Retry-After). Store before send or clear on release.
+- TIERTEST-RLW-F4 (minor, pre-existing): TestTokenBucketRedisRateLimit_Unit_Miniredis_RefillAfterEmpty flakes ~3/300 (wall-clock seconds in TokenBucketRedisRateLimit); inject a clock or use Redis TIME. Non-race ./middleware is not reliably green until fixed.
+- HYG-F3/F8 (access-log route-param and error-text redaction) landed PROVISIONAL (Opus round 3 GO-with-follow-ups; rounds 1-2 NO-GO fixed: non-canonical %-encoding leak, startup verifyAuthRouteTable Fatal).
+- HYG-R3-F1 (minor, source): a secret-key segment with suffix or `;` params (`share;x=1`, `share.`) is not treated as a secret key, so the next segment is logged unredacted on unrouted requests; strip `;...` and trailing dots before the secretSegmentKeys lookup.
+- HYG-R3-F2 (minor, test-instrumentation): the round-2 regression is only guarded at buildRouter level; add an automated test driving main()'s full route registration through verifyAuthRouteTable.
+- HYG-R3-F3 (minor, test-instrumentation): logredact timing tests TestTextLinearOnAdversarialShapes and TestPerfInstrumentSeesQuadratic failed under one mutation, likely load-dependent flakiness (UNCONFIRMED).
+- HYG-R3-F4 (nit): ./handlers full package exceeds the 10 min default timeout at GOMAXPROCS=2; use -timeout 45m.
+- SEC-WS-1 F2 (one-time WebSocket ticket replaces ?token= on /ws; server + web + api-client + Android as one unit) landed PROVISIONAL (Opus round 2 GO-with-follow-ups after round 1 NO-GO). Single-replica / sticky routing documented (docs/deployment/SCALING_GUIDE.md). Android Gradle assembleDebug and live /ws client run NOT done (UNCONFIRMED; v2.5.0 gate G4 needs F3 + live run).
+- WSF2-R2-F1 (minor, source, web): when `new WebSocket` throws synchronously the base library's createConnection catches it and calls its own scheduleReconnect (ignores reconnect:false), so TicketWebSocketClient's catch is dead code and it can get stuck; treat getState()==='disconnected' after client.connect() as failure or pass reconnectAttempts:0; file a library follow-up.
+- WSF2-R2-F2 (minor, source, Android, latent): WebSocketRepository uses one shared listener, so onClose from a replaced client triggers scheduleReconnect (churn ~1/s if connect() is called while connected); ignore callbacks from non-current clients; attempts/intentional/job mutated across threads unsynchronised (nit). No connect() caller in app/src/main today.
+- WSF2-R2-F3 (minor, test): mint limiter per-user keying is unpinned (mutation keyed on ClientIP survives); add two-users-one-IP and one-user-two-IPs tests.
+- WSF2-R2-F4 (minor, source/perf): wsticket purge compaction copies the whole remaining queue (append(order[:0], order[i:]...)) under the lock; use a head index with occasional compaction; the "amortised O(1)" comment is only true of the scan.
+- WSF2-R2-N1..N3 (nits): openapi says Android "must switch" (it switches in this unit); TestWSTicket_QueryJWTRefusedAndNeverReachesLog never checks a log; no e2e test of ticket socket closing at token expiry, and an already-expired minting token passes RequireWSAuth (a pre-upgrade 401 would be cleaner).
+- STATS-SCANS-ERR-1 + SYNC-ADMIN-1 landed PROVISIONAL (Opus round 1 GO-with-follow-ups): non-admins get fixed class text for scan error_message on /api/v1/stats/scans; all GET /sync/* (incl. alias routes) admin-only.
+- SSE-F1 (minor, test-instrumentation, security surface): fail-closed path on admin-check error in StatsHandler and the role_id fallback with no checker are untested (reviewer mutation M3 "error fails open" SURVIVED); add handler unit tests with an erroring checker and with no checker.
+- SSE-F2 (minor, process-doc): openapi 403 entries on the 10 sync GETs lack the 503 RequireAdmin returns when its DB check fails.
+- SSE-F3 (minor, process-doc): ROUTE_AUTHZ_TABLE.md changed rows were hand-edited, not re-probed, and "Changed in this round" omits SYNC-ADMIN-1/STATS-SCANS-ERR-1; API_DOCUMENTATION.md sync/status still says "Placeholder: always reports idle" and providers "Static list" though both read real rows.
+- SSE-F4 (minor, client UX): catalog-web Settings.tsx SyncSection polls list/statistics/sessions for non-admins (403, sessions every 10 s plus retries); hide the Sync tab for non-admins.
+- SSE-OPQ-1 (OPERATOR DECISION NEEDED, security surface): raw scan failure text still reaches non-admins via GET /api/v1/scans and /scans/:job_id (reason is credential-scrubbed, host/share text remains) and GET /storage/roots returns host, path, username, domain to every authenticated user (a test asserts it stays open). Decide whether to restrict them. No production code writes scan_history today (only tests), so the stats fix protects only legacy/imported rows.
+- TIERTEST-RLW-F1..F4 fixed and landed PROVISIONAL (Opus round 1 GO-with-follow-ups; F4 flake 4/300 -> 0/300 via injectable clock; F3 pprof stale-window read fixed with a mutex).
+- TIERTEST-M1 (minor, test-instrumentation): the pprof stress test cannot catch a broken lock scope without -race (competitors ask 1 s and Retry-After floors at 1); use seconds=10 competitors, assert [9,10] with a t0/t1 bracket.
+- TIERTEST-M2 (minor, test-instrumentation): no test pins the reset-to-0 of the pprof window end on release (defensive); keep as hardening or add a check.
+- TIERTEST-N1 (nit): X-RateLimit-Reset and Retry-After in the token bucket still use the wall clock, not nowFn.
+- PW-F4 / FU2-1 evidence landed PROVISIONAL (docs/qa/web-verify-20261114/; Opus round 1 NO-GO then round 2 GO). Corrected finding: resolve.dedupe is load-bearing for react/react-dom (plugin-react adds its own dedupe, project entries redundant; with all dedupe stripped react copies=7); why react-query/axios stay single without dedupe is UNCONFIRMED. FU2-1 paint order checked on an isolated HistoryDrawer mount with empty-state content only (not via MediaGrid click-through, no backend). Build ran on the host, not in a container (§11.4.173 deviation, documented).
+- PWF4-N1 (nit): build_catalog_web_driver.sh.txt assumes the scratch-clone layout (`cd "$1/repo"`); add a usage note.
+- PWF4-FU1 (process): a fresh clone's scripts/lib/build-catalog-web.sh build fails until the 9 submodule dist folders exist (vite: "Failed to resolve entry for @vasic-digital/auth-context"); make the script build them or document the order; and run the build in a container per §11.4.173 (no node image in the local podman store).
+- SSE-F4 landed PROVISIONAL (Opus round 1 GO-with-follow-ups): catalog-web Settings hides the Sync tab and disables the three sync queries for non-admins; no other /sync/* callers in web, api-client, desktop, wizard, Android, AndroidTV (reviewer grep). Unit-level only, no live browser run.
+- SSE-F4-R1 (minor, test-instrumentation): no Settings test uses the real AuthProvider with a non-admin user (role_id 2); every test mocks useAuth directly. Add one.
+- SSE-F4-R2 (minor, test-instrumentation): "non-admin: sync section content never rendered" passes on the pre-change file too (catches nothing) and mutation M1 (ungated TabsContent) survives; make it check rendered output or document it as equivalent.
+- SSE-F4-R3 (nit, pre-existing): client isAdmin = role.name==='Admin' || role_id===1 vs server RequireAdmin role_id/adminCheck; a role named Admin with another id shows the tab and gets 403.
+- SSE-F4-R4 (nit): if isAdmin flips false while the Sync tab is active, tab value stays "sync" and the panel goes blank.
+
+## WSF2 follow-ups review (Opus round 1, GO-with-follow-ups, PROVISIONAL)
+- WSFU-I1 (important, pre-existing on main, not caused by this diff): `catalog-web/src/contexts/__tests__/WebSocketContext.connectionStatus.test.tsx` is red on main ("expected 0 to be 1", connects=0). UNCONFIRMED cause: the F2 ticket mint calls `api.post`, which that test does not mock. File as its own item.
+- WSFU-m1 (minor, source-defect): `failOpen` in `wsTicketClient.ts` emits `error` before `scheduleReconnect()`; an `error` handler calling `connect()` yields two concurrent attempt chains (bounded, reconnect_failed emitted twice). Fix: schedule before emitting, or bail in the timer/scheduleReconnect when `opening || inner` is set.
+- WSFU-m2 (minor, test-instrumentation): dead-slot zeroing in the wsticket purge queue (`order[:head]`) is not pinned by any test (reviewer mutation GM2 survives).
+- WSFU-N1 (nit, test-instrumentation): `reconnectAttempts: 0` is removable without a test failing (mutation M1 survives); pin it or soften the comment.
+- WSFU-N2 (nit, test-instrumentation): the N2 access-log test copies the logger wiring instead of calling the production `main_router.go` builder.
+
+## SSE-F1..F3 review (Opus round 1, GO-with-follow-ups, PROVISIONAL)
+- SSEFU-F1 (important, test-instrumentation): mutation R4 survives. With an admin checker wired and a missing/invalid user_id, nothing pins that a stale role_id=1 claim is ignored; add setRole:true, roleID:1 to the missing/zero/negative/string cases or a dedicated case.
+- SSEFU-F2 (minor, test-instrumentation): R2 survives; no negative int64 user id case (only negative int). Add int64(-3).
+- SSEFU-F3 (minor, test-instrumentation): R3 survives; uint(5)/uint(0)/float64(5) ids are not pinned. Nit: statsActorID accepts int64 while RequireAdmin accepts only int (both fail closed).
+- SSEFU-F4 (minor, process-doc): API_DOCUMENTATION.md Errors lines and openapi for sync/status and sync/providers omit 500 `{"error":"database query failed"}` (pre-existing gap).
+- SSEFU-F5 (nit, process-doc): openapi 503 description says "Could not verify the admin role"; actual message is "Could not verify admin role".
+- Pre-existing, unchanged: scripts/check_api_route_vs_spec.py exits 3 (BLIND) on main.go:1416-1447; check_doc_coverage reports 25 gaps on both trees; openapi GET /sync/endpoints/{id} has a duplicate '403' key.
+
+## Operator decision 2026-11-14 (Sonar scope)
+- G5 (v2.5.0 SonarQube gate) = BUG / VULNERABILITY / security hotspots only, per interactive operator answer of 2026-11-14. Code smells (run5: catalog-api CRITICAL 648, go:S1192 338, go:S3776 310) are NOT gate-blocking and are tracked as CAT-QA-SONAR-CRIT-1 (registered here; wire into the tracker when the next tracker sync runs). A fresh scan of the v2.5.0 candidate is still owed.
+
+## WSFU-I1 (red web WebSocketContext.connectionStatus test) - landed PROVISIONAL
+- Root cause (reviewer-confirmed, FACT): the test was stale after SEC-WS-1 F2 (auth_token guard in websocket.ts connect() plus the ticket mint); no product defect (web auth is bearer-only; login sets auth_token before the user). Test repaired (token seed + /ws/ticket mock), plus the reviewer's F1 (banner assertion now discriminating), F2 (no-token test), F3 (afterEach cleanup), N1 (comment). The F1-F3 follow-up commit 6462bd8df implements the reviewer's own prescribed fix and was verified by the author's mutations (reviewer M5/M7 killed), but was not itself re-reviewed.
+- Unit-class only, no live end-to-end /ws run (still part of gate G4).
+- Residual (nit): the mocked base client ignores constructor args; ticket-in-URL is pinned by wsTicketClient.test.ts only.
+
+## SSEFU-F1..F5 review (Opus, GO-with-follow-ups, PROVISIONAL, commit 41261d35b)
+- SSEFU2-F1 (important, test-instrumentation): mutation M1b survives; no stats test checks which uid reaches the admin checker (checker ignores uid). Add a checker true only for the expected uid (uid 5 non-admin, uid 1 admin).
+- SSEFU2-F2 (important, test-instrumentation): mutation M7 survives in middleware: no RequireAdmin test uses a checker returning (true, err). Add it (RequirePermission has it, auth_permission_test.go:62).
+- SSEFU2-F3 (minor, test-instrumentation): no test pins the documented bodies {"error":"database query failed"} (sync status/providers) or 503 text "Could not verify admin role".
+- SSEFU2-F4 (minor, process-doc): 503 wording inconsistent across sync GETs ("Could not verify the admin role" on 7 others; API_DOCUMENTATION lines 5277, 5290).
+- SSEFU2-F5 (nit, process-doc): new 500 responses use inline schema, not $ref Error; real 503 body also carries "success":false.
+
+## HYG-R3-F1/F2 review (Opus round 5 of 5, GO-with-follow-ups, PROVISIONAL, commit eb875875d)
+All remaining leaks are pre-existing (base 872f6ba88 leaks the same shapes); 0 regressions, 0 DoS, root `-short` ok.
+- HYGR3-FU1 (minor, source-defect): double/triple-encoded slash (share%252FX) and backslash after key (share%5CX) not treated as separators; cannot reach the share route. Split decoded segment on '/' and '\' in secretKey.
+- HYGR3-FU2 (minor, source-defect): F4-3 ErrorText prose "/share/ /SECRET" leak (text tokenizer vs whitespace).
+- HYGR3-FU3 (nit, process-doc): document the "exactly one segment after the key" rule (R5-1: /share/a/LIVEsecret second segment logged) in the logredact package comment.
+- HYG-F4 (operator decision 2026-11-14): fail closed (truncate after key on malformed token) still owed, same files.
+
+## HYG-F4 + SSEFU2 review (Opus, GO-with-follow-ups, PROVISIONAL, commits 94d6d0ecc 909edffa6)
+No regression, no new leak; all SSEFU2 production mutations killed; root -short ok, logredact -race -count=3 ok.
+- HYGF4-F1 (important, source-defect, PRE-EXISTING, NOT a regression; own item with fresh budget, recurrence-linked to HYG-F4): a key segment containing a valid encoded separator AND an invalid escape (e.g. `/share%2FS3cretVal%ZZ/more`, `/share%2FS3cretVal%Z`, `/share%2FS3cretVal%/more`) is not redacted by SecretPath/Text/KnownSecrets/ErrorTextKnown (url.PathUnescape fails, raw segment kept). net/http rejects invalid escapes with 400 so access-log sinks are probably unreachable (UNCONFIRMED); free-text error sinks are reachable. Fix: lenient decode (decode valid %XX, keep invalid) or treat undecodable segment with key prefix as ambiguous.
+- HYGF4-F2 (minor, test-instrumentation): mutations A3/A4/A7 survive: no test pins values collected by the KnownSecrets embedded branch (`/share%2Fx=S3cretVal` -> ["x=S3cretVal","S3cretVal"], `/share%2FA;S3cretVal`); pin via ErrorTextKnown assertions.
+- HYGF4-F3 (nit): fullwidth/overlong slashes (%EF%BC%8F, %C0%AF) not separators in Go, left as is. HYGF4-F4 (nit, test-instrumentation): SSEFU2-F3 has no in-test positive control (open DB 200).
+
+## WSF2-R2-F2 (Android WebSocketRepository) review (Opus, GO-with-follow-ups, PROVISIONAL, commit 86547226c)
+Verified: focused tests 35/0 fail, whole module testDebugUnitTest 1051 tests 0 failures, assembleDebug ok (apk sha256 f2cf8c6e...23ea); no deadlock found. Not a live /ws run.
+- WSF2B-F1 (important, source-defect, PRE-EXISTING; own item, fresh budget): Java-WebSocket 1.5.4 WebSocketClient.close() is a no-op until writeThread is set (bytecode-proven, runtime UNCONFIRMED), so disconnect()/replacing connect() during connect/handshake leaves a live socket that then sends subscribe frames; fix: in currentOnly.onOpen when !current() call me.close(). Also closes F3.
+- WSF2B-F2 (important, source-defect, PRE-EXISTING): catch (e: Exception) around minter.mint() swallows CancellationException: disconnect during mint ends in Error state, connect during mint triggers extra scheduleReconnect and overwrites job (reproduced on base AND fix by reviewer probe: scratchpad WebSocketRepositoryReviewProbeTest.kt). Fix: rethrow CancellationException first; adopt probe as regression test.
+- WSF2B-F3 (minor, source-defect): two concurrent opens can each create a client (see F1).
+- WSF2B-F4 (minor, test-instrumentation): mutations MA/MC/MD/ME/MG survive (disconnect leaves client set, onOpen/connect do not reset attempts, old.close removed, job not cancelled); test name "stale callbacks do not ... reset attempts" asserts nothing about attempts; fake close() not recorded.
+- WSF2B-F5 (nit, process-doc): comment on @Volatile intentional.

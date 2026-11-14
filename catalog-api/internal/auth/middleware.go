@@ -3,7 +3,9 @@ package auth
 import (
 	"catalogizer/internal/logredact"
 	"fmt"
+	"math"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -320,6 +322,7 @@ func (m *AuthMiddleware) RateLimitByUser(requests int, window string) gin.Handle
 			}
 
 			m.logger.Warn("Rate limit exceeded", logFields...)
+			c.Header("Retry-After", strconv.FormatInt(int64(math.Max(1, math.Ceil(windowDuration.Seconds()))), 10))
 			c.JSON(http.StatusTooManyRequests, gin.H{
 				"error":       "Rate limit exceeded. Please try again later.",
 				"retry_after": windowDuration.Seconds(),

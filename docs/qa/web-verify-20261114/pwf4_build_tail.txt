@@ -1,0 +1,40 @@
+dist/assets/PageHeader-CsGiLH8c.js                  1.35 kB │ gzip:   0.62 kB │ map:     3.60 kB
+dist/assets/AIAnalytics-CMG-0Atp.js                 1.37 kB │ gzip:   0.61 kB │ map:     3.59 kB
+dist/assets/TypeSelector-Blh5T7gp.js                1.69 kB │ gzip:   0.86 kB │ map:     4.38 kB
+dist/assets/statsApi-D8lYqEJG.js                    2.10 kB │ gzip:   0.73 kB │ map:     6.94 kB
+dist/assets/Tabs-D2j2c8QD.js                        2.24 kB │ gzip:   0.87 kB │ map:     6.27 kB
+dist/assets/mediaApi-D2cacnGx.js                    2.75 kB │ gzip:   0.96 kB │ map:     9.75 kB
+dist/assets/ForgotPassword-C5gMCzCo.js              3.06 kB │ gzip:   1.31 kB │ map:     6.91 kB
+dist/assets/MediaDistributionChart-Dpf1hcg2.js      3.34 kB │ gzip:   1.37 kB │ map:     9.68 kB
+dist/assets/UploadManager-Bo-Hpr8A.js               4.76 kB │ gzip:   2.01 kB │ map:    15.70 kB
+dist/assets/EntityBrowser-bb5b0G21.js               4.87 kB │ gzip:   1.99 kB │ map:    14.78 kB
+dist/assets/LoginForm-BntX6nZf.js                   5.37 kB │ gzip:   2.03 kB │ map:    12.89 kB
+dist/assets/RegisterForm-DvLYSMB-.js                6.03 kB │ gzip:   1.93 kB │ map:    15.28 kB
+dist/assets/MediaDetailModal-QzSmvYlG.js            6.89 kB │ gzip:   1.97 kB │ map:    19.35 kB
+dist/assets/MediaPlayer-BBp0kfK9.js                 8.36 kB │ gzip:   2.86 kB │ map:    35.13 kB
+dist/assets/FavoriteToggle-CUmhNOtT.js              8.99 kB │ gzip:   3.31 kB │ map:    34.76 kB
+dist/assets/Analytics-BIiqU-Ir.js                  11.45 kB │ gzip:   3.17 kB │ map:    31.33 kB
+dist/assets/ConversionTools-IqFRN5IN.js            12.23 kB │ gzip:   3.99 kB │ map:    36.12 kB
+dist/assets/Favorites-BLW-VPIb.js                  12.43 kB │ gzip:   4.00 kB │ map:    36.57 kB
+dist/assets/MediaBrowser-DZnJOkKv.js               13.42 kB │ gzip:   3.98 kB │ map:    37.75 kB
+dist/assets/AIDashboard-hP9I9EaJ.js                13.58 kB │ gzip:   2.96 kB │ map:    30.98 kB
+dist/assets/AdvancedSearch-grq8bWcj.js             13.70 kB │ gzip:   3.84 kB │ map:    36.16 kB
+dist/assets/MediaGrid-Dx_8_SVs.js                  13.90 kB │ gzip:   4.67 kB │ map:    42.31 kB
+dist/assets/Settings-CYOG01rS.js                   14.33 kB │ gzip:   3.89 kB │ map:    42.60 kB
+dist/assets/EntityDetail-Cxras0Id.js               15.48 kB │ gzip:   4.26 kB │ map:    42.39 kB
+dist/assets/CollectionTemplates-CbFwPQPo.js        16.14 kB │ gzip:   4.31 kB │ map:    41.49 kB
+dist/assets/Dashboard-DoiiMpe0.js                  16.90 kB │ gzip:   4.96 kB │ map:    43.98 kB
+dist/assets/Admin-DhjvfWFM.js                      18.16 kB │ gzip:   4.28 kB │ map:    51.90 kB
+dist/assets/IdentityManager-gtbGfKvj.js            19.33 kB │ gzip:   5.25 kB │ map:    58.03 kB
+dist/assets/ExternalIntegrations-BCVZ0WDf.js       22.11 kB │ gzip:   5.33 kB │ map:    60.87 kB
+dist/assets/SubtitleManager-Cx-3fv_S.js            28.59 kB │ gzip:   6.87 kB │ map:    84.55 kB
+dist/assets/Playlists-CYCnZkwQ.js                  55.71 kB │ gzip:  12.95 kB │ map:   175.24 kB
+dist/assets/utils-JaN4yl2W.js                      69.63 kB │ gzip:  25.37 kB │ map:   349.88 kB
+dist/assets/index-Cfhim-mJ.js                     106.51 kB │ gzip:  31.68 kB │ map:   359.66 kB
+dist/assets/Collections-CvZZ-f6L.js               145.46 kB │ gzip:  31.94 kB │ map:   427.77 kB
+dist/assets/router-BjSwswdG.js                    164.45 kB │ gzip:  53.81 kB │ map:   706.62 kB
+dist/assets/ui-D4KITXt4.js                        171.06 kB │ gzip:  56.90 kB │ map:   799.18 kB
+dist/assets/charts-RlH8LYmu.js                    431.49 kB │ gzip: 114.88 kB │ map: 1,833.82 kB
+✓ built in 17.63s
+[OK] catalog-web -> /home/milosvasic/.cache/claude-tmp/webchk.66l65z/repo/releases/catalog-web/web/v0.0.0-webchk
+EXIT=0

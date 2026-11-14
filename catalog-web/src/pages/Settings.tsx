@@ -13,6 +13,7 @@ import type { QueueScanRequest } from '@/lib/scansApi'
 import type { SmbTestRequest } from '@/lib/smbApi'
 import type { CreateEndpointRequest } from '@/lib/syncApi'
 import { mediaApi } from '@/lib/mediaApi'
+import { useAuth } from '@/contexts/AuthContext'
 import toast from 'react-hot-toast'
 import {
   Scan,
@@ -295,7 +296,10 @@ const SmbDiscoverySection: React.FC = () => {
 }
 
 // --- Sync Section ---
-const SyncSection: React.FC = () => {
+// Every GET /sync/* is administrator-only on the server (SSE-F4): for anyone else the tab is not offered and, as a second
+// line of defence, no query is issued even if the section were mounted (no 403 polling, no 10 s sessions refetch).
+export const SyncSection: React.FC = () => {
+  const { isAdmin } = useAuth()
   const queryClient = useQueryClient()
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState<CreateEndpointRequest>({ name: '', url: '' })
@@ -303,17 +307,20 @@ const SyncSection: React.FC = () => {
   const { data: endpoints, isLoading: endpointsLoading } = useQuery({
     queryKey: ['sync-endpoints'],
     queryFn: () => syncApi.listEndpoints(),
+    enabled: isAdmin,
   })
 
   const { data: stats } = useQuery({
     queryKey: ['sync-statistics'],
     queryFn: () => syncApi.getStatistics(),
+    enabled: isAdmin,
   })
 
   const { data: sessions } = useQuery({
     queryKey: ['sync-sessions'],
     queryFn: () => syncApi.getSessions(),
-    refetchInterval: 10000,
+    enabled: isAdmin,
+    refetchInterval: isAdmin ? 10000 : false,
   })
 
   const createMutation = useMutation({
@@ -510,6 +517,7 @@ const SyncSection: React.FC = () => {
 
 // --- Main Settings Page ---
 export const Settings: React.FC = () => {
+  const { isAdmin } = useAuth()
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <motion.div
@@ -536,10 +544,12 @@ export const Settings: React.FC = () => {
               <Network className="h-4 w-4 mr-2" />
               SMB Discovery
             </TabsTrigger>
-            <TabsTrigger value="sync">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Sync
-            </TabsTrigger>
+            {isAdmin && (
+              <TabsTrigger value="sync">
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Sync
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="scans">
@@ -550,9 +560,11 @@ export const Settings: React.FC = () => {
             <SmbDiscoverySection />
           </TabsContent>
 
-          <TabsContent value="sync">
-            <SyncSection />
-          </TabsContent>
+          {isAdmin && (
+            <TabsContent value="sync">
+              <SyncSection />
+            </TabsContent>
+          )}
         </Tabs>
       </motion.div>
     </div>

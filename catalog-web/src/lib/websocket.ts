@@ -1,11 +1,8 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { useQueryClient, type QueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
-import {
-  WebSocketClient as BaseWebSocketClient,
-  type WebSocketMessage,
-  type ConnectionState,
-} from '@vasic-digital/websocket-client'
+import type { WebSocketMessage, ConnectionState } from '@vasic-digital/websocket-client'
+import { TicketWebSocketClient } from './wsTicketClient'
 
 export type { WebSocketMessage }
 
@@ -46,7 +43,7 @@ function toLegacyState(state: ConnectionState): 'connecting' | 'open' | 'closing
 
 // React hook for WebSocket connection
 export const useWebSocket = () => {
-  const clientRef = useRef<BaseWebSocketClient | null>(null)
+  const clientRef = useRef<TicketWebSocketClient | null>(null)
   const queryClient = useQueryClient()
 
   const connect = useCallback(() => {
@@ -55,14 +52,12 @@ export const useWebSocket = () => {
       return
     }
 
-    const token = localStorage.getItem('auth_token') || undefined
-    const wsUrl = token ? `${WS_URL}?token=${token}` : WS_URL
-
-    const client = new BaseWebSocketClient({
-      url: wsUrl,
+    // SEC-WS-1 F2: no session token in the URL; the client mints a single-use ticket for every (re)connect (see wsTicketClient.ts).
+    if (!localStorage.getItem('auth_token')) return
+    const client = new TicketWebSocketClient({
+      url: WS_URL,
       reconnectAttempts: 5,
       reconnectInterval: 1000,
-      bufferWhileDisconnected: true,
     })
 
     client.on('message', (message: WebSocketMessage) => {

@@ -22,7 +22,6 @@ import (
 	root_handlers "catalogizer/handlers"
 	"catalogizer/internal/firebase"
 	"catalogizer/internal/logging"
-	"catalogizer/internal/logredact"
 	"catalogizer/internal/metrics"
 	"catalogizer/internal/middleware"
 	"catalogizer/internal/services"
@@ -87,10 +86,7 @@ func buildRouter(d routerDeps) *gin.Engine {
 	// Setup Gin router
 	// gin.Default() equivalent whose access log redacts credential-bearing query parameters (ticket, access_token, token).
 	router := gin.New()
-	router.Use(gin.LoggerWithFormatter(func(p gin.LogFormatterParams) string {
-		return fmt.Sprintf("[GIN] %s | %3d | %13v | %15s | %-7s %#v\n%s",
-			p.TimeStamp.Format("2006/01/02 - 15:04:05"), p.StatusCode, p.Latency, p.ClientIP, p.Method, logredact.Path(p.Request.URL.Path, p.Request.URL.RawQuery), logredact.ErrorText(p.ErrorMessage))
-	}), middleware.Recovery(logger))
+	router.Use(gin.LoggerWithFormatter(middleware.AccessLogFormatter), middleware.AccessLogRouteParams(), middleware.Recovery(logger))
 
 	// RULE-GO-005 / Master Plan §4.2 — lock down X-Forwarded-For
 	// handling. Gin's default TrustedProxies is 0.0.0.0/0, which
@@ -207,7 +203,7 @@ func buildRouter(d routerDeps) *gin.Engine {
 	deepHealthChecker := metrics.NewHealthChecker(databaseDB, Version)
 	router.GET("/health/deep", root_middleware.CacheHeaders(5), deepHealthHandler(deepHealthChecker, Version, 100*time.Millisecond))
 
-	// WebSocket endpoint: authenticated (Bearer header or ?token=, session-checked) and Origin-checked; see registerWebSocketRoute
+	// WebSocket endpoint: authenticated (Bearer header or a single-use ?ticket= from POST /api/v1/ws/ticket, session-checked) and Origin-checked; see registerWebSocketRoute
 	registerWebSocketRoute(router, jwtMiddleware, wsHandler)
 
 	// Image proxy — serves external images (TMDB, etc.) through the API.
@@ -319,6 +315,7 @@ func altSvcMiddleware(c *gin.Context) {
 // startup. Changing it is a deliberate edit of this list.
 var wantGlobalChain = []string{
 	"github.com/gin-gonic/gin@v1.12.0/logger.go:LoggerWithConfig",
+	"internal/middleware/middleware.go:AccessLogRouteParams",
 	"internal/middleware/recovery.go:Recovery",
 	"middleware/security_headers.go:SecurityHeadersWithConfig",
 	"middleware/concurrency_limiter.go:ConcurrencyLimiter",

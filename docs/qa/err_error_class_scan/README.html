@@ -191,5 +191,13 @@ or kv entries, channel sends and call arguments (it skips
 <code>challenges/</code>). <code>astscan_sinks.go.txt</code> was
 extended in rework 3 with kind <code>H:</code> (helper inside a sink
 argument) and type-based err-like identifiers.</p>
+<p><code>typed_scan_gopackages.go.txt</code> (PXF18DOC-F5) is the typed
+<code>go/packages</code> scan used by the enumeration doc (169 rows at
+713a4f380): build it in a scratch module that requires
+golang.org/x/tools (v0.52.0) and run
+<code>./typedscan &lt;catalog-api dir&gt;</code>; it prints
+tab-separated <code>file line callee argument errname|NOT-errname</code>
+rows plus <code>ERRSAMPLE</code>/<code>pkg errors</code> lines for
+packages that fail to type-check (submodules absent).</p>
 </body>
 </html>

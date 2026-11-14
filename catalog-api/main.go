@@ -712,7 +712,7 @@ func main() {
 
 	// Stats handler
 	statsRepo := root_repository.NewStatsRepository(databaseDB)
-	statsHandler := root_handlers.NewStatsHandler(fileRepository, statsRepo)
+	statsHandler := root_handlers.NewStatsHandler(fileRepository, statsRepo).WithAdminChecker(userRepo.IsAdmin)
 
 	// Media browse handler (wires /media/search and /media/stats to the database)
 	mediaBrowseHandler := root_handlers.NewMediaBrowseHandler(fileRepository, statsRepo, databaseDB)
@@ -965,22 +965,17 @@ func main() {
 	//     /logout, /status, /me). These are cheap reads and the
 	//     challenge runner hits them heavily.
 	//   - defaultRateLimiter (2000 rpm per IP): everything else.
-	loginRateLimiter := authMiddleware.RateLimitByUser(30, "1m")
-	authRateLimiter := authMiddleware.RateLimitByUser(600, "1m")
-	defaultRateLimiter := authMiddleware.RateLimitByUser(2000, "1m")
-
-	// Redis-based distributed rate limiting: activates automatically when
-	// Redis is available AND REDIS_RATE_LIMIT=true is set.
-	if redisClient != nil && os.Getenv("REDIS_RATE_LIMIT") == "true" {
-	logger.Info("Activating Redis-based distributed rate limiting")
-	// Operator decision 2026-11-12: a Redis outage after startup falls back to
-	// the in-memory tiers (600/2000 per minute), not 503. /login and /register
-	// keep using the in-memory loginRateLimiter.
-	// root_middleware.NewRedisTierLimiters wires each tier to ITS OWN in-memory
-	// fallback (tested in middleware, CAT-OPA-1).
-	authRateLimiter, defaultRateLimiter = root_middleware.NewRedisTierLimiters(redisClient, authRateLimiter, defaultRateLimiter)
+	// newRouterDeps (main_ratetiers.go) builds the three tiers and applies the optional Redis tiers;
+	// the same function is what the behavioural wiring test calls (RLW-FU1).
+	// Redis-based distributed rate limiting: activates automatically when Redis is available AND
+	// REDIS_RATE_LIMIT=true is set. Operator decision 2026-11-12: a Redis outage after startup falls
+	// back to the in-memory tiers (600/2000 per minute), not 503; /login and /register always use the
+	// in-memory login tier (the Redis fallback wiring is tested in middleware, CAT-OPA-1).
+	redisRateLimit := redisClient != nil && os.Getenv("REDIS_RATE_LIMIT") == "true"
+	if redisRateLimit {
+		logger.Info("Activating Redis-based distributed rate limiting")
 	} else if redisClient != nil {
-	logger.Info("Redis available but REDIS_RATE_LIMIT not set — using in-memory rate limiting")
+		logger.Info("Redis available but REDIS_RATE_LIMIT not set — using in-memory rate limiting")
 	}
 
 	// Start runtime metrics collector (goroutines, memory)
@@ -989,7 +984,7 @@ func main() {
 	// Engine, global middleware, public routes and the /api/v1/auth group are
 	// built by buildRouter (main_router.go); the auth route table and handler
 	// chains are pinned by TestBuildRouterAuthSurface* (CAT-CHPW-RL-2).
-	router := buildRouter(routerDeps{
+	deps := newRouterDeps(routerDeps{
 		Logger:       logger,
 		Cfg:          cfg,
 		ServiceInfo:  serviceInfo,
@@ -1003,11 +998,9 @@ func main() {
 		Auth:         authHandler,
 		MediaQuery:   mediaQueryHandler,
 		UserRepo:     userRepo,
-		LoginRate:    loginRateLimiter,
-		AuthRate:     authRateLimiter,
-		DefaultRate:  defaultRateLimiter,
 		TrustedProxy: os.Getenv("TRUSTED_PROXIES"),
-	})
+	}, authMiddleware, redisClient, redisRateLimit)
+	router := buildRouter(deps)
 
 	// API routes
 	api := router.Group("/api/v1")
@@ -1015,7 +1008,7 @@ func main() {
 	// without authentication - needed for Android TV and other clients that need to
 	// fetch cover images from TMDB through the API proxy.
 	api.Use(jwtMiddleware.RequireAuth()) // Apply auth middleware to all API routes
-	api.Use(defaultRateLimiter)          // Apply general rate limiting to API
+	api.Use(deps.DefaultRate)            // Apply general rate limiting to API
 	{
 	// Catalog browsing endpoints
 	api.GET("/catalog", catalogHandler.ListRoot)
@@ -1381,27 +1374,30 @@ func main() {
 	syncGroup := api.Group("/sync")
 	{
 			syncGroup.POST("/endpoints", adminGate, func(c *gin.Context) { getSyncHandler().CreateEndpoint(c) })
-			syncGroup.GET("/endpoints", func(c *gin.Context) { getSyncHandler().GetUserEndpoints(c) })
-			syncGroup.GET("/endpoints/:id", func(c *gin.Context) { getSyncHandler().GetEndpoint(c) })
+			syncGroup.GET("/endpoints", adminGate, func(c *gin.Context) { getSyncHandler().GetUserEndpoints(c) })
+			syncGroup.GET("/endpoints/:id", adminGate, func(c *gin.Context) { getSyncHandler().GetEndpoint(c) })
 			syncGroup.PUT("/endpoints/:id", adminGate, func(c *gin.Context) { getSyncHandler().UpdateEndpoint(c) })
 			syncGroup.DELETE("/endpoints/:id", adminGate, func(c *gin.Context) { getSyncHandler().DeleteEndpoint(c) })
 			syncGroup.POST("/endpoints/:id/sync", adminGate, func(c *gin.Context) { getSyncHandler().StartSync(c) })
-			syncGroup.GET("/sessions", func(c *gin.Context) { getSyncHandler().GetUserSessions(c) })
-			syncGroup.GET("/sessions/:id", func(c *gin.Context) { getSyncHandler().GetSession(c) })
+			syncGroup.GET("/sessions", adminGate, func(c *gin.Context) { getSyncHandler().GetUserSessions(c) })
+			syncGroup.GET("/sessions/:id", adminGate, func(c *gin.Context) { getSyncHandler().GetSession(c) })
 			syncGroup.POST("/schedules", adminGate, func(c *gin.Context) { getSyncHandler().ScheduleSync(c) })
-			syncGroup.GET("/statistics", func(c *gin.Context) { getSyncHandler().GetSyncStatistics(c) })
+			syncGroup.GET("/statistics", adminGate, func(c *gin.Context) { getSyncHandler().GetSyncStatistics(c) })
 			syncGroup.POST("/cleanup", jwtMiddleware.RequireAdmin(), func(c *gin.Context) { getSyncHandler().CleanupOldSessions(c) })
 	}
 
-	// Challenge endpoints
+	// Challenge endpoints (PXF18-FU6): the whole group is administrator-only.
+	// Runs execute server-side code paths (P2), and the definitions and stored
+	// results carry assertion text and captured output, i.e. operator/diagnostic
+	// data. The guard is group-level so a route added here later inherits it.
 	challengeGroup := api.Group("/challenges")
+	challengeGroup.Use(adminGate)
 	{
 			challengeGroup.GET("", challengeHandler.ListChallenges)
 			challengeGroup.GET("/:id", challengeHandler.GetChallenge)
-			// Running challenges executes server-side code paths: administrators only (P2).
-			challengeGroup.POST("/:id/run", jwtMiddleware.RequireAdmin(), challengeHandler.RunChallenge)
-			challengeGroup.POST("/run", jwtMiddleware.RequireAdmin(), challengeHandler.RunAll)
-			challengeGroup.POST("/run/category/:category", jwtMiddleware.RequireAdmin(), challengeHandler.RunByCategory)
+			challengeGroup.POST("/:id/run", challengeHandler.RunChallenge)
+			challengeGroup.POST("/run", challengeHandler.RunAll)
+			challengeGroup.POST("/run/category/:category", challengeHandler.RunByCategory)
 			challengeGroup.GET("/results", challengeHandler.GetResults)
 	}
 
@@ -1444,7 +1440,7 @@ func main() {
 			getRecommendationHandler().GetTrendingItems(c)
 	})
 	// /api/v1/sync/history → wraps /sync/sessions.
-	api.GET("/sync/history", func(c *gin.Context) {
+	api.GET("/sync/history", adminGate, func(c *gin.Context) {
 			getSyncHandler().GetUserSessions(c)
 	})
 	// /localization/languages proxies the real subtitle language list.
@@ -1454,7 +1450,7 @@ func main() {
 	// Derived-from-real-state alias routes (media-types, stats, scan history,
 	// sync status/providers, files, subtitles). Routes with no real source
 	// answer 501 instead of canned data (CAT-001, §11.4.289). See handlers/alias_routes.go.
-	root_handlers.NewAliasHandler(databaseDB, browseHandler).RegisterAliasRoutes(api)
+	root_handlers.NewAliasHandler(databaseDB, browseHandler).WithSyncGate(adminGate).RegisterAliasRoutes(api)
 	}
 
 	// Fail closed: the auth surface of the finished engine must be exactly the

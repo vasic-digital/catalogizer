@@ -1,7 +1,12 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Settings } from '../Settings'
+import { Settings, SyncSection } from '../Settings'
+import { syncApi } from '@/lib/syncApi'
+
+// SSE-F4: every GET /sync/* is admin-only on the server, so the page must know the role.
+const authState = { isAdmin: true }
+vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ isAdmin: authState.isAdmin }) }))
 
 // Mock framer-motion
 vi.mock('framer-motion', async () => {
@@ -98,6 +103,58 @@ function createWrapper() {
 }
 
 describe('Settings', () => {
+  beforeEach(() => {
+    authState.isAdmin = true
+    vi.mocked(syncApi.listEndpoints).mockClear()
+    vi.mocked(syncApi.getStatistics).mockClear()
+    vi.mocked(syncApi.getSessions).mockClear()
+  })
+
+  describe('Sync tab is administrator-only (SSE-F4)', () => {
+    const syncCalls = () =>
+      vi.mocked(syncApi.listEndpoints).mock.calls.length +
+      vi.mocked(syncApi.getStatistics).mock.calls.length +
+      vi.mocked(syncApi.getSessions).mock.calls.length
+
+    it('non-admin: no Sync tab and zero /sync/* requests, other tabs intact', async () => {
+      authState.isAdmin = false
+      render(<Settings />, { wrapper: createWrapper() })
+      await screen.findByText('No scans recorded yet.')
+      await new Promise((r) => setTimeout(r, 50))
+      expect(screen.queryByText('Sync')).not.toBeInTheDocument()
+      expect(screen.getByText('Scans')).toBeInTheDocument()
+      expect(screen.getByText('SMB Discovery')).toBeInTheDocument()
+      expect(syncCalls()).toBe(0)
+    })
+
+    it('non-admin: sync section content never rendered', async () => {
+      authState.isAdmin = false
+      render(<Settings />, { wrapper: createWrapper() })
+      await new Promise((r) => setTimeout(r, 50))
+      expect(screen.queryByText('Sync Endpoints')).not.toBeInTheDocument()
+      expect(screen.queryByText('Total Syncs')).not.toBeInTheDocument()
+    })
+
+    it('non-admin: even a mounted SyncSection issues no /sync/* query', async () => {
+      authState.isAdmin = false
+      render(<SyncSection />, { wrapper: createWrapper() })
+      await new Promise((r) => setTimeout(r, 50))
+      expect(syncCalls()).toBe(0)
+    })
+
+    it('admin: Sync tab present and /sync/* requests are made', async () => {
+      authState.isAdmin = true
+      const user = (await import('@testing-library/user-event')).default.setup()
+      render(<Settings />, { wrapper: createWrapper() })
+      expect(screen.getByText('Sync')).toBeInTheDocument()
+      await user.click(screen.getByText('Sync'))
+      await screen.findByText('Total Syncs')
+      expect(vi.mocked(syncApi.listEndpoints)).toHaveBeenCalled()
+      expect(vi.mocked(syncApi.getStatistics)).toHaveBeenCalled()
+      expect(vi.mocked(syncApi.getSessions)).toHaveBeenCalled()
+    })
+  })
+
   describe('Rendering', () => {
     it('renders the Settings page heading', () => {
       render(<Settings />, { wrapper: createWrapper() })

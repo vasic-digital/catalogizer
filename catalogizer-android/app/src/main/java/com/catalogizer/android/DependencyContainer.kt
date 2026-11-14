@@ -143,7 +143,8 @@ class DependencyContainer(private val context: Context) {
             baseUrl = currentBaseUrl,
             tokenProvider = {
                 runBlocking { authRepository.authToken.first() }
-            }
+            },
+            ticketMinter = com.catalogizer.android.data.repository.ApiWsTicketMinter(api)
         )
     }
 

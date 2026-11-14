@@ -17,6 +17,9 @@ import { MemoryRouter } from 'react-router-dom'
 import { installRealApi } from '@/test/realApiTransport'
 import collectionsNonEmpty from '@/test/fixtures/realApi/collections_nonempty.json'
 
+// SSE-F4: Settings reads the role (Sync tab is admin-only).
+vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ isAdmin: true }) }))
+
 vi.mock('framer-motion', async () => {
   const passthrough = (tag: string) => {
     const C = ({ children, initial: _i, animate: _a, transition: _t, whileHover: _wh, whileTap: _wt, exit: _e, layout: _l, variants: _v, ...props }: any) =>

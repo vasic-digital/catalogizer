@@ -745,3 +745,31 @@ func TestOBF_FU_SymlinkedConfigPathWithInternalLink(t *testing.T) {
 	_, err := os.Stat(filepath.Join(real, "sub", "x.json"))
 	assert.NoError(t, err)
 }
+
+// OBF-FU-F1: with a RELATIVE CONFIG_PATH (the production default ./config) an in-config link whose target is ABSOLUTE and
+// inside the configuration directory must be accepted (it was compared absolute-vs-relative and wrongly refused).
+func TestOBF_FU_F1_RelativeConfigPathAbsoluteInsideLink(t *testing.T) {
+	s := newTemplateTestService(t)
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	require.NoError(t, err)
+	require.NoError(t, os.MkdirAll(filepath.Join(root, "cfg", "sub"), 0o755))
+	require.NoError(t, os.Symlink(filepath.Join(root, "cfg", "sub"), filepath.Join(root, "cfg", "in")))
+	old, err := os.Getwd()
+	require.NoError(t, err)
+	require.NoError(t, os.Chdir(root))
+	t.Cleanup(func() { _ = os.Chdir(old) })
+	s.configPath = "./cfg"
+	require.NoError(t, s.createConfigurationFile(map[string]interface{}{"file_path": "in/x.json"},
+		&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}}), "inside link with absolute target")
+	_, err = os.Stat(filepath.Join(root, "cfg", "sub", "x.json"))
+	assert.NoError(t, err)
+
+	// control: an absolute link target OUTSIDE the directory is still refused with a relative CONFIG_PATH
+	outside := t.TempDir()
+	require.NoError(t, os.Symlink(outside, filepath.Join(root, "cfg", "out")))
+	err = s.createConfigurationFile(map[string]interface{}{"file_path": "out/y.json"},
+		&models.WizardSession{Configuration: map[string]interface{}{"k": "v"}})
+	assert.Error(t, err, "outside link must stay refused")
+	_, serr := os.Stat(filepath.Join(outside, "y.json"))
+	assert.True(t, os.IsNotExist(serr), "nothing written outside")
+}
