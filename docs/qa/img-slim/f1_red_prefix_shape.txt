@@ -1,0 +1,7 @@
+# F1 RED: argument shape BEFORE the code fix (no -vn), slim ffmpeg
+art.mp3->ogg rc=8 [vost#0:0 @ 0x57da0d71b440] Automatic encoder selection failed Default encoder for format ogg (codec theora) is probably disabled. Please choose an encoder manu
+art.mp3->m4a rc=234 [ipod @ 0x640c4986b800] Could not find tag for codec h264 in stream #0, codec not currently supported in container
+[out#0/ipod @ 0x640c4986b700] Could not write
+artpng.flac->ogg rc=8 [vost#0:0 @ 0x5faba3d5b180] Automatic encoder selection failed Default encoder for format ogg (codec theora) is probably disabled. Please choose an encoder manu
+artpng.flac->m4a rc=234 [ipod @ 0x63cda2a4fb40] Could not find tag for codec h264 in stream #0, codec not currently supported in container
+[out#0/ipod @ 0x63cda2a4f4c0] Could not write

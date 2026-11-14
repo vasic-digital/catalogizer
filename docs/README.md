@@ -61,6 +61,7 @@ Comprehensive documentation for the Catalogizer multi-platform media collection 
 | [Deployment Guide](DEPLOYMENT_GUIDE.md) | Full deployment instructions (dev to production) |
 | [Deployment (Detailed)](deployment/DEPLOYMENT.md) | Extended deployment documentation |
 | [Docker Setup](deployment/DOCKER_SETUP.md) | Docker and Docker Compose configuration |
+| [Minimal ffmpeg in the API image](deployment/FFMPEG_MINIMAL.md) | What the slim ffmpeg includes/excludes, licence, rebuild |
 | [Environment Variables](deployment/ENVIRONMENT_VARIABLES.md) | Complete environment variable reference |
 | [Monitoring Guide](deployment/MONITORING_GUIDE.md) | Metrics, alerting, and observability |
 | [Production Runbook](deployment/PRODUCTION_RUNBOOK.md) | Operational procedures and incident response |

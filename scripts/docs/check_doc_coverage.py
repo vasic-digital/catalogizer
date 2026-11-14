@@ -180,7 +180,7 @@ CLAIMS = [
     ("share-controls-disabled", "docs/UPGRADE_NOTES.md", r"(?i)collection.{0,40}shar\w+.{0,200}disabled",
      "catalog-web/src/components/collections/CollectionSharing.tsx", r"SHARE_API_AVAILABLE"),
     ("converters-in-image", "docs/deployment/DOCKER_SETUP.md", r"ffmpeg.{0,200}imagemagick|imagemagick.{0,200}ffmpeg",
-     "catalog-api/Dockerfile.runtime", r"ffmpeg\s+imagemagick"),
+     "catalog-api/Dockerfile.runtime", r"(?s)util-linux\s+imagemagick.*COPY --from=ffmpeg-build /opt/ffmpeg/bin/ffmpeg"),
     ("converters-probe-in-health", "docs/api/openapi.yaml", r"converters:",
      "catalog-api/internal/metrics/health.go", r'json:"converters"'),
     ("go-fitz-removed-poppler-renders", "docs/UPGRADE_NOTES.md", r"go-fitz.{0,300}(?i:AGPL).{0,300}(?i:removed)|go-fitz.{0,300}(?i:removed)",

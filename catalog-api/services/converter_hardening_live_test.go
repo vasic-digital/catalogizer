@@ -434,3 +434,32 @@ func TestSanitizeSVG_LiteralXmlnsBindingDropped(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotContains(t, string(out), "foo")
 }
+
+// CAT-IMG-SLIM-1 (review round 1, F1): audio with an embedded cover picture must convert to every
+// offered audio target. Before the fix ogg failed with the slim ffmpeg (default picture codec theora is
+// not built) and m4a failed with rc 234 on the distro ffmpeg as well.
+func TestHardenLive_AudioWithCoverConvertsToEveryTarget(t *testing.T) {
+	needTools(t, "ffmpeg", "ffprobe", "prlimit")
+	root, _, _ := rv6ConvFixture(t)
+	svc := &ConversionService{}
+	cover := filepath.Join(root, "cover.jpg")
+	if out, err := exec.Command("ffmpeg", "-nostdin", "-v", "error", "-y", "-f", "lavfi", "-i", "testsrc=d=1:s=64x64", "-frames:v", "1", cover).CombinedOutput(); err != nil {
+		t.Skipf("this ffmpeg cannot make a cover fixture: %s", strings.TrimSpace(string(out)))
+	}
+	src := filepath.Join(root, "art.mp3")
+	if out, err := exec.Command("ffmpeg", "-nostdin", "-v", "error", "-y", "-f", "lavfi", "-i", "sine=d=1", "-i", cover,
+		"-map", "0", "-map", "1", "-c:v", "copy", "-disposition:v", "attached_pic", src).CombinedOutput(); err != nil {
+		t.Skipf("this ffmpeg cannot make an mp3 with cover: %s", strings.TrimSpace(string(out)))
+	}
+	for _, f := range []string{"mp3", "wav", "flac", "aac", "ogg", "m4a", "opus"} {
+		tgt := filepath.Join(root, "art_out."+f)
+		require.NoError(t, svc.convertAudio(&models.ConversionJob{SourcePath: src, TargetPath: tgt, TargetFormat: f, Quality: "medium"}), f)
+		out, err := exec.Command("ffprobe", "-v", "error", "-show_entries", "stream=codec_type", "-of", "csv=p=0", tgt).Output()
+		require.NoError(t, err, f)
+		kinds := strings.Fields(string(out))
+		assert.Contains(t, kinds, "audio", f)
+		if f == "ogg" || f == "m4a" {
+			assert.NotContains(t, kinds, "video", f+": the cover picture must be dropped, not turned into a video stream")
+		}
+	}
+}

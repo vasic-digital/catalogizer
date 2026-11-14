@@ -163,7 +163,7 @@ def test_claims_check_detects_missing_doc_statement_and_missing_code():
         assert rc == 0, out
         shutil.rmtree(d)
         files["docs/UPGRADE_NOTES.md"] = files["docs/UPGRADE_NOTES.md"].replace("go-fitz", "gofitz")
-        files["catalog-api/Dockerfile.runtime"] = files["catalog-api/Dockerfile.runtime"].replace("ffmpeg imagemagick", "")
+        files["catalog-api/Dockerfile.runtime"] = files["catalog-api/Dockerfile.runtime"].replace("COPY --from=ffmpeg-build", "COPY --from=other-stage")
         d = build(files)
         rc, out = run(d, "--check", "claims")
         assert rc == 1 and "CLAIM_NOT_IN_DOC\tgo-fitz-removed-poppler-renders" in out and "CLAIM_NOT_IN_CODE\tconverters-in-image" in out, out

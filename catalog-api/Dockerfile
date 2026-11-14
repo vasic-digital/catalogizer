@@ -83,7 +83,6 @@ RUN ./configure --prefix=/opt/ffmpeg --enable-gpl --disable-autodetect --disable
         --enable-libx264 --enable-libvpx --enable-libmp3lame --enable-libopus --enable-libvorbis \
         --enable-libxvid --enable-libdav1d \
         --enable-zlib --enable-bzlib --enable-lzma --enable-iconv \
-        --enable-zlib --enable-bzlib --enable-lzma --enable-iconv \
     && make -j"$(n=$(nproc); [ "$n" -gt 8 ] && n=8; echo "$n")" && make install && strip /opt/ffmpeg/bin/ffmpeg /opt/ffmpeg/bin/ffprobe
 
 # Stage 2: Runtime (must match builder's glibc version — both use trixie)
@@ -97,7 +96,8 @@ FROM docker.io/library/debian:trixie-slim
 # job fails with "converter tool ... is not installed" (GET /health/deep -> converters shows what is present).
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates tzdata wget poppler-utils util-linux imagemagick \
-        libx264-164 libvpx9 libmp3lame0 libopus0 libvorbis0a libvorbisenc2 libxvidcore4 libdav1d7 \
+        libx264-164 libvpx9 libmp3lame0 libopus0 libvorbis0a libvorbisenc2 libogg0 libxvidcore4 libdav1d7 \
+        zlib1g libbz2-1.0 liblzma5 \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 COPY --from=ffmpeg-build /opt/ffmpeg/bin/ffmpeg /opt/ffmpeg/bin/ffprobe /usr/local/bin/

@@ -19,6 +19,16 @@ if [ "$MODE" = gen ]; then
   A="$L -i sine=frequency=330:duration=2"
   for e in mp3 wav flac aac ogg m4a opus; do ffmpeg -hide_banner -loglevel error -y $A a.$e || echo "GENFAIL a.$e"; done
   ffmpeg -hide_banner -loglevel error -y $A -c:a wmav2 a.wma || echo "GENFAIL a.wma"
+  # round 2 (review F2): realistic inputs
+  ffmpeg -hide_banner -loglevel error -y $L -i testsrc=d=1:s=64x64 -frames:v 1 cov.png
+  ffmpeg -hide_banner -loglevel error -y $L -i testsrc=d=1:s=64x64 -frames:v 1 cov.jpg
+  ffmpeg -hide_banner -loglevel error -y $L -i sine=d=2 -i cov.jpg -map 0 -map 1 -c:v copy -disposition:v attached_pic art.mp3 || echo "GENFAIL art.mp3"
+  ffmpeg -hide_banner -loglevel error -y $L -i sine=d=2 -i cov.png -map 0 -map 1 -c:a flac -c:v copy -disposition:v attached_pic artpng.flac || echo "GENFAIL artpng.flac"
+  printf '1\n00:00:00,000 --> 00:00:01,000\nhello\n' > s.srt
+  ffmpeg -hide_banner -loglevel error -y $L -i testsrc=d=2:s=176x144:r=15 $L -i sine=d=2 -i s.srt -map 0 -map 1 -map 2 -c:v libx264 -c:a ac3 -c:s ass -shortest sub.mkv || echo "GENFAIL sub.mkv"
+  ffmpeg -hide_banner -loglevel error -y $L -i testsrc=d=2:s=176x144:r=15 -c:v libx265 -pix_fmt yuv420p10le hevc10.mkv 2>/dev/null || echo "GENFAIL hevc10.mkv"
+  ffmpeg -hide_banner -loglevel error -y $L -i testsrc=d=1:s=176x144:r=15 -c:v libaom-av1 -cpu-used 8 av1.mkv 2>/dev/null || echo "GENFAIL av1.mkv"
+  ffmpeg -hide_banner -loglevel error -y $L -i testsrc=d=1:s=176x144:r=15 -c:v mpeg2video -c:a mp2 v.mpg || echo "GENFAIL v.mpg"
   ls -l; exit 0
 fi
 mkdir -p "$OUT"; cd "$IN" || exit 1
@@ -74,3 +84,12 @@ printf 'caps\tnonexist-protocol-refused=%s\n' "$(ffmpeg -nostdin -hide_banner -l
 if command -v convert >/dev/null 2>&1; then
   convert -size 64x48 gradient:red-blue "$OUT/g.png" && for e in jpg gif bmp tiff webp png; do convert "$OUT/g.png" -resize 32x24 -quality 80 "$OUT/o.$e"; row "image png->$e" "rc=$?" "$OUT/o.$e"; done
 fi
+# ---- round 2 (review F2): realistic inputs. -vn mirrors services/conversion_service.go audioTargetsWithoutPicture (ogg, m4a)
+pp() { [ -s "$1" ] || { echo MISSING; return; }; ffprobe -v error -show_entries stream=codec_name,codec_type,width,height:stream_disposition=attached_pic -of csv=p=0 "$1" 2>&1 | tr '\n' ';'; }
+for s in art.mp3 artpng.flac; do for d in mp3 wav flac aac ogg m4a opus; do
+  o=$OUT/${s%.*}.$d; VN=""; case $d in ogg|m4a) VN="-vn";; esac
+  ffmpeg $GUARD -i $s -y $VN -ab 192k $o >/dev/null 2>&1; rc=$?; echo "cover-audio $s->$d	rc=$rc	$(pp $o)"; done; done
+for s in sub.mkv hevc10.mkv av1.mkv v.mpg; do for d in mp4 mkv mov webm avi m4v; do
+  o=$OUT/${s%.*}_x.$d; ffmpeg $GUARD -i $s -y -crf 28 -preset fast $o >/dev/null 2>&1; rc=$?; echo "real-video $s->$d	rc=$rc	$(pp $o)"; done
+  o=$OUT/${s%.*}_f.jpg; ffmpeg -nostdin -protocol_whitelist file,pipe -format_whitelist $DEM -ss 0.50 -i $s -vframes 1 -q:v 2 -y $o >/dev/null 2>&1; rc=$?; echo "real-frame $s	rc=$rc	$(pp $o)"; done
+# the PASS/FAIL verdict of these rows is computed by check_smoke_rows.sh (rc != 0 is a FAIL except the known -ar 44100 opus quirk)

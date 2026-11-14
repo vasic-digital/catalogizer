@@ -46,3 +46,33 @@ UNCONFIRMED / not exercised: a full `Dockerfile` build including the Go stage (t
 the conversion worker end to end through the HTTP API with a real library; ENCODING to wmv/flv/3gp/wma (not offered as targets, only decoded); byte equality of encodes
 (compared through ffprobe properties, which matched; encoder libraries are the same Debian versions as before); the ffmpeg tarball signature (only the sha256 is pinned,
 the key server was unreachable); builds on the designated remote build host (this build ran on the local host with rootless podman).
+
+## Round 2 (review round 1 NO-GO: F1-F6) - PROVISIONAL, container-class
+
+Image: `localhost/catimgslim-api:slim2` 307 MB (same size class as round 1). Binary unchanged (sha256 59c6fe1d...).
+
+| id | result | evidence |
+|---|---|---|
+| F1 audio with embedded cover -> ogg/m4a | RED on the round-1 arg shape (no `-vn`, slim ffmpeg): `art.mp3->ogg` and `artpng.flac->ogg` rc=8 "Default encoder for format ogg (codec theora) is probably disabled"; both `->m4a` rc=234 "Could not find tag for codec h264 in stream #0". GREEN with `-vn` for ogg/m4a (code fix in `buildFFmpegAudioArgs`): all cover-audio rows rc=0; mp3/flac keep the picture. Decision: drop the picture, no libtheora (Theora-in-Ogg is non-standard and adds a library; `-vn` also repairs m4a, which failed in the OLD image too = separately labelled extra fix). Go: 3 new table cases plus live test `TestHardenLive_AudioWithCoverConvertsToEveryTarget` PASS in old and slim2 image | `f1_red_prefix_shape.txt`, `r2_{old,new}_convert.tsv`, `gotest_r2_*.log` |
+| F2 corpus + PASS/FAIL | corpus extended (cover-art mp3/flac, AV1, HEVC 10-bit, mkv with subtitle+ac3, MPEG-2); `check_caps.sh required_caps.txt` (69 required encoders/decoders/muxers/demuxers/filters derived from the code) PASS 69/69 on slim2; `check_smoke_rows.sh` 170 rc rows, failures=0 (only the pre-existing `audio a.*->opus` rc=234 `-ar 44100` quirk is tolerated); `diff r2_old_convert.tsv r2_new_convert.tsv` EMPTY | `caps_check_new.txt`, `r2_*_convert.tsv` |
+| F3 doc coverage claim | `converters-in-image` now checks `util-linux imagemagick ... COPY --from=ffmpeg-build /opt/ffmpeg/bin/ffmpeg`; paired mutation (replace the COPY with another stage) fires CLAIM_NOT_IN_CODE; checker gaps back to main's (smart-playlist-501 pre-existing; the 2 unit-test failures come from that same pre-existing gap). `DOCKER_SETUP.md` updated | `scripts/docs/` |
+| F4 provenance | `docs/deployment/FFMPEG_MINIMAL.md`: sha256, signature Good-signature by the reviewer (my own run could not reach a key server), licence note GPLv2+, theora/cover-art consequence; linked from `docs/README.md` | |
+| F5 | duplicated `--enable-zlib` line removed in `Dockerfile` and `Dockerfile.runtime` | |
+| F6 | runtime libs listed explicitly (libogg0, zlib1g, libbz2-1.0, liblzma5, plus codec libs); `ldd_ffmpeg.txt` shows every NEEDED lib resolves | `ldd_ffmpeg.txt` |
+
+Go tests (test binary compiled once in golang:1.26 with the changed files via `-overlay`, executed inside each image, regex Convert|Conversion|Hardening|FFmpeg|FFprobe|Truncat|Integrity|Probe|AudioWithCover):
+80 PASS in BOTH images; the same 4 FAILs in BOTH (`TestCAT002_Integration_ConvertPDFRoutes`, `TestD1_ConvertDocument_PDFToTextUsesPDFExtractor`, `TestHardenLive_OrdinaryConversionsStillWork`, `TestRV7_ConvertersPublishRegularOutputs`: PDF/SVG tooling and root-mode causes, identical in the old image, so pre-existing). Logs: `gotest_r2_*.log`.
+
+### Mutants (detectors: C = `check_caps.sh`, S = `check_smoke_rows.sh`, D = TSV diff vs `r2_new_convert.tsv`)
+
+| mutant | how | C | S | D | verdict |
+|---|---|---|---|---|---|
+| M3 drop libdav1d (reviewer's) | full rebuild of `Dockerfile.runtime` with `--enable-libdav1d`, `libdav1d-dev`, `libdav1d7` removed | FAIL (decoder:libdav1d) | FAIL 7 rows (av1.mkv rc=69) | differs | KILLED by all three |
+| drop libopus | full rebuild without `--enable-libopus` and the packages | FAIL (encoder:libopus) | FAIL 13 (->opus rc=88) | differs | KILLED |
+| drop libvpx | full rebuild without `--enable-libvpx` and the packages | FAIL (encoder:libvpx-vp9) | FAIL 13 (->webm rc=8) | differs | KILLED |
+| M1-style runtime lib removed (libvorbisenc.so.2, bind-mount of /dev/null) | run on slim2 | FAIL 69/69 | FAIL 164 rows rc=127 | n/a | KILLED |
+| runtime lib libopus.so.0 / libvpx.so.9 removed | same technique | FAIL 69/69 | FAIL 164 | n/a | KILLED |
+
+Files: `mutants_r2.log`, `mutant_{build,caps,smoke,convert}_*`. M2 (reviewer's missing-media/typo style) was not re-run separately: the three detectors above are the ones M2 relied on; UNCONFIRMED for M2 specifically.
+
+UNCONFIRMED / not exercised in round 2: full `Dockerfile` build including the Go stage (no submodules in the clone, disk nearly full); the GPG verification rests on the reviewer's run; builds ran on the local host, not the designated remote build host; ffmpeg-build is about 10 min cold; encoder output byte equality was not compared (properties compared via ffprobe); ogg/m4a outputs now drop embedded cover art (behaviour change, mp3/flac keep it); M2.

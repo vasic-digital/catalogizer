@@ -1,0 +1,15 @@
+FAIL: audio a.mp3->opus	rc=88	MISSING
+FAIL: audio a.wav->opus	rc=88	MISSING
+FAIL: audio a.flac->opus	rc=88	MISSING
+FAIL: audio a.aac->opus	rc=88	MISSING
+FAIL: audio a.ogg->opus	rc=88	MISSING
+FAIL: audio a.wma->opus	rc=88	MISSING
+FAIL: audio a.m4a->opus	rc=88	MISSING
+FAIL: audio a.opus->opus	rc=88	MISSING
+FAIL: audio-noar a.wav->opus	rc=88	MISSING
+FAIL: audio-noar a.mp3->opus	rc=88	MISSING
+FAIL: audio-noar a.flac->opus	rc=88	MISSING
+FAIL: cover-audio art.mp3->opus	rc=88	MISSING
+FAIL: cover-audio artpng.flac->opus	rc=88	MISSING
+rows=170 failures=13
+SMOKE FAIL

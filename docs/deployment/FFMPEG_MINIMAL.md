@@ -1,6 +1,6 @@
 # Minimal ffmpeg in the catalog-api image (CAT-IMG-SLIM-1)
 
-Status: PROVISIONAL (container-class evidence in `docs/qa/img-slim/`; no manual QA, no live media library run).
+Status: PROVISIONAL (container-class evidence in `docs/qa/img-slim/`; no manual QA, no live media library run). Reachable from `docs/README.md` and `docs/deployment/DOCKER_SETUP.md`.
 
 ## Why
 
@@ -32,14 +32,31 @@ Exact call shapes that were exercised are in `catalog-api/services/conversion_se
 
 ## Consequences
 
-- An output encoder not listed above and not native (for example `-c:v libx265`, `libaom-av1`) is no longer available.
+- An output encoder not listed above and not native (for example `-c:v libx265`, `libaom-av1`, `libtheora`) is no longer available.
   The application never selects them: video/audio encoders are chosen by the target extension
   (mp4/mkv/mov/m4v -> libx264, webm -> VP9, avi -> MPEG-4, mp3, aac, flac, wav, ogg -> vorbis, opus).
+- **Cover art in audio files (found in review round 1).** For an audio file with an embedded cover picture the distro ffmpeg turned the
+  picture into a second stream: for `.ogg` a `theora` video stream (a non-standard video stream inside an audio file) and for `.m4a`
+  a failure (rc 234, in the distro image too). The slim ffmpeg has no libtheora, so `.ogg` failed (rc 8). Decision: do NOT add libtheora;
+  `ConversionService.buildFFmpegAudioArgs` now passes `-vn` for the targets `ogg` and `m4a` (`audioTargetsWithoutPicture`), so the picture is dropped
+  and the audio converts. Reason: Theora in ogg is not how players read covers (they use the vorbis `METADATA_BLOCK_PICTURE` tag), libtheora would
+  add a library for a stream nobody wants, and the same `-vn` also repairs `.m4a`. mp3 and flac keep their cover (verified), wav/aac/opus drop it by themselves.
+  Regression: Go tests `TestConversionService_BuildFFmpegAudioArgs` (argument shapes) and `TestHardenLive_AudioWithCoverConvertsToEveryTarget` (real ffmpeg).
 - Adding a codec means adding its `-dev` package and `--enable-lib...` flag to the `ffmpeg-build` stage and
-  its runtime package to the final-stage `apt-get install`.
-- The source tarball is pinned by sha256 only; its detached signature (key FCF986EA15E6E293A5644F10B4322F04D67658D8)
-  could not be verified when this was written (key server unreachable): UNCONFIRMED authenticity beyond the hash.
-- The ffmpeg build adds about 7 minutes (measured, `make -j8`, nice 10; cached afterwards) (`make -j` is capped at 8 for host safety).
+  its runtime package to the final-stage `apt-get install`; then extend `docs/qa/img-slim/required_caps.txt`.
+- Runtime libraries are listed explicitly in the final stage: libx264-164 libvpx9 libmp3lame0 libopus0 libvorbis0a libvorbisenc2 libogg0
+  libxvidcore4 libdav1d7 plus zlib1g libbz2-1.0 liblzma5 (the latter three are also part of the base, listing them keeps the dependency visible).
+  Evidence: `ldd /usr/local/bin/ffmpeg` in `docs/qa/img-slim/ldd_ffmpeg.txt`.
+
+## Provenance and licence
+
+- Source: https://ffmpeg.org/releases/ffmpeg-7.1.5.tar.xz, sha256 `de668509caf9e35e3cd162473441fdb29538c6d96ed080292b3cf9e6fc5d558f` (checked in the build).
+  Detached signature `ffmpeg-7.1.5.tar.xz.asc` verified by the round-1 reviewer: "Good signature" from the FFmpeg release key
+  `FCF9 86EA 15E6 E293 A564  4F10 B432 2F04 D676 58D8`. No web of trust was established for that key (the fingerprint is the one published by FFmpeg); the build itself pins only the sha256.
+- Licence: the build uses `--enable-gpl` with libx264 and libxvid, so the resulting `ffmpeg`/`ffprobe` binaries are GPL version 2 or later
+  (not LGPL). Anyone receiving the image can obtain the corresponding source from the URL above (tarball pinned by sha256) together with the exact
+  configure line, which is in `catalog-api/Dockerfile` and `catalog-api/Dockerfile.runtime` (`ffmpeg-build` stage). The Catalogizer binary only executes ffmpeg as a separate process.
+  The distro ffmpeg was GPL as well (`--enable-gpl` in `docs/qa/img-slim/old_ffmpeg_config.txt`), so the licence class of the image does not change.
 
 ## Rebuild
 

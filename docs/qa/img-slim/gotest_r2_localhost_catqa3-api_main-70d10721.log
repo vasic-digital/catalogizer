@@ -1,0 +1,427 @@
+=== RUN   TestOBF_FU_ProbesDoNotTouchExistingTestTmp
+--- PASS: TestOBF_FU_ProbesDoNotTouchExistingTestTmp (0.00s)
+=== RUN   TestOBF_FU_ProbesReportUnwritableDirectory
+    configuration_wizard_template_test.go:620: directory writable despite mode 0500 (running as root?)
+--- SKIP: TestOBF_FU_ProbesReportUnwritableDirectory (0.00s)
+=== RUN   TestD1_ConvertDocument_PDFToTextUsesPDFExtractor
+    conversion_d1_test.go:20: 
+        	Error Trace:	/src/catalog-api/services/conversion_pdf_text_test.go:64
+        	            				/src/catalog-api/services/conversion_d1_test.go:20
+        	Error:      	Received unexpected error:
+        	            	open testdata/pdf/uni.pdf: no such file or directory
+        	Test:       	TestD1_ConvertDocument_PDFToTextUsesPDFExtractor
+--- FAIL: TestD1_ConvertDocument_PDFToTextUsesPDFExtractor (0.00s)
+=== RUN   TestD7_SanitizeConversionError
+--- PASS: TestD7_SanitizeConversionError (0.00s)
+=== RUN   TestRev_F3_AdvertisedPairsRouteToARealConverter
+--- PASS: TestRev_F3_AdvertisedPairsRouteToARealConverter (0.00s)
+=== RUN   TestConversion_DotDotAfterSymlinkDoesNotEscape
+    conversion_dotdot_symlink_test.go:40: validate=false confineErr=target path "/tmp/TestConversion_DotDotAfterSymlinkDoesNotEscape2768226502/001/root/lnk/../pwn.txt" rejected: pathguard: "/tmp/TestConversion_DotDotAfterSymlinkDoesNotEscape2768226502/001/root/lnk/../pwn.txt": path has a ".." after a symlink; the kernel and lexical path functions disagree on it kernelWroteOutside=true
+--- PASS: TestConversion_DotDotAfterSymlinkDoesNotEscape (0.00s)
+=== RUN   TestConversion_DotDotAfterSymlinkRefusedEndToEnd
+--- PASS: TestConversion_DotDotAfterSymlinkRefusedEndToEnd (0.01s)
+=== RUN   TestCAT002_ConvertPDFToText_RealPDF
+--- PASS: TestCAT002_ConvertPDFToText_RealPDF (0.28s)
+=== RUN   TestCAT002_Integration_ConvertPDFRoutes
+    conversion_pdf_text_test.go:174: 
+        	Error Trace:	/src/catalog-api/services/conversion_pdf_text_test.go:64
+        	            				/src/catalog-api/services/conversion_pdf_text_test.go:174
+        	Error:      	Received unexpected error:
+        	            	open testdata/pdf/uni.pdf: no such file or directory
+        	Test:       	TestCAT002_Integration_ConvertPDFRoutes
+--- FAIL: TestCAT002_Integration_ConvertPDFRoutes (0.00s)
+=== RUN   TestConverterChildDiesWhenServerIsSIGKILLed
+--- PASS: TestConverterChildDiesWhenServerIsSIGKILLed (0.13s)
+=== RUN   TestConversionService_GetSupportedFormats
+--- PASS: TestConversionService_GetSupportedFormats (0.00s)
+=== RUN   TestConversionService_ValidateConversionRequest
+=== RUN   TestConversionService_ValidateConversionRequest/empty_request
+=== RUN   TestConversionService_ValidateConversionRequest/missing_source_path
+=== RUN   TestConversionService_ValidateConversionRequest/missing_target_path
+=== RUN   TestConversionService_ValidateConversionRequest/missing_source_format
+=== RUN   TestConversionService_ValidateConversionRequest/missing_target_format
+=== RUN   TestConversionService_ValidateConversionRequest/missing_conversion_type
+=== RUN   TestConversionService_ValidateConversionRequest/invalid_conversion_type
+=== RUN   TestConversionService_ValidateConversionRequest/unsupported_format
+=== RUN   TestConversionService_ValidateConversionRequest/valid_video_conversion
+=== RUN   TestConversionService_ValidateConversionRequest/valid_audio_conversion
+=== RUN   TestConversionService_ValidateConversionRequest/valid_image_conversion
+=== RUN   TestConversionService_ValidateConversionRequest/valid_document_conversion
+--- PASS: TestConversionService_ValidateConversionRequest (0.01s)
+    --- PASS: TestConversionService_ValidateConversionRequest/empty_request (0.00s)
+    --- PASS: TestConversionService_ValidateConversionRequest/missing_source_path (0.00s)
+    --- PASS: TestConversionService_ValidateConversionRequest/missing_target_path (0.00s)
+    --- PASS: TestConversionService_ValidateConversionRequest/missing_source_format (0.00s)
+    --- PASS: TestConversionService_ValidateConversionRequest/missing_target_format (0.00s)
+    --- PASS: TestConversionService_ValidateConversionRequest/missing_conversion_type (0.00s)
+    --- PASS: TestConversionService_ValidateConversionRequest/invalid_conversion_type (0.00s)
+    --- PASS: TestConversionService_ValidateConversionRequest/unsupported_format (0.00s)
+    --- PASS: TestConversionService_ValidateConversionRequest/valid_video_conversion (0.00s)
+    --- PASS: TestConversionService_ValidateConversionRequest/valid_audio_conversion (0.00s)
+    --- PASS: TestConversionService_ValidateConversionRequest/valid_image_conversion (0.00s)
+    --- PASS: TestConversionService_ValidateConversionRequest/valid_document_conversion (0.00s)
+=== RUN   TestConversionService_IsValidConversionType
+=== RUN   TestConversionService_IsValidConversionType/valid_video_conversion
+=== RUN   TestConversionService_IsValidConversionType/valid_audio_conversion
+=== RUN   TestConversionService_IsValidConversionType/valid_image_conversion
+=== RUN   TestConversionService_IsValidConversionType/valid_document_conversion
+=== RUN   TestConversionService_IsValidConversionType/invalid_conversion_type
+=== RUN   TestConversionService_IsValidConversionType/empty_conversion_type
+--- PASS: TestConversionService_IsValidConversionType (0.00s)
+    --- PASS: TestConversionService_IsValidConversionType/valid_video_conversion (0.00s)
+    --- PASS: TestConversionService_IsValidConversionType/valid_audio_conversion (0.00s)
+    --- PASS: TestConversionService_IsValidConversionType/valid_image_conversion (0.00s)
+    --- PASS: TestConversionService_IsValidConversionType/valid_document_conversion (0.00s)
+    --- PASS: TestConversionService_IsValidConversionType/invalid_conversion_type (0.00s)
+    --- PASS: TestConversionService_IsValidConversionType/empty_conversion_type (0.00s)
+=== RUN   TestConversionService_IsSupportedFormat
+=== RUN   TestConversionService_IsSupportedFormat/mp4_video_format
+=== RUN   TestConversionService_IsSupportedFormat/mp3_audio_format
+=== RUN   TestConversionService_IsSupportedFormat/unsupported_format
+=== RUN   TestConversionService_IsSupportedFormat/jpg_image_format
+=== RUN   TestConversionService_IsSupportedFormat/png_image_format_uppercase
+=== RUN   TestConversionService_IsSupportedFormat/epub_document_format_(needs_calibre_on_the_server)
+=== RUN   TestConversionService_IsSupportedFormat/source_supported_target_unsupported_video
+=== RUN   TestConversionService_IsSupportedFormat/source_unsupported_target_supported_video
+=== RUN   TestConversionService_IsSupportedFormat/invalid_conversion_type
+--- PASS: TestConversionService_IsSupportedFormat (0.01s)
+    --- PASS: TestConversionService_IsSupportedFormat/mp4_video_format (0.00s)
+    --- PASS: TestConversionService_IsSupportedFormat/mp3_audio_format (0.00s)
+    --- PASS: TestConversionService_IsSupportedFormat/unsupported_format (0.00s)
+    --- PASS: TestConversionService_IsSupportedFormat/jpg_image_format (0.00s)
+    --- PASS: TestConversionService_IsSupportedFormat/png_image_format_uppercase (0.00s)
+    --- PASS: TestConversionService_IsSupportedFormat/epub_document_format_(needs_calibre_on_the_server) (0.00s)
+    --- PASS: TestConversionService_IsSupportedFormat/source_supported_target_unsupported_video (0.00s)
+    --- PASS: TestConversionService_IsSupportedFormat/source_unsupported_target_supported_video (0.00s)
+    --- PASS: TestConversionService_IsSupportedFormat/invalid_conversion_type (0.00s)
+=== RUN   TestConversionService_BuildFFmpegVideoArgs
+=== RUN   TestConversionService_BuildFFmpegVideoArgs/basic_video_conversion_medium_quality
+=== RUN   TestConversionService_BuildFFmpegVideoArgs/low_quality_video
+=== RUN   TestConversionService_BuildFFmpegVideoArgs/high_quality_video
+=== RUN   TestConversionService_BuildFFmpegVideoArgs/lossless_quality_video
+=== RUN   TestConversionService_BuildFFmpegVideoArgs/default_quality_when_unknown
+=== RUN   TestConversionService_BuildFFmpegVideoArgs/with_resolution_setting
+=== RUN   TestConversionService_BuildFFmpegVideoArgs/with_framerate_setting
+=== RUN   TestConversionService_BuildFFmpegVideoArgs/with_bitrate_setting
+=== RUN   TestConversionService_BuildFFmpegVideoArgs/with_all_settings
+=== RUN   TestConversionService_BuildFFmpegVideoArgs/invalid_settings_json
+=== RUN   TestConversionService_BuildFFmpegVideoArgs/nil_settings
+--- PASS: TestConversionService_BuildFFmpegVideoArgs (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegVideoArgs/basic_video_conversion_medium_quality (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegVideoArgs/low_quality_video (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegVideoArgs/high_quality_video (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegVideoArgs/lossless_quality_video (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegVideoArgs/default_quality_when_unknown (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegVideoArgs/with_resolution_setting (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegVideoArgs/with_framerate_setting (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegVideoArgs/with_bitrate_setting (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegVideoArgs/with_all_settings (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegVideoArgs/invalid_settings_json (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegVideoArgs/nil_settings (0.00s)
+=== RUN   TestConversionService_BuildFFmpegAudioArgs
+=== RUN   TestConversionService_BuildFFmpegAudioArgs/basic_audio_conversion_medium_quality
+=== RUN   TestConversionService_BuildFFmpegAudioArgs/low_quality_audio
+=== RUN   TestConversionService_BuildFFmpegAudioArgs/high_quality_audio
+=== RUN   TestConversionService_BuildFFmpegAudioArgs/lossless_quality_audio_(flac)
+=== RUN   TestConversionService_BuildFFmpegAudioArgs/default_quality_when_unknown
+=== RUN   TestConversionService_BuildFFmpegAudioArgs/with_sample_rate_setting
+=== RUN   TestConversionService_BuildFFmpegAudioArgs/with_channels_setting
+=== RUN   TestConversionService_BuildFFmpegAudioArgs/with_both_settings
+=== RUN   TestConversionService_BuildFFmpegAudioArgs/invalid_settings_json
+=== RUN   TestConversionService_BuildFFmpegAudioArgs/ogg_target_drops_cover_picture_(CAT-IMG-SLIM-1)
+=== RUN   TestConversionService_BuildFFmpegAudioArgs/m4a_target_drops_cover_picture,_format_taken_from_the_extension
+=== RUN   TestConversionService_BuildFFmpegAudioArgs/mp3_keeps_the_cover_picture_(no_-vn)
+=== RUN   TestConversionService_BuildFFmpegAudioArgs/nil_settings
+--- PASS: TestConversionService_BuildFFmpegAudioArgs (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegAudioArgs/basic_audio_conversion_medium_quality (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegAudioArgs/low_quality_audio (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegAudioArgs/high_quality_audio (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegAudioArgs/lossless_quality_audio_(flac) (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegAudioArgs/default_quality_when_unknown (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegAudioArgs/with_sample_rate_setting (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegAudioArgs/with_channels_setting (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegAudioArgs/with_both_settings (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegAudioArgs/invalid_settings_json (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegAudioArgs/ogg_target_drops_cover_picture_(CAT-IMG-SLIM-1) (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegAudioArgs/m4a_target_drops_cover_picture,_format_taken_from_the_extension (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegAudioArgs/mp3_keeps_the_cover_picture_(no_-vn) (0.00s)
+    --- PASS: TestConversionService_BuildFFmpegAudioArgs/nil_settings (0.00s)
+=== RUN   TestConversionService_BuildImageMagickArgs
+=== RUN   TestConversionService_BuildImageMagickArgs/basic_image_conversion
+=== RUN   TestConversionService_BuildImageMagickArgs/with_resize_setting
+=== RUN   TestConversionService_BuildImageMagickArgs/with_quality_setting
+=== RUN   TestConversionService_BuildImageMagickArgs/with_compress_setting
+=== RUN   TestConversionService_BuildImageMagickArgs/with_all_settings
+=== RUN   TestConversionService_BuildImageMagickArgs/invalid_settings_json
+--- PASS: TestConversionService_BuildImageMagickArgs (0.00s)
+    --- PASS: TestConversionService_BuildImageMagickArgs/basic_image_conversion (0.00s)
+    --- PASS: TestConversionService_BuildImageMagickArgs/with_resize_setting (0.00s)
+    --- PASS: TestConversionService_BuildImageMagickArgs/with_quality_setting (0.00s)
+    --- PASS: TestConversionService_BuildImageMagickArgs/with_compress_setting (0.00s)
+    --- PASS: TestConversionService_BuildImageMagickArgs/with_all_settings (0.00s)
+    --- PASS: TestConversionService_BuildImageMagickArgs/invalid_settings_json (0.00s)
+=== RUN   TestConversionService_IsEbookConversion
+=== RUN   TestConversionService_IsEbookConversion/epub_to_mobi
+=== RUN   TestConversionService_IsEbookConversion/mobi_to_epub
+=== RUN   TestConversionService_IsEbookConversion/pdf_to_epub
+=== RUN   TestConversionService_IsEbookConversion/epub_to_pdf
+=== RUN   TestConversionService_IsEbookConversion/epub_to_txt
+=== RUN   TestConversionService_IsEbookConversion/txt_to_epub
+=== RUN   TestConversionService_IsEbookConversion/pdf_to_jpg
+=== RUN   TestConversionService_IsEbookConversion/mp4_to_webm
+--- PASS: TestConversionService_IsEbookConversion (0.00s)
+    --- PASS: TestConversionService_IsEbookConversion/epub_to_mobi (0.00s)
+    --- PASS: TestConversionService_IsEbookConversion/mobi_to_epub (0.00s)
+    --- PASS: TestConversionService_IsEbookConversion/pdf_to_epub (0.00s)
+    --- PASS: TestConversionService_IsEbookConversion/epub_to_pdf (0.00s)
+    --- PASS: TestConversionService_IsEbookConversion/epub_to_txt (0.00s)
+    --- PASS: TestConversionService_IsEbookConversion/txt_to_epub (0.00s)
+    --- PASS: TestConversionService_IsEbookConversion/pdf_to_jpg (0.00s)
+    --- PASS: TestConversionService_IsEbookConversion/mp4_to_webm (0.00s)
+=== RUN   TestConversionService_IsPDFConversion
+=== RUN   TestConversionService_IsPDFConversion/pdf_to_jpg
+=== RUN   TestConversionService_IsPDFConversion/pdf_to_png
+=== RUN   TestConversionService_IsPDFConversion/pdf_to_txt
+=== RUN   TestConversionService_IsPDFConversion/pdf_to_html
+=== RUN   TestConversionService_IsPDFConversion/jpg_to_pdf
+=== RUN   TestConversionService_IsPDFConversion/epub_to_pdf
+=== RUN   TestConversionService_IsPDFConversion/doc_to_pdf
+=== RUN   TestConversionService_IsPDFConversion/mp4_to_webm
+--- PASS: TestConversionService_IsPDFConversion (0.00s)
+    --- PASS: TestConversionService_IsPDFConversion/pdf_to_jpg (0.00s)
+    --- PASS: TestConversionService_IsPDFConversion/pdf_to_png (0.00s)
+    --- PASS: TestConversionService_IsPDFConversion/pdf_to_txt (0.00s)
+    --- PASS: TestConversionService_IsPDFConversion/pdf_to_html (0.00s)
+    --- PASS: TestConversionService_IsPDFConversion/jpg_to_pdf (0.00s)
+    --- PASS: TestConversionService_IsPDFConversion/epub_to_pdf (0.00s)
+    --- PASS: TestConversionService_IsPDFConversion/doc_to_pdf (0.00s)
+    --- PASS: TestConversionService_IsPDFConversion/mp4_to_webm (0.00s)
+=== RUN   TestConversionService_ConvertDocument_EbookRoute
+--- PASS: TestConversionService_ConvertDocument_EbookRoute (0.00s)
+=== RUN   TestConversionService_ConvertDocument_PDFRoute
+--- PASS: TestConversionService_ConvertDocument_PDFRoute (0.03s)
+=== RUN   TestConversionService_ConvertDocument_UnsupportedRoute
+--- PASS: TestConversionService_ConvertDocument_UnsupportedRoute (0.00s)
+=== RUN   TestConversionService_ConvertPDF_UnsupportedTarget
+--- PASS: TestConversionService_ConvertPDF_UnsupportedTarget (0.00s)
+=== RUN   TestConversionService_ConvertPDF_TextRoute
+--- PASS: TestConversionService_ConvertPDF_TextRoute (0.00s)
+=== RUN   TestConversionService_ConvertPDF_HTMLRoute
+--- PASS: TestConversionService_ConvertPDF_HTMLRoute (0.00s)
+=== RUN   TestConversionService_ProcessConversion_VideoDispatch
+--- PASS: TestConversionService_ProcessConversion_VideoDispatch (0.00s)
+=== RUN   TestConversionService_ProcessConversion_AudioDispatch
+--- PASS: TestConversionService_ProcessConversion_AudioDispatch (0.00s)
+=== RUN   TestConversionService_ProcessConversion_ImageDispatch
+--- PASS: TestConversionService_ProcessConversion_ImageDispatch (0.00s)
+=== RUN   TestConversionService_ProcessConversion_DocumentDispatch
+--- PASS: TestConversionService_ProcessConversion_DocumentDispatch (0.00s)
+=== RUN   TestConversionService_ConvertEbook_WithSettings
+=== RUN   TestConversionService_ConvertEbook_WithSettings/with_preserve_cover_and_preserve_metadata
+=== RUN   TestConversionService_ConvertEbook_WithSettings/with_invalid_json_settings
+=== RUN   TestConversionService_ConvertEbook_WithSettings/with_nil_settings
+=== RUN   TestConversionService_ConvertEbook_WithSettings/with_empty_settings
+--- PASS: TestConversionService_ConvertEbook_WithSettings (0.00s)
+    --- PASS: TestConversionService_ConvertEbook_WithSettings/with_preserve_cover_and_preserve_metadata (0.00s)
+    --- PASS: TestConversionService_ConvertEbook_WithSettings/with_invalid_json_settings (0.00s)
+    --- PASS: TestConversionService_ConvertEbook_WithSettings/with_nil_settings (0.00s)
+    --- PASS: TestConversionService_ConvertEbook_WithSettings/with_empty_settings (0.00s)
+=== RUN   TestConversionService_HandleConversionSuccess_FieldUpdates
+--- PASS: TestConversionService_HandleConversionSuccess_FieldUpdates (0.00s)
+=== RUN   TestConversionService_HandleConversionSuccess_NoStartedAt
+--- PASS: TestConversionService_HandleConversionSuccess_NoStartedAt (0.00s)
+=== RUN   TestConversionService_HandleConversionError_FieldUpdates
+--- PASS: TestConversionService_HandleConversionError_FieldUpdates (0.00s)
+=== RUN   TestConversionService_HandleConversionError_NoStartedAt
+--- PASS: TestConversionService_HandleConversionError_NoStartedAt (0.00s)
+=== RUN   TestConversionService_NotifyUser
+--- PASS: TestConversionService_NotifyUser (0.00s)
+=== RUN   TestConversionService_ConvertPDFToImage_InvalidPath
+--- PASS: TestConversionService_ConvertPDFToImage_InvalidPath (0.03s)
+=== RUN   TestConversionService_ConvertPDFToText_InvalidPath
+--- PASS: TestConversionService_ConvertPDFToText_InvalidPath (0.00s)
+=== RUN   TestConversionService_ConvertPDFWithImageMagick_InvalidPath
+--- PASS: TestConversionService_ConvertPDFWithImageMagick_InvalidPath (0.00s)
+=== RUN   TestConversionService_ConvertPDFToImage_WithSettings
+--- PASS: TestConversionService_ConvertPDFToImage_WithSettings (0.03s)
+=== RUN   TestConversionTimeoutFromEnv
+--- PASS: TestConversionTimeoutFromEnv (0.00s)
+=== RUN   TestConversionTimeoutFromEnv_WarnsOnInvalidValue
+--- PASS: TestConversionTimeoutFromEnv_WarnsOnInvalidValue (0.00s)
+=== RUN   TestHardenLive_FFmpegHLSCannotReadOutsideRoot
+    converter_hardening_live_test.go:101: convertVideo err=ffmpeg video conversion failed: ffmpeg: exit status 234: [hls @ 0x6028653aa340] Format not on whitelist 'mov,mp4,m4a,3gp,3g2,mj2,matroska,webm,avi,asf,flv,mpegts,mpeg,mpegvideo,ogg,wav,flac,mp3,aac,ac3,eac3,dts,ape,wv,aiff,caf,amr,au,w64,rm,h264,hevc,m4v,ivf,obu'
+        [in#0 @ 0x6028653aa080] Error opening input: Invalid argument
+        Error opening input file /tmp/TestHardenLive_FFmpegHLSCannotReadOutsideRoot3696071889/001/conv/evil.m3u8.
+        Error opening input files: Invalid argument target-exists=false
+--- PASS: TestHardenLive_FFmpegHLSCannotReadOutsideRoot (0.71s)
+=== RUN   TestHardenLive_FFmpegConcatRefused
+--- PASS: TestHardenLive_FFmpegConcatRefused (0.33s)
+=== RUN   TestHardenLive_OrdinaryConversionsStillWork
+    converter_hardening_live_test.go:208: 
+        	Error Trace:	/src/catalog-api/services/converter_hardening_live_test.go:208
+        	Error:      	Received unexpected error:
+        	            	imagemagick conversion failed: convert: exit status 1: convert: delegate failed `'rsvg-convert' --dpi-x %x --dpi-y %y -o '%o' '%i'' @ error/delegate.c/InvokeDelegate/1938.
+        	            	convert: unable to open file '/tmp/magick-PWp6Np2B6QkwuJG5Yo_TfBKgtDNalrqs': No such file or directory @ error/constitute.c/ReadImage/791.
+        	            	convert: no images defined `/tmp/TestHardenLive_OrdinaryConversionsStillWork1871977213/001/conv/.catalogizer-conv-1586606803/ok_svg.png' @ error/deprecate.c/ConvertImageCommand/3371.
+        	Test:       	TestHardenLive_OrdinaryConversionsStillWork
+--- FAIL: TestHardenLive_OrdinaryConversionsStillWork (5.88s)
+=== RUN   TestHardenLive_AudioWithCoverConvertsToEveryTarget
+--- PASS: TestHardenLive_AudioWithCoverConvertsToEveryTarget (2.87s)
+=== RUN   TestHardenArgs_FFmpegGuard
+--- PASS: TestHardenArgs_FFmpegGuard (0.00s)
+=== RUN   TestHardenLive_LimitsAndTimeoutKillOnRealFFmpeg
+--- PASS: TestHardenLive_LimitsAndTimeoutKillOnRealFFmpeg (3.66s)
+=== RUN   TestRV7_ConvertersRefuseSymlinkAtTarget
+=== RUN   TestRV7_ConvertersRefuseSymlinkAtTarget/imagemagick_pdf
+=== RUN   TestRV7_ConvertersRefuseSymlinkAtTarget/ffmpeg_video
+=== RUN   TestRV7_ConvertersRefuseSymlinkAtTarget/ffmpeg_audio
+=== RUN   TestRV7_ConvertersRefuseSymlinkAtTarget/ebook-convert
+=== RUN   TestRV7_ConvertersRefuseSymlinkAtTarget/imagemagick_image
+--- PASS: TestRV7_ConvertersRefuseSymlinkAtTarget (0.01s)
+    --- PASS: TestRV7_ConvertersRefuseSymlinkAtTarget/imagemagick_pdf (0.00s)
+    --- PASS: TestRV7_ConvertersRefuseSymlinkAtTarget/ffmpeg_video (0.00s)
+    --- PASS: TestRV7_ConvertersRefuseSymlinkAtTarget/ffmpeg_audio (0.00s)
+    --- PASS: TestRV7_ConvertersRefuseSymlinkAtTarget/ebook-convert (0.00s)
+    --- PASS: TestRV7_ConvertersRefuseSymlinkAtTarget/imagemagick_image (0.00s)
+=== RUN   TestRV7_ConvertersRefuseSymlinkAtDerivedName
+=== RUN   TestRV7_ConvertersRefuseSymlinkAtDerivedName/multi-frame_name-N.ext/imagemagick_image
+=== RUN   TestRV7_ConvertersRefuseSymlinkAtDerivedName/multi-frame_name-N.ext/imagemagick_pdf
+=== RUN   TestRV7_ConvertersRefuseSymlinkAtDerivedName/multi-frame_name-N.ext/ffmpeg_video
+=== RUN   TestRV7_ConvertersRefuseSymlinkAtDerivedName/multi-frame_name-N.ext/ffmpeg_audio
+=== RUN   TestRV7_ConvertersRefuseSymlinkAtDerivedName/percent-d_pattern/ffmpeg_audio
+=== RUN   TestRV7_ConvertersRefuseSymlinkAtDerivedName/percent-d_pattern/imagemagick_image
+=== RUN   TestRV7_ConvertersRefuseSymlinkAtDerivedName/percent-d_pattern/imagemagick_pdf
+=== RUN   TestRV7_ConvertersRefuseSymlinkAtDerivedName/percent-d_pattern/ffmpeg_video
+--- PASS: TestRV7_ConvertersRefuseSymlinkAtDerivedName (0.07s)
+    --- PASS: TestRV7_ConvertersRefuseSymlinkAtDerivedName/multi-frame_name-N.ext/imagemagick_image (0.01s)
+    --- PASS: TestRV7_ConvertersRefuseSymlinkAtDerivedName/multi-frame_name-N.ext/imagemagick_pdf (0.00s)
+    --- PASS: TestRV7_ConvertersRefuseSymlinkAtDerivedName/multi-frame_name-N.ext/ffmpeg_video (0.01s)
+    --- PASS: TestRV7_ConvertersRefuseSymlinkAtDerivedName/multi-frame_name-N.ext/ffmpeg_audio (0.01s)
+    --- PASS: TestRV7_ConvertersRefuseSymlinkAtDerivedName/percent-d_pattern/ffmpeg_audio (0.02s)
+    --- PASS: TestRV7_ConvertersRefuseSymlinkAtDerivedName/percent-d_pattern/imagemagick_image (0.01s)
+    --- PASS: TestRV7_ConvertersRefuseSymlinkAtDerivedName/percent-d_pattern/imagemagick_pdf (0.00s)
+    --- PASS: TestRV7_ConvertersRefuseSymlinkAtDerivedName/percent-d_pattern/ffmpeg_video (0.01s)
+=== RUN   TestRV7_ConvertersPublishRegularOutputs
+=== RUN   TestRV7_ConvertersPublishRegularOutputs/ffmpeg_video
+=== RUN   TestRV7_ConvertersPublishRegularOutputs/ffmpeg_audio
+=== RUN   TestRV7_ConvertersPublishRegularOutputs/ebook-convert
+=== RUN   TestRV7_ConvertersPublishRegularOutputs/imagemagick_image
+=== RUN   TestRV7_ConvertersPublishRegularOutputs/imagemagick_pdf
+    converter_private_dir_rv7_test.go:149: 
+        	Error Trace:	/src/catalog-api/services/converter_private_dir_rv7_test.go:149
+        	Error:      	Received unexpected error:
+        	            	PDF to bmp needs Ghostscript (gs), which is not installed on this server; convert to png or jpg instead
+        	Test:       	TestRV7_ConvertersPublishRegularOutputs/imagemagick_pdf
+=== RUN   TestRV7_ConvertersPublishRegularOutputs/multi-frame_outputs
+=== RUN   TestRV7_ConvertersPublishRegularOutputs/existing_regular_target_is_replaced
+--- FAIL: TestRV7_ConvertersPublishRegularOutputs (0.04s)
+    --- PASS: TestRV7_ConvertersPublishRegularOutputs/ffmpeg_video (0.01s)
+    --- PASS: TestRV7_ConvertersPublishRegularOutputs/ffmpeg_audio (0.01s)
+    --- PASS: TestRV7_ConvertersPublishRegularOutputs/ebook-convert (0.01s)
+    --- PASS: TestRV7_ConvertersPublishRegularOutputs/imagemagick_image (0.01s)
+    --- FAIL: TestRV7_ConvertersPublishRegularOutputs/imagemagick_pdf (0.00s)
+    --- PASS: TestRV7_ConvertersPublishRegularOutputs/multi-frame_outputs (0.01s)
+    --- PASS: TestRV7_ConvertersPublishRegularOutputs/existing_regular_target_is_replaced (0.01s)
+=== RUN   TestRV7_ConverterOutputThatIsNotARegularFileIsRefused
+--- PASS: TestRV7_ConverterOutputThatIsNotARegularFileIsRefused (0.01s)
+=== RUN   TestRV7_FailedConverterPublishesNothing
+--- PASS: TestRV7_FailedConverterPublishesNothing (0.01s)
+=== RUN   TestRV7_HTMLConvertersUsePrivateDir
+=== RUN   TestRV7_HTMLConvertersUsePrivateDir/pandoc_output_published
+=== RUN   TestRV7_HTMLConvertersUsePrivateDir/libreoffice_output_published,_planted_sibling_untouched
+--- PASS: TestRV7_HTMLConvertersUsePrivateDir (0.02s)
+    --- PASS: TestRV7_HTMLConvertersUsePrivateDir/pandoc_output_published (0.00s)
+    --- PASS: TestRV7_HTMLConvertersUsePrivateDir/libreoffice_output_published,_planted_sibling_untouched (0.01s)
+=== RUN   TestRV7_ConverterTargetOutsideRootsRefusedBeforeToolRuns
+--- PASS: TestRV7_ConverterTargetOutsideRootsRefusedBeforeToolRuns (0.00s)
+=== RUN   TestRV7_ConverterWithNoOutputIsAnError
+--- PASS: TestRV7_ConverterWithNoOutputIsAnError (0.01s)
+=== RUN   TestConversion_LibreOfficeOutputIsInTheOutputDirectory
+--- PASS: TestConversion_LibreOfficeOutputIsInTheOutputDirectory (0.00s)
+=== RUN   TestConversion_TargetWithDotDotAfterSymlinkRefused
+--- PASS: TestConversion_TargetWithDotDotAfterSymlinkRefused (0.00s)
+=== RUN   TestPathConfine_DatabaseIsNotAConversionOrSyncTarget
+--- PASS: TestPathConfine_DatabaseIsNotAConversionOrSyncTarget (0.00s)
+=== RUN   TestConversion_TargetOrSourceEqualToTheRootIsRefused
+--- PASS: TestConversion_TargetOrSourceEqualToTheRootIsRefused (0.00s)
+=== RUN   TestRV6_ConversionDerivedWritesRefusePlantedSymlinks
+=== RUN   TestRV6_ConversionDerivedWritesRefusePlantedSymlinks/multi-page_sibling
+=== RUN   TestRV6_ConversionDerivedWritesRefusePlantedSymlinks/multi-page_sibling_linked_to_an_in-root_file
+=== RUN   TestRV6_ConversionDerivedWritesRefusePlantedSymlinks/multi-page_legit_control
+=== RUN   TestRV6_ConversionDerivedWritesRefusePlantedSymlinks/text_target_symlink_leaf
+=== RUN   TestRV6_ConversionDerivedWritesRefusePlantedSymlinks/text_target_outside_roots
+=== RUN   TestRV6_ConversionDerivedWritesRefusePlantedSymlinks/html_fallback_tmp_sibling
+    pathconfine_rv6_test.go:243: convertPDFToHTML err=failed to convert PDF to text for HTML conversion: failed to create output file: output path "/tmp/TestRV6_ConversionDerivedWritesRefusePlantedSymlinkshtml_fallba4243735867/001/conv/out.html.tmp.txt" rejected: path is outside the allowed roots
+=== RUN   TestRV6_ConversionDerivedWritesRefusePlantedSymlinks/html_fallback_final_symlink_leaf
+    pathconfine_rv6_test.go:252: convertPDFToHTML err=output path "/tmp/TestRV6_ConversionDerivedWritesRefusePlantedSymlinkshtml_fallba822832169/001/conv/fin.html" exists and is not a regular file
+--- PASS: TestRV6_ConversionDerivedWritesRefusePlantedSymlinks (0.83s)
+    --- PASS: TestRV6_ConversionDerivedWritesRefusePlantedSymlinks/multi-page_sibling (0.18s)
+    --- PASS: TestRV6_ConversionDerivedWritesRefusePlantedSymlinks/multi-page_sibling_linked_to_an_in-root_file (0.16s)
+    --- PASS: TestRV6_ConversionDerivedWritesRefusePlantedSymlinks/multi-page_legit_control (0.24s)
+    --- PASS: TestRV6_ConversionDerivedWritesRefusePlantedSymlinks/text_target_symlink_leaf (0.06s)
+    --- PASS: TestRV6_ConversionDerivedWritesRefusePlantedSymlinks/text_target_outside_roots (0.13s)
+    --- PASS: TestRV6_ConversionDerivedWritesRefusePlantedSymlinks/html_fallback_tmp_sibling (0.06s)
+    --- PASS: TestRV6_ConversionDerivedWritesRefusePlantedSymlinks/html_fallback_final_symlink_leaf (0.00s)
+=== RUN   TestConversionService_GetJob_NotFound
+--- PASS: TestConversionService_GetJob_NotFound (0.00s)
+=== RUN   TestConversionService_GetUserJobs_Empty
+--- PASS: TestConversionService_GetUserJobs_Empty (0.00s)
+=== RUN   TestConversionService_CreateConversionJob_Integration
+--- PASS: TestConversionService_CreateConversionJob_Integration (0.00s)
+=== RUN   TestConversionService_CreateConversionJob_InvalidRequest
+--- PASS: TestConversionService_CreateConversionJob_InvalidRequest (0.00s)
+=== RUN   TestConversionService_CreateAndGetJob_Integration
+--- PASS: TestConversionService_CreateAndGetJob_Integration (0.01s)
+=== RUN   TestConversionService_GetUserJobs_WithJobs
+--- PASS: TestConversionService_GetUserJobs_WithJobs (0.01s)
+=== RUN   TestConversionService_GetUserJobs_WithStatusFilter
+--- PASS: TestConversionService_GetUserJobs_WithStatusFilter (0.01s)
+=== RUN   TestConversionService_CancelJob_Integration
+--- PASS: TestConversionService_CancelJob_Integration (0.01s)
+=== RUN   TestConversionService_CancelJob_AlreadyCompleted
+--- PASS: TestConversionService_CancelJob_AlreadyCompleted (0.01s)
+=== RUN   TestConversionService_GetJobStatistics_Integration
+--- PASS: TestConversionService_GetJobStatistics_Integration (0.00s)
+=== RUN   TestConversionService_CleanupCompletedJobs_Integration
+--- PASS: TestConversionService_CleanupCompletedJobs_Integration (0.00s)
+=== RUN   TestConversionService_GetJobQueue_Integration
+--- PASS: TestConversionService_GetJobQueue_Integration (0.00s)
+=== RUN   TestConversionService_StartConversion_Integration
+--- PASS: TestConversionService_StartConversion_Integration (0.01s)
+=== RUN   TestConversionService_StartConversion_NotPending
+--- PASS: TestConversionService_StartConversion_NotPending (0.01s)
+=== RUN   TestConversionService_RetryJob_Integration
+--- PASS: TestConversionService_RetryJob_Integration (0.01s)
+=== RUN   TestConversionService_ProcessJobQueue_Empty
+--- PASS: TestConversionService_ProcessJobQueue_Empty (0.01s)
+=== RUN   TestConversionService_ProcessJobQueue_WithJobs
+--- PASS: TestConversionService_ProcessJobQueue_WithJobs (0.17s)
+=== RUN   TestConversionService_GetJob_OwnJob
+--- PASS: TestConversionService_GetJob_OwnJob (0.00s)
+=== RUN   TestConversionService_GetJob_Unauthorized
+--- PASS: TestConversionService_GetJob_Unauthorized (0.01s)
+=== RUN   TestConversionService_GetSupportedFormats_Integration
+--- PASS: TestConversionService_GetSupportedFormats_Integration (0.00s)
+=== RUN   TestConversionService_CreateConversionJob_AllTypes
+=== RUN   TestConversionService_CreateConversionJob_AllTypes/video_conversion
+=== RUN   TestConversionService_CreateConversionJob_AllTypes/audio_conversion
+=== RUN   TestConversionService_CreateConversionJob_AllTypes/image_conversion
+=== RUN   TestConversionService_CreateConversionJob_AllTypes/document_conversion
+=== RUN   TestConversionService_CreateConversionJob_AllTypes/invalid_type
+--- PASS: TestConversionService_CreateConversionJob_AllTypes (0.01s)
+    --- PASS: TestConversionService_CreateConversionJob_AllTypes/video_conversion (0.00s)
+    --- PASS: TestConversionService_CreateConversionJob_AllTypes/audio_conversion (0.00s)
+    --- PASS: TestConversionService_CreateConversionJob_AllTypes/image_conversion (0.00s)
+    --- PASS: TestConversionService_CreateConversionJob_AllTypes/document_conversion (0.00s)
+    --- PASS: TestConversionService_CreateConversionJob_AllTypes/invalid_type (0.00s)
+=== RUN   TestRV7_ReviewerProbe_LinkedSourceDir
+    symlinked_root_rv7_test.go:46: PROBE symlinked-source: err=<nil> total=1 synced=1 remote_files=1
+--- PASS: TestRV7_ReviewerProbe_LinkedSourceDir (0.02s)
+=== RUN   TestRV7_ReviewerProbe_LinkedSourceMirror
+    symlinked_root_rv7_test.go:70: PROBE mirror symlinked source: err=<nil> dst/a.txt stat=<nil>
+--- PASS: TestRV7_ReviewerProbe_LinkedSourceMirror (0.00s)
+=== RUN   TestPathConfine_ConversionRejectsPathsOutsideRoots
+--- PASS: TestPathConfine_ConversionRejectsPathsOutsideRoots (0.01s)
+=== RUN   TestPathConfine_ConversionReadWriteAndStartRecheck
+--- PASS: TestPathConfine_ConversionReadWriteAndStartRecheck (0.01s)
+FAIL

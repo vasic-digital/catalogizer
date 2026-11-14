@@ -1,0 +1,9 @@
+FAIL: real-video av1.mkv->mp4	rc=69	
+FAIL: real-video av1.mkv->mkv	rc=69	[matroska,webm @ 0x5cf94adfae80] Duplicate element;[matroska,webm @ 0x5cf94adfae80] 0x00 at pos 110 (0x6e) invalid as first byte of an EBML number;[matroska,webm @ 0x5cf94adfae80] Duplicate element;[matroska,webm @ 0x5cf94adfae80] 0x00 at pos 202 (0xca) invalid as first byte of an EBML number;[matroska,webm @ 0x5cf94adfae80] Element at 0x67 ending at 0x85ec0100000070 exceeds containing master element ending at 0x1413;/w/data/out/av1_x.mkv: End of file;
+FAIL: real-video av1.mkv->mov	rc=69	
+FAIL: real-video av1.mkv->webm	rc=69	[matroska,webm @ 0x58ca08e2de80] Duplicate element;[matroska,webm @ 0x58ca08e2de80] 0x00 at pos 100 (0x64) invalid as first byte of an EBML number;[matroska,webm @ 0x58ca08e2de80] Duplicate element;[matroska,webm @ 0x58ca08e2de80] 0x00 at pos 167 (0xa7) invalid as first byte of an EBML number;[matroska,webm @ 0x58ca08e2de80] Element at 0x5d ending at 0x1cec0100000066 exceeds containing master element ending at 0x1409;/w/data/out/av1_x.webm: End of file;
+FAIL: real-video av1.mkv->avi	rc=69	mpeg4,video,176,144,0;
+FAIL: real-video av1.mkv->m4v	rc=69	
+FAIL: real-frame av1.mkv	rc=69	mjpeg,video,176,144,0;
+rows=170 failures=7
+SMOKE FAIL

@@ -106,7 +106,7 @@ All services should show "healthy" status.
 
 ## Converter tools in the API image
 
-The API image (`catalog-api/Dockerfile`, runtime stage; the same packages are in `catalog-api/Dockerfile.runtime`) installs `poppler-utils` (pdftotext, pdfinfo), `util-linux` (`prlimit`, which caps every PDF parser child), `ffmpeg` (audio/video conversion) and `imagemagick` (`convert`: images, PDF rasterising). `GET /health/deep` reports which of `ffmpeg`, `convert` and `pdftotext` are found on `PATH` at request time in its `converters` object (`catalog-api/internal/metrics/health.go:36-44`). A custom image that drops these packages makes the matching conversions unavailable; the probe shows `false` for them.
+The API image (`catalog-api/Dockerfile`, runtime stage; the same packages and ffmpeg stage are in `catalog-api/Dockerfile.runtime`) installs `poppler-utils` (pdftotext, pdfinfo), `util-linux` (`prlimit`, which caps every PDF parser child), `imagemagick` (`convert`: images, PDF rasterising) from the distro, plus a minimal `ffmpeg`/`ffprobe` (audio/video conversion) built from a pinned upstream release in the `ffmpeg-build` stage and copied to `/usr/local/bin` (not the distro `ffmpeg` package; what it includes and excludes: [FFMPEG_MINIMAL.md](FFMPEG_MINIMAL.md)). `GET /health/deep` reports which of `ffmpeg`, `convert` and `pdftotext` are found on `PATH` at request time in its `converters` object (`catalog-api/internal/metrics/health.go:36-44`). A custom image that drops these packages makes the matching conversions unavailable; the probe shows `false` for them.
 
 ## Database Migrations
 

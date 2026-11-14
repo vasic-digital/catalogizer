@@ -775,10 +775,27 @@ func (s *ConversionService) buildFFmpegVideoArgs(job *models.ConversionJob) []st
 	return args
 }
 
+// audioTargetsWithoutPicture lists the audio targets that cannot carry an embedded cover picture:
+// ffmpeg would add a video stream for it (ogg: theora, which the slim ffmpeg of CAT-IMG-SLIM-1 does not
+// include, and which was a video stream in an audio file anyway) or fail (m4a/ipod muxer: rc 234,
+// reproduced in the old and the new image). For these the picture is dropped with -vn. mp3 and flac keep
+// the cover (verified), wav/aac/opus drop it by themselves.
+var audioTargetsWithoutPicture = map[string]bool{"ogg": true, "m4a": true}
+
+func audioTargetFormat(job *models.ConversionJob) string {
+	if f := strings.ToLower(strings.TrimPrefix(job.TargetFormat, ".")); f != "" {
+		return f
+	}
+	return strings.ToLower(strings.TrimPrefix(filepath.Ext(job.TargetPath), "."))
+}
+
 func (s *ConversionService) buildFFmpegAudioArgs(job *models.ConversionJob) []string {
 	args := []string{
 		"-i", job.SourcePath,
 		"-y", // Overwrite output file
+	}
+	if audioTargetsWithoutPicture[audioTargetFormat(job)] {
+		args = append(args, "-vn")
 	}
 
 	switch job.Quality {
