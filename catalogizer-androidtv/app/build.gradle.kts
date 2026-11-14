@@ -29,8 +29,8 @@ android {
         applicationId = "com.catalogizer.androidtv"
         minSdk = 26
         targetSdk = 34
-        versionCode = 10
-        versionName = "2.4.2"
+        versionCode = 11
+        versionName = "2.4.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
