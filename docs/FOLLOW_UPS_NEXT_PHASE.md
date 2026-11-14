@@ -2682,3 +2682,10 @@ F1/F2/F4/F5 of WSF2B verified closed by unit tests (45 focused, whole module 106
 - WSF2B2-F1 (minor, test-instrumentation): `if (intentional) return@launch` guard in open() untested (reviewer mutant O2 survives); test: minter whose mint() calls disconnect() then returns a ticket; assert no socket built, state Disconnected.
 - WSF2B2-F2 (minor, source): a cancelled attempt can still install its client after mint returned (no suspension point); use ensureActive()/job identity check inside the lock; also rethrowing every CancellationException would swallow a minter-raised one (e.g. withTimeout): prefer isActive check.
 - WSF2B2-F3 (UNCONFIRMED): ApiWsTicketMinter Bearer-header test flake did not reproduce; hypothesis first mockk init inside runTest 10 s timeout under load; copy failing XML per run if it recurs.
+
+## CAT-KEYROT-WAIVER-1 (permanent-risk waiver kind) review (Opus round 2, GO-with-follow-ups, PROVISIONAL, commit f8a8d4236)
+Round-1 findings I-1, M-1..M-4 verified fixed. test_check_release_consistency.sh 527 passed 0 failed; test_permanent_risk.sh 25/25; mutation_check_permanent_risk.sh 17/17; real-tree `--check changelog` VERDICT: PASS with PERMANENT-RISK line; decision BG-OPQ-2026-11-14b, no expiry invented, 2026-11-20 waiver untouched. Full 236-mutant run not run.
+- KRW-F1 (minor, test-instrumentation): add test where working-tree WORKABLE_ITEMS_REGISTER differs from HEAD and run must be BLIND (kills reviewer mutant RV-E).
+- KRW-F2 (minor, source): check_permanent_register returns 0 silently when register absent from HEAD; fail or print note.
+- KRW-F3 (minor): register rows matched only when starting with "| " unindented; add control needle (count of PERMANENT rows) so reformatting cannot skip enforcement silently.
+- KRW-N (nits N-1/N-2 from round 1) and a full 236-mutant run remain owed.
