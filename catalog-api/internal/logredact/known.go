@@ -94,8 +94,10 @@ func ReplaceKnown(s string, secrets []string) string {
 		}
 		// %q form (HYG-F6): fmt's %q / strconv.Quote escapes quotes, backslashes and control characters; the text between the
 		// outer quotes is what an error text carries.
-		if q := strconv.Quote(sec); len(q) > 2 && q[1:len(q)-1] != sec {
-			uniq[q[1:len(q)-1]] = true
+		for _, q := range []string{strconv.Quote(sec), strconv.QuoteToASCII(sec)} { // %q and %+q
+			if len(q) > 2 && q[1:len(q)-1] != sec {
+				uniq[q[1:len(q)-1]] = true
+			}
 		}
 	}
 	list := make([]string, 0, len(uniq))

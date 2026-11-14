@@ -117,3 +117,16 @@ func TestReplaceKnown_RemovesQuotedFormOfSecret(t *testing.T) {
 		t.Fatalf("unrelated text changed: %q", got)
 	}
 }
+
+// HYG-R1-F4: the %+q form (non-ASCII escaped as \u....) of a secret is removed too.
+func TestReplaceKnown_RemovesPlusQuotedFormOfSecret(t *testing.T) {
+	const sec = "p\u00e4ss\"x12"
+	text := fmt.Sprintf("lookup %+q failed", sec)
+	if !strings.Contains(text, `p\u00e4ss`) {
+		t.Fatalf("control needle: escaped form missing from %q", text)
+	}
+	got := ErrorTextKnown(text, []string{sec})
+	if strings.Contains(got, `u00e4`) || strings.Contains(got, `x12`) {
+		t.Fatalf("%%+q secret survived: %q", got)
+	}
+}
