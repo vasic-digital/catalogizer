@@ -216,6 +216,15 @@ repository that serve HTTP (OCU-CUDA-Sidecar;
 review rejected (it was never landed)</td>
 </tr>
 <tr>
+<td>Corrections 2026-11-14</td>
+<td>PXF18-FU1 to FU5 and FU7 to FU11 applied (FU6, the
+challenges/results admin guard, is handled elsewhere and is NOT touched
+here). Every corrected claim was re-measured at main @ 9e624f09f; where
+a claim differs between 713a4f380 and 9e624f09f both are stated. Scan
+numbers are still at the two bases above. See "Corrections of
+2026-11-14"</td>
+</tr>
+<tr>
 <td>Verdict labels</td>
 <td>PROVISIONAL, review owed. Nothing here is a review GO</td>
 </tr>
@@ -359,7 +368,8 @@ claim is replaced</td>
 <td>N4: configuration_service.go:430,443,
 localization_service.go:849-904, recovery/retry.go:401,
 webdav_client.go:340-502</td>
-<td>Traced in Class 4 rows S6 to S10</td>
+<td>Traced in Class 4 rows S6 to S9 (S10 to S12 are census and flow-scan
+rows added in rework 3, all SAFE; corrected 2026-11-14, PXF18-FU10)</td>
 <td>Class 4</td>
 </tr>
 <tr>
@@ -372,20 +382,26 @@ auth_service.go:132; the sentinel text is noted in Class 1</td>
 </tbody>
 </table>
 <h2 id="instruments">Instruments</h2>
-<p>Both are Go AST programs (go/parser, go/ast), built in a scratch
+<p>Three Go AST programs (go/parser, go/ast), built in a scratch
 directory; the sources are committed next to this doc as
-<code>docs/qa/err_error_class_scan/astscan_sinks.go.txt</code> and
-<code>all_error_calls.go.txt</code> (<code>.txt</code> so no Go tool
-picks them up). They were run on a clean clone at both bases, with each
+<code>docs/qa/err_error_class_scan/astscan_sinks.go.txt</code>,
+<code>all_error_calls.go.txt</code> and <code>flows_assign.go.txt</code>
+(<code>.txt</code> so no Go tool picks them up). Instruments are
+numbered 1 (sink scan), 2 (census), 3 (flow scan); the order of the
+items below was 0, 1, 3, 2 before the 2026-11-14 correction
+(PXF18-FU10). They were run on a clean clone at both bases, with each
 tree checked out without recursive submodule init.</p>
-<ol start="0" type="1">
-<li><strong>Rework 3 changes to the sink scan.</strong> Err-like
-identifiers are now found by type (<code>error</code> in parameters,
-results and <code>var</code> declarations) or by comparison with nil, so
-a variable named <code>failure</code> or <code>cause</code> counts. Kind
-<code>H:</code> reports any non-<code>fmt</code> call that takes an
-err-like identifier inside a sink argument. Kind <code>F:</code> matches
-any err-like identifier argument of <code>fmt.Sprint*</code>.</li>
+<ul>
+<li><strong>Rework 3 changes to the sink scan</strong> (not an
+instrument). Err-like identifiers are now found by type
+(<code>error</code> in parameters, results and <code>var</code>
+declarations) or by comparison with nil, so a variable named
+<code>failure</code> or <code>cause</code> counts. Kind <code>H:</code>
+reports any non-<code>fmt</code> call that takes an err-like identifier
+inside a sink argument. Kind <code>F:</code> matches any err-like
+identifier argument of <code>fmt.Sprint*</code>.</li>
+</ul>
+<ol type="1">
 <li><strong>Sink scan.</strong> For every non-test function it finds
 calls whose callee name looks like a response sink (names containing
 json, abortwith, string, write, send, respond, errorresponse,
@@ -399,6 +415,11 @@ a zero-argument <code>.Error()</code> call, (F)
 identifier argument, (T) an identifier that the same function assigned
 from such an expression (taint, flow-insensitive), or (BARE) an
 err-named identifier passed as an argument.</li>
+<li><strong>Census.</strong> Every zero-argument <code>.Error()</code>
+call in every non-test file, with its syntactic context (argument of a
+named call, assignment, return, composite literal / key-value, branch,
+other). It catches flows instrument 1 cannot see (struct literals
+returned to a handler, helpers with unusual names).</li>
 <li><strong>Flow scan</strong>
 (<code>docs/qa/err_error_class_scan/flows_assign.go.txt</code>, skips
 <code>challenges/</code>). Lists error-derived text
@@ -407,11 +428,6 @@ variable assigned from either) assigned to a struct field, an index or
 map key, a key-value pair, a channel send or a call argument, with file,
 line, function and kind. Its rows are leads for Class 4, not
 verdicts.</li>
-<li><strong>Census.</strong> Every zero-argument <code>.Error()</code>
-call in every non-test file, with its syntactic context (argument of a
-named call, assignment, return, composite literal / key-value, branch,
-other). It catches flows instrument 1 cannot see (struct literals
-returned to a handler, helpers with unusual names).</li>
 </ol>
 <h3 id="control-needles-1142017b-114273">Control needles
 (§11.4.201(7)(b), §11.4.273)</h3>
@@ -776,9 +792,18 @@ authenticated user. Also <code>publishScanEvent</code>
 <code>error</code>/<code>reason</code>) -&gt;
 <code>EventBusBridge</code>
 (internal/handlers/eventbus_bridge.go:74,96,189-190; wired
-main.go:681,725) -&gt; a <code>notification</code> message broadcast to
-all WebSocket clients (<code>BroadcastToClients</code>; the websocket
-route is authenticated, main.go:1151)</td>
+main.go:681,725) -&gt; a <code>notification</code> message passed to
+<code>BroadcastToClients</code>, which routes by
+<code>audienceForType</code> (handlers/websocket_handler.go:74-81,
+unchanged between 713a4f380 and 9e624f09f): only
+<code>media_update</code> and <code>asset_update</code> are
+<code>AudienceAuthenticated</code>, every other type including
+<code>notification</code> is <code>AudienceAdmin</code>, and both
+broadcast paths skip a connection unless <code>wc.isAdmin</code>
+(websocket_handler.go:622 and :653). The WebSocket leg is therefore
+admin-only; the HTTP leg <code>GET /scans</code> is any authenticated
+user (corrected 2026-11-14, PXF18-FU1; the earlier text said all
+WebSocket clients)</td>
 <td>credentials and URL userinfo only (scan_redact.go); paths, host
 names and OS error text remain</td>
 <td>LEAK (partly scrubbed), open</td>
@@ -798,8 +823,12 @@ secrets)</td>
 <td>S3</td>
 <td><code>ListStoragePath</code> (scan_handler.go:378,384,401): same
 call</td>
-<td><code>/storage-roots/:id/list</code>, admin only
-(storage_routes.go:14)</td>
+<td><code>GET /api/v1/storage/list/*path</code>
+(handlers/storage_routes.go:14, <code>auth.RequireAdmin()</code>;
+mounted by <code>RegisterStorageRoutes(api, ...)</code>, main.go:1097 at
+9e624f09f). There is no <code>/storage-roots/:id/list</code> route (grep
+of <code>storage-roots/:id/list</code> in non-test Go: 0 hits);
+corrected 2026-11-14, PXF18-FU3</td>
 <td>same</td>
 <td>LEAK to admins (partly scrubbed), accepted by role</td>
 </tr>
@@ -822,13 +851,28 @@ remain</td>
 </tr>
 <tr>
 <td>S5</td>
-<td><code>ConversionJob.ErrorMessage</code> (models/file.go:158):
-conversion_service.go:884-885 stores
-<code>sanitizeConversionError(err.Error())</code> (reduces paths to base
-names)</td>
-<td><code>GET /conversion/jobs</code>,
-<code>GET /conversion/jobs/:id</code> (main.go:1410-1411): any
-authenticated user</td>
+<td><code>ConversionJob.ErrorMessage</code> (models/user.go:1108, struct
+<code>ConversionJob</code> at :1091, json
+<code>error_message,omitempty</code>; models/file.go:158 is
+<code>ScanHistory.ErrorMessage</code>, a different struct, see
+"Checked-SAFE surfaces"): conversion_service.go stores
+<code>sanitizeConversionError(conversionError.Error())</code> (reduces
+paths to base names; line 900 at 9e624f09f)</td>
+<td><code>GET /conversion/jobs/:id</code> -&gt;
+<code>ConversionHandler.GetJob</code> -&gt;
+<code>ConversionService.authorizedJob</code>
+(conversion_service.go:1006): at 9e624f09f the job is returned only to
+its owner or a system administrator, any other caller gets
+<code>ErrConversionJobNotFound</code>; at 713a4f380 <code>GetJob</code>
+also let a non-owner holding <code>auth.PermissionViewMedia</code> read
+it (conversion_service.go:976-988 at that base; changed by 98e68d37a,
+CAT-JOB-404-1). <code>GET /conversion/jobs</code> -&gt;
+<code>ListJobs</code>: needs <code>PermissionConversionView</code>
+(conversion_handler.go:113) and lists only the caller's own jobs
+(<code>WHERE user_id = ?</code>,
+repository/conversion_repository.go:278). Routes: main.go:1142-1143 at
+9e624f09f. The earlier text "any authenticated user" was wrong
+(PXF18-FU2)</td>
 <td>paths reduced to base names; other text (driver, ffmpeg stderr)
 remains</td>
 <td>LEAK (reduced), open</td>
@@ -836,10 +880,13 @@ remains</td>
 <tr>
 <td>S6</td>
 <td><code>WizardStepValidation.Errors[...]</code>
-(configuration_service.go:420,430,443): the three validators that can
-return an error return fixed authored texts ("path must be absolute",
-"invalid email format"), the database and network validators return nil;
-"%s is required" uses the field label</td>
+(configuration_service.go:420,430,443): of the four registered
+validators (database, network, path, email;
+services/configuration_service.go:45-48) two can return an error, path
+("path must be absolute") and email ("invalid email format"), both fixed
+authored texts, and the database and network validators return nil
+(lines 945-969; the earlier text said three validators, corrected
+2026-11-14, PXF18-FU10); "%s is required" uses the field label</td>
 <td><code>POST /configuration/wizard/step/:step_id/validate</code> -&gt;
 <code>ConfigurationServiceAdapter.ValidateWizardStep</code>
 (handlers/service_adapters.go:76) -&gt; JSON (main.go:1495), gated by
@@ -905,12 +952,18 @@ formatted from <code>%v</code> of errors</td>
 </tbody>
 </table>
 <p>Instrument 3 reports 362 flow rows at HEAD (402 at the review base;
-<code>challenges/</code> is skipped, see R3). The field, key-value and
-call-argument rows of the files named in S1 to S12 were each traced
-above. The remaining rows (mostly constant or authored text assigned to
-fields, and calls into logging helpers) were NOT each traced one by one:
-UNCONFIRMED whether any of them reaches a client through a route this
-document did not look at (see Limits).</p>
+<code>challenges/</code> is skipped, see R3). Both counts are AFTER
+<code>sort -u</code>: the raw output has 365 rows at HEAD and 405 at the
+review base, because the scan emits 3 duplicate rows at each base
+(main.go <code>callarg:metricsSkipIfScrape</code>,
+<code>callarg:router.GET</code>, <code>callarg:pprofGroup.Use</code>,
+all <code>T:jwtMiddleware</code>; main.go:1060 and :1076 at HEAD, :1053
+and :1069 at the review base; PXF18-FU5, re-run 2026-11-14). The field,
+key-value and call-argument rows of the files named in S1 to S12 were
+each traced above. The remaining rows (mostly constant or authored text
+assigned to fields, and calls into logging helpers) were NOT each traced
+one by one: UNCONFIRMED whether any of them reaches a client through a
+route this document did not look at (see Limits).</p>
 <h2 id="head-residual-everything-still-in-the-class-at-713a4f380">HEAD
 residual (everything still in the class at 713a4f380)</h2>
 <table>
@@ -966,6 +1019,10 @@ operator-only</td>
 playlist_handler.go:95,99,188,273,320; collection_handler.go:335,351
 (<code>validationText(err)</code> as the SendErrorResponse message);
 service_handlers.go:199,258,298 (<code>paramRequiredText(err)</code>);
+conversion_handler.go:72-73 (row B62: <code>reason</code> is the text
+after <code>ErrInvalidConversionRequest</code>, produced by
+<code>conversionRequestProblem</code>, a short client-safe reason,
+conversion_service.go:82-83 and :1448; line 73 at 713a4f380),
 conversion_handler.go:344; scan_handler.go:178,186,194,448;
 middleware/input_validation.go:403
 (<code>clientValidationDetails(err)</code>)</td>
@@ -983,14 +1040,17 @@ caller sent</td>
 </tr>
 <tr>
 <td>R6</td>
-<td>Class 4 rows S1, S2, S4, S5: <code>ScanStatus.Reason</code> (also on
-the WebSocket broadcast), <code>GetStorageRootStatus</code>
+<td>Class 4 rows S1, S2, S4, S5: <code>ScanStatus.Reason</code> (HTTP
+<code>GET /scans</code>: any authenticated user; the WebSocket broadcast
+is admin-only, see S1), <code>GetStorageRootStatus</code>
 <code>error</code>, <code>SyncSession.ErrorMessage</code>,
 <code>ConversionJob.ErrorMessage</code></td>
 <td>LEAK (partly scrubbed)</td>
-<td>open; each is served to authenticated users. Decision owed per
-field: fixed class text for non-admin routes and the full text only for
-admins or the log. Not changed by this document</td>
+<td>open; S1 (HTTP), S2 and S4 are served to authenticated users, S5 to
+the job's owner or an administrator (see S5), and S1's WebSocket leg
+only to administrators. Decision owed per field: fixed class text for
+non-admin routes and the full text only for admins or the log. Not
+changed by this document</td>
 </tr>
 </tbody>
 </table>
@@ -3898,6 +3958,399 @@ logged) | | H2 | catalog-api/internal/monitoring/monitoring.go:251 |
 Check | map literal | - | <code>err.Error()</code> | LEAK (latent) |
 package unwired | STILL PRESENT (R1) |</p>
 <h2
+id="corrections-of-2026-11-14-pxf18-fu1-to-fu11-fu6-excluded">Corrections
+of 2026-11-14 (PXF18-FU1 to FU11, FU6 excluded)</h2>
+<p>Each item was re-checked against main @ 9e624f09f (171 commits after
+713a4f380;
+<code>git diff --stat 713a4f380 9e624f09f -- catalog-api</code>: 162
+files changed) with the command shown; the scan counts were re-run on
+archives of 9ed6577b and 713a4f380 with the committed
+<code>docs/qa/err_error_class_scan/*.go.txt</code> sources. Line numbers
+of <code>main.go</code> and <code>handlers/scan_handler.go</code> moved
+between 713a4f380 and 9e624f09f (main.go: 345 changed lines,
+scan_handler.go: 12 added lines); rows above keep their 713a4f380
+numbers unless a row says "at 9e624f09f".</p>
+<table>
+<thead>
+<tr>
+<th>FU</th>
+<th>Status</th>
+<th>What changed</th>
+<th>Evidence (command and result)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FU1</td>
+<td>corrected</td>
+<td>S1 and R6: the WebSocket leg of a scan-failure
+<code>notification</code> is admin-only</td>
+<td><code>grep -n "audienceForType|AudienceAdmin" handlers/websocket_handler.go</code>:
+<code>audienceForType</code> at :74 returns
+<code>AudienceAuthenticated</code> only for <code>media_update</code>
+and <code>asset_update</code>, <code>AudienceAdmin</code> for everything
+else; <code>BroadcastToClients</code> (:604-606) and
+<code>BroadcastToClientsContext</code> (:641-653) skip non-admin
+connections;
+<code>git diff 713a4f380 9e624f09f -- catalog-api/handlers/websocket_handler.go</code>
+is empty</td>
+</tr>
+<tr>
+<td>FU2</td>
+<td>corrected</td>
+<td>S5: field location and who can read it</td>
+<td><code>awk</code> over models: <code>ErrorMessage</code> at
+models/user.go:1108 is inside <code>type ConversionJob</code> (:1091);
+models/file.go:158 is inside <code>type ScanHistory</code> (:146). At
+9e624f09f <code>authorizedJob</code> (conversion_service.go:1006)
+returns a job only to its owner or an administrator;
+<code>ListJobs</code> checks <code>PermissionConversionView</code>
+(conversion_handler.go:113) and <code>GetUserJobs</code> filters
+<code>user_id</code> (conversion_repository.go:278). At 713a4f380
+<code>GetJob</code> (conversion_service.go:976-988) also admitted a
+non-owner holding <code>auth.PermissionViewMedia</code>; whether an
+ordinary role holds that permission was not checked: UNCONFIRMED</td>
+</tr>
+<tr>
+<td>FU3</td>
+<td>corrected</td>
+<td>S3: route</td>
+<td><code>grep -n "storage/list" handlers/storage_routes.go</code>: :14
+<code>api.GET("/storage/list/*path", auth.RequireAdmin(), h.ListStoragePath)</code>;
+<code>grep -rn "storage-roots/:id/list" --include=*.go</code>
+(non-test): 0 hits</td>
+</tr>
+<tr>
+<td>FU4</td>
+<td>reconciled</td>
+<td>see "Reconciliation of the 310 sink-scan rows"</td>
+<td>commands in that section</td>
+</tr>
+<tr>
+<td>FU5</td>
+<td>stated</td>
+<td>flow-scan counts are after <code>sort -u</code></td>
+<td><code>flows head/catalog-api | wc -l</code> = 365,
+<code>sort -u | wc -l</code> = 362; base 405 and 402;
+<code>sort | uniq -d</code> lists the same 3 rows at both bases</td>
+</tr>
+<tr>
+<td>FU6</td>
+<td>skipped</td>
+<td>handled by another change, not edited here</td>
+<td>(none)</td>
+</tr>
+<tr>
+<td>FU7</td>
+<td>corrected</td>
+<td>R4 now lists conversion_handler.go:72-73 (B62)</td>
+<td><code>sed -n 70,76p handlers/conversion_handler.go</code>;
+<code>grep -rn ErrInvalidConversionRequest</code> (non-test): the only
+producer is conversion_service.go:83
+<code>fmt.Errorf("%w: %s", ..., reason)</code> with <code>reason</code>
+from <code>conversionRequestProblem</code> ("a short client-safe
+reason", conversion_service.go:1448)</td>
+</tr>
+<tr>
+<td>FU8</td>
+<td>corrected</td>
+<td>Limits bullets 2 and 3</td>
+<td>fixture run in "Instrument blind spots measured 2026-11-14"
+below</td>
+</tr>
+<tr>
+<td>FU9</td>
+<td>added</td>
+<td>"Checked-SAFE surfaces and scope exclusions" below</td>
+<td>commands there</td>
+</tr>
+<tr>
+<td>FU10</td>
+<td>corrected</td>
+<td>instrument numbering (listed 0, 1, 3, 2); S6 "three validators" is
+two of four; N4 closure row maps S6 to S9</td>
+<td><code>sed -n 943,975p services/configuration_service.go</code> (two
+validators return nil, two return fixed text); Class 4 table has rows S1
+to S12</td>
+</tr>
+<tr>
+<td>FU11</td>
+<td>measured</td>
+<td>reviewer fixtures R1 to R3 are missed by all three instruments; a
+partial typed scan found no live instance</td>
+<td>"Instrument blind spots measured 2026-11-14" below</td>
+</tr>
+</tbody>
+</table>
+<h3 id="reconciliation-of-the-310-sink-scan-rows-fu4">Reconciliation of
+the 310 sink-scan rows (FU4)</h3>
+<p>Commands: build <code>astscan_sinks.go.txt</code>, run on
+<code>git archive 9ed6577b catalog-api</code>;
+<code>awk -F'\t' '$4 !~ /^(strings|sort|bytes)\./'</code> removes callee
+noise; compare the <code>file:line</code> set with the
+<code>B&lt;n&gt;</code> rows of the per-site table.</p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Rows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Instrument 1 raw output, review base</td>
+<td>432</td>
+</tr>
+<tr>
+<td>After removing <code>strings.</code>, <code>sort.</code>,
+<code>bytes.</code> callees</td>
+<td>310</td>
+</tr>
+<tr>
+<td>of which under <code>catalog-api/challenges/</code> (harness, see
+R3)</td>
+<td>60</td>
+</tr>
+<tr>
+<td>outside <code>challenges/</code></td>
+<td>250</td>
+</tr>
+<tr>
+<td>of which a second row at an already counted <code>file:line</code>
+(taint rows <code>T:</code> with a different expression at
+admin_handler.go:518 and :574, alias_routes.go:140, main.go:1013)</td>
+<td>4</td>
+</tr>
+<tr>
+<td>distinct <code>file:line</code> outside
+<code>challenges/</code></td>
+<td>246</td>
+</tr>
+<tr>
+<td>of which in the per-site table (rows B1 to B226)</td>
+<td>226</td>
+</tr>
+<tr>
+<td>distinct <code>file:line</code> NOT in the table</td>
+<td>20</td>
+</tr>
+</tbody>
+</table>
+<p>310 - 226 = 84 = 60 (challenges/, see R3) + 4 (duplicate lines) + 20
+(unlisted lines). The earlier heading "226 rows after removing
+<code>strings.*</code> callee noise" omitted the
+<code>sort.</code>/<code>bytes.</code> filter, the
+<code>challenges/</code> exclusion and the one-row-per-line rule; the
+control-needle bullet "310 and 250" is the first and second line of this
+table. The 20 unlisted lines, each read at the review base
+(<code>&lt;file&gt;:&lt;line&gt;</code> at 9ed6577b), are:</p>
+<table>
+<thead>
+<tr>
+<th>Lines</th>
+<th>Reading</th>
+<th>Disposition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>scan_handler.go:377, 383, 400 (<code>ListStoragePath</code>,
+<code>services.ScrubErrorFor(err, root)</code> in a <code>c.JSON</code>
+body, kind <code>H:</code>)</td>
+<td>the three call sites of Class 4 row S3 (713a4f380: :378, :384,
+:401); scan_handler.go:384 is the <code>Connect</code> failure branch
+(status <code>StatusBadGateway</code>), found by instrument 1 as
+<code>H:services.ScrubErrorFor(err, root)</code> at both bases, so it
+was not missed by the scan</td>
+<td>S3 (LEAK to admins, partly scrubbed)</td>
+</tr>
+<tr>
+<td>log_management_handler.go:48 (<code>writeLogServiceError</code>,
+<code>http.Error(w, msg, status)</code>,
+<code>T:status&lt;-logServiceStatus(err)</code>)</td>
+<td><code>msg</code> is one of four fixed strings chosen by status ("Not
+found", "Access denied", "Unsupported format", "Internal server error"),
+the error value only selects the status</td>
+<td>SAFE</td>
+</tr>
+<tr>
+<td>admin_handler.go:518, :574; alias_routes.go:140;
+conversion_handler.go:154; playlist_handler.go:64; scan_handler.go:301;
+service_handlers.go:360; internal/handlers/catalog.go:136;
+internal/services/media_recognition_service.go:349, :362; main.go:1013,
+:1732; models/user.go:81; repository/media_item_repository.go:534;
+services/log_management_service.go:325;
+services/pdf_text_isolation.go:369</td>
+<td>identifiers that are not errors: <code>result</code>,
+<code>backups</code>, <code>out</code>, <code>jobs</code>,
+<code>len(playlists)</code>, <code>roots</code>,
+<code>len(favorites)</code>, <code>fileInfo</code>,
+<code>bestResult</code>,
+<code>fmt.Sprintf("ws://%s:%d/ws", host, port)</code>,
+<code>port</code>, <code>[]string(p)</code>, <code>v</code>,
+<code>entries</code>, <code>p</code>; no <code>error</code> value
+reaches the sink</td>
+<td>noise (false positives of the BARE/<code>H:</code>/<code>F:</code>
+kinds)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="checked-safe-surfaces-and-scope-exclusions-fu9">Checked-SAFE
+surfaces and scope exclusions (FU9)</h3>
+<table>
+<thead>
+<tr>
+<th>Surface</th>
+<th>What was read</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>panic recovery</td>
+<td><code>grep -rn "gin.Recovery|gin.Default()" --include=*.go</code>
+outside <code>testdata</code>: 0 hits;
+<code>middleware.Recovery(logger)</code> is installed at
+main_router.go:93; <code>internal/middleware/recovery.go</code> logs a
+redacted panic and answers <code>c.AbortWithStatus(500)</code> with no
+body</td>
+<td>SAFE</td>
+</tr>
+<tr>
+<td><code>assetEventBus</code></td>
+<td>main.go:770 (9e624f09f) forwards only
+<code>AssetReady</code>/<code>AssetFailed</code> events to
+<code>BroadcastToClients</code> with <code>type</code>,
+<code>action</code>, <code>asset_id</code>, <code>asset_type</code>,
+<code>entity_type</code>, <code>entity_id</code>; no error field</td>
+<td>SAFE</td>
+</tr>
+<tr>
+<td><code>/logs</code> collection entries</td>
+<td><code>LogManagementHandler.GetLogEntries</code>
+(log_management_handler.go:238-269) requires
+<code>PermissionSystemAdmin</code> (:251) before returning entries;
+entries are the operator's own log data</td>
+<td>ADMIN-ONLY by design, not a response-text leak</td>
+</tr>
+<tr>
+<td><code>ScanHistory.ErrorMessage</code> /
+<code>scan_history.error_message</code></td>
+<td><code>grep -rn "INSERT INTO scan_history|UPDATE scan_history" --include=*.go</code>
+outside tests: only database/migrations_sqlite.go:183
+(<code>UPDATE scan_history SET storage_root_id</code>);
+<code>AliasHandler.ScanHistory</code> (alias_routes.go:116) does not
+select the column; <code>StatsRepository.GetScanHistory</code>
+(stats_repository.go:511) reads it into models/file.go:158 and
+<code>GET /stats/scans</code> serves it</td>
+<td>writer-less in catalog-api non-test Go (an external writer to the
+database is not excluded: UNCONFIRMED); nothing writes error text into
+it today</td>
+</tr>
+<tr>
+<td>linked own-org submodule code</td>
+<td><code>grep -c '^replace' catalog-api/go.mod</code> = 23
+(<code>../submodules/&lt;name&gt;</code>: assets, auth, cache,
+challenges, concurrency, config, containers, database, discovery,
+entities, event_bus, filesystem, lazy, media, memory, middleware,
+observability, rate_limiter, recovery, security, storage, streaming,
+watcher)</td>
+<td>OUT OF SCOPE of this enumeration: the scans read the checked-in
+<code>catalog-api</code> tree only, the clones were made without
+submodule init; those modules were not scanned and no statement about
+them is made</td>
+</tr>
+</tbody>
+</table>
+<h3 id="instrument-blind-spots-measured-2026-11-14-fu8-fu11">Instrument
+blind spots measured 2026-11-14 (FU8, FU11)</h3>
+<p>Six fixture functions were written to a scratch directory (never
+committed) and run through the three built instruments:</p>
+<table>
+<thead>
+<tr>
+<th>Fixture</th>
+<th>Shape</th>
+<th>Instrument 1 (sink)</th>
+<th>Instrument 2 (census)</th>
+<th>Instrument 3 (flow)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>fixCause</td>
+<td><code>var cause error = do()</code>,
+<code>fmt.Sprintf("%v", cause)</code> inside <code>c.JSON</code></td>
+<td>found (<code>F:</code>)</td>
+<td>not applicable (no <code>.Error()</code>)</td>
+<td>found</td>
+</tr>
+<tr>
+<td>fixE</td>
+<td><code>e := do()</code>, <code>fmt.Sprintf("%v", e)</code> inside
+<code>c.JSON</code></td>
+<td>missed</td>
+<td>missed</td>
+<td>missed</td>
+</tr>
+<tr>
+<td>fixR1 (reviewer R1)</td>
+<td><code>_, boom := pair()</code>, <code>fmt.Sprintf("%v", boom)</code>
+inside <code>c.JSON</code></td>
+<td>missed</td>
+<td>missed</td>
+<td>missed</td>
+</tr>
+<tr>
+<td>fixR1b</td>
+<td>same, <code>boom.Error()</code></td>
+<td>found (<code>E:</code>)</td>
+<td>found</td>
+<td>found</td>
+</tr>
+<tr>
+<td>fixR2 (reviewer R2)</td>
+<td><code>failure := do()</code>,
+<code>c.JSON(500, gin.H{"m": failure})</code></td>
+<td>missed</td>
+<td>missed</td>
+<td>missed</td>
+</tr>
+<tr>
+<td>fixR3 (reviewer R3)</td>
+<td><code>c.JSON(500, gin.H{"m": h.Cause})</code>,
+<code>Cause error</code> struct field</td>
+<td>missed</td>
+<td>missed</td>
+<td>missed</td>
+</tr>
+</tbody>
+</table>
+<p>So bullets 2 and 3 of "Limits" were stale in two ways (the
+<code>cause</code> shape is found; DB round-trips are covered for S4 and
+S5) and the reviewer's three fixtures R1 to R3 are real blind spots of
+all three instruments. A typed scan was built to check the tree: a
+<code>go/packages</code> program (golang.org/x/tools v0.52.0, built
+offline in a scratch module) that lists every expression whose type
+implements <code>error</code>, as an identifier or selector, in a
+sink-named call (same name list as instrument 1), skipping tests and
+<code>challenges/</code>. Run on an archive of 713a4f380 without
+submodules: 169 rows, 168 with an err-named identifier (already covered
+by instrument 1) and 1 with another name
+(repository/asset_repository.go:202, an argument of
+<code>json.Unmarshal</code>, not a client sink). The same program
+reported all six fixtures when they were placed inside the module.
+LIMIT: 18 packages failed to type-check because the submodules named in
+"Checked-SAFE surfaces" were absent
+(<code>could not import digital.vasic.*</code>), so the typed scan
+covered the rest of the tree only; the statement "no live instance" is
+therefore for the packages that type-checked and is otherwise
+UNCONFIRMED. The handler sweep <code>TestPXF23R5b_SourceSweep</code>
+(PXF23-F2) gained the same declared-type and error-synonym detection on
+2026-11-14 (handlers/pxf23_f2_bare_err_test.go); it still does not see a
+struct field or an arbitrary-named multi-value result (pinned by
+<code>TestPXF23F2_KnownGaps</code>).</p>
+<h2
 id="limits-of-the-instruments-measured-unconfirmed-where-stated">Limits
 of the instruments (measured, UNCONFIRMED where stated)</h2>
 <ul>
@@ -3911,19 +4364,29 @@ compared with nil, a field of type <code>error</code>, or an interface
 method result is missed (round-2 blind spot, partly closed).</li>
 <li>Sink detection is by callee name; a response writer with a name
 outside the list is missed by instrument 1 and is caught only if
-instrument 2 sees an <code>.Error()</code> inside it. Error text built
-without <code>.Error()</code>, <code>%v</code> of an err-named
-identifier, or an err-named identifier argument (for instance a variable
-named <code>cause</code> or <code>e</code> passed to
-<code>fmt.Sprintf</code>) is not found by either instrument: UNCONFIRMED
-whether any exists.</li>
+instrument 2 sees an <code>.Error()</code> inside it. Measured
+2026-11-14 with six fixtures (see "Corrections of 2026-11-14",
+FU8/FU11): a variable DECLARED <code>var cause error</code> and passed
+to <code>fmt.Sprintf</code> inside a sink IS found (kind
+<code>F:</code>, instrument 1 and 3); a short variable
+<code>e := do()</code> formatted with <code>%v</code>, a
+multi-value-call result with a non-err name
+(<code>_, boom := pair()</code>) formatted with <code>%v</code>, a
+non-err-named error passed bare to a sink (<code>failure</code>), and an
+error-typed struct field are NOT found by any instrument;
+<code>boom.Error()</code> IS found (instruments 1, 2, 3). Whether any
+such site exists in the tree: the partial typed scan below found
+none.</li>
 <li>Blind spots found by the round-2 review and closed only as far as
 stated: helper-in-sink (<code>H:</code>), non-err-named variable in
-<code>%v</code> (<code>F:</code>). Still NOT covered: error text
-round-tripped through the database or a file and served by a different
-route than the writer's, event-bus consumers other than
-<code>EventBusBridge</code>, text built by
-<code>errors.Unwrap</code>/<code>errors.Join</code> chains and then
+<code>%v</code> (<code>F:</code>). Error text round-tripped through the
+database and served by a different route IS covered for the fields Class
+4 traces (S4 <code>SyncSession.ErrorMessage</code>, S5
+<code>ConversionJob.ErrorMessage</code>;
+<code>ScanHistory.ErrorMessage</code> has no writer, see "Checked-SAFE
+surfaces"); still NOT covered: any other database or file round-trip,
+event-bus consumers other than <code>EventBusBridge</code>, text built
+by <code>errors.Unwrap</code>/<code>errors.Join</code> chains and then
 formatted with <code>%s</code> of a non-error value,
 <code>fmt.Errorf</code> results returned to a handler that sends them
 (covered only when the handler's sink argument shows an err-like
