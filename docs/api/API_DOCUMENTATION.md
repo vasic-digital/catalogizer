@@ -2099,7 +2099,7 @@ Alias for GET /api/v1/storage/roots. Returns same response.
 
 Get the current status of a specific storage root (online/offline, last scan time).
 
-**Description:** Checks connectivity and returns scan status for a storage root.
+**Description:** Checks connectivity and returns scan status for a storage root. For a non-admin caller the `error` field of an offline or misconfigured root is the fixed text `scan error (details restricted to administrators)`; admins see the raw probe error (SSE-OPQ-1).
 **Auth:** Required
 **Rate Limit:** Standard (2000/min)
 

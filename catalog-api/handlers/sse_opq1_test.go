@@ -7,9 +7,12 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -165,4 +168,66 @@ func TestSSEOPQ1_NoReason_NotRewritten(t *testing.T) {
 	_, body := o.get(cat001Token(t, 2, "2"), "/scans/job1")
 	assert.NotContains(t, body, scanErrorClassText)
 	assert.Contains(t, body, `"reason":""`)
+}
+
+// F1 (review round 1): GET /storage-roots/:id/status is open to any authenticated user; its error names the host / base path of the root.
+func TestSSEOPQ1_F1_RootStatusErrorRedactedForNonAdmin(t *testing.T) {
+	o := newOPQHarness(t, nil)
+	missing := filepath.Join(os.TempDir(), "opq-secret-dir-does-not-exist-7731")
+	_, err := o.h.db.Exec(`INSERT INTO storage_roots (id, name, protocol, path, enabled) VALUES (2, 'opqlocal', 'local', ?, 1)`, missing)
+	require.NoError(t, err)
+	user, adm := cat001Token(t, 2, "2"), cat001Token(t, 1, "1")
+
+	code, body := o.get(adm, "/storage-roots/2/status")
+	require.Equal(t, http.StatusOK, code, body)
+	require.Contains(t, body, "opq-secret-dir-does-not-exist-7731", "control needle: the admin sees the raw probe error naming the path: %s", body)
+
+	code, body = o.get(user, "/storage-roots/2/status")
+	require.Equal(t, http.StatusOK, code, body)
+	assert.NotContains(t, body, "opq-secret-dir-does-not-exist-7731", "non-admin sees the base path")
+	assert.NotContains(t, body, os.TempDir())
+	var out map[string]interface{}
+	require.NoError(t, json.Unmarshal([]byte(body), &out))
+	assert.Equal(t, scanErrorClassText, out["error"])
+	assert.Equal(t, false, out["connected"], "the non-error fields stay")
+	assert.NotEmpty(t, out["status"])
+	// a healthy / disabled root carries no error key either way (the redaction is not unconditional)
+	code, body = o.get(user, "/storage-roots/1/status")
+	assert.NotContains(t, body, opqHost)
+	_ = code
+}
+
+// M7 (review): the redaction must not depend on the text containing a URL; a bare host / account name is redacted too.
+func TestSSEOPQ1_M7_BareHostAndAccountRedacted(t *testing.T) {
+	o := newOPQHarness(t, nil)
+	o.scan.activeStatuses["job1"].Reason = "login failed for svc_backup on fileserver01"
+	for _, p := range []string{"/scans", "/scans/job1"} {
+		_, body := o.get(cat001Token(t, 2, "2"), p)
+		assert.NotContains(t, body, "svc_backup", p)
+		assert.NotContains(t, body, "fileserver01", p)
+		assert.Contains(t, body, scanErrorClassText, p)
+		_, body = o.get(cat001Token(t, 1, "1"), p)
+		assert.Contains(t, body, "svc_backup", "control: admin raw at "+p)
+	}
+}
+
+// M11 (review): callerIsAdmin fails closed on a missing / invalid user id even when the checker would say admin, and on a non-int role.
+func TestSSEOPQ1_M11_CallerIsAdminFailClosed(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	yes := func(context.Context, int) (bool, error) { return true, nil }
+	mk := func(set func(*gin.Context)) *gin.Context {
+		c, _ := gin.CreateTestContext(httptest.NewRecorder())
+		c.Request = httptest.NewRequest("GET", "/", nil)
+		set(c)
+		return c
+	}
+	h := NewScanHandler(nil, nil).WithAdminChecker(yes)
+	assert.False(t, h.callerIsAdmin(mk(func(*gin.Context) {})), "no user_id")
+	assert.False(t, h.callerIsAdmin(mk(func(c *gin.Context) { c.Set("user_id", 0) })), "user_id 0")
+	assert.False(t, h.callerIsAdmin(mk(func(c *gin.Context) { c.Set("user_id", "5") })), "string user_id")
+	assert.True(t, h.callerIsAdmin(mk(func(c *gin.Context) { c.Set("user_id", 5) })), "control: valid id + checker yes")
+	nc := NewScanHandler(nil, nil)
+	assert.False(t, nc.callerIsAdmin(mk(func(c *gin.Context) { c.Set("role_id", "1") })), "string role")
+	assert.False(t, nc.callerIsAdmin(mk(func(c *gin.Context) { c.Set("role_id", int64(1)) })), "int64 role")
+	assert.True(t, nc.callerIsAdmin(mk(func(c *gin.Context) { c.Set("role_id", 1) })), "control: role 1")
 }

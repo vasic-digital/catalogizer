@@ -358,6 +358,14 @@ func (h *ScanHandler) GetStorageRootStatus(c *gin.Context) {
 	}
 
 	resp := gin.H{"id": id, "checked_at": time.Now().Format(time.RFC3339)}
+	// The probe error names the host, share or base path of the root: a non-admin gets the fixed class text (SSE-OPQ-1 F1).
+	admin := h.callerIsAdmin(c)
+	probeErr := func(err error) string {
+		if !admin {
+			return scanErrorClassText
+		}
+		return services.ScrubErrorFor(err, root)
+	}
 	if !root.Enabled {
 		// A disabled root is never scanned or probed: it is reported as such, not as online.
 		resp["connected"], resp["status"] = false, "disabled"
@@ -368,20 +376,20 @@ func (h *ScanHandler) GetStorageRootStatus(c *gin.Context) {
 	// Probe the root with the same settings mapping and client factory the scanner uses, so the answer is the one a scan would meet.
 	fsClient, err := h.clientForRoot(root)
 	if err != nil {
-		resp["connected"], resp["status"], resp["error"] = false, "misconfigured", services.ScrubErrorFor(err, root)
+		resp["connected"], resp["status"], resp["error"] = false, "misconfigured", probeErr(err)
 		c.JSON(http.StatusOK, resp)
 		return
 	}
 	ctx, cancel := context.WithTimeout(c.Request.Context(), storageRootProbeTimeout)
 	defer cancel()
 	if err := fsClient.Connect(ctx); err != nil {
-		resp["connected"], resp["status"], resp["error"] = false, "offline", services.ScrubErrorFor(err, root)
+		resp["connected"], resp["status"], resp["error"] = false, "offline", probeErr(err)
 		c.JSON(http.StatusOK, resp)
 		return
 	}
 	defer disconnectBounded(fsClient)
 	if err := fsClient.TestConnection(ctx); err != nil {
-		resp["connected"], resp["status"], resp["error"] = false, "offline", services.ScrubErrorFor(err, root)
+		resp["connected"], resp["status"], resp["error"] = false, "offline", probeErr(err)
 		c.JSON(http.StatusOK, resp)
 		return
 	}

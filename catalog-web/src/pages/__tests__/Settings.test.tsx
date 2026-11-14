@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Settings, SyncSection } from '../Settings'
 import { syncApi } from '@/lib/syncApi'
+import { mediaApi } from '@/lib/mediaApi'
 
 // SSE-F4: every GET /sync/* is admin-only on the server, so the page must know the role.
 const authState = { isAdmin: true }
@@ -376,10 +377,12 @@ describe('Settings', () => {
 
     it('non-admin: no Start New Scan card and no storage-roots request (SSE-OPQ-1)', async () => {
       authState.isAdmin = false
+      vi.mocked(mediaApi.getStorageRoots).mockClear()
       render(<Settings />, { wrapper: createWrapper() })
       await screen.findByText('No scans recorded yet.')
       expect(screen.queryByText('Start New Scan')).not.toBeInTheDocument()
       expect(screen.queryByLabelText('Storage Root')).not.toBeInTheDocument()
+      expect(vi.mocked(mediaApi.getStorageRoots)).not.toHaveBeenCalled()
     })
 
     it('renders default option in storage root select', () => {
