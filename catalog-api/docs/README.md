@@ -226,7 +226,7 @@ All endpoints return standardized error responses:
 }
 ```
 
-Internal error text (driver, path or parser messages) is never sent to the client; it is logged server-side with the status and `request_id`. Some endpoints that document their own `details` field (for example the sync API) are described on their own pages.
+Responses written through `utils.SendErrorResponse`, the auth/user/admin handlers (PXF23-R5) and the `/health` checks never carry internal error text (driver, path or parser messages); it is logged server-side with the status and `request_id`. This is NOT yet true of every endpoint: `handlers/sync_handler.go` (its `details` field is documented in the sync API page), `handlers/scan_handler.go`, and the playback, playlist, service, SMB discovery, conversion, asset and copy handlers still place error-derived text in `message`/`error` fields; they are tracked as open items (PXF23-F3, PXF23-R5b) and the per-site list is not re-verified here. Endpoints that document their own `details` field (for example the sync API) are described on their own pages.
 
 ## Success Responses
 
