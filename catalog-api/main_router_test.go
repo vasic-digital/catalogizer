@@ -119,6 +119,7 @@ func keyedChains(chains map[string][]string) map[string][]string { return chains
 // edit of this list.
 var wantEngineLevel = []string{
 	"github.com/gin-gonic/gin@v1.12.0/logger.go:LoggerWithConfig",
+	"internal/middleware/middleware.go:AccessLogRouteParams",
 	"internal/middleware/recovery.go:Recovery",
 	"middleware/security_headers.go:SecurityHeadersWithConfig",
 	"middleware/concurrency_limiter.go:ConcurrencyLimiter",

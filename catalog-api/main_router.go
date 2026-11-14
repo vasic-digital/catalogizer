@@ -315,6 +315,7 @@ func altSvcMiddleware(c *gin.Context) {
 // startup. Changing it is a deliberate edit of this list.
 var wantGlobalChain = []string{
 	"github.com/gin-gonic/gin@v1.12.0/logger.go:LoggerWithConfig",
+	"internal/middleware/middleware.go:AccessLogRouteParams",
 	"internal/middleware/recovery.go:Recovery",
 	"middleware/security_headers.go:SecurityHeadersWithConfig",
 	"middleware/concurrency_limiter.go:ConcurrencyLimiter",
