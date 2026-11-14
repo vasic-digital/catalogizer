@@ -2582,3 +2582,12 @@ Landed: PXF18-FU6-F1..F3, PXF18DOC-F1..F6, RLW-FU1. Open minors:
 - PXF23F2-R6 (nit): KnownFalsePositives checks count, not which value.
 - Operator 2026-11-14: internal/monitoring stays dormant, tracked as CAT-MONITORING-PKG-1 (wire-or-remove later; nothing deleted).
 - Pre-existing: `./middleware` TestLoginRegisterAreNotRedisTiers fails at base 9e624f09f (reviewer-confirmed); register as CAT-MW-TIERTEST-1.
+
+## RLW-FU2 landing (2026-11-14, Opus round 1 GO-with-follow-ups, PROVISIONAL, unit-class)
+Retry-After on 429 for in-memory tier + Redis fixed/sliding/token-bucket. Open minors:
+- RLW-FU2-F1 (test-instrumentation): fixed-window test accepts any 1..60 (M5/M6 survive); FastForward miniredis and assert exact remaining.
+- RLW-FU2-F2 (source-defect minor, unwired path): sliding-window body retry_after = key TTL (~2x window) vs header capped at window.
+- RLW-FU2-F3 (source-defect minor): other wired 429s lack Retry-After: middleware/request.go:113 RateLimiter (main.go:1078), middleware/pprof_guard.go:63; optional on 503s (ConcurrencyLimiter, websocket_handler.go:406).
+- RLW-FU2-F4: Retry-After/X-RateLimit-* not in Access-Control-Expose-Headers (only if cross-origin browser client needs).
+- RLW-FU2-F5 (nit): in-memory header sends full window not remaining time. F6 (nit): duplicate retryAfterSeconds helper in handlers/auth_handler.go:60.
+- CAT-MW-TIERTEST-1: TestLoginRegisterAreNotRedisTiers is a stale source grep (wiring moved to main_ratetiers.go); fails at base.
