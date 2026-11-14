@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -40,6 +41,7 @@ type opqHarness struct {
 	r    *gin.Engine
 	h    *apiHarness
 	scan *mockUniversalScanner
+	sh   *ScanHandler
 }
 
 func newOPQHarness(t *testing.T, checker func(context.Context, int) (bool, error)) *opqHarness {
@@ -65,7 +67,7 @@ func newOPQHarness(t *testing.T, checker func(context.Context, int) (bool, error
 	_, err := h.db.Exec(`INSERT INTO storage_roots (id, name, protocol, host, path, username, domain, enabled) VALUES (1, 'opqroot', 'smb', ?, ?, ?, ?, 1)`,
 		opqHost, opqPath, opqUser, opqDomain)
 	require.NoError(t, err)
-	return &opqHarness{t: t, r: r, h: h, scan: ms}
+	return &opqHarness{t: t, r: r, h: h, scan: ms, sh: sh}
 }
 
 func (o *opqHarness) get(tok, path string) (int, string) {
@@ -230,4 +232,141 @@ func TestSSEOPQ1_M11_CallerIsAdminFailClosed(t *testing.T) {
 	assert.False(t, nc.callerIsAdmin(mk(func(c *gin.Context) { c.Set("role_id", "1") })), "string role")
 	assert.False(t, nc.callerIsAdmin(mk(func(c *gin.Context) { c.Set("role_id", int64(1)) })), "int64 role")
 	assert.True(t, nc.callerIsAdmin(mk(func(c *gin.Context) { c.Set("role_id", 1) })), "control: role 1")
+}
+
+// opqProbeClient connects fine and fails TestConnection with an error that names the share (unit-class double: it only drives the handler's
+// TestConnection-failure branch, which a real local/ftp/smb client cannot reach after a successful Connect on demand).
+type opqProbeClient struct {
+	filesystem.FileSystemClient
+	testErr error
+}
+
+func (c *opqProbeClient) Connect(context.Context) error        { return nil }
+func (c *opqProbeClient) TestConnection(context.Context) error { return c.testErr }
+func (c *opqProbeClient) Disconnect(context.Context) error     { return nil }
+
+type opqProbeFactory struct{ c *opqProbeClient }
+
+func (f opqProbeFactory) CreateClient(*filesystem.StorageConfig) (filesystem.FileSystemClient, error) {
+	return f.c, nil
+}
+func (f opqProbeFactory) SupportedProtocols() []string { return []string{"local"} }
+
+const opqProbeNeedle = "opqprobe-secret-share-4419"
+
+func opqAddProbeRoot(t *testing.T, o *opqHarness) {
+	t.Helper()
+	dir, err := os.MkdirTemp("/tmp", "opq-probe-")
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = os.RemoveAll(dir) })
+	_, err = o.h.db.Exec(`INSERT INTO storage_roots (id, name, protocol, path, enabled) VALUES (3, 'opqprobe', 'local', ?, 1)`, dir)
+	require.NoError(t, err)
+	o.sh.clientFactory = opqProbeFactory{&opqProbeClient{testErr: errors.New("share " + opqProbeNeedle + " refused the probe")}}
+}
+
+// F1 (SSEOPQ-F1): the TestConnection-failure branch of GET /storage-roots/:id/status.
+func TestSSEOPQ1_StorageRootStatus_TestConnectionFailure(t *testing.T) {
+	o := newOPQHarness(t, nil)
+	opqAddProbeRoot(t, o)
+	user, adm := cat001Token(t, 2, "2"), cat001Token(t, 1, "1")
+
+	code, body := o.get(adm, "/storage-roots/3/status")
+	require.Equal(t, http.StatusOK, code, body)
+	require.Contains(t, body, opqProbeNeedle, "control needle: the admin sees the raw TestConnection error (proves the branch was reached): %s", body)
+	require.Contains(t, body, `"status":"offline"`)
+
+	code, body = o.get(user, "/storage-roots/3/status")
+	require.Equal(t, http.StatusOK, code, body)
+	assert.NotContains(t, body, opqProbeNeedle, "non-admin sees the TestConnection error")
+	var out map[string]interface{}
+	require.NoError(t, json.Unmarshal([]byte(body), &out))
+	assert.Equal(t, scanErrorClassText, out["error"])
+	assert.Equal(t, "offline", out["status"])
+	assert.Equal(t, false, out["connected"])
+}
+
+// F2 (SSEOPQ-F2): the status endpoint obeys the live checker, not the token claim, in both directions (and fails closed on a checker error).
+func TestSSEOPQ1_StorageRootStatus_CheckerDecides(t *testing.T) {
+	never := func(context.Context, int) (bool, error) { return false, nil }
+	always := func(context.Context, int) (bool, error) { return true, nil }
+	broken := func(context.Context, int) (bool, error) { return true, errors.New("db down") }
+	cases := []struct {
+		name    string
+		checker func(context.Context, int) (bool, error)
+		role    int
+		raw     bool
+	}{
+		{"checker-no-token-claims-admin", never, 1, false},
+		{"checker-yes-token-claims-user", always, 2, true},
+		{"checker-error-token-claims-admin", broken, 1, false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			o := newOPQHarness(t, tc.checker)
+			opqAddProbeRoot(t, o)
+			code, body := o.get(cat001Token(t, tc.role, "5"), "/storage-roots/3/status")
+			require.Equal(t, http.StatusOK, code, body)
+			if tc.raw {
+				assert.Contains(t, body, opqProbeNeedle)
+			} else {
+				assert.NotContains(t, body, opqProbeNeedle)
+				assert.Contains(t, body, scanErrorClassText)
+			}
+		})
+	}
+}
+
+// F3 (SSEOPQ-F3): redaction is keyed on a non-empty reason, not on status == failed (a cancelled scan with a reason is redacted too).
+func TestSSEOPQ1_NonFailedStatusReasonRedacted(t *testing.T) {
+	o := newOPQHarness(t, nil)
+	o.scan.activeStatuses["job1"].Status = "cancelled"
+	user, adm := cat001Token(t, 2, "2"), cat001Token(t, 1, "1")
+	for _, p := range []string{"/scans", "/scans/job1"} {
+		_, body := o.get(adm, p)
+		require.Contains(t, body, "nas.internal", "control: admin raw at %s", p)
+		require.Contains(t, body, `"status":"cancelled"`, p)
+		_, body = o.get(user, p)
+		assert.NotContains(t, body, "nas.internal", p)
+		assert.Contains(t, body, scanErrorClassText, p)
+		assert.Contains(t, body, `"status":"cancelled"`, p)
+	}
+}
+
+// F5 (SSEOPQ-F5, adopted from the review): every protocol's status error, all branches; non-admin class text only, admin raw (control).
+func TestSSEOPQ1_StatusAllProtocols(t *testing.T) {
+	o := newOPQHarness(t, nil)
+	user, adm := cat001Token(t, 2, "2"), cat001Token(t, 1, "1")
+	rows := []struct {
+		id                int
+		proto, host, path string
+		url               string
+		port              int
+	}{
+		{10, "smb", "rev2needle-smb.invalid", "rev2share", "", 445},
+		{11, "smb", "127.0.0.1", "rev2share", "", 1},
+		{12, "ftp", "127.0.0.1", "/rev2ftp", "", 1},
+		{13, "ftp", "rev2needle-ftp.invalid", "/rev2ftp", "", 21},
+		{14, "webdav", "", "/rev2dav", "http://127.0.0.1:1/rev2dav", 0},
+		{15, "nfs", "rev2needle-nfs.invalid", "/rev2nfs", "", 0},
+		{16, "local", "", "/tmp/rev2-missing-local-dir", "", 0},
+	}
+	for _, r := range rows {
+		_, err := o.h.db.Exec(`INSERT INTO storage_roots (id, name, protocol, host, port, path, url, username, enabled) VALUES (?, ?, ?, ?, ?, ?, ?, 'rev2user', 1)`,
+			r.id, fmt.Sprintf("rev2-%d", r.id), r.proto, r.host, r.port, r.path, r.url)
+		require.NoError(t, err)
+	}
+	for _, r := range rows {
+		p := fmt.Sprintf("/storage-roots/%d/status", r.id)
+		_, ab := o.get(adm, p)
+		_, ub := o.get(user, p)
+		var a, u map[string]interface{}
+		require.NoError(t, json.Unmarshal([]byte(ab), &a), ab)
+		require.NoError(t, json.Unmarshal([]byte(ub), &u), ub)
+		require.NotNil(t, a["error"], "control: the admin sees an error for %s: %s", r.proto, ab)
+		assert.Equal(t, a["status"], u["status"], p)
+		assert.Equal(t, scanErrorClassText, u["error"], p)
+		for _, leak := range []string{"rev2needle", "127.0.0.1", "rev2share", "rev2ftp", "rev2dav", "rev2nfs", "rev2user", "rev2-missing"} {
+			assert.NotContains(t, ub, leak, "%s leaks %q", p, leak)
+		}
+	}
 }
