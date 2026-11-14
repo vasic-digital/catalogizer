@@ -22,6 +22,23 @@ type aliasDB interface {
 type AliasHandler struct {
 	db     aliasDB
 	browse *BrowseHandler
+	// syncGate guards the /sync/* alias GETs (SYNC-ADMIN-1: admin-only). Nil leaves them open
+	// (unit tests that mount the handler without the production middleware chain).
+	syncGate gin.HandlerFunc
+}
+
+// WithSyncGate installs the admin gate applied to the /sync/* alias routes.
+func (h *AliasHandler) WithSyncGate(g gin.HandlerFunc) *AliasHandler {
+	h.syncGate = g
+	return h
+}
+
+// syncHandlers prepends the sync gate (when set) to a route's handler chain.
+func (h *AliasHandler) syncHandlers(hs ...gin.HandlerFunc) []gin.HandlerFunc {
+	if h.syncGate == nil {
+		return hs
+	}
+	return append([]gin.HandlerFunc{h.syncGate}, hs...)
 }
 
 // NewAliasHandler builds the handler. browse may be nil (then /files is 501).
@@ -34,10 +51,10 @@ func (h *AliasHandler) RegisterAliasRoutes(api *gin.RouterGroup) {
 	api.GET("/media-types", h.MediaTypes)
 	api.GET("/stats/media-types", h.StatsMediaTypes)
 	api.GET("/stats/scan-history", h.ScanHistory)
-	api.GET("/sync/status", h.SyncStatus)
-	api.GET("/sync/providers", h.SyncProviders)
-	api.GET("/sync/devices", h.notImplemented("no device registry exists"))
-	api.GET("/sync/conflicts", h.notImplemented("no sync conflict store exists"))
+	api.GET("/sync/status", h.syncHandlers(h.SyncStatus)...)
+	api.GET("/sync/providers", h.syncHandlers(h.SyncProviders)...)
+	api.GET("/sync/devices", h.syncHandlers(h.notImplemented("no device registry exists"))...)
+	api.GET("/sync/conflicts", h.syncHandlers(h.notImplemented("no sync conflict store exists"))...)
 	api.GET("/files", h.Files)
 	api.GET("/subtitles", h.Subtitles)
 	api.GET("/translations", h.notImplemented("no translation catalog exists"))

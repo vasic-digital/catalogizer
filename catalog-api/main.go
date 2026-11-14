@@ -712,7 +712,7 @@ func main() {
 
 	// Stats handler
 	statsRepo := root_repository.NewStatsRepository(databaseDB)
-	statsHandler := root_handlers.NewStatsHandler(fileRepository, statsRepo)
+	statsHandler := root_handlers.NewStatsHandler(fileRepository, statsRepo).WithAdminChecker(userRepo.IsAdmin)
 
 	// Media browse handler (wires /media/search and /media/stats to the database)
 	mediaBrowseHandler := root_handlers.NewMediaBrowseHandler(fileRepository, statsRepo, databaseDB)
@@ -1374,15 +1374,15 @@ func main() {
 	syncGroup := api.Group("/sync")
 	{
 			syncGroup.POST("/endpoints", adminGate, func(c *gin.Context) { getSyncHandler().CreateEndpoint(c) })
-			syncGroup.GET("/endpoints", func(c *gin.Context) { getSyncHandler().GetUserEndpoints(c) })
-			syncGroup.GET("/endpoints/:id", func(c *gin.Context) { getSyncHandler().GetEndpoint(c) })
+			syncGroup.GET("/endpoints", adminGate, func(c *gin.Context) { getSyncHandler().GetUserEndpoints(c) })
+			syncGroup.GET("/endpoints/:id", adminGate, func(c *gin.Context) { getSyncHandler().GetEndpoint(c) })
 			syncGroup.PUT("/endpoints/:id", adminGate, func(c *gin.Context) { getSyncHandler().UpdateEndpoint(c) })
 			syncGroup.DELETE("/endpoints/:id", adminGate, func(c *gin.Context) { getSyncHandler().DeleteEndpoint(c) })
 			syncGroup.POST("/endpoints/:id/sync", adminGate, func(c *gin.Context) { getSyncHandler().StartSync(c) })
-			syncGroup.GET("/sessions", func(c *gin.Context) { getSyncHandler().GetUserSessions(c) })
-			syncGroup.GET("/sessions/:id", func(c *gin.Context) { getSyncHandler().GetSession(c) })
+			syncGroup.GET("/sessions", adminGate, func(c *gin.Context) { getSyncHandler().GetUserSessions(c) })
+			syncGroup.GET("/sessions/:id", adminGate, func(c *gin.Context) { getSyncHandler().GetSession(c) })
 			syncGroup.POST("/schedules", adminGate, func(c *gin.Context) { getSyncHandler().ScheduleSync(c) })
-			syncGroup.GET("/statistics", func(c *gin.Context) { getSyncHandler().GetSyncStatistics(c) })
+			syncGroup.GET("/statistics", adminGate, func(c *gin.Context) { getSyncHandler().GetSyncStatistics(c) })
 			syncGroup.POST("/cleanup", jwtMiddleware.RequireAdmin(), func(c *gin.Context) { getSyncHandler().CleanupOldSessions(c) })
 	}
 
@@ -1440,7 +1440,7 @@ func main() {
 			getRecommendationHandler().GetTrendingItems(c)
 	})
 	// /api/v1/sync/history → wraps /sync/sessions.
-	api.GET("/sync/history", func(c *gin.Context) {
+	api.GET("/sync/history", adminGate, func(c *gin.Context) {
 			getSyncHandler().GetUserSessions(c)
 	})
 	// /localization/languages proxies the real subtitle language list.
@@ -1450,7 +1450,7 @@ func main() {
 	// Derived-from-real-state alias routes (media-types, stats, scan history,
 	// sync status/providers, files, subtitles). Routes with no real source
 	// answer 501 instead of canned data (CAT-001, §11.4.289). See handlers/alias_routes.go.
-	root_handlers.NewAliasHandler(databaseDB, browseHandler).RegisterAliasRoutes(api)
+	root_handlers.NewAliasHandler(databaseDB, browseHandler).WithSyncGate(adminGate).RegisterAliasRoutes(api)
 	}
 
 	// Fail closed: the auth surface of the finished engine must be exactly the

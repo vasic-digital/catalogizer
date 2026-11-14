@@ -2407,6 +2407,7 @@ Get scan operation history.
 
 **Description:** Returns historical scan results with pagination.
 **Auth:** Required
+**Error text:** `error_message` is the raw scan error for administrators; every other authenticated user gets the fixed text `scan error (details restricted to administrators)` (STATS-SCANS-ERR-1).
 **Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
@@ -5149,7 +5150,7 @@ Create a sync endpoint configuration.
 List the user's sync endpoints.
 
 **Description:** Returns all configured sync destinations for the user.
-**Auth:** Required
+**Auth:** Administrator only (403 for other authenticated users; SYNC-ADMIN-1)
 **Rate Limit:** Standard (2000/min)
 
 ---
@@ -5159,7 +5160,7 @@ List the user's sync endpoints.
 Get a specific sync endpoint.
 
 **Description:** Returns endpoint configuration details.
-**Auth:** Required
+**Auth:** Administrator only (403 for other authenticated users; SYNC-ADMIN-1)
 **Rate Limit:** Standard (2000/min)
 
 ---
@@ -5208,7 +5209,7 @@ Start a sync operation on an endpoint.
 List the user's sync sessions.
 
 **Description:** Returns sync operation history for the user.
-**Auth:** Required
+**Auth:** Administrator only (403 for other authenticated users; SYNC-ADMIN-1)
 **Rate Limit:** Standard (2000/min)
 
 ---
@@ -5218,7 +5219,7 @@ List the user's sync sessions.
 Get a specific sync session.
 
 **Description:** Returns detailed sync session status and progress.
-**Auth:** Required
+**Auth:** Administrator only (403 for other authenticated users; SYNC-ADMIN-1)
 **Rate Limit:** Standard (2000/min)
 
 ---
@@ -5248,7 +5249,7 @@ Create a sync schedule.
 Get sync statistics.
 
 **Description:** Returns aggregate sync metrics (bytes transferred, sessions, errors).
-**Auth:** Required
+**Auth:** Administrator only (403 for other authenticated users; SYNC-ADMIN-1)
 **Rate Limit:** Standard (2000/min)
 
 ---
@@ -5268,7 +5269,7 @@ Clean up old sync sessions.
 List sync conflicts (placeholder).
 
 **Description:** Placeholder: always returns an empty list.
-**Auth:** Required
+**Auth:** Administrator only (403 for other authenticated users; SYNC-ADMIN-1)
 **Rate Limit:** Standard (2000/min)
 
 **Response:** 200 — Empty list
@@ -5288,7 +5289,7 @@ Content-Type: `application/json`
 List sync devices (placeholder).
 
 **Description:** Placeholder: always returns an empty list.
-**Auth:** Required
+**Auth:** Administrator only (403 for other authenticated users; SYNC-ADMIN-1)
 **Rate Limit:** Standard (2000/min)
 
 **Response:** 200 — Empty list
@@ -5308,7 +5309,7 @@ Content-Type: `application/json`
 List sync history.
 
 **Description:** Alias of GET /api/v1/sync/sessions.
-**Auth:** Required
+**Auth:** Administrator only (403 for other authenticated users; SYNC-ADMIN-1)
 **Rate Limit:** Standard (2000/min)
 
 **Query Parameters:**
@@ -5335,7 +5336,7 @@ Content-Type: `application/json`
 List sync providers.
 
 **Description:** Static list of the supported sync backends.
-**Auth:** Required
+**Auth:** Administrator only (403 for other authenticated users; SYNC-ADMIN-1)
 **Rate Limit:** Standard (2000/min)
 
 **Response:** 200 — Providers
@@ -5354,7 +5355,7 @@ Content-Type: `application/json`
 Sync status (placeholder).
 
 **Description:** Placeholder: always reports idle with no active sessions. Real figures are at GET /api/v1/sync/statistics.
-**Auth:** Required
+**Auth:** Administrator only (403 for other authenticated users; SYNC-ADMIN-1)
 **Rate Limit:** Standard (2000/min)
 
 **Response:** 200 — Static status

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
@@ -15,6 +16,50 @@ import (
 type StatsHandler struct {
 	fileRepo  *repository.FileRepository
 	statsRepo *repository.StatsRepository
+	isAdmin   func(ctx context.Context, userID int) (bool, error)
+}
+
+// WithAdminChecker installs the live admin check (production wires UserRepository.IsAdmin).
+// Without it the role_id claim in the request context is used (role 1 is the seeded admin role).
+func (h *StatsHandler) WithAdminChecker(f func(ctx context.Context, userID int) (bool, error)) *StatsHandler {
+	h.isAdmin = f
+	return h
+}
+
+// scanErrorClassText is what non-administrators see instead of a raw scan error message
+// (which can carry host, share and account names).
+const scanErrorClassText = "scan error (details restricted to administrators)"
+
+// callerIsAdmin reports whether the caller is an administrator; any failure fails closed (false).
+func (h *StatsHandler) callerIsAdmin(c *gin.Context) bool {
+	if h.isAdmin != nil {
+		uid, ok := statsActorID(c)
+		if !ok {
+			return false
+		}
+		admin, err := h.isAdmin(c.Request.Context(), uid)
+		return err == nil && admin
+	}
+	if r, ok := c.Get("role_id"); ok {
+		if id, isInt := r.(int); isInt {
+			return id == 1
+		}
+	}
+	return false
+}
+
+func statsActorID(c *gin.Context) (int, bool) {
+	v, ok := c.Get("user_id")
+	if !ok {
+		return 0, false
+	}
+	switch id := v.(type) {
+	case int:
+		return id, id > 0
+	case int64:
+		return int(id), id > 0
+	}
+	return 0, false
 }
 
 // NewStatsHandler creates a new stats handler
@@ -320,6 +365,15 @@ func (h *StatsHandler) GetScanHistory(c *gin.Context) {
 	if err != nil {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to get scan history", err)
 		return
+	}
+
+	if !h.callerIsAdmin(c) {
+		for i := range history {
+			if history[i].ErrorMessage != nil && *history[i].ErrorMessage != "" {
+				msg := scanErrorClassText
+				history[i].ErrorMessage = &msg
+			}
+		}
 	}
 
 	response := ScanHistoryResponse{

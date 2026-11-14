@@ -103,7 +103,7 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | GET | `/api/v1/stats/duplicates/groups` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/stats/access` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/stats/growth` | auth | 401 | 200 | 200 |
-| GET | `/api/v1/stats/scans` | auth | 401 | 200 | 200 |
+| GET | `/api/v1/stats/scans` | auth (non-admin: `error_message` replaced by a fixed class text; admin sees raw) | 401 | 200 | 200 |
 | POST | `/api/v1/smb/discover` | RequireAdmin (group) | 401 | 403 | skip |
 | GET | `/api/v1/smb/discover` | RequireAdmin (group) | 401 | 403 | 410 |
 | POST | `/api/v1/smb/test` | RequireAdmin (group) | 401 | 403 | skip |
@@ -236,15 +236,15 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | GET | `/api/v1/browse/directory-sizes/*path` | auth | 401 | 400 | 400 |
 | GET | `/api/v1/browse/duplicates/*path` | auth | 401 | 400 | 400 |
 | POST | `/api/v1/sync/endpoints` | RequireAdmin (route) | 401 | 403 | skip |
-| GET | `/api/v1/sync/endpoints` | auth | 401 | 200 | 200 |
-| GET | `/api/v1/sync/endpoints/:id` | auth | 401 | 404 | 404 |
+| GET | `/api/v1/sync/endpoints` | RequireAdmin (route) | 401 | 403 | 200 |
+| GET | `/api/v1/sync/endpoints/:id` | RequireAdmin (route) | 401 | 403 | 404 |
 | PUT | `/api/v1/sync/endpoints/:id` | RequireAdmin (route) | 401 | 403 | skip |
 | DELETE | `/api/v1/sync/endpoints/:id` | RequireAdmin (route) | 401 | 403 | skip |
 | POST | `/api/v1/sync/endpoints/:id/sync` | RequireAdmin (route) | 401 | 403 | skip |
-| GET | `/api/v1/sync/sessions` | auth | 401 | 200 | 200 |
-| GET | `/api/v1/sync/sessions/:id` | auth | 401 | 404 | 404 |
+| GET | `/api/v1/sync/sessions` | RequireAdmin (route) | 401 | 403 | 200 |
+| GET | `/api/v1/sync/sessions/:id` | RequireAdmin (route) | 401 | 403 | 404 |
 | POST | `/api/v1/sync/schedules` | RequireAdmin (route) | 401 | 403 | skip |
-| GET | `/api/v1/sync/statistics` | auth | 401 | 200 | 200 |
+| GET | `/api/v1/sync/statistics` | RequireAdmin (route) | 401 | 403 | 200 |
 | POST | `/api/v1/sync/cleanup` | RequireAdmin (route) | 401 | 403 | skip |
 | GET | `/api/v1/challenges` | RequireAdmin (group) | 401 | 403 | 200 |
 | GET | `/api/v1/challenges/:id` | RequireAdmin (group) | 401 | 403 | 404 |
@@ -258,7 +258,7 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | GET | `/api/v1/users/me` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/languages` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/recommendations` | auth | 401 | 501 | 501 |
-| GET | `/api/v1/sync/history` | auth | 401 | 200 | 200 |
+| GET | `/api/v1/sync/history` | RequireAdmin (route) | 401 | 403 | 200 |
 | GET | `/api/v1/localization/languages` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/storage/list/*path` | RequireAdmin (route) | 401 | 403 | 400 |
 | GET | `/api/v1/storage/roots` | auth | 401 | 200 | 200 |
@@ -271,10 +271,10 @@ Changed in this round (before -> after for a self-registered user): `/metrics` 2
 | GET | `/api/v1/media-types` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/stats/media-types` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/stats/scan-history` | auth | 401 | 200 | 200 |
-| GET | `/api/v1/sync/status` | auth | 401 | 200 | 200 |
-| GET | `/api/v1/sync/providers` | auth | 401 | 200 | 200 |
-| GET | `/api/v1/sync/devices` | auth | 401 | 501 | 501 |
-| GET | `/api/v1/sync/conflicts` | auth | 401 | 501 | 501 |
+| GET | `/api/v1/sync/status` | RequireAdmin (route) | 401 | 403 | 200 |
+| GET | `/api/v1/sync/providers` | RequireAdmin (route) | 401 | 403 | 200 |
+| GET | `/api/v1/sync/devices` | RequireAdmin (route) | 401 | 403 | 501 |
+| GET | `/api/v1/sync/conflicts` | RequireAdmin (route) | 401 | 403 | 501 |
 | GET | `/api/v1/files` | auth | 401 | 400 | 400 |
 | GET | `/api/v1/subtitles` | auth | 401 | 200 | 200 |
 | GET | `/api/v1/translations` | auth | 401 | 501 | 501 |
