@@ -38,9 +38,29 @@ func KnownSecrets(path, rawQuery string, header http.Header, params map[string]s
 scan:
 	for i := 0; i < len(segs) && len(out) < maxKnownSecrets; i++ {
 		segmentWork.Add(int64(len(segs[i])) + 1)
-		_, exact, ok := secretKey(segs[i])
+		_, exact, embedded, ok := secretKey(segs[i])
 		if !ok {
 			continue
+		}
+		if embedded {
+			// secret inside the key segment after an (encoded) separator, plus the whole rest of the path
+			dec, _ := decodeSegment(segs[i])
+			if p := strings.IndexAny(dec, "/\\"); p >= 0 {
+				for _, piece := range strings.FieldsFunc(dec[p+1:], func(r rune) bool { return r == '/' || r == '\\' || r == ';' }) {
+					addSeg(piece)
+					if _, v, found := strings.Cut(piece, "="); found {
+						addSeg(v)
+					}
+				}
+				addSeg(dec[p+1:])
+			}
+			for _, sg := range segs[i+1:] {
+				segmentWork.Add(int64(len(sg)) + 1)
+				if sg != "" {
+					addSeg(sg)
+				}
+			}
+			break scan
 		}
 		j, regular := secretPosition(segs, i)
 		if !exact {
