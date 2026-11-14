@@ -2640,3 +2640,6 @@ Retry-After on 429 for in-memory tier + Redis fixed/sliding/token-bucket. Open m
 - SSEFU-F4 (minor, process-doc): API_DOCUMENTATION.md Errors lines and openapi for sync/status and sync/providers omit 500 `{"error":"database query failed"}` (pre-existing gap).
 - SSEFU-F5 (nit, process-doc): openapi 503 description says "Could not verify the admin role"; actual message is "Could not verify admin role".
 - Pre-existing, unchanged: scripts/check_api_route_vs_spec.py exits 3 (BLIND) on main.go:1416-1447; check_doc_coverage reports 25 gaps on both trees; openapi GET /sync/endpoints/{id} has a duplicate '403' key.
+
+## Operator decision 2026-11-14 (Sonar scope)
+- G5 (v2.5.0 SonarQube gate) = BUG / VULNERABILITY / security hotspots only, per interactive operator answer of 2026-11-14. Code smells (run5: catalog-api CRITICAL 648, go:S1192 338, go:S3776 310) are NOT gate-blocking and are tracked as CAT-QA-SONAR-CRIT-1 (registered here; wire into the tracker when the next tracker sync runs). A fresh scan of the v2.5.0 candidate is still owed.
