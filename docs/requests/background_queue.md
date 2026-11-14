@@ -95,3 +95,6 @@ Operator order: gather every operator-blocked item, decision point, blocker and 
 
 ### BG-OPQ-2026-11-13b - operator decision sweep 2 (received 2026-11-13 20:51 CET, status: DONE for asked items)
 Asked in-session (AskUserQuestion), answered 20:55 CET: symlink confinement (keep hard links), image slim via static ffmpeg, 404 for non-owner job ids, CAT-REL-CHECK advisory for v2.4.3 / blocking for v2.5.0, NFS emulator, R_max NO-GO = structural successor item, v2.5.0 gates = retest+live run, Vision QA, SEC-WS-1 F3 + live /ws, Sonar zero blocker/critical. Recorded in memory project_decisions_2026_11_13b. Resulting work items still to be created and dispatched (symlink confinement, ffmpeg slimming, 404 mapping, NFS emulator, v2.5.0 gate checklist). Other open blockers (Synology powered off, Tauri/Docker Hub access) unchanged and unasked.
+
+### BG-OPQ-2026-11-14 - operator decision sweep 3 (received 2026-11-14 18:41 CET, status: IN PROGRESS)
+Operator order: gather every operator-blocked item, decision point, blocker and show-stopper and present them as interactive questions with options. Blocker: none (asked in-session via AskUserQuestion). Answers are recorded in docs/requests/history.md and memory when received; unanswered items stay QUEUED and are re-surfaced every session.
