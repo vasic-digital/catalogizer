@@ -4,7 +4,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { WebSocketProvider } from '../WebSocketContext'
 import { ConnectionStatus } from '@/components/ui/ConnectionStatus'
 
-// Unit-class fake of the transport library ONLY: the real useWebSocket hook,
+// Unit-class fake of the transport library ONLY (its constructor ignores its args: the ticket-in-URL check lives in
+// src/lib/__tests__/wsTicketClient.test.ts): the real useWebSocket hook,
 // provider and ConnectionStatus run together. Live proof: e2e/real-backend-pages.spec.ts.
 const states = { value: 'disconnected' as string, connects: 0 }
 vi.mock('@vasic-digital/websocket-client', () => ({
@@ -28,27 +29,44 @@ vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }: any) => <>{children}</>,
 }))
 
+const renderProvider = () => render(
+  <QueryClientProvider client={new QueryClient()}>
+    <WebSocketProvider>
+      <ConnectionStatus />
+    </WebSocketProvider>
+  </QueryClientProvider>
+)
+
 describe('ConnectionStatus with the real WebSocketProvider', () => {
-  it('shows no "Disconnected" banner once the provider has opened the socket', async () => {
+  beforeEach(() => {
     vi.useFakeTimers()
     states.value = 'disconnected'
     states.connects = 0
-    // useWebSocket().connect() returns early without a stored session token (AuthContext stores it on login)
-    localStorage.setItem('auth_token', 'test-session-token')
     post.mockReset()
     post.mockResolvedValue({ data: { ticket: 'tk-1' } })
-    render(
-      <QueryClientProvider client={new QueryClient()}>
-        <WebSocketProvider>
-          <ConnectionStatus />
-        </WebSocketProvider>
-      </QueryClientProvider>
-    )
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+    localStorage.removeItem('auth_token')
+  })
+
+  it('shows no "Disconnected" banner once the provider has opened the socket', async () => {
+    // useWebSocket().connect() returns early without a stored session token (AuthContext stores it on login)
+    localStorage.setItem('auth_token', 'test-session-token')
+    renderProvider()
     await act(async () => { vi.advanceTimersByTime(2500) })
     expect(post).toHaveBeenCalledWith('/ws/ticket', {})
     expect(states.connects).toBe(1)
     expect(screen.queryByText(/disconnected/i)).not.toBeInTheDocument()
-    vi.useRealTimers()
-    localStorage.removeItem('auth_token')
+    // the mint resolves in the last flush, so one more poll tick is needed before the banner can reflect 'open'
+    await act(async () => { vi.advanceTimersByTime(1000) })
+    expect(screen.queryByTestId('connection-status')).not.toBeInTheDocument()
+  })
+
+  it('without a stored auth_token nothing mints a ticket and nothing connects', async () => {
+    renderProvider()
+    await act(async () => { vi.advanceTimersByTime(2500) })
+    expect(post).not.toHaveBeenCalled()
+    expect(states.connects).toBe(0)
   })
 })
