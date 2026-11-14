@@ -21,7 +21,7 @@ Counts (11.4.290(4)): **V counts evidence sets, P counts items, so they are not 
 ### VERIFIED (committed machine evidence, checked while preparing this entry)
 Checked on this branch with `sha256sum -c` (0 non-OK lines). "VERIFIED" here means the evidence set exists and its hashes verify, not that the behaviour is verified.
 - `docs/qa/img-slim/` (CAT-IMG-SLIM-1 minimal-ffmpeg image evidence; `SHA256SUMS.txt` verifies). Container class; the full `catalog-api/Dockerfile` build including the Go stage was not exercised.
-- Carried from 2.4.2 and earlier, not re-run: the VERIFIED rows of `[2.4.2]`, `[2.4.1]`, `[2.4.0]`. Caveat carried with them: the cover-art SSRF live-test evidence set (`docs/qa/coverart/results/final/`) has a `SHA256SUMS.txt` that FAILs `sha256sum -c`; this is the checker's known `sha_fail=1` under `--section 2.4.2` (see the checker bullet below).
+- Carried from 2.4.2 and earlier, not re-run: the VERIFIED rows of `[2.4.2]`, `[2.4.1]`, `[2.4.0]`. Caveat carried with them: the cover-art SSRF live-test evidence set (the coverart results/final directory under docs/qa) has a `SHA256SUMS.txt` that FAILs `sha256sum -c`; this is the checker's known `sha_fail=1` under `--section 2.4.2` (see the checker bullet below).
 - Other evidence directories added since v2.4.2 (`docs/qa/login-lock-2-round*`, `chpw-rl-2-round*`, `sec-ws-1*`, `favr3-fu*`, `stack3`) carry no checkable hash manifest and are treated as PROVISIONAL.
 
 #### Hand-verified evidence sets (not checker-cited)

@@ -260,8 +260,8 @@ full <code>catalog-api/Dockerfile</code> build including the Go stage
 was not exercised.</li>
 <li>Carried from 2.4.2 and earlier, not re-run: the VERIFIED rows of
 <code>[2.4.2]</code>, <code>[2.4.1]</code>, <code>[2.4.0]</code>. Caveat
-carried with them: the cover-art SSRF live-test evidence set
-(<code>docs/qa/coverart/results/final/</code>) has a
+carried with them: the cover-art SSRF live-test evidence set (the
+coverart results/final directory under docs/qa) has a
 <code>SHA256SUMS.txt</code> that FAILs <code>sha256sum -c</code>; this
 is the checker's known <code>sha_fail=1</code> under
 <code>--section 2.4.2</code> (see the checker bullet below).</li>
