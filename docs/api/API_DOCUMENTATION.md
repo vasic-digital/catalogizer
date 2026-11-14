@@ -5373,7 +5373,7 @@ Content-Type: `application/json`
 
 ## Challenges
 
-> **Permission:** the three `POST .../run` operations execute server-side code paths and need the administrator role (`system.admin`, decided from the database on every request): `403` otherwise.
+> **Permission:** the whole `/api/v1/challenges` group is administrator-only (`system.admin`, decided from the database on every request): all six operations (`GET /challenges`, `GET /challenges/:id`, `GET /challenges/results` and the three `POST .../run`) return `403` to any other authenticated user (the group is mounted behind the admin gate, `challengeGroup.Use(adminGate)`).
 
 Challenge system endpoints for running validation and testing challenges.
 
