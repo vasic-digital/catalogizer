@@ -2643,3 +2643,8 @@ Retry-After on 429 for in-memory tier + Redis fixed/sliding/token-bucket. Open m
 
 ## Operator decision 2026-11-14 (Sonar scope)
 - G5 (v2.5.0 SonarQube gate) = BUG / VULNERABILITY / security hotspots only, per interactive operator answer of 2026-11-14. Code smells (run5: catalog-api CRITICAL 648, go:S1192 338, go:S3776 310) are NOT gate-blocking and are tracked as CAT-QA-SONAR-CRIT-1 (registered here; wire into the tracker when the next tracker sync runs). A fresh scan of the v2.5.0 candidate is still owed.
+
+## WSFU-I1 (red web WebSocketContext.connectionStatus test) - landed PROVISIONAL
+- Root cause (reviewer-confirmed, FACT): the test was stale after SEC-WS-1 F2 (auth_token guard in websocket.ts connect() plus the ticket mint); no product defect (web auth is bearer-only; login sets auth_token before the user). Test repaired (token seed + /ws/ticket mock), plus the reviewer's F1 (banner assertion now discriminating), F2 (no-token test), F3 (afterEach cleanup), N1 (comment). The F1-F3 follow-up commit 6462bd8df implements the reviewer's own prescribed fix and was verified by the author's mutations (reviewer M5/M7 killed), but was not itself re-reviewed.
+- Unit-class only, no live end-to-end /ws run (still part of gate G4).
+- Residual (nit): the mocked base client ignores constructor args; ticket-in-URL is pinned by wsTicketClient.test.ts only.
