@@ -2655,3 +2655,10 @@ Retry-After on 429 for in-memory tier + Redis fixed/sliding/token-bucket. Open m
 - SSEFU2-F3 (minor, test-instrumentation): no test pins the documented bodies {"error":"database query failed"} (sync status/providers) or 503 text "Could not verify admin role".
 - SSEFU2-F4 (minor, process-doc): 503 wording inconsistent across sync GETs ("Could not verify the admin role" on 7 others; API_DOCUMENTATION lines 5277, 5290).
 - SSEFU2-F5 (nit, process-doc): new 500 responses use inline schema, not $ref Error; real 503 body also carries "success":false.
+
+## HYG-R3-F1/F2 review (Opus round 5 of 5, GO-with-follow-ups, PROVISIONAL, commit eb875875d)
+All remaining leaks are pre-existing (base 872f6ba88 leaks the same shapes); 0 regressions, 0 DoS, root `-short` ok.
+- HYGR3-FU1 (minor, source-defect): double/triple-encoded slash (share%252FX) and backslash after key (share%5CX) not treated as separators; cannot reach the share route. Split decoded segment on '/' and '\' in secretKey.
+- HYGR3-FU2 (minor, source-defect): F4-3 ErrorText prose "/share/ /SECRET" leak (text tokenizer vs whitespace).
+- HYGR3-FU3 (nit, process-doc): document the "exactly one segment after the key" rule (R5-1: /share/a/LIVEsecret second segment logged) in the logredact package comment.
+- HYG-F4 (operator decision 2026-11-14): fail closed (truncate after key on malformed token) still owed, same files.
