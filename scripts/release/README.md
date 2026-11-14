@@ -129,7 +129,7 @@ CAT-REL-CHECK-3: the snapshot writer treats the HEAD tree as untrusted input. It
 both an entry and a directory, `.`/`..`/`.git`/empty components and unsupported modes before writing anything, writes
 through directory descriptors with `O_NOFOLLOW`, creates symlinks last and verifies the result, so no write can resolve outside
 the snapshot. Bounds (BLIND on exceed): `RELCHK_MAX_FILES` (default 1000000 entries), `RELCHK_MAX_BYTES` (default 4 GiB),
-`RELCHK_SNAP_TIMEOUT` (900 s), `RELCHK_GIT_TIMEOUT` (120 s per git call), `RELCHK_MAX_READ` (64 MiB: the largest snapshot file any reader opens; a symlink to a target outside the snapshot, a non-regular target or an oversize file is refused). A non-numeric knob is a BLIND. Residual: a file stored as a Git LFS pointer is read as
+`RELCHK_SNAP_TIMEOUT` (900 s), `RELCHK_GIT_TIMEOUT` (120 s per git call), `RELCHK_MAX_READ` (64 MiB: the largest snapshot file any reader opens; a symlink to a target outside the snapshot, a non-regular target or an oversize file is refused). A non-numeric, zero, leading-zero or more-than-15-digit knob (RELCHK_GIT_TIMEOUT included) is a BLIND; unset or empty selects the default. Residual: a file stored as a Git LFS pointer is read as
 the pointer text (a clone with git-lfs would fetch the content). Details: `docs/release_checker_path_inventory.md`.
 
 Committed state only: a clone sees HEAD, not the index or the working tree, so the run goes BLIND (exit 2)

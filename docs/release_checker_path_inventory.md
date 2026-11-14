@@ -134,9 +134,9 @@ Fix at the class level (`scripts/release/check_release_consistency.sh`, snapshot
    in 1 MiB pieces (a single large blob is no longer held whole in memory); a symlink target is read whole but is
    limited to 64 KiB and may not hold a NUL byte; an unexpected exception in the writer is reported as
    `snapshot refused: internal error in the snapshot writer (<type>)`, never a traceback.
-6. Every numeric knob (`RELCHK_SNAP_TIMEOUT`, `RELCHK_MAX_FILES`, `RELCHK_MAX_BYTES`, `RELCHK_MAX_READ`) is validated in
-   the shell: a non-numeric, zero or leading-zero value is a clear BLIND (F6a-F6c). `RELCHK_GIT_TIMEOUT` keeps its
-   older behaviour (a bad value falls back to 120).
+6. Every numeric knob (`RELCHK_GIT_TIMEOUT`, `RELCHK_SNAP_TIMEOUT`, `RELCHK_MAX_FILES`, `RELCHK_MAX_BYTES`,
+   `RELCHK_MAX_READ`) is validated in the shell: a non-numeric, zero, leading-zero or more-than-15-digit value is a clear
+   BLIND (F6a-F6c, R2-5, R2-6); unset or empty selects the default.
 
 Class inventory: every place the checker writes, or follows a path derived from repository content.
 
@@ -155,7 +155,7 @@ Class inventory: every place the checker writes, or follows a path derived from 
 | shell `done < "$SNAP/..."` (waiver file, manifests) | read `SNAP` | `snap_readable`: inside `SNAP`, regular, at most `RELCHK_MAX_READ` bytes (F2f-F2j) |
 | `sha256sum -c` file contents | reads files named by manifest entries | an entry resolving outside `SNAP` fails first; inside `SNAP` only HEAD blobs exist, total bounded by `RELCHK_MAX_BYTES` |
 | `readlink`, `stat`, `[ -e ]`, `[ -f ]` on snapshot paths | metadata only | never read content |
-| `raw_tree_check` listing | git, captured to a file | exit status checked: a failed or hung `ls-tree -r` is BLIND, not an empty tree (F5a, F5b) |
+| `raw_tree_check` listing | git, captured to a file inside `SNAP` (removed with it on every return path, R2-3) | exit status checked: a failed or hung `ls-tree -r` is BLIND, not an empty tree (F5a, F5b) |
 | working-tree reads in `raw_tree_check` (`hash-object`, `readlink`) | reads the working tree | BLIND guard only, never HEAD content. A type change (regular file to symlink or FIFO) is caught earlier by `git status` (measured: a tracked file replaced by a symlink to `/dev/zero` ends BLIND in 3 s under a 1 GiB cap); the remaining case, a stat-cache trick that hides it from `git status`, is bounded by `RELCHK_GIT_TIMEOUT` and was not exercised (UNCONFIRMED) |
 
 The checker writes nothing else: no file in the repository, no index, no refs. Remaining limits (UNCONFIRMED where not
@@ -165,21 +165,21 @@ cited-path collisions are still reported by `name_collides`).
 
 Tests: `scripts/release/test_check_release_consistency_rc4.sh` (also run by the main suite). Unit-class evidence only.
 
-Mutation evidence (CAT-REL-CHECK-3, unit-class). `mutation_check_release_consistency.sh` carries 24 mutants of the new
-code (the original 15 plus, added in round 2: reader target outside the snapshot, reader size cap, waiver-file and
-manifest readability checks, `raw_tree_check` ls-tree status, writer excepthook, numeric knob validation, N4
-post-extraction check, N8 child kill). Run with `MUT_TEST=test_check_release_consistency_rc4.sh
-MUT_FILTER='CAT-REL-CHECK-3|RM1\)'`; the result of the last full run is in the item's report (the counts in a document
-go stale, the report states what was run). Three older mutants whose target text moved were repaired and re-run
-(`I4-1 head check only the resolved location`, `CC2r5 C6 token path set from the index`, RM1); `MUT_APPLY_ONLY=1` must print
-no ERROR line.
+Mutation evidence (CAT-REL-CHECK-3, unit-class). `mutation_check_release_consistency.sh` carries 30 mutants of the new
+code: the original 15, nine added in round 2 (reader target outside the snapshot, reader size cap, waiver-file and manifest
+readability checks, `raw_tree_check` ls-tree status, writer excepthook, numeric knob validation, N4 post-extraction check,
+N8 child kill) and six added in round 3 (REV-A python reader sibling prefix, REV-B bash `snap_readable` sibling prefix,
+REV-C bash `snap_readable` size bound, R2-3 scratch file location, R2-5 `RELCHK_GIT_TIMEOUT` validation, R2-6 knob length
+bound). Four older mutants were repaired because their target text moved (I4-1 head check, CC2r5 C6, CC2r5 C1, RM1 text);
+`MUT_APPLY_ONLY=1` must print no ERROR line. The runner runs the whole main suite per mutant
+(`MUT_FILTER='CAT-REL-CHECK-3|I4-1 head check only the resolved|CC2r5 C6 token path set|CC2r5 C1 version file read|existence check disabled'`);
+the result table of the last run belongs to the item's report, not to this document.
 
 Layers that are equivalent mutants, stated honestly: (a) `O_NOFOLLOW` on directory descent and (b) `O_EXCL` versus
 `O_TRUNC` on file creation are reachable only by a race that replaces a directory or file during extraction, because the
 up-front validation already refuses every duplicate or conflicting path; (c) the writer's `realpath` check of every
 extracted directory (reviewer mutant N6) is the same class; (d) the reader's `S_ISREG` / `O_NONBLOCK` check is reachable
 only if a FIFO or device appears INSIDE the snapshot, which the writer never creates, because every target outside the
-snapshot is refused first (tests F2a-F2c, F2n, F2o prove the outside check; the `/dev/zero` and FIFO targets are
-refused by it). None of these four is in the runner and none is claimed as killed; they are defence in depth.
+snapshot is refused first (tests F2a-F2c, F2n, F2o, S1 prove the outside check, S2/S3 the sibling-prefix rule). None of these four is in the runner and none is claimed as killed; they are defence in depth.
 The post-extraction expected-entries verification (reviewer mutant N4) IS reachable: a tree deeper than `PATH_MAX`
 (test D1: 20 levels of 249-byte names) makes it end with `snapshot refused: extracted entry ...`, so it has a test and a mutant.
