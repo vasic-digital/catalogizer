@@ -363,9 +363,10 @@ func TestUserRepository_Delete(t *testing.T) {
 			err := repo.Delete(tt.id)
 			if tt.wantErr {
 				assert.Error(t, err)
-				return
+			} else {
+				assert.NoError(t, err)
 			}
-			assert.NoError(t, err)
+			// PGLAX1-F7-FU3: also on the error path, so the ExpectRollback of "database error" is pinned.
 			assert.NoError(t, mock.ExpectationsWereMet())
 		})
 	}
