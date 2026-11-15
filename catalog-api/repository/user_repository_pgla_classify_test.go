@@ -33,7 +33,6 @@ func (n nearNow) Match(v driver.Value) bool {
 }
 
 func TestLockAccount_ZeroRowsClassification(t *testing.T) {
-	roleCols := []string{"id", "name", "description", "permissions", "is_system", "created_at", "updated_at"}
 	now := time.Now()
 	until := now.Add(time.Hour)
 	cases := []struct {
@@ -63,13 +62,16 @@ func TestLockAccount_ZeroRowsClassification(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			repo, mock := newMockUserRepo(t)
-			mock.ExpectQuery("FROM roles").WillReturnRows(sqlmock.NewRows(roleCols).
-				AddRow(1, "Admin", "", `["system.admin"]`, true, now, now))
+			mock.ExpectBegin()
+			mock.ExpectExec("UPDATE roles SET updated_at = updated_at").WillReturnResult(sqlmock.NewResult(0, 0))
+			mock.ExpectQuery("FROM roles").WillReturnRows(sqlmock.NewRows([]string{"id", "permissions"}).
+				AddRow(1, `["system.admin"]`))
 			// pin the guarded UPDATE (TIERPGLA-F2): the NOT IN admin-role clause, the last-admin sub-select and every bound argument
 			// (lock time, target id, true, admin role id, then the other-active-admin clause args) so removing or reshaping the guard fails.
 			mock.ExpectExec(`UPDATE users SET is_locked = 1, locked_until = \? WHERE id = \? AND NOT \(COALESCE\(is_locked, '0'\) = \? AND locked_until IS NULL\) AND \(role_id NOT IN \(\?\) OR \(SELECT COUNT\(\*\) FROM users o WHERE o\.id <> \? AND o\.is_active = \? .* AND o\.role_id IN \(\?\)\) >= 1\)`).
 				WithArgs(until, 7, true, 1, 7, true, false, nearNow{within: time.Second}, 1).WillReturnResult(sqlmock.NewResult(0, 0))
 			mock.ExpectQuery("SELECT role_id").WithArgs(7).WillReturnRows(c.reread())
+			mock.ExpectCommit()
 			if !c.wantLast {
 				mock.ExpectExec("UPDATE user_sessions SET is_active = 0").WithArgs(7).WillReturnResult(sqlmock.NewResult(0, 0))
 			}
