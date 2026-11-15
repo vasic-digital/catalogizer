@@ -2852,3 +2852,9 @@ RESOLVED: SSEF4R-FD (web route gates use the server vocabulary + wildcard matche
 - SSEF4R-FD-F6 (minor): siblings: api-client matcher (branch fix/apiclient-perm in review) and Android AuthRepository.kt:224-233 permission check.
 - SSEF4R-FD-m1 (minor, test): route-gate regex needs one-line double-quoted gate-first formatting; a new gated route in another syntax would not be extracted. Add a check that every requiredPermission occurrence was captured.
 - SSEF4R-FD-m2 (info): mutant A5 (`*` short-circuit) is equivalent.
+
+## api-client permission matcher review (Opus round 2, GO-with-follow-ups, PROVISIONAL, commit b49b09dee)
+RESOLVED: SSEF4R-API (hasPermission uses the server vocabulary; getPermissions unwraps the live {role,permissions,is_admin} envelope, derived from GetPermissionsGin; tests tracked). Reviewer: live differential (real Go handler stack in-process on SQLite, real HttpClient + AuthService) 10/10 on head, 10/10 fail on base and round-1 commit; 309 vitest pass; tsc OK; 7 of 9 own mutants killed (M8 equivalent).
+- SSEF4R-API-FU1 (minor, test): M6 survives (getPermissions without Array.isArray); add getPermissions()->[] cases for {permissions:'x'}, {permissions:null}, null, {}.
+- SSEF4R-API-FU2 (info): Android CatalogizerApi.kt:39 getPermissions(): Response<Map<String,Any>> is envelope-compatible; no Kotlin caller found, consumers' envelope handling UNCONFIRMED (covers SSEF4R-FD-F6 Android half).
+- Evidence limit: live differential did not run against a deployed catalog-api or PostgreSQL.
