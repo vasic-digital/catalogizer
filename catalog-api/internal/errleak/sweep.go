@@ -16,7 +16,10 @@ var wrapperSinkRE = regexp.MustCompile(`(?i)^(send|write|respond|fail|abort|repl
 
 // safeWrappers map an error to fixed texts themselves (read and classified individually).
 var safeWrappers = map[string]bool{"writeJobError": true, "writeLogServiceError": true, "writeFixedLogError": true,
-	"respondPDFError": true, "respondInternal": true, "respondBadBody": true, "stdError": true, "syncFail": true}
+	"respondPDFError": true, "respondInternal": true, "respondBadBody": true, "stdError": true, "syncFail": true,
+	// respondSyncClassError matches sentinel errors with errors.Is and answers authored literals only; its own body is
+	// still swept, so a leak added inside it is reported (MAIN-ERRLEAK).
+	"respondSyncClassError": true}
 
 var sinkNames = map[string]bool{"Error": true, "JSON": true, "String": true, "AbortWithStatusJSON": true, "Write": true,
 	"Encode": true, "Fprintf": true, "Fprint": true, "Fprintln": true, "IndentedJSON": true, "SendErrorResponse": true,
