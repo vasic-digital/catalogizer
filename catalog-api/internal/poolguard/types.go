@@ -17,7 +17,7 @@ package poolguard
 // Every other call (plain function, interface method, type parameter, func-typed field, method value,
 // method expression, open method, anything in a package that could not be type-checked reliably) keeps
 // the base by-name resolution. A package is unreliable when it has build-constrained files, files the go
-// tool ignores (name starting with _ or .), more than
+// tool ignores (name starting with _ or .), cgo files (import "C": dropped when CGO_ENABLED=0), more than
 // one package clause, or a redeclaration (a platform variant always redeclares something, so the
 // build-constraint rule and the redeclaration rule overlap on purpose). An import that is not a reliable
 // package of the importer's OWN module (nearest go.mod, nested modules included) is left unresolved, so
@@ -162,6 +162,10 @@ func newTypeWorld(fset *token.FileSet, files map[string][]*ast.File, paths map[s
 			if b := filepath.Base(paths[dir][i]); strings.HasPrefix(b, "_") || strings.HasPrefix(b, ".") {
 				// The go tool ignores such files; the scanner would type-check declarations no build sees.
 				tp.ok, tp.failure = false, "file ignored by the go tool "+paths[dir][i]
+			}
+			if importsC(f) {
+				// A cgo file is dropped by the go tool when CGO_ENABLED=0, so a build may not see it.
+				tp.ok, tp.failure = false, "cgo file "+paths[dir][i]
 			}
 			if name == "" {
 				name = f.Name.Name
@@ -376,6 +380,16 @@ func (tp *typedPkg) rangesOverFunc(r *ast.RangeStmt) bool {
 		return true
 	case *types.Basic:
 		return tv.Type.Underlying().(*types.Basic).Kind() == types.Invalid
+	}
+	return false
+}
+
+// importsC reports whether f is a cgo file (it imports the pseudo-package "C").
+func importsC(f *ast.File) bool {
+	for _, im := range f.Imports {
+		if im.Path != nil && im.Path.Value == `"C"` {
+			return true
+		}
 	}
 	return false
 }
