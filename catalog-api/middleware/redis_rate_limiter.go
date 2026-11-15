@@ -527,11 +527,13 @@ func slidingWindowWithState(config RedisRateLimiterConfig) (gin.HandlerFunc, *ou
 				).Warn("Sliding window rate limit exceeded")
 			}
 
-			c.Header("Retry-After", retryAfterSeconds(min(ttl, config.Window)))
+			// RLW-FU2-F2: the key lives 2x the window; header and body both carry the capped back-off.
+			backoff := min(ttl, config.Window)
+			c.Header("Retry-After", retryAfterSeconds(backoff))
 			c.JSON(http.StatusTooManyRequests, gin.H{
 				"error":       "rate_limit_exceeded",
 				"message":     config.Message,
-				"retry_after": ttl.String(),
+				"retry_after": backoff.String(),
 			})
 			c.Abort()
 			return
@@ -643,7 +645,7 @@ func tokenBucketRedisRateLimit(
 			// Add rate limit headers
 			c.Header("X-RateLimit-Limit", strconv.Itoa(int(maxTokens)))
 			c.Header("X-RateLimit-Remaining", strconv.Itoa(int(currentTokens)))
-			c.Header("X-RateLimit-Reset", time.Now().Add(refillInterval).Format(time.RFC3339))
+			c.Header("X-RateLimit-Reset", nowFn().Add(refillInterval).Format(time.RFC3339))
 			c.Header("X-RateLimit-Algorithm", "token-bucket")
 		}
 
