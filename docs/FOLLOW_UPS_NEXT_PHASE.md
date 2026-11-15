@@ -2718,3 +2718,11 @@ Round 1 NO-GO (invalid escape between key and separator) fixed; round 2: 47/78 o
 - HYGF4B-M-C (minor perf): pctDecode allocates discarded offs slice per round: 1 MB input 6->107 MB transient; add allocation-free lenient decoder + the early break.
 - HYGF4B-M-D (minor test-instrumentation): reviewer mutants B3 (known loop collects only last piece) and B4 (`\` dropped as piece separator) survive; killers: KnownSecrets("/share%2525252FS3cretOne%2525252FS3cretTwo")+ErrorTextKnown("bad S3cretOne here"); KnownSecrets("/share%2525255CS3cretOne")+ErrorTextKnown of bare secret.
 - Also still open from round 1: duplicate KnownSecrets entries (nit), HYGF4-F3/F4 nits.
+
+## CAT-PG-LASTADMIN-1 (last-admin lock race) review (Opus round 1 of fix, GO-with-follow-ups, PROVISIONAL, commits ce1ef121c e0cc61436 d871866da)
+Live PG16 race test 50 rounds x 12 variants 0 violations; reviewer mutations M1/M2/M4/M5 killed. Follow-ups (all minor/nit, fresh budget):
+- PGLA-M1 (test-instrumentation, user_repository.go:499-501): nothing pins "disambiguation re-read inside the tx" (mutation M3, re-read after Commit, survives). Add a test where a concurrent write changes the target row between UPDATE and re-read, or mark the claim defensive.
+- PGLA-M2 (test-instrumentation, user_repository.go:473-482): classification has no negative tests (mutations M6 drop `!(locked && until==nil)`, M7 always-true survive). Add cases: n==0 on already-suspended admin, non-admin, missing user must NOT return ErrLastAdmin/409.
+- PGLA-N1 (nit): on SQLite the re-read runs outside any tx (pre-existing, harmless).
+- PGLA-N2 (nit): the handler "race" test is a sequential simulation; real concurrency proof is the PG repository test.
+- PGLA-X1 (registered earlier, out of scope here): UpdateRole can strip system.admin from a non-system custom role; UpdateUserSettings/admin_handler fallback call an unguarded Update with a possibly stale read; adminRoleIDs read outside the advisory lock; TestD9SR3F3_UnknownUserLoginCostsLikeWrongPassword flaked once under load.
