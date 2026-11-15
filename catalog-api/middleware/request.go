@@ -144,7 +144,7 @@ func CORS() gin.HandlerFunc {
 				c.Header("Access-Control-Allow-Origin", origin)
 				c.Header("Access-Control-Allow-Credentials", "true")
 				// RLW-FU2-F4: let a cross-origin browser client read the back-off and quota headers.
-				c.Header("Access-Control-Expose-Headers", "Retry-After, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset")
+				c.Header("Access-Control-Expose-Headers", "Retry-After, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-RateLimit-Window, X-RateLimit-Algorithm")
 				break
 			}
 		}

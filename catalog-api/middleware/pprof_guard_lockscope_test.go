@@ -97,11 +97,39 @@ func TestPprofSamplingGuard_ReleaseThenNewWindowReportsOwnEnd(t *testing.T) {
 	go r.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest("GET", "/debug/pprof/profile?seconds=2", nil))
 	<-entered
 	w := httptest.NewRecorder()
-	r.ServeHTTP(w, httptest.NewRequest("GET", "/debug/pprof/profile?seconds=1", nil))
+	r.ServeHTTP(w, httptest.NewRequest("GET", "/debug/pprof/profile?seconds=30", nil))
 	close(hold)
 	require.Equal(t, http.StatusTooManyRequests, w.Code)
 	n, err := strconv.Atoi(w.Header().Get("Retry-After"))
 	require.NoError(t, err)
 	require.GreaterOrEqual(t, n, 1)
 	require.LessOrEqual(t, n, 2, "refusal read the finished 30 s window's end")
+}
+
+// TIERFU-M1. Competitors ask a DIFFERENT window (3 s) than the holder (10 s): a Retry-After taken from the
+// refused request's own seconds (<=3) can never satisfy the bracket [ceil(10-elapsed), 10].
+func TestPprofSamplingGuard_RefusalReportsHolderWindowNotOwnSeconds(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	hold := make(chan struct{})
+	entered := make(chan struct{}, 1)
+	r := gin.New()
+	r.GET("/debug/pprof/profile", PprofSamplingGuard(30), func(c *gin.Context) {
+		entered <- struct{}{}
+		<-hold
+		c.Status(http.StatusOK)
+	})
+	t0 := time.Now()
+	go r.ServeHTTP(httptest.NewRecorder(), httptest.NewRequest("GET", "/debug/pprof/profile?seconds=10", nil))
+	<-entered
+	for i := 0; i < 5; i++ {
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest("GET", "/debug/pprof/profile?seconds=3", nil))
+		require.Equal(t, http.StatusTooManyRequests, w.Code)
+		n, err := strconv.Atoi(w.Header().Get("Retry-After"))
+		require.NoError(t, err)
+		lo := int(math.Ceil(10 - time.Since(t0).Seconds()))
+		require.GreaterOrEqual(t, n, lo, "Retry-After %d below the holder window bracket (own seconds used?)", n)
+		require.LessOrEqual(t, n, 10)
+	}
+	close(hold)
 }

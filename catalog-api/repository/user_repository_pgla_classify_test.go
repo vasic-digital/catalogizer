@@ -1,0 +1,64 @@
+package repository
+
+// PGLA-M2: the n==0 classification in LockAccount ("the guard held the write back" vs "already
+// suspended / not an admin / no such user") has negative cases. The real LockAccount runs against
+// sqlmock-backed SQL (unit class); the discriminating input is the re-read row.
+import (
+	"errors"
+	"testing"
+	"time"
+
+	"github.com/DATA-DOG/go-sqlmock"
+)
+
+func TestLockAccount_ZeroRowsClassification(t *testing.T) {
+	roleCols := []string{"id", "name", "description", "permissions", "is_system", "created_at", "updated_at"}
+	now := time.Now()
+	until := now.Add(time.Hour)
+	cases := []struct {
+		name     string
+		reread   func() *sqlmock.Rows
+		wantLast bool
+	}{
+		{"unlocked administrator is held back by the guard (positive control)",
+			func() *sqlmock.Rows {
+				return sqlmock.NewRows([]string{"role_id", "is_locked", "locked_until"}).AddRow(1, false, nil)
+			}, true},
+		{"timed-locked administrator is still held back (positive control)",
+			func() *sqlmock.Rows {
+				return sqlmock.NewRows([]string{"role_id", "is_locked", "locked_until"}).AddRow(1, true, now.Add(time.Minute))
+			}, true},
+		{"already suspended administrator is NOT ErrLastAdmin",
+			func() *sqlmock.Rows {
+				return sqlmock.NewRows([]string{"role_id", "is_locked", "locked_until"}).AddRow(1, true, nil)
+			}, false},
+		{"non-administrator is NOT ErrLastAdmin",
+			func() *sqlmock.Rows {
+				return sqlmock.NewRows([]string{"role_id", "is_locked", "locked_until"}).AddRow(2, false, nil)
+			}, false},
+		{"missing user is NOT ErrLastAdmin",
+			func() *sqlmock.Rows { return sqlmock.NewRows([]string{"role_id", "is_locked", "locked_until"}) }, false},
+	}
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			repo, mock := newMockUserRepo(t)
+			mock.ExpectQuery("FROM roles").WillReturnRows(sqlmock.NewRows(roleCols).
+				AddRow(1, "Admin", "", `["system.admin"]`, true, now, now))
+			mock.ExpectExec("UPDATE users SET is_locked = 1").WillReturnResult(sqlmock.NewResult(0, 0))
+			mock.ExpectQuery("SELECT role_id").WithArgs(7).WillReturnRows(c.reread())
+			if !c.wantLast {
+				mock.ExpectExec("UPDATE user_sessions SET is_active = 0").WithArgs(7).WillReturnResult(sqlmock.NewResult(0, 0))
+			}
+			err := repo.LockAccount(7, until)
+			if got := errors.Is(err, ErrLastAdmin); got != c.wantLast {
+				t.Fatalf("ErrLastAdmin=%v want %v (err=%v)", got, c.wantLast, err)
+			}
+			if !c.wantLast && err != nil {
+				t.Fatalf("unexpected error %v", err)
+			}
+			if e := mock.ExpectationsWereMet(); e != nil {
+				t.Fatal(e)
+			}
+		})
+	}
+}
