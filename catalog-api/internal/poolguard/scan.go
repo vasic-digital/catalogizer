@@ -13,6 +13,7 @@ import (
 	"go/ast"
 	"go/parser"
 	"go/token"
+	"go/types"
 	"io/fs"
 	"path/filepath"
 	"sort"
@@ -55,6 +56,18 @@ type decl struct {
 	fset   *token.FileSet
 	direct bool // contains a pooled call anywhere in its body
 	calls  []string
+	refs   []callRef // head only: calls resolved through the type checker where that is proven
+	tp     *typedPkg
+	named  []*ast.CallExpr // calls with a callee name, in source order (parallel to calls)
+	every  []*ast.CallExpr // every call in the body, closures included
+	ranges []*ast.RangeStmt
+}
+
+// callRef is one call made by a function body as the head scanner resolves it.
+type callRef struct {
+	name   string
+	kind   callKind
+	target *types.Func // exactCall only
 }
 
 func pkgKey(cross bool, dir, name string) string {
@@ -130,13 +143,18 @@ func calleeName(c *ast.CallExpr) string {
 // Scan walks root (a directory) and returns every finding in non-test Go files.
 // Directories named testdata, vendor, node_modules and hidden dirs are skipped
 // unless they are the root itself.
-func Scan(root string) ([]Finding, error) { return scan(root, false) }
+func Scan(root string) ([]Finding, error) { return scan(root, false, false) }
 
 // ScanCrossPackage additionally resolves helpers by bare name across every package
 // (noisy; used for exploration and for the class-completeness census).
-func ScanCrossPackage(root string) ([]Finding, error) { return scan(root, true) }
+func ScanCrossPackage(root string) ([]Finding, error) { return scan(root, true, false) }
 
-func scan(root string, cross bool) ([]Finding, error) {
+// scan is the scanner. byName selects the base behaviour (every helper resolved by bare name, depth-first
+// search), which is the comparison oracle: the head (byName false, cross false) must flag every function
+// the base flags except where the type checker proves the call dispatches statically elsewhere. Cross
+// mode is always by name.
+func scan(root string, cross, byName bool) ([]Finding, error) {
+	typed := !cross && !byName
 	var files []string
 	err := filepath.WalkDir(root, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
@@ -166,12 +184,32 @@ func scan(root string, cross bool) ([]Finding, error) {
 	}
 	var all []parsed
 	byPkgName := map[string][]*decl{} // dir + "\x00" + bare func name -> decls
+	dirFiles := map[string][]*ast.File{}
+	dirPaths := map[string][]string{}
 	for _, p := range files {
-		f, err := parser.ParseFile(fset, p, nil, 0)
+		f, err := parser.ParseFile(fset, p, nil, parser.ParseComments)
 		if err != nil {
 			return nil, err
 		}
 		all = append(all, parsed{p, f})
+		dirFiles[filepath.Dir(p)] = append(dirFiles[filepath.Dir(p)], f)
+		dirPaths[filepath.Dir(p)] = append(dirPaths[filepath.Dir(p)], p)
+	}
+	var world *typeWorld
+	byObj := map[*types.Func]*decl{}
+	var typedDecls []*decl
+	if typed {
+		world = newTypeWorld(fset, dirFiles, dirPaths)
+		for dir := range dirFiles {
+			world.check(dir)
+		}
+	}
+	for _, pf := range all {
+		p, f := pf.path, pf.f
+		var tp *typedPkg
+		if typed {
+			tp = world.byDir[filepath.Dir(p)]
+		}
 		for _, dcl := range f.Decls {
 			fn, ok := dcl.(*ast.FuncDecl)
 			if !ok || fn.Body == nil {
@@ -183,14 +221,98 @@ func scan(root string, cross bool) ([]Finding, error) {
 					d.direct = true
 				}
 				if c, ok := n.(*ast.CallExpr); ok {
+					d.every = append(d.every, c)
 					if nm := calleeName(c); nm != "" {
 						d.calls = append(d.calls, nm)
+						d.named = append(d.named, c)
 					}
+				}
+				if r, ok := n.(*ast.RangeStmt); ok {
+					d.ranges = append(d.ranges, r)
 				}
 				return true
 			})
+			if typed {
+				d.tp = tp
+				typedDecls = append(typedDecls, d)
+				if tp.ok && tp.info != nil {
+					if obj, ok := tp.info.Defs[fn.Name].(*types.Func); ok {
+						byObj[obj] = d
+					}
+				}
+			}
 			k := pkgKey(cross, d.dir, fn.Name.Name)
 			byPkgName[k] = append(byPkgName[k], d)
+		}
+	}
+
+	// Closedness (head only): a decl is closed when nothing it can run, through static calls inside the
+	// reliably type-checked tree, is chosen at run time (func value, interface or type-parameter method,
+	// field, range-over-func) or lies outside that tree. Only a call to a CLOSED statically dispatched
+	// method is resolved by type; an open one may call back into same-package code and keeps the by-name
+	// path. Computed as a greatest fixpoint: assume closed, then propagate openness until stable.
+	closed := map[*decl]bool{}
+	resolveRef := func(d *decl, c *ast.CallExpr, nm string) callRef {
+		ref := callRef{name: nm, kind: byNameCall}
+		m := d.tp.staticMethod(c)
+		if m == nil {
+			return ref
+		}
+		td := byObj[m]
+		if td == nil || !closed[td] {
+			return ref
+		}
+		if m.Pkg() != d.tp.pkg {
+			ref.kind = ruledOut
+			return ref
+		}
+		ref.kind, ref.target = exactCall, m
+		return ref
+	}
+	if typed {
+		targets := map[*decl][]*decl{}
+		for _, d := range typedDecls {
+			if d.tp == nil || !d.tp.ok || d.tp.info == nil {
+				continue
+			}
+			open := false
+			for _, r := range d.ranges {
+				if d.tp.rangesOverFunc(r) {
+					open = true
+				}
+			}
+			for _, c := range d.every {
+				harmless, obj := d.tp.closedEdge(c)
+				if harmless {
+					continue
+				}
+				td := byObj[obj]
+				if obj == nil || td == nil {
+					open = true
+					break
+				}
+				targets[d] = append(targets[d], td)
+			}
+			if !open {
+				closed[d] = true
+			}
+		}
+		for changed := true; changed; {
+			changed = false
+			for d := range closed {
+				for _, td := range targets[d] {
+					if !closed[td] {
+						delete(closed, d)
+						changed = true
+						break
+					}
+				}
+			}
+		}
+		for _, d := range typedDecls {
+			for i, c := range d.named {
+				d.refs = append(d.refs, resolveRef(d, c, d.calls[i]))
+			}
 		}
 	}
 
@@ -216,9 +338,71 @@ func scan(root string, cross bool) ([]Finding, error) {
 		return "", false
 	}
 
+	// reachesTyped is the head search: breadth-first over the call graph, at most maxDepth+1 helper
+	// levels (the same bound as the base, without the base's depth-first seen-set artifacts). A by-name
+	// call expands to every same-directory decl of that name, an exact call to its one method decl, and a
+	// ruled-out call to nothing.
+	const maxDepth = 3
+	reachesTyped := func(dir string, start callRef) (string, bool) {
+		type node struct {
+			d      *decl
+			parent *node
+		}
+		chain := func(n *node) string {
+			var names []string
+			for ; n != nil; n = n.parent {
+				names = append([]string{n.d.name}, names...)
+			}
+			return strings.Join(names, " -> ")
+		}
+		expand := func(ref callRef) []*decl {
+			switch ref.kind {
+			case ruledOut:
+				return nil
+			case exactCall:
+				if d := byObj[ref.target]; d != nil {
+					return []*decl{d}
+				}
+			}
+			return byPkgName[pkgKey(false, dir, ref.name)]
+		}
+		visited := map[*decl]bool{}
+		var level []*node
+		for _, d := range expand(start) {
+			if !visited[d] {
+				visited[d] = true
+				level = append(level, &node{d: d})
+			}
+		}
+		for depth := 0; depth <= maxDepth && len(level) > 0; depth++ {
+			for _, n := range level {
+				if n.d.direct {
+					return chain(n), true
+				}
+			}
+			var next []*node
+			for _, n := range level {
+				for _, r := range n.d.refs {
+					for _, d := range expand(r) {
+						if !visited[d] {
+							visited[d] = true
+							next = append(next, &node{d: d, parent: n})
+						}
+					}
+				}
+			}
+			level = next
+		}
+		return "", false
+	}
+
 	var out []Finding
 	for _, pf := range all {
 		rel, _ := filepath.Rel(root, pf.path)
+		var tp *typedPkg
+		if typed {
+			tp = world.byDir[filepath.Dir(pf.path)]
+		}
 		for _, dcl := range pf.f.Decls {
 			fn, ok := dcl.(*ast.FuncDecl)
 			if !ok || fn.Body == nil {
@@ -251,7 +435,14 @@ func scan(root string, cross bool) ([]Finding, error) {
 					} else if c, ok := m.(*ast.CallExpr); ok {
 						nm := calleeName(c)
 						if nm != "" && !seenHelper[nm] {
-							if ch, ok := reaches(filepath.Dir(pf.path), nm, map[string]bool{}, 0); ok {
+							var ch string
+							var ok bool
+							if typed {
+								ch, ok = reachesTyped(filepath.Dir(pf.path), resolveRef(&decl{tp: tp}, c, nm))
+							} else {
+								ch, ok = reaches(filepath.Dir(pf.path), nm, map[string]bool{}, 0)
+							}
+							if ok {
 								seenHelper[nm] = true
 								out = append(out, Finding{File: rel, Func: fname, Line: fset.Position(m.Pos()).Line, Call: nm, Receiver: exprText(fset, c.Fun), Indirect: true, Via: ch})
 							}
