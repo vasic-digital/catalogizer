@@ -78,8 +78,16 @@ func (s *SyncService) CreateSyncEndpoint(userID int, endpoint *models.SyncEndpoi
 		return nil, ErrPrivateConfirmationRequired
 	}
 
-	if err := s.testConnection(endpoint); err != nil {
-		return nil, fmt.Errorf("connection test failed: %w", err)
+	// the destination is tested under the class it is about to be approved for (the not-yet-stored endpoint has no stored class; the
+	// default private client would let a destination that plans public be reached as private), never cached; same as UpdateEndpoint
+	var terr error
+	if plan.networked && endpoint.Type == models.SyncTypeWebDAV {
+		terr = s.testConnectionAs(endpoint, plan.class)
+	} else {
+		terr = s.testConnection(endpoint)
+	}
+	if terr != nil {
+		return nil, fmt.Errorf("connection test failed: %w", terr)
 	}
 
 	id, err := s.syncRepo.CreateEndpoint(endpoint)
