@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { assertAllGatesCaptured, extractGates, findUncapturedOccurrences } from './routeGateExtract'
 
 // SSEF4R-FD / review F1: every route gate string in the REAL App.tsx must be a
 // permission constant the server defines (catalog-api/models/user.go), and each
@@ -13,9 +14,7 @@ const serverPermissions = new Set(
   [...goModels.matchAll(/\bPermission\w+\s*=\s*"([^"]+)"/g)].map((m) => m[1])
 )
 
-const gates = [...app.matchAll(/path="([^"]+)"\s*element=\{\s*<ProtectedRoute requiredPermission="([^"]+)"/g)].map(
-  (m) => [m[1], m[2]] as const
-)
+const gates = extractGates(app)
 
 // F2 (/identities) and F3 (/conversion) are registered follow-ups: their current
 // values are pinned as-is, not endorsed.
@@ -41,5 +40,38 @@ describe('App.tsx route gates use the server permission vocabulary', () => {
   })
   it.each(gates)('gate of %s (%s) is a constant defined in catalog-api/models/user.go', (_path, perm) => {
     expect(serverPermissions.has(perm)).toBe(true)
+  })
+})
+
+// SSEF4R-FD-m1: completeness. Every requiredPermission occurrence in the real
+// App.tsx must have been captured by the extractor; a gated route written in any
+// other syntax would otherwise be silently skipped.
+describe('route-gate extractor completeness (SSEF4R-FD-m1)', () => {
+  it('real App.tsx: every requiredPermission occurrence is captured (control needle)', () => {
+    const occurrences = [...app.matchAll(/requiredPermission/g)].length
+    expect(occurrences).toBe(8) // control: the instrument can see the real tree
+    expect(gates.length).toBe(occurrences)
+    expect(findUncapturedOccurrences(app)).toEqual([])
+    expect(() => assertAllGatesCaptured(app)).not.toThrow()
+  })
+
+  const goldenBad: Array<[string, string]> = [
+    ['single quotes', `<Route path='/x' element={<ProtectedRoute requiredPermission='media.view'><X /></ProtectedRoute>} />`],
+    ['multi-line', `<Route path="/x" element={\n<ProtectedRoute\n requiredPermission="media.view">\n<X /></ProtectedRoute>} />`],
+    ['gate-last', `<Route element={<ProtectedRoute requiredPermission="media.view"><X /></ProtectedRoute>} path="/x" />`],
+  ]
+  it.each(goldenBad)('golden-bad (%s): extractor misses it and the check fires', (_n, src) => {
+    expect(extractGates(src)).toEqual([])
+    expect(findUncapturedOccurrences(src)).toHaveLength(1)
+    expect(() => assertAllGatesCaptured(src)).toThrow(/missed 1 requiredPermission.*line \d+/)
+  })
+
+  it('golden-bad mixed with a good gate: only the uncaptured one is reported', () => {
+    const good = `<Route path="/a" element={<ProtectedRoute requiredPermission="media.view"><A /></ProtectedRoute>} />`
+    const bad = `<Route path='/b' element={<ProtectedRoute requiredPermission='media.edit'><B /></ProtectedRoute>} />`
+    const missed = findUncapturedOccurrences(`${good}\n${bad}`)
+    expect(missed).toHaveLength(1)
+    expect(missed[0].line).toBe(2)
+    expect(extractGates(`${good}\n${bad}`)).toEqual([['/a', 'media.view']])
   })
 })
