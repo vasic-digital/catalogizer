@@ -29,11 +29,11 @@ type permRoute struct {
 	open bool
 }
 
-// storageRoutes: admin-only except the read-only root listing / status.
+// storageRoutes: admin-only except the connectivity status (SSE-OPQ-1: the root listings carry host/path/username/domain, so they are admin-only now).
 var storageRoutes = []permRoute{
-	{"GET", "/api/v1/storage/roots", true},
+	{"GET", "/api/v1/storage/roots", false},
 	{"POST", "/api/v1/storage/roots", false},
-	{"GET", "/api/v1/storage-roots", true},
+	{"GET", "/api/v1/storage-roots", false},
 	{"GET", "/api/v1/storage-roots/1/status", true},
 	{"GET", "/api/v1/storage/list/x", false},
 	{"POST", "/api/v1/scans", false},

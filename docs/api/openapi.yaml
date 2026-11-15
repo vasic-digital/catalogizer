@@ -4034,7 +4034,7 @@ paths:
     get:
       tags: [storage]
       summary: List storage roots
-      description: Returns all configured storage roots.
+      description: Returns all configured storage roots with their connection data (host, path, username, domain). Admin only (SSE-OPQ-1); /api/v1/browse/roots is the authenticated-user listing and carries no connection data.
       security:
         - BearerAuth: []
       responses:
@@ -4049,6 +4049,10 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/StorageRoot'
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
     post:
       tags: [storage]
       summary: Create storage root
@@ -4195,6 +4199,7 @@ paths:
     get:
       tags: [storage]
       summary: List storage roots (alias)
+      description: Alias of GET /api/v1/storage/roots. Admin only (SSE-OPQ-1).
       security:
         - BearerAuth: []
       responses:
@@ -4209,11 +4214,16 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/StorageRoot'
+        '403':
+          description: Caller is not an administrator (decided from the database on every request)
+        '503':
+          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
 
   /api/v1/storage-roots/{id}/status:
     get:
       tags: [storage]
       summary: Get storage root connectivity status
+      description: Any authenticated user. The `error` field of an offline or misconfigured root is the raw probe error (it can name the host, share or base path) for an administrator, and the fixed text "scan error (details restricted to administrators)" for everyone else (SSE-OPQ-1).
       security:
         - BearerAuth: []
       parameters:
@@ -4567,7 +4577,7 @@ paths:
     get:
       tags: [scans]
       summary: List active scans
-      description: Returns all currently active scan jobs.
+      description: Returns all currently active scan jobs. For a caller who is not an administrator the failure text (`reason`) of a failed scan is replaced by the fixed text "scan error (details restricted to administrators)"; administrators see the raw text.
       security:
         - BearerAuth: []
       responses:
@@ -4587,7 +4597,7 @@ paths:
     get:
       tags: [scans]
       summary: Get scan status
-      description: Returns the status of a specific scan job.
+      description: Returns the status of a specific scan job. For a non-administrator a non-empty `reason` is replaced by the fixed text "scan error (details restricted to administrators)"; administrators see the raw text.
       security:
         - BearerAuth: []
       parameters:
@@ -6824,7 +6834,7 @@ paths:
     get:
       tags: [browse]
       summary: List storage roots for browsing
-      description: Retrieves all configured storage roots available for directory browsing.
+      description: Retrieves the configured storage roots available for directory browsing. Any authenticated user. Carries no connection data (no host, port, path, username, password, domain, mount point, options or url); the full records are admin-only at GET /api/v1/storage/roots (SSE-OPQ-1). Fields are id, name, protocol, enabled, max_depth, created_at, updated_at, last_scan_at.
       security:
         - BearerAuth: []
       responses:
@@ -6840,7 +6850,16 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/StorageRoot'
+                      type: object
+                      properties:
+                        id: {type: integer, format: int64}
+                        name: {type: string}
+                        protocol: {type: string}
+                        enabled: {type: boolean}
+                        max_depth: {type: integer}
+                        created_at: {type: string, format: date-time}
+                        updated_at: {type: string, format: date-time}
+                        last_scan_at: {type: string, format: date-time, nullable: true}
         '401':
           description: Unauthorized
           content:
@@ -8396,7 +8415,7 @@ paths:
       tags:
       - browse
       summary: List storage roots (alias)
-      description: Alias of GET /api/v1/browse/roots, the entry point the test banks use.
+      description: Alias of GET /api/v1/browse/roots, the entry point the test banks use. Same reduced response (no host, port, path, username, password, domain, mount point, options or url; SSE-OPQ-1).
       security:
       - BearerAuth: []
       responses:
@@ -8412,7 +8431,16 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/StorageRoot'
+                      type: object
+                      properties:
+                        id: {type: integer, format: int64}
+                        name: {type: string}
+                        protocol: {type: string}
+                        enabled: {type: boolean}
+                        max_depth: {type: integer}
+                        created_at: {type: string, format: date-time}
+                        updated_at: {type: string, format: date-time}
+                        last_scan_at: {type: string, format: date-time, nullable: true}
         '401':
           description: Unauthorized
           content:

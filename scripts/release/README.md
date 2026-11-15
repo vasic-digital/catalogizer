@@ -82,6 +82,23 @@ a listed file that is gitignored (for example PNG screenshots) and absent is
   manifest are the responsibility of that nested manifest, which is queued and fully checked
   (syntax, checksums, completeness) too.
 
+#### Permanent operator-accepted risks (class `permanent-risk`)
+
+Some accepted risks are not evidence gaps and never expire (for example the key-rotation risk
+CAT-KEYROT-WAIVER-1). They use their own line kind in the same tracked file, never an invented expiry:
+
+```
+permanent-risk|<risk key>|<item>|<operator decision id>|<decision date>|<re-affirmation note>|<reason>
+```
+
+The item is a tracked item id, the decision id names the recorded operator decision (`<ALPHA>-<ID>`), the decision
+date is a real `YYYY-MM-DD` date that is not in the future, and the re-affirmation note says when the operator
+re-affirms the risk; a missing or malformed field, a blank reason or a duplicate key is `BADWAIVER` and FAILs.
+A valid line is printed in every changelog-checking run (`--check changelog` or `all`; `--check version` loads no waivers) as `PERMANENT-RISK <key>: <reason> [item ..., operator decision ..., no expiry;
+re-affirmation: ...]` and counted in `permanent_risks=` (it is never hidden). It does not waive any evidence gap, does
+not turn `PASS` into `PASS-WITH-WAIVERS`, and does not rescue an expired ordinary waiver. A row of `docs/WORKABLE_ITEMS_REGISTER.md` marked `(PERMANENT)` must have a `permanent-risk` record for its item, otherwise the changelog check FAILs (`BADWAIVER`), so a deleted or commented-out record cannot pass silently. The decision id must name a recorded operator decision (for example `BG-OPQ-2026-11-14b` in `docs/requests/background_queue.md`). Tests:
+`test_permanent_risk.sh`; mutations: `mutation_check_permanent_risk.sh`.
+
 #### Declaring known evidence gaps (waivers)
 
 A known-bad or missing manifest is never silently ignored. A tracked file

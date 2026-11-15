@@ -74,7 +74,7 @@ func TestRoutePerms_RealBinary_StatsScansErrorMessage(t *testing.T) {
 }
 
 // SYNC-ADMIN-1: every GET under /api/v1/sync is admin-only (sync endpoint config, sessions,
-// statistics and the alias routes). /browse/roots and /storage/roots are unchanged.
+// statistics and the alias routes). /browse/roots is unchanged; /storage/roots became admin-only in SSE-OPQ-1.
 func TestRoutePerms_RealBinary_SyncGetsAdminOnly(t *testing.T) {
 	if testing.Short() {
 		t.Skip("builds and runs the server binary")
@@ -98,8 +98,8 @@ func TestRoutePerms_RealBinary_SyncGetsAdminOnly(t *testing.T) {
 		code, raw = c.do("GET", p, plain, nil)
 		assert.Equal(t, 403, code, "non-admin must be refused on GET %s: %.200s", p, raw)
 	}
-	// Unchanged: read-only root listings stay open to authenticated users.
-	for _, p := range []string{"/api/v1/browse/roots", "/api/v1/storage/roots"} {
+	// Unchanged: the browse root listing stays open to authenticated users (it carries no connection data since SSE-OPQ-1).
+	for _, p := range []string{"/api/v1/browse/roots"} {
 		code, raw := c.do("GET", p, plain, nil)
 		assert.NotContains(t, []int{401, 403}, code, "must stay open to authenticated users: GET %s: %.200s", p, raw)
 	}

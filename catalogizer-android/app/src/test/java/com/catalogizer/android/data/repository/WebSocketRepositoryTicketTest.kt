@@ -175,7 +175,7 @@ class WebSocketRepositoryTicketTest {
     }
 
     @Test
-    fun `WSF2-R2-F2 stale callbacks do not publish events or reset attempts`() = runTest {
+    fun `WSF2-R2-F2 stale callbacks do not publish events`() = runTest {
         val minter = CountingMinter()
         val r = repo(this, minter)
         r.connect(); runCurrent()

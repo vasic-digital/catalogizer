@@ -45,6 +45,9 @@ func newAPIHarness(t *testing.T, withScanner bool) *apiHarness {
 	t.Setenv(filesystem.AllowedLocalBasesEnv, os.TempDir()) // local roots are denied by default; tests live under the temp dir
 	db := openProductionFileDB(t)                           // the production open path + the production migrations (owner decision OD-23), not a hand-written schema
 	h := &apiHarness{t: t, db: db, r: gin.New()}
+	// These tests exercise the administrator view (SSE-OPQ-1: a non-admin sees a fixed class text instead of a scan's reason); the
+	// non-admin view is covered by sse_opq1_test.go. Only the identity claim is injected, as the JWT middleware would set it.
+	h.r.Use(func(c *gin.Context) { c.Set("role_id", 1) })
 	var sc scannerInterface
 	if withScanner {
 		h.scan = services.NewUniversalScanner(db, zap.NewNop(), nil, filesystem.NewDefaultClientFactory())

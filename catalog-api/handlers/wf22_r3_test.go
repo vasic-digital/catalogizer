@@ -89,6 +89,9 @@ func TestWF22R3_N5_NoReadEndpointReturnsACredential(t *testing.T) {
 	h.r.GET("/browse/roots", bh.GetStorageRoots)
 	h.r.GET("/browse", bh.GetStorageRoots)
 	for _, ep := range []string{"/browse/roots", "/browse", "/storage/roots"} {
+		// SSE-OPQ-1: /browse/roots and /browse carry no connection data at all (no username); /storage/roots (admin-only in production,
+		// unguarded in this harness) still shows it.
+		showsUser := ep == "/storage/roots"
 		req := httptest.NewRequest("GET", ep, nil)
 		w := httptest.NewRecorder()
 		h.r.ServeHTTP(w, req)
@@ -98,6 +101,10 @@ func TestWF22R3_N5_NoReadEndpointReturnsACredential(t *testing.T) {
 		for _, secret := range []string{"colSecret88", "urlSecret77", "ftpSecret55"} {
 			assert.NotContains(t, body, secret, "%s returns a storage-root credential", ep)
 		}
-		assert.Contains(t, body, "bob", "%s: control: the username is still shown", ep)
+		if showsUser {
+			assert.Contains(t, body, "bob", "%s: control: the username is still shown", ep)
+		} else {
+			assert.NotContains(t, body, "bob", "%s: no connection data on the browse listing", ep)
+		}
 	}
 }
