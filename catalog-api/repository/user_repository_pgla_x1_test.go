@@ -229,6 +229,13 @@ func TestPGLAX1F1_UpdateRole_LockedMembers(t *testing.T) {
 		require.NoError(t, repo.UpdateRole(&models.Role{ID: ops, Name: "ops", Permissions: models.Permissions{"media.view"}}))
 		require.Equal(t, models.Permissions{"media.view"}, pglaX1Perms(t, repo, ops))
 	})
+	t.Run("the only member of the stripped role is locked and no other administrator exists: strip allowed", func(t *testing.T) {
+		repo, db := pglaX1Repo(t)
+		ops := pglaX1Role(t, repo, "ops", "system.admin")
+		lock(t, db, pglaX1User(t, repo, "locked", ops, true))
+		require.NoError(t, repo.UpdateRole(&models.Role{ID: ops, Name: "ops", Permissions: models.Permissions{"media.view"}}))
+		require.Equal(t, models.Permissions{"media.view"}, pglaX1Perms(t, repo, ops))
+	})
 	t.Run("the only other administrator is locked: strip refused", func(t *testing.T) {
 		repo, db := pglaX1Repo(t)
 		ops := pglaX1Role(t, repo, "ops", "system.admin")
