@@ -38,6 +38,16 @@ describe('AuthService.hasPermission (server vocabulary)', () => {
     expect(await new AuthService(http).getPermissions()).toEqual(['a', 'b']);
     expect(http.get).toHaveBeenCalledWith('/auth/permissions');
   });
+  // SSEF4R-API-FU1: pin getPermissions itself (hasPermission is also guarded by permissionsGrant, so it cannot
+  // distinguish a getPermissions that leaks a non-array through).
+  it('getPermissions returns [] for every malformed body', async () => {
+    for (const bad of [{ permissions: 'x' }, { permissions: null }, null, {}, undefined, 'media.view', 7, { permissions: { 0: 'a' } }]) {
+      const http: any = { get: vi.fn().mockResolvedValueOnce(bad) };
+      const got = await new AuthService(http).getPermissions();
+      expect(Array.isArray(got)).toBe(true);
+      expect(got).toEqual([]);
+    }
+  });
   it('fails closed (false, no throw) on a malformed container', async () => {
     for (const bad of [null, undefined, 'media.view', 7, { permissions: 'media.view' }, { permissions: null }, {}]) {
       const http: any = { get: vi.fn().mockResolvedValueOnce(bad) };
