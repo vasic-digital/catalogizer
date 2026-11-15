@@ -2782,3 +2782,8 @@ RESOLVED: HYGF4D-M1 (cap aliasing guard pinned), M2 (case-differing credential),
 - HYGF4E-F2 (minor, test): exact 48/16 split not pinned (survivor E, maxPathKnownSecrets 48->47); assert exact kept counts with full pools.
 - HYGF4D-N2 (nit): pctDecode leftover in text.go, not done.
 - HYGF4E-F3: re-run full ./handlers -short with a longer -timeout on a quiet host (reviewer's run hit the 10 min default under load, UNCONFIRMED).
+
+## FU-TESTS-A review (Opus, GO-with-follow-ups, PROVISIONAL, commit 17d6afff4)
+RESOLVED: HYGF4E-F1 (header-sort determinism), HYGF4E-F2 (exact 48/16 split), TIERPGLA-F1 (CORS prefix mutant), TIERPGLA-F2 (pinned UPDATE regex + args), TIERPGLA-N1. Reviewer: 4 test files only, 3x deterministic, all named mutants killed, 6 own mutants killed; root -short ok. Follow-ups:
+- FUTA-F1 (minor, test): add uppercase/mixed-case origin (HTTP://APP.EXAMPLE) to CORS negative cases; mutant strings.EqualFold(o, origin) survives.
+- FUTA-F2 (minor, test): LockAccount sqlmock pins the time arg with AnyArg; mutant time.Now() -> Now().Add(-1h) survives; pin with a custom sqlmock.Argument within seconds of now or add a real-DB expired-lock case; optionally replace `.*` in the regex with the literal is_locked/locked_until sub-clause (handler real-DB tests already kill the operator mutants).
