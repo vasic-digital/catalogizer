@@ -58,3 +58,29 @@ func TestPGLAX1F7_UserWriteGuards_SingleConnectionPoolDoesNotHang(t *testing.T) 
 		})
 	}
 }
+
+// TH2-MINOR-1: LockAccount is the only guarded write whose refusal read (refusedByGuard) runs inside the
+// transaction, before Commit. With MaxOpenConnections=1 a refusal read through the pool (r.db) deadlocks, and a
+// refusal read after Commit loses the guard's view of the row. This pins the sole-administrator refusal path.
+func TestPGLAX1F7_LockAccount_SoleAdminRefusedOnSingleConnectionPool(t *testing.T) {
+	db, err := database.NewConnection(&config.DatabaseConfig{Path: filepath.Join(t.TempDir(), "s.db"), MaxOpenConnections: 1})
+	require.NoError(t, err)
+	defer db.Close()
+	require.NoError(t, db.RunMigrations(context.Background()))
+	_, err = db.Exec(`UPDATE users SET role_id = 2`)
+	require.NoError(t, err)
+	repo := NewUserRepository(db)
+	a := pglaX1Role(t, repo, "rA", "system.admin")
+	sole := pglaX1User(t, repo, "sole", a, true)
+	done := make(chan error, 1)
+	go func() { done <- repo.LockAccount(sole, time.Now().Add(time.Hour)) }()
+	select {
+	case err := <-done:
+		require.ErrorIs(t, err, ErrLastAdmin)
+	case <-time.After(15 * time.Second):
+		t.Fatal("deadlock: refused LockAccount did not finish on a single-connection pool")
+	}
+	var locked bool
+	require.NoError(t, db.QueryRow(`SELECT COALESCE(is_locked, '0') FROM users WHERE id = ?`, sole).Scan(&locked))
+	require.False(t, locked, "the refused lock must not have been applied")
+}
