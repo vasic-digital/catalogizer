@@ -241,13 +241,13 @@ func (r *UserRepository) UpdateGuarded(user *models.User, expectedRoleID int, ex
 	// that decision and the administrator-role set it rests on are made inside the advisory-locked transaction
 	// (PGLA-X1: a set read before the lock can be stale), so the lock is taken for every such write.
 	mayRemove := expectedActive && (user.RoleID != expectedRoleID || !user.IsActive)
-	if mayRemove && r.db.Dialect().Type == database.DialectPostgres {
+	if mayRemove {
 		tx, berr := r.db.Begin()
 		if berr != nil {
 			return false, berr
 		}
 		defer tx.Rollback()
-		if _, lerr := tx.Exec(pgAdvisoryLockKey); lerr != nil {
+		if lerr := r.lockAdminWrites(tx); lerr != nil {
 			return false, lerr
 		}
 		adminIDs, aerr := r.adminRoleIDsTx(tx)
@@ -321,6 +321,21 @@ func (r *UserRepository) adminRoleIDs() ([]int, error) {
 		}
 	}
 	return ids, nil
+}
+
+// lockAdminWrites serialises an administrator-removing write with every other one. PostgreSQL: the shared
+// transaction-scoped advisory lock. SQLite (PGLAX1-F7): a no-op write takes the database write lock BEFORE the
+// administrator-role set is read, so a concurrent role strip cannot commit between that read and the guarded
+// statement (it waits for this transaction, then reads the committed result).
+func (r *UserRepository) lockAdminWrites(tx *sql.Tx) error {
+	if r.db.Dialect().Type == database.DialectPostgres {
+		_, err := tx.Exec(pgAdvisoryLockKey)
+		return err
+	}
+	if _, err := tx.Exec(`UPDATE roles SET updated_at = updated_at WHERE id = 0`); err != nil {
+		return fmt.Errorf("failed to lock for administrator write: %w", err)
+	}
+	return nil
 }
 
 // pgAdvisoryLockKey is the transaction-scoped advisory lock every admin-removing write serialises on.
@@ -541,13 +556,13 @@ func (r *UserRepository) LockAccount(userID int, lockUntil time.Time) error {
 	var n int64
 	refused := false
 	var err error
-	if lockUntil.After(time.Now()) && r.db.Dialect().Type == database.DialectPostgres {
+	if lockUntil.After(time.Now()) {
 		tx, berr := r.db.Begin()
 		if berr != nil {
 			return berr
 		}
 		defer tx.Rollback()
-		if _, lerr := tx.Exec(pgAdvisoryLockKey); lerr != nil {
+		if lerr := r.lockAdminWrites(tx); lerr != nil {
 			return lerr
 		}
 		adminIDs, aerr := r.adminRoleIDsTx(tx)
@@ -644,14 +659,15 @@ func (r *UserRepository) SetSuspended(userID int, suspended bool) error {
 		return query, args
 	}
 	var n int64
-	if r.db.Dialect().Type == database.DialectPostgres {
-		// PGLA-X1: the administrator-role set is read after the advisory lock, inside the same transaction.
+	{
+		// PGLA-X1 / PGLAX1-F7: the administrator-role set is read after the write lock (PostgreSQL advisory lock,
+		// SQLite database write lock), inside the same transaction as the guarded write.
 		tx, berr := r.db.Begin()
 		if berr != nil {
 			return berr
 		}
 		defer tx.Rollback()
-		if _, lerr := tx.Exec(pgAdvisoryLockKey); lerr != nil {
+		if lerr := r.lockAdminWrites(tx); lerr != nil {
 			return lerr
 		}
 		adminIDs, aerr := r.adminRoleIDsTx(tx)
@@ -667,17 +683,6 @@ func (r *UserRepository) SetSuspended(userID int, suspended bool) error {
 		if err := tx.Commit(); err != nil {
 			return err
 		}
-	} else {
-		adminIDs, err := r.adminRoleIDs()
-		if err != nil {
-			return err
-		}
-		query, args := build(adminIDs)
-		res, xerr := r.db.Exec(query, args...)
-		if xerr != nil {
-			return xerr
-		}
-		n, _ = res.RowsAffected()
 	}
 	if n > 0 {
 		return nil
@@ -696,29 +701,21 @@ func (r *UserRepository) SetSuspended(userID int, suspended bool) error {
 // attribution are detached (user_id / granted_by set NULL) in the same transaction, because both columns reference users(id)
 // without ON DELETE and would otherwise make every user that ever logged in undeletable (HTTP 500).
 func (r *UserRepository) Delete(id int) error {
-	// Read before the transaction: a second pooled connection taken while the
-	// transaction holds the only one would deadlock a single-connection pool.
-	pg := r.db.Dialect().Type == database.DialectPostgres
-	var adminIDs []int
-	var err error
-	if !pg {
-		if adminIDs, err = r.adminRoleIDs(); err != nil {
-			return err
-		}
-	}
+	// The administrator-role set is read THROUGH the transaction (a second pooled connection taken while the
+	// transaction holds the only one would deadlock a single-connection pool).
 	tx, err := r.db.Begin()
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 	defer tx.Rollback()
-	if pg {
-		// PGLA-X1: take the shared advisory lock first and read the administrator-role set inside it.
-		if _, lerr := tx.Exec(pgAdvisoryLockKey); lerr != nil {
-			return lerr
-		}
-		if adminIDs, err = r.adminRoleIDsTx(tx); err != nil {
-			return err
-		}
+	// PGLA-X1 / PGLAX1-F7: take the write lock first (PostgreSQL advisory lock, SQLite database write lock) and read
+	// the administrator-role set inside it, so a concurrent role strip cannot make the set stale.
+	if lerr := r.lockAdminWrites(tx); lerr != nil {
+		return lerr
+	}
+	adminIDs, err := r.adminRoleIDsTx(tx)
+	if err != nil {
+		return err
 	}
 	// Detaching the audit rows must not make them anonymous: stamp who they belonged to into details first.
 	var username string
