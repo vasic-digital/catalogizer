@@ -77,7 +77,9 @@ func TestPGLAX1F6_ConcurrentStripOfTwoAdminRoles_KeepsOneAdministrator(t *testin
 	bar := &f6Barrier{want: 2, release: make(chan struct{}), timeout: 2 * time.Second}
 	drvName := "sqlite3_f6_" + strings.ReplaceAll(t.Name(), "/", "_")
 	sql.Register(drvName, f6Driver{b: bar})
-	sqlDB, err := sql.Open(drvName, path+"?_busy_timeout=20000&_txlock=immediate")
+	sqlDB, err := sql.Open(drvName, path+"?_busy_timeout=20000&_foreign_keys=1")
+	require.NoError(t, err)
+	_, err = sqlDB.Exec("PRAGMA journal_mode=WAL") // as database.NewConnection does; default deferred BEGIN, as in production
 	require.NoError(t, err)
 	t.Cleanup(func() { sqlDB.Close() })
 	db := database.WrapDB(sqlDB, database.DialectSQLite)
@@ -107,5 +109,11 @@ func TestPGLAX1F6_ConcurrentStripOfTwoAdminRoles_KeepsOneAdministrator(t *testin
 		WHERE u.is_active = 1 AND r.permissions LIKE '%system.admin%'`).Scan(&admins))
 	t.Logf("strip errors: A=%v B=%v; active administrators left: %d", errs[0], errs[1], admins)
 	require.GreaterOrEqual(t, admins, 1, "last-administrator invariant violated: both administrator roles were stripped")
-	require.True(t, (errs[0] == nil) != (errs[1] == nil), "exactly one strip must succeed and one be refused with ErrLastAdmin: %v / %v", errs[0], errs[1])
+	require.True(t, (errs[0] == nil) != (errs[1] == nil), "exactly one strip must succeed and one be refused: %v / %v", errs[0], errs[1])
+	loser := errs[0]
+	if loser == nil {
+		loser = errs[1]
+	}
+	// The refusal must be the clean last-administrator refusal, not a database-busy failure that merely avoids the violation.
+	require.ErrorIs(t, loser, ErrLastAdmin)
 }
