@@ -16,15 +16,29 @@ import (
 const (
 	minKnownSecretLen = 4
 	maxKnownSecrets   = 64
-	maxKnownSecretLen = 4096
+	// maxPathKnownSecrets bounds the path-derived share of maxKnownSecrets; the rest is reserved for header/query/param credentials.
+	maxPathKnownSecrets = 48
+	maxKnownSecretLen   = 4096
 )
 
 // KnownSecrets returns the credential values carried by one request (at most maxKnownSecrets values; the scan is linear). params are the route parameters (name -> value).
 func KnownSecrets(path, rawQuery string, header http.Header, params map[string]string) []string {
-	var out []string
+	// Two pools (HYGF4B-M-B): path-derived pieces are attacker-shaped (one crafted segment can yield hundreds), so they get at most
+	// maxPathKnownSecrets slots; header / query / route-parameter credentials are collected into their own pool and can never be
+	// starved by the path. Values are deduplicated, and a key name (secretSegmentKeys) is never itself a known secret (HYGF4B-M-A).
+	var out, prio []string
+	seenOut := map[string]bool{}
+	seenPrio := map[string]bool{}
 	add := func(v string) {
-		if len(v) >= minKnownSecretLen && len(v) <= maxKnownSecretLen && len(out) < maxKnownSecrets {
+		if len(v) >= minKnownSecretLen && len(v) <= maxKnownSecretLen && len(out) < maxPathKnownSecrets && !seenOut[v] && !secretSegmentKeys[strings.ToLower(v)] {
+			seenOut[v] = true
 			out = append(out, v)
+		}
+	}
+	addPrio := func(v string) {
+		if len(v) >= minKnownSecretLen && len(v) <= maxKnownSecretLen && len(prio) < maxKnownSecrets && !seenPrio[v] {
+			seenPrio[v] = true
+			prio = append(prio, v)
 		}
 	}
 	// path segments after a secret-introducing segment
@@ -36,7 +50,7 @@ func KnownSecrets(path, rawQuery string, header http.Header, params map[string]s
 		}
 	}
 scan:
-	for i := 0; i < len(segs) && len(out) < maxKnownSecrets; i++ {
+	for i := 0; i < len(segs) && len(out) < maxPathKnownSecrets; i++ {
 		segmentWork.Add(int64(len(segs[i])) + 1)
 		base, exact, embedded, ok := secretKey(segs[i])
 		if !ok {
@@ -48,7 +62,11 @@ scan:
 			cur := segs[i]
 			for r := 0; r < 16; r++ {
 				segmentWork.Add(int64(len(cur)) + 1)
-				cur = lenientUnescape(cur)
+				next := lenientUnescape(cur)
+				if next == cur {
+					break // fixed point: further rounds add nothing
+				}
+				cur = next
 				if ps := strings.FieldsFunc(cur, func(c rune) bool { return c == '/' || c == '\\' || c == ';' }); len(ps) > 1 {
 					for _, piece := range ps[1:] {
 						addSeg(piece)
@@ -97,7 +115,7 @@ scan:
 			// the secret position is everything after the key: collect it ONCE and stop scanning (linear cost)
 			for _, sg := range segs[j:] {
 				segmentWork.Add(int64(len(sg)) + 1)
-				if sg == "" || len(out) >= maxKnownSecrets {
+				if sg == "" || len(out) >= maxPathKnownSecrets {
 					continue
 				}
 				addSeg(sg)
@@ -116,7 +134,7 @@ scan:
 	}
 	for name, v := range params {
 		if SensitiveKey(name) {
-			add(v)
+			addPrio(v)
 		}
 	}
 	for _, pair := range strings.FieldsFunc(rawQuery, func(r rune) bool { return r == '&' || r == ';' }) {
@@ -125,9 +143,9 @@ scan:
 			continue
 		}
 		if un, err := url.QueryUnescape(name); err != nil || SensitiveKey(un) {
-			add(val)
+			addPrio(val)
 			if u, err := url.QueryUnescape(val); err == nil && u != val {
-				add(u)
+				addPrio(u)
 			}
 		}
 	}
@@ -136,14 +154,24 @@ scan:
 			continue
 		}
 		for _, v := range vals {
-			add(v)
+			addPrio(v)
 			for _, f := range strings.FieldsFunc(v, func(r rune) bool { return r == ' ' || r == ';' || r == ',' }) {
 				if _, val, ok := strings.Cut(f, "="); ok {
-					add(strings.Trim(val, `"'`))
+					addPrio(strings.Trim(val, `"'`))
 				} else if !schemeWords[strings.ToLower(f)] {
-					add(strings.Trim(f, `"'`))
+					addPrio(strings.Trim(f, `"'`))
 				}
 			}
+		}
+	}
+	// merge: path pool first (at most maxPathKnownSecrets), then the credential pool up to the overall cap, skipping duplicates
+	for _, v := range prio {
+		if len(out) >= maxKnownSecrets {
+			break
+		}
+		if !seenOut[v] {
+			seenOut[v] = true
+			out = append(out, v)
 		}
 	}
 	return out
