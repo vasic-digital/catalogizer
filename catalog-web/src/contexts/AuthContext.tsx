@@ -184,7 +184,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     },
   })
 
-  const isUserAdmin = user?.role?.name === 'Admin' || user?.role_id === 1
+  // SSE-F4-R3: the server's RequireAdmin gates on role_id, so a numeric role_id is
+  // authoritative; the role name is only a fallback when the user carries no role_id.
+  const isUserAdmin =
+    typeof user?.role_id === 'number' ? user.role_id === 1 : user?.role?.name === 'Admin'
 
   const hasPermission = (permission: string): boolean => {
     if (isUserAdmin) return true

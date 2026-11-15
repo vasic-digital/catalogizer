@@ -523,6 +523,10 @@ export const SyncSection: React.FC = () => {
 // --- Main Settings Page ---
 export const Settings: React.FC = () => {
   const { isAdmin } = useAuth()
+  const [tab, setTab] = React.useState('scans')
+  // SSE-F4-R4: the Sync tab exists only for administrators; if the role is lost
+  // while it is selected, fall back to Scans instead of rendering a blank panel.
+  const activeTab = tab === 'sync' && !isAdmin ? 'scans' : tab
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <motion.div
@@ -539,7 +543,7 @@ export const Settings: React.FC = () => {
           </p>
         </div>
 
-        <Tabs defaultValue="scans">
+        <Tabs value={activeTab} onValueChange={setTab}>
           <TabsList className="mb-6">
             <TabsTrigger value="scans">
               <Scan className="h-4 w-4 mr-2" />
