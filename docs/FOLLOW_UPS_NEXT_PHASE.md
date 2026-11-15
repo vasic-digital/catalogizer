@@ -2775,3 +2775,10 @@ RESOLVED: TIERFU-M1 (holder-window Retry-After test), TIERFU-M2 (disallowed/abse
 RESOLVED: SSEF4R-M1 (UI isAdmin = authenticated && /auth/status permissions per server HasPermission("system.admin")), SSEF4R-M2 (ProtectedRoute/Header use useAuth().isAdmin), SSEF4R-N1. Full vitest on head = base failure set (7 module-registry + 6 file-level missing-package). Follow-ups:
 - SSEF4R-FD (minor, pre-existing): canAccess still checks the `admin:system` string and hasPermission is an exact includes with no wildcard; App.tsx requiredPermission values like `read:media` do not match the models' `media.view` vocabulary, so a non-admin custom role with `media.*` gets no UI route access.
 - SSEF4R-FE (minor, test): two tests rely on a fixed setTimeout(50) settle; replace with waiting on the permissions query state.
+
+## HYGF4D review (Opus, GO-with-follow-ups, PROVISIONAL, commit b6674a1cc)
+RESOLVED: HYGF4D-M1 (cap aliasing guard pinned), M2 (case-differing credential), M3 (sorted keys for params and header names), N1. Reviewer reproduced M3 RED on base 3/3, 6 own mutants (4 killed). The 3 TypedScan/Instrumentation failures in the author clone are environmental (empty submodule dirs); they pass on base and head with submodules present. Root package -short ok 116 s. Follow-ups:
+- HYGF4E-F1 (minor, test): header-name sort not pinned (survivor B): in the M3 test the 20 sorted params fill the 16-slot reserve before any header; add a test with >=17 credential header values and no params that fails when `sort.Strings(hnames)` is removed.
+- HYGF4E-F2 (minor, test): exact 48/16 split not pinned (survivor E, maxPathKnownSecrets 48->47); assert exact kept counts with full pools.
+- HYGF4D-N2 (nit): pctDecode leftover in text.go, not done.
+- HYGF4E-F3: re-run full ./handlers -short with a longer -timeout on a quiet host (reviewer's run hit the 10 min default under load, UNCONFIRMED).
