@@ -152,14 +152,14 @@ describe('AuthContext', () => {
     expect(screen.getByTestId('user-info')).toHaveTextContent('User: testuser');
   });
 
-  it('detects admin user by role name', async () => {
+  it('detects admin user by the system.admin permission', async () => {
     mockAuthApi.getAuthStatus.mockResolvedValue({
       authenticated: true,
       user: { id: 1, username: 'admin', role: { name: 'Admin' }, role_id: 1 },
-      permissions: ['admin:system'],
+      permissions: ['system.admin'],
     });
     mockAuthApi.getPermissions.mockResolvedValue({
-      permissions: ['admin:system'],
+      permissions: ['system.admin'],
     });
     const queryClient = createQueryClient();
 
@@ -171,25 +171,6 @@ describe('AuthContext', () => {
       </QueryClientProvider>
     );
 
-    await waitFor(() => {
-      expect(screen.getByTestId('admin-status')).toHaveTextContent('Is Admin');
-    });
-  });
-
-  it('falls back to the role name when the user carries no role_id (SSE-F4-R3)', async () => {
-    mockAuthApi.getAuthStatus.mockResolvedValue({
-      authenticated: true,
-      user: { id: 1, username: 'admin', role: { name: 'Admin' } },
-      permissions: [],
-    });
-    mockAuthApi.getPermissions.mockResolvedValue({ permissions: [] });
-    render(
-      <QueryClientProvider client={createQueryClient()}>
-        <AuthProvider>
-          <TestComponent />
-        </AuthProvider>
-      </QueryClientProvider>
-    );
     await waitFor(() => {
       expect(screen.getByTestId('admin-status')).toHaveTextContent('Is Admin');
     });
@@ -215,7 +196,7 @@ describe('AuthContext', () => {
     expect(screen.getByTestId('admin-status')).toHaveTextContent('Not Admin');
   });
 
-  it('detects admin user by role_id=1', async () => {
+  it('role_id=1 without admin permissions is NOT admin (SSEF4R-M1)', async () => {
     mockAuthApi.getAuthStatus.mockResolvedValue({
       authenticated: true,
       user: { id: 1, username: 'admin', role: { name: 'SomeRole' }, role_id: 1 },
@@ -233,7 +214,7 @@ describe('AuthContext', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId('admin-status')).toHaveTextContent('Is Admin');
+      expect(screen.getByTestId('admin-status')).toHaveTextContent('Not Admin');
     });
   });
 
@@ -302,9 +283,9 @@ describe('AuthContext', () => {
     mockAuthApi.getAuthStatus.mockResolvedValue({
       authenticated: true,
       user: { id: 1, username: 'admin', role: { name: 'Admin' }, role_id: 1 },
-      permissions: [],
+      permissions: ['system.admin'],
     });
-    mockAuthApi.getPermissions.mockResolvedValue({ permissions: [] });
+    mockAuthApi.getPermissions.mockResolvedValue({ permissions: ['system.admin'] });
     const queryClient = createQueryClient();
 
     render(

@@ -256,11 +256,11 @@ describe('AuthContext Integration Tests', () => {
       mockAuthApi.getAuthStatus.mockResolvedValue({
         authenticated: true,
         user: mockAdminUser,
-        permissions: ['admin:system'],
+        permissions: ['system.admin'],
       } as AuthStatus)
       mockAuthApi.getPermissions.mockResolvedValue({
         role: 'admin',
-        permissions: ['admin:system'],
+        permissions: ['system.admin'],
         is_admin: true,
       })
 
@@ -649,11 +649,11 @@ describe('AuthContext Integration Tests', () => {
       mockAuthApi.getAuthStatus.mockResolvedValue({
         authenticated: true,
         user: mockAdminUser,
-        permissions: [],
+        permissions: ['system.admin'],
       })
       mockAuthApi.getPermissions.mockResolvedValue({
         role: 'admin',
-        permissions: [],
+        permissions: ['system.admin'],
         is_admin: true,
       })
 

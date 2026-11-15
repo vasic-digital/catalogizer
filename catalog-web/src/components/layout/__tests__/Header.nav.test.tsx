@@ -65,6 +65,7 @@ const authed = (admin = false) =>
   mockUseAuth.mockReturnValue({
     user: { id: 1, username: 'u', first_name: 'U', last_name: 'X', role: admin ? { id: 1, name: 'Admin' } : 'user' },
     isAuthenticated: true,
+    isAdmin: admin,
     logout: mockLogout,
   } as never)
 
