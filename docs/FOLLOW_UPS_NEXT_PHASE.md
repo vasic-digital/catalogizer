@@ -2838,3 +2838,9 @@ RESOLVED: ERRLEAK-FU-A (AST pin narrows GetStorageRootStatus), ERRLEAK-FU-B (Tes
 - ERRLEAK-FU-F2 (minor): pin brittleness (renaming probeErr/admin/closure param, `var resp =`, adding a non-literal resp value all fail closed); add a comment in pin_test.go that the pin must be updated deliberately.
 - ERRLEAK-FU-F3 (minor): pin_test.go mutant table anchors on exact source text; a benign reorder gives a hard "fixture drifted" Fatalf.
 - Process: agents sharing the scratchpad must use unique file names (revdir was overwritten by another agent).
+
+## PGLAXFU-tests review (Opus, GO-with-follow-ups, PROVISIONAL, commit 4563be903)
+RESOLVED: PGLAXFU-F1 (sqlmock PG-path fail-closed + live PG16 test, honest SKIP without env; reviewer's own live run passed, 0 leftover DBs), PGLAXFU-F2 (handler 404/500-not-409 controls), PGLAXFU-N2. Reviewer: 3 test files, no production change; 7 of 9 own mutants killed (H4 equivalent).
+- PGLAXFU-R5 (minor, test): nothing tests that the PG path fails closed when adminRoleIDsTx errors (mutant R5 ignoring its error survives everywhere); add sqlmock case with a corrupt/row-error on the first FROM roles query asserting error, Rollback, no UPDATE.
+- PGLAXFU-N3 (nit): live test only require.Error; assert the error text ("failed to unmarshal permissions") to pin which layer refused.
+- PGLAXFU-N4 (nit): live test skips only when HOST/PORT missing; missing USER/PASSWORD fails at connect; document.
