@@ -690,6 +690,10 @@ func (h *UserHandler) LockAccount(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.authService.LockAccount(userID, lockUntil)
+	if errors.Is(err, repository.ErrLastAdmin) {
+		http.Error(w, "The last administrator cannot be locked", http.StatusConflict)
+		return
+	}
 	if err != nil {
 		log.Printf("handlers: lock account failed (not returned to client): %v", err)
 		http.Error(w, "Failed to lock account", http.StatusInternalServerError)

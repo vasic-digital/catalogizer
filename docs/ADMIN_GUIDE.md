@@ -498,14 +498,24 @@ curl -X POST http://localhost:8080/api/v1/users/{user_id}/reset-password \
 ### Locking and Unlocking Accounts
 
 ```bash
-# Lock an account (prevent login)
+# Lock an account until a point in time (prevent login); lock_until is required (RFC 3339)
 curl -X POST http://localhost:8080/api/v1/users/{user_id}/lock \
-  -H "Authorization: Bearer $ADMIN_TOKEN"
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"lock_until": "2030-01-01T00:00:00Z"}'
 
 # Unlock an account
 curl -X POST http://localhost:8080/api/v1/users/{user_id}/unlock \
   -H "Authorization: Bearer $ADMIN_TOKEN"
 ```
+
+The last effective administrator (an active, unlocked account that holds the
+administrator role) cannot be locked: the request is refused with HTTP 409
+`The last administrator cannot be locked` and nothing is changed. The check runs
+atomically with the lock, so two administrators locking each other at the same
+time cannot leave the system without an administrator. A `lock_until` that is
+already in the past locks nobody and is not refused. You also cannot lock your
+own account (400).
 
 ### Deleting a User
 

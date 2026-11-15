@@ -440,8 +440,80 @@ var ErrAccountSuspended = errors.New("account is suspended")
 // locked_until) is never replaced by a timed lock: it is already stricter.
 func (r *UserRepository) LockAccount(userID int, lockUntil time.Time) error {
 	query := `UPDATE users SET is_locked = 1, locked_until = ? WHERE id = ? AND NOT (COALESCE(is_locked, '0') = ? AND locked_until IS NULL)`
-	if _, err := r.db.Exec(query, lockUntil, userID, true); err != nil {
+	args := []interface{}{lockUntil, userID, true}
+	// CAT-PG-LASTADMIN-1: a locked administrator no longer counts as one, so a
+	// timed lock removes an administrator exactly like a suspension and gets the
+	// same atomic last-administrator guard (same statement; on PostgreSQL also
+	// serialised with the shared advisory lock, because READ COMMITTED would let
+	// two transactions each see the other administrator as still available).
+	adminIDs, err := r.adminRoleIDs()
+	if err != nil {
 		return err
+	}
+	// A lock that is already expired removes nobody, so it is not guarded.
+	guarded := len(adminIDs) > 0 && lockUntil.After(time.Now())
+	if guarded {
+		ph := make([]string, len(adminIDs))
+		for i, id := range adminIDs {
+			ph[i] = "?"
+			args = append(args, id)
+		}
+		clause, cargs := otherActiveAdminsClause(userID, adminIDs)
+		query += " AND (role_id NOT IN (" + strings.Join(ph, ",") + ") OR " + clause + ")"
+		args = append(args, cargs...)
+	}
+	// refusedByGuard re-reads the row to tell "the guard held the write back"
+	// from "already suspended / no such user". On PostgreSQL it runs inside the
+	// same transaction (still holding the advisory lock), so the classification
+	// reads the same state the guarded UPDATE saw.
+	type rower interface {
+		QueryRow(query string, args ...interface{}) *sql.Row
+	}
+	refusedByGuard := func(q rower, rewrite bool) bool {
+		sq := `SELECT role_id, COALESCE(is_locked, '0'), locked_until FROM users WHERE id = ?`
+		if rewrite {
+			sq = r.db.Rewrite(sq)
+		}
+		var rid int
+		var locked bool
+		var until *time.Time
+		return q.QueryRow(sq, userID).Scan(&rid, &locked, &until) == nil &&
+			containsInt(adminIDs, rid) && !(locked && until == nil)
+	}
+	var n int64
+	refused := false
+	if guarded && r.db.Dialect().Type == database.DialectPostgres {
+		tx, berr := r.db.Begin()
+		if berr != nil {
+			return berr
+		}
+		defer tx.Rollback()
+		if _, lerr := tx.Exec(`SELECT pg_advisory_xact_lock(7340001)`); lerr != nil {
+			return lerr
+		}
+		res, xerr := tx.Exec(r.db.Rewrite(query), args...)
+		if xerr != nil {
+			return xerr
+		}
+		n, _ = res.RowsAffected()
+		if n == 0 {
+			refused = refusedByGuard(tx, true)
+		}
+		if err = tx.Commit(); err != nil {
+			return err
+		}
+	} else {
+		res, xerr := r.db.Exec(query, args...)
+		if xerr != nil {
+			return xerr
+		}
+		n, _ = res.RowsAffected()
+	}
+	if n == 0 && guarded && r.db.Dialect().Type != database.DialectPostgres {
+		refused = refusedByGuard(r.db, false)
+	}
+	if refused {
+		return ErrLastAdmin
 	}
 	// A locked account keeps no session: JWT-only routes check the session row
 	// alone. The lock is written first so no new session can be issued, then

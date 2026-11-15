@@ -25,6 +25,7 @@ func TestOtherActiveAdminsClause_NullLockIsUnlocked(t *testing.T) {
 func TestLockAccount_WritesLockBeforeRevokingSessions(t *testing.T) {
 	repo, mock := newMockUserRepo(t)
 	until := time.Now().Add(time.Hour)
+	mock.ExpectQuery("FROM roles").WillReturnRows(sqlmock.NewRows([]string{"id", "name", "description", "permissions", "is_system", "created_at", "updated_at"}))
 	mock.ExpectExec("UPDATE users SET is_locked = 1").WithArgs(until, 7, true).WillReturnResult(sqlmock.NewResult(0, 1))
 	mock.ExpectExec("UPDATE user_sessions SET is_active = 0").WithArgs(7).WillReturnResult(sqlmock.NewResult(0, 1))
 	if err := repo.LockAccount(7, until); err != nil {
@@ -38,6 +39,7 @@ func TestLockAccount_WritesLockBeforeRevokingSessions(t *testing.T) {
 func TestLockAccount_FailedLockWriteRevokesNothing(t *testing.T) {
 	repo, mock := newMockUserRepo(t)
 	until := time.Now().Add(time.Hour)
+	mock.ExpectQuery("FROM roles").WillReturnRows(sqlmock.NewRows([]string{"id", "name", "description", "permissions", "is_system", "created_at", "updated_at"}))
 	mock.ExpectExec("UPDATE users SET is_locked = 1").WithArgs(until, 7, true).WillReturnError(errors.New("boom"))
 	if err := repo.LockAccount(7, until); err == nil {
 		t.Fatal("expected error")
