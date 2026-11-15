@@ -8,6 +8,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -131,13 +133,17 @@ class WebSocketRepository(
             } catch (e: WsTicketUnauthorizedException) {
                 _events.value = WebSocketEvent.Error(e.message ?: "Unauthorized")
                 return@launch // a 401 is final: no reconnect loop with a token the server refuses
-            } catch (e: CancellationException) {
-                throw e // connect()/disconnect() cancelled this attempt: not a mint failure, no Error, no reconnect
             } catch (e: Exception) {
+                // WSF2B2-F2: rethrow only when THIS attempt was cancelled (connect()/disconnect()); a
+                // CancellationException the minter raised itself (withTimeout) is an ordinary mint failure.
+                if (e is CancellationException && !isActive) throw e
                 _events.value = WebSocketEvent.Error(e.message ?: "Ticket request failed")
                 scheduleReconnect()
                 return@launch
             }
+            // WSF2B2-F1/F2: mint() may return without a suspension point after this attempt was cancelled
+            // (disconnect()/connect()); build and install nothing for a cancelled attempt.
+            ensureActive()
             try {
                 val wsUrl = baseUrl.replace("http://", "ws://").replace("https://", "wss://")
                 val uri = URI("$wsUrl/ws?ticket=${URLEncoder.encode(ticket, "UTF-8")}")
@@ -146,7 +152,7 @@ class WebSocketRepository(
                 holder.set(c)
                 val old: WebSocketClient?
                 synchronized(lock) {
-                    if (intentional) return@launch
+                    if (intentional || !isActive) return@launch
                     old = client
                     client = c
                 }

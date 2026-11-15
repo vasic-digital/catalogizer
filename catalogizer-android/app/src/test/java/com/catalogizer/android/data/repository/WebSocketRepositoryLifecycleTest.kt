@@ -152,4 +152,50 @@ class WebSocketRepositoryLifecycleTest {
         old.l.onMessage("""{"type":"late"}""")
         assertEquals(WebSocketEvent.Disconnected, r.events.value)
     }
+
+    /** Minter whose mint() runs [hook] (a disconnect/connect on the repository) and then returns a ticket without suspending. */
+    private class HookMinter(val hook: () -> Unit) : WsTicketMinter {
+        var calls = 0
+        override suspend fun mint(token: String): String { calls++; if (calls == 1) hook(); return "t$calls" }
+    }
+
+    @Test fun `WSF2B2-F1 disconnect inside mint returns builds no socket and stays Disconnected`() = runTest {
+        lateinit var r: WebSocketRepository
+        val m = HookMinter { r.disconnect() }
+        r = repo(this, m)
+        r.connect(); runCurrent()
+        assertEquals("no socket may be built after disconnect", 0, RecSocket.made.size)
+        assertEquals(0, RecSocket.connects)
+        assertEquals(WebSocketEvent.Disconnected, r.events.value)
+    }
+
+    @Test fun `WSF2B2-F2 a cancelled attempt does not install its client after mint returns`() = runTest {
+        lateinit var r: WebSocketRepository
+        val m = HookMinter { r.connect() } // replaces the in-flight attempt; the old one then gets its ticket
+        r = repo(this, m)
+        r.connect(); runCurrent()
+        assertEquals("only the live attempt builds a client", 1, RecSocket.made.size)
+        assertEquals(1, RecSocket.connects)
+        assertEquals("old client must never be closed because it never existed", 0, RecSocket.made[0].closes)
+        r.disconnect()
+    }
+
+    @Test fun `WSF2B2-F2 a minter-raised timeout cancellation is a mint failure not a silent cancel`() = runTest {
+        val m = object : WsTicketMinter {
+            var calls = 0
+            override suspend fun mint(token: String): String {
+                calls++
+                if (calls == 1) kotlinx.coroutines.withTimeout(10) { kotlinx.coroutines.delay(1000) }
+                return "t$calls"
+            }
+        }
+        val r = repo(this, m)
+        r.connect(); runCurrent()
+        advanceTimeBy(20); runCurrent()
+        assertEquals(WebSocketEvent.Error::class, r.events.value::class)
+        advanceTimeBy(1_500); runCurrent()
+        assertEquals("a reconnect must follow the timed-out mint", 2, m.calls)
+        assertEquals(1, RecSocket.connects)
+        r.disconnect()
+    }
 }
