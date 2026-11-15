@@ -89,17 +89,29 @@ func TestPGLastAdmin_ConcurrentRemovalsNeverLeaveZero(t *testing.T) {
 		_, uerr := repo.UpdateGuarded(u, 1, true)
 		return uerr
 	}
+	// PGLAX1-F3: deactivation through UpdateGuarded (role unchanged, IsActive=false).
+	deactivate := func(id int) error {
+		u, gerr := repo.GetByID(id)
+		if gerr != nil {
+			return gerr
+		}
+		u.IsActive = false
+		_, uerr := repo.UpdateGuarded(u, 1, true)
+		return uerr
+	}
 	type op func(id int) error
 	ops := map[string]op{
-		"lock":    func(id int) error { return repo.LockAccount(id, time.Now().Add(time.Hour)) },
-		"suspend": func(id int) error { return repo.SetSuspended(id, true) },
-		"demote":  demote,
-		"delete":  func(id int) error { return repo.Delete(id) },
+		"lock":       func(id int) error { return repo.LockAccount(id, time.Now().Add(time.Hour)) },
+		"suspend":    func(id int) error { return repo.SetSuspended(id, true) },
+		"demote":     demote,
+		"delete":     func(id int) error { return repo.Delete(id) },
+		"deactivate": deactivate,
 	}
 	variants := [][]string{
 		{"lock", "lock"}, {"lock", "suspend"}, {"lock", "demote"}, {"lock", "delete"},
 		{"suspend", "suspend"}, {"demote", "demote"}, {"delete", "delete"}, {"demote", "delete"},
 		{"lock", "lock", "lock"}, {"lock", "suspend", "demote"}, {"lock", "demote", "delete"}, {"suspend", "suspend", "lock"},
+		{"deactivate", "deactivate"}, {"deactivate", "lock"}, {"deactivate", "delete"}, {"deactivate", "demote"},
 	}
 	for _, v := range variants {
 		v := v

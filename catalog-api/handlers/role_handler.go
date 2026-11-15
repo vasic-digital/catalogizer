@@ -2,11 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"catalogizer/models"
+	"catalogizer/repository"
 )
 
 // RoleUserServiceInterface defines interface for user repository operations
@@ -183,6 +185,10 @@ func (h *RoleHandler) UpdateRole(w http.ResponseWriter, r *http.Request) {
 
 	err = h.userRepo.UpdateRole(role)
 	if err != nil {
+		if errors.Is(err, repository.ErrLastAdmin) {
+			http.Error(w, "The last administrator role cannot lose administrator permission", http.StatusConflict)
+			return
+		}
 		if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "system role") {
 			http.Error(w, "Role not found or is system role", http.StatusNotFound)
 			return

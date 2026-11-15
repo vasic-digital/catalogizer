@@ -184,6 +184,21 @@ func TestPGLAX1_AdminRoleIDsReadAfterAdvisoryLock(t *testing.T) {
 		require.NoError(t, repo.SetSuspended(7, true))
 		require.NoError(t, mock.ExpectationsWereMet())
 	})
+	t.Run("Delete", func(t *testing.T) {
+		repo, mock := newPG(t)
+		mock.ExpectBegin()
+		mock.ExpectExec("pg_advisory_xact_lock").WillReturnResult(sqlmock.NewResult(0, 0))
+		mock.ExpectQuery("FROM roles").WillReturnRows(roles())
+		mock.ExpectQuery("SELECT username FROM users").WillReturnRows(sqlmock.NewRows([]string{"username"}).AddRow("u"))
+		mock.ExpectExec("UPDATE auth_audit_log SET details").WillReturnResult(sqlmock.NewResult(0, 0))
+		mock.ExpectExec("UPDATE auth_audit_log SET user_id").WillReturnResult(sqlmock.NewResult(0, 0))
+		mock.ExpectExec("UPDATE user_permissions SET granted_by").WillReturnResult(sqlmock.NewResult(0, 0))
+		mock.ExpectQuery("SELECT role_id, is_active FROM users").WillReturnRows(sqlmock.NewRows([]string{"role_id", "is_active"}).AddRow(2, true))
+		mock.ExpectExec("DELETE FROM users").WillReturnResult(sqlmock.NewResult(0, 1))
+		mock.ExpectCommit()
+		require.NoError(t, repo.Delete(7))
+		require.NoError(t, mock.ExpectationsWereMet())
+	})
 	t.Run("UpdateRole", func(t *testing.T) {
 		repo, mock := newPG(t)
 		mock.ExpectBegin()
@@ -196,4 +211,59 @@ func TestPGLAX1_AdminRoleIDsReadAfterAdvisoryLock(t *testing.T) {
 		require.NoError(t, repo.UpdateRole(&models.Role{ID: 5, Name: "n", Permissions: models.Permissions{"media.view"}}))
 		require.NoError(t, mock.ExpectationsWereMet())
 	})
+}
+
+// PGLAX1-F1: locked members are not counted as effective administrators (SQLite, real schema).
+func TestPGLAX1F1_UpdateRole_LockedMembers(t *testing.T) {
+	lock := func(t *testing.T, db *database.DB, id int) {
+		_, err := db.Exec(`UPDATE users SET is_locked = 1, locked_until = NULL WHERE id = ?`, id)
+		require.NoError(t, err)
+	}
+	t.Run("the only active member of the stripped role is locked: strip allowed", func(t *testing.T) {
+		repo, db := pglaX1Repo(t)
+		ops := pglaX1Role(t, repo, "ops", "system.admin")
+		other := pglaX1Role(t, repo, "other", "system.admin")
+		locked := pglaX1User(t, repo, "locked", ops, true)
+		lock(t, db, locked)
+		pglaX1User(t, repo, "keeper", other, true)
+		require.NoError(t, repo.UpdateRole(&models.Role{ID: ops, Name: "ops", Permissions: models.Permissions{"media.view"}}))
+		require.Equal(t, models.Permissions{"media.view"}, pglaX1Perms(t, repo, ops))
+	})
+	t.Run("the only member of the stripped role is locked and no other administrator exists: strip allowed", func(t *testing.T) {
+		repo, db := pglaX1Repo(t)
+		ops := pglaX1Role(t, repo, "ops", "system.admin")
+		lock(t, db, pglaX1User(t, repo, "locked", ops, true))
+		require.NoError(t, repo.UpdateRole(&models.Role{ID: ops, Name: "ops", Permissions: models.Permissions{"media.view"}}))
+		require.Equal(t, models.Permissions{"media.view"}, pglaX1Perms(t, repo, ops))
+	})
+	t.Run("the only other administrator is locked: strip refused", func(t *testing.T) {
+		repo, db := pglaX1Repo(t)
+		ops := pglaX1Role(t, repo, "ops", "system.admin")
+		other := pglaX1Role(t, repo, "other", "system.admin")
+		pglaX1User(t, repo, "a", ops, true)
+		lockedOther := pglaX1User(t, repo, "b", other, true)
+		lock(t, db, lockedOther)
+		require.ErrorIs(t, repo.UpdateRole(&models.Role{ID: ops, Name: "ops", Permissions: models.Permissions{"media.view"}}), ErrLastAdmin)
+		require.Equal(t, models.Permissions{"system.admin"}, pglaX1Perms(t, repo, ops))
+	})
+}
+
+// PGLAX1-F5: an unreadable role row must not read as "not an administrator role" (fail closed, section 11.4.252).
+func TestPGLAX1F5_UpdateRole_UnparsablePermissionsFailsClosed(t *testing.T) {
+	repo, db := pglaX1Repo(t)
+	ops := pglaX1Role(t, repo, "ops", "system.admin")
+	pglaX1User(t, repo, "only", ops, true)
+	_, err := db.Exec(`UPDATE roles SET permissions = ? WHERE id = ?`, "not json", ops)
+	require.NoError(t, err)
+
+	err = repo.UpdateRole(&models.Role{ID: ops, Name: "ops", Permissions: models.Permissions{"media.view"}})
+	require.Error(t, err, "an unreadable current role must refuse the strip, not proceed unguarded")
+	var got string
+	require.NoError(t, db.QueryRow(`SELECT permissions FROM roles WHERE id = ?`, ops).Scan(&got))
+	require.Equal(t, "not json", got, "the refused write changed nothing")
+
+	// control: a role id that does not exist is still the old not-found path (ErrNoRows means not-admin).
+	err = repo.UpdateRole(&models.Role{ID: 9999, Name: "x", Permissions: models.Permissions{"media.view"}})
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "role not found or is system role")
 }
