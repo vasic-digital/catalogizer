@@ -2697,3 +2697,11 @@ Round-1 F1 closed (status endpoint redacted for non-admins, shown on the real bi
 - SSEOPQ-F3 (minor, test-instrumentation): non-failed status with non-empty reason (cancelled) never asserted redacted (O5 survives).
 - SSEOPQ-F4 (nit, process-doc): API_DOCUMENTATION.md ~2114 200 example for GET /storage-roots/:id/status shows wrong fields (pre-existing drift).
 - SSEOPQ-F5 (minor): author F1 test reaches misconfigured vs offline branch depending on TMPDIR; adopt reviewer's all-protocol scratch test TestREV2_StatusAllProtocols (scratchpad rev-opq2/) as permanent.
+
+## CAT-SECQ1-C (W4: step-up + approved class on live WebDAV path) review (Opus round 3, GO-with-follow-ups, PROVISIONAL, commits fa2609c0d, merge 69a26fab5)
+Round-2 F1 (limiter concurrency: 60-way burst = exactly 5 checks, no slot leak, panic path, window edge) and F2 (StrictClassTransport intersection: public refuses allow-listed loopback, ::ffff:127.0.0.1, zone, link-local, metadata even if allow-listed; private control reaches; never looser than netguard.Transport) closed. Merge with SSE-OPQ-1 (storage_routes.go, ROUTE_AUTHZ_TABLE.md) resolved by union (Opus), focused runs + root -short ok; merged tree not independently re-reviewed. No PG/live NAS/Yandex run.
+- SECQ1C-M1 (minor, test-instrumentation): ownership half of SyncService.AuthorizeEndpointUpdate untested (mutant removing EditShares/ownership check survives); add foreign-endpoint test (403, no slot, no password check).
+- SECQ1C-M2 (minor, test-instrumentation): class passed at testConnectionAs call site untested (mutating plan.class to ClassPrivate survives).
+- SECQ1C-M3 (minor, source asymmetry): CreateSyncEndpoint still tests via testConnection (ID 0, private default) not plan.class; use testConnectionAs(endpoint, plan.class) for WebDAV on create (approveCreated already refuses a rebinding).
+- SECQ1C-M4 (minor, test-instrumentation): removing the inflight==0 guard in purge survives author suite; adopt reviewer probe TestRV3_PanicAndWindow (scratch rv3.8kVErW zz_rv3_limiter_test.go, zz_rv3_probe_test.go).
+- SECQ1C-M5 (note): fixed window, up to 10 failures across a boundary, accepted by design. Also owed: SMB/FTP/NFS class pinning (SECQ1-D), operator decision whether approved private sync endpoints may drop the allow-list requirement.
