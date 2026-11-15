@@ -23,7 +23,7 @@ vi.mock('@/lib/api', async () => ({
 }))
 
 vi.mock('framer-motion', async () => {
-  const MockMotionDiv = ({ children, initial, animate, transition, ...props }: any) => (
+  const MockMotionDiv = ({ children, initial: _i, animate: _a, transition: _t, ...props }: any) => (
     <div {...props}>{children}</div>
   )
   return { motion: { div: MockMotionDiv } }
@@ -134,7 +134,7 @@ describe('Settings with the real AuthProvider', () => {
     expect(await screen.findByText('Scan History')).toBeInTheDocument()
   })
 
-  it('R2: after losing admin, a regained Sync tab does not silently reopen the old panel selection for a non-admin', async () => {
+  it('R2: non-admin rendered output contains no Sync panel text (NOTE: with the R4 fallback an ungated TabsContent is an equivalent mutant; the R4 test above is the one that kills a removed fallback)', async () => {
     vi.mocked(authApi.getAuthStatus).mockResolvedValue(status(USER) as any)
     mount()
     await screen.findByText('Scan History')
