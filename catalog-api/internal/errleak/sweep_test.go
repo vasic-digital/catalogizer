@@ -9,22 +9,23 @@ import (
 	"testing"
 )
 
-// TestLocalMapperClosure (MAIN-ERRLEAK): a closure whose returns are free of error text is a local mapper (the
-// scan_handler probeErr shape); a closure that can return raw error text, or a lookalike that is not a closure, is
-// still reported (golden-bad, section 11.4.201).
-func TestLocalMapperClosure(t *testing.T) {
-	good := "package p\nfunc f(c *gin.Context, err error, admin bool) {\n\tresp := gin.H{}\n\tprobeErr := func(err error) string {\n\t\tif !admin {\n\t\t\treturn classText\n\t\t}\n\t\treturn services.ScrubErrorFor(err, root)\n\t}\n\tresp[\"error\"] = probeErr(err)\n\tc.JSON(200, resp)\n}\n"
-	if got := hits(t, good); len(got) != 0 {
-		t.Errorf("clean closure mapper flagged: %v", got)
+// TestClosureLeakShapesStayFlagged (MAIN-ERRLEAK round 2): the scanner has no closure/local-mapper logic, so every
+// closure shape that carries error text to a response is flagged. These fixtures guard against re-introducing it.
+func TestClosureLeakShapesStayFlagged(t *testing.T) {
+	pre := "package p\nfunc f(c *gin.Context, err error, admin bool) {\n\tresp := gin.H{}\n"
+	post := "\tresp[\"error\"] = probeErr(err)\n\tc.JSON(200, resp)\n}\n"
+	cases := map[string]string{
+		"S1outerVar":    "\tmsg := err.Error()\n\tprobeErr := func(err error) string { return msg }\n",
+		"S2otherParam":  "\tprobeErr := func(e error) string { return fmt.Sprintf(\"probe: %v\", e) }\n",
+		"S3namedResult": "\tprobeErr := func(err error) (s string) {\n\t\ts = err.Error()\n\t\treturn\n\t}\n",
+		"S4reassigned":  "\tprobeErr := func(err error) string { return classText }\n\tprobeErr = func(err error) string { return err.Error() }\n",
+		"S5shadowed":    "\tprobeErr := func(err error) string { return classText }\n\t{\n\t\tprobeErr := func(err error) string { return err.Error() }\n\t\t_ = probeErr\n\t}\n",
+		"S6sameName":    "\tprobeErr := func(err error) string { return classText }\n\tprobeErr2 := err.Error()\n\tresp[\"x\"] = probeErr2\n",
+		"S8plain":       "\tprobeErr := func(e error) string { return e.Error() }\n",
 	}
-	bad := map[string]string{
-		"rawReturn":   "package p\nfunc f(c *gin.Context, err error, admin bool) {\n\tresp := gin.H{}\n\tprobeErr := func(err error) string {\n\t\tif !admin {\n\t\t\treturn classText\n\t\t}\n\t\treturn err.Error()\n\t}\n\tresp[\"error\"] = probeErr(err)\n\tc.JSON(200, resp)\n}\n",
-		"noClosure":   "package p\nfunc f(c *gin.Context, err error) {\n\tresp := gin.H{}\n\tresp[\"error\"] = probeErr(err)\n\tc.JSON(200, resp)\n}\n",
-		"leakBesides": "package p\nfunc f(c *gin.Context, err error) {\n\tprobeErr := func(err error) string { return classText }\n\tc.JSON(500, gin.H{\"a\": probeErr(err), \"error\": err.Error()})\n}\n",
-	}
-	for name, src := range bad {
-		if got := hits(t, src); len(got) < 1 {
-			t.Errorf("golden-bad %s not flagged", name)
+	for name, mid := range cases {
+		if got := hits(t, pre+mid+post); len(got) < 1 {
+			t.Errorf("%s not flagged", name)
 		}
 	}
 }
@@ -95,6 +96,7 @@ func TestSweepControls(t *testing.T) {
 // function is part of the key so a copy of the snippet elsewhere in the file is NOT covered (R5B-F4).
 var allowed = map[string]string{
 	"handlers/conversion_handler.go|CreateJob|=c.JSON(http.StatusBadRequest, gin.H{\"error\": \"Invalid conversion request\", \"reason\": reason})": "AUTHORED: reason is the text of models.ErrInvalidConversionRequest authored by services/conversion_service.go (R5B-2)",
+	"handlers/scan_handler.go|GetStorageRootStatus|=c.JSON(http.StatusOK, resp)":                                                                    "CLASSIFIED: resp[\"error\"] is set only from probeErr, which returns the fixed scanErrorClassText for non-admins (callerIsAdmin fails closed) and services.ScrubErrorFor(err, root) for admins (standing admin-scrubbed-raw decision); the disabled and online branches carry no error text (SSE-OPQ-1, MAIN-ERRLEAK)",
 	"handlers/log_management_handler.go|writeLogServiceError|=http.Error(w, msg, status)":                                                           "FIXED: msg comes from a switch over fixed literals; only the status is derived from err",
 	"handlers/media_browse_handler.go|GetMediaStats|=c.Error(rowsErr)":                                                                              "PRIVATE-GIN-ERROR: gin.ErrorTypePrivate; internal/middleware.ErrorHandler answers a fixed 'Internal server error' (CAT-WP02-ERRLEAK)",
 	"handlers/user_handler.go|CreateUser|=http.Error(w, msg, http.StatusBadRequest)":                                                                "MAPPED: msg comes from authClientMessage (line 121); the other msg in the function (err.Error() at ~168) is only compared, never written",
