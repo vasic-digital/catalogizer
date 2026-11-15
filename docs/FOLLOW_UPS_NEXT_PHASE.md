@@ -2831,3 +2831,10 @@ RESOLVED: MAIN-EXAMPLES (examples test binds 6-arg guarded DELETE; commit 019278
 ## FUTB-FU review (Opus, GO, PROVISIONAL, commit 064f311e4)
 RESOLVED: FUTB-F1 (nearNow tolerance 1 s; +/-2 s and -1.5 s mutants killed; 2000-run stress at load ~17.8 passes), FUTB-F2 (R1 waits on query state, 3/3 vitest runs). Reviewer: 2 test files only, no gitlinks.
 - FUTB-N3 (nit, optional): R1 cannot catch a timer-driven admin flip after the queries settle (also true of the old test); add a fake-timer advance after the flush if that property matters.
+
+## ERRLEAK-FU review (Opus, GO-with-follow-ups, PROVISIONAL, commit 03d947105)
+RESOLVED: ERRLEAK-FU-A (AST pin narrows GetStorageRootStatus), ERRLEAK-FU-B (TestConnection-failure redaction test; kills the credential-scrub-blinded mutant R5), ERRLEAK-FU-E (S6 shadow fixture + control). Reviewer: 3 test files, no production change; 7 of 8 own mutants killed.
+- ERRLEAK-FU-F1 (minor, scope): error text written to a response HEADER (c.Header("X-Probe-Error", err.Error())) is seen by no test or sweep (sweep covers JSON body sinks only); decide if headers are in the errleak threat scope, else track.
+- ERRLEAK-FU-F2 (minor): pin brittleness (renaming probeErr/admin/closure param, `var resp =`, adding a non-literal resp value all fail closed); add a comment in pin_test.go that the pin must be updated deliberately.
+- ERRLEAK-FU-F3 (minor): pin_test.go mutant table anchors on exact source text; a benign reorder gives a hard "fixture drifted" Fatalf.
+- Process: agents sharing the scratchpad must use unique file names (revdir was overwritten by another agent).
