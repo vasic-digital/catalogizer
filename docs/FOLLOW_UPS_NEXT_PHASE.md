@@ -2827,3 +2827,7 @@ RESOLVED: MAIN-EXAMPLES (examples test binds 6-arg guarded DELETE; commit 019278
 - POOLGUARD-F2 (minor): fixture for identifier bound to two types (kills M5).
 - POOLGUARD-F3 (minor, process-doc): examples bisect attribution: DELETE arg mismatch came from dc15ff32c, not e58c7aad9.
 - POOLGUARD-F4 (nit, pre-existing): method-value calls (f := r.HasPerm; f()) missed.
+
+## FUTB-FU review (Opus, GO, PROVISIONAL, commit 064f311e4)
+RESOLVED: FUTB-F1 (nearNow tolerance 1 s; +/-2 s and -1.5 s mutants killed; 2000-run stress at load ~17.8 passes), FUTB-F2 (R1 waits on query state, 3/3 vitest runs). Reviewer: 2 test files only, no gitlinks.
+- FUTB-N3 (nit, optional): R1 cannot catch a timer-driven admin flip after the queries settle (also true of the old test); add a fake-timer advance after the flush if that property matters.
