@@ -2770,3 +2770,8 @@ RESOLVED: TIERFU-M1 (holder-window Retry-After test), TIERFU-M2 (disallowed/abse
 - TIERPGLA-F2 (minor, test): sqlmock expectations at repository/user_repository_pgla_classify_test.go:47-48 do not pin the guarded UPDATE args / `role_id NOT IN` clause.
 - TIERPGLA-F3 (minor, process-doc): X-RateLimit-Algorithm is only emitted by SlidingWindowRedisRateLimit/TokenBucketRedisRateLimit, neither wired in production; exposing it is harmless but TIERFU-M3 claim must say so, or a wired limiter should emit it.
 - TIERPGLA-N1 (nit): pprof_guard_lockscope_test.go:131 use `defer close(hold)`.
+
+## SSEF4R-FU review (Opus, round 1 NO-GO fixed, round 2 GO-with-follow-ups, PROVISIONAL, commits ef16f22a7 9c7472b2c d1621c6ce)
+RESOLVED: SSEF4R-M1 (UI isAdmin = authenticated && /auth/status permissions per server HasPermission("system.admin")), SSEF4R-M2 (ProtectedRoute/Header use useAuth().isAdmin), SSEF4R-N1. Full vitest on head = base failure set (7 module-registry + 6 file-level missing-package). Follow-ups:
+- SSEF4R-FD (minor, pre-existing): canAccess still checks the `admin:system` string and hasPermission is an exact includes with no wildcard; App.tsx requiredPermission values like `read:media` do not match the models' `media.view` vocabulary, so a non-admin custom role with `media.*` gets no UI route access.
+- SSEF4R-FE (minor, test): two tests rely on a fixed setTimeout(50) settle; replace with waiting on the permissions query state.
