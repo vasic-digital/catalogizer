@@ -2740,3 +2740,13 @@ Live PG16 race test 50 rounds x 12 variants 0 violations; reviewer mutations M1/
 - SSEF4R-M2 (minor): three different admin rules in the UI (ProtectedRoute.tsx:37 name==='Admin'||role_id===1, Header.tsx:104 name only, AuthContext role_id first); make both use useAuth().isAdmin after M1.
 - SSEF4R-N1 (nit): role-name fallback in AuthContext reachable only for payloads without role_id; mutant `user?.role_id` truthiness survives (equivalent except role_id 0).
 - Environment note: 7 web test files fail identically on main for missing @vasic-digital/* packages (not a regression).
+
+## HYGF4B (logredact known-secret cap, key-word, alloc, killers) review (Opus round 1 NO-GO fixed, round 2 GO-with-follow-ups, PROVISIONAL, commits 3a5675190 1ae232c84)
+Differential old vs new over 9000 cases: 0 credential regressions, 0 unexplained path leaks. Follow-ups (minor-class, fresh budget):
+- HYGF4C-M1 (minor, source, known.go ~L83-88 and ~L180-190): reserve counts credential values equal to a path value, merge then skips them, reserved slot stays empty; /share + 70 pieces + token=Piece000ZZ gives 63 known vs old 64, exposing Piece063ZZ. Fix: refill remaining slots from the path pool after merge or exclude seenOut values from reserved.
+- HYGF4C-M2 (test): case-insensitive path-pool dedupe mutant survives; add test with values differing only in case (/share%2FS3cretOne%2Fs3cretone).
+- HYGF4C-M3 (test): removing the 16-slot ceiling on the reserve survives (64 credentials could starve the path); test the documented >=48 path slots guarantee.
+- HYGF4C-M4 (test): merge-time !seenOut and seenPrio dedupe removal survive (slot waste only).
+- HYGF4C-N1 (nit, docs): "Two pools" and merge comments still say path gets at most maxPathKnownSecrets; constant comment duplicated.
+- HYGF4C-N2 (nit, pre-existing): text.go pctDecode `i+2 < len(run)+0` leftover.
+- M-C remains bounded only: pctDecode in text.go still builds its offsets slice.
