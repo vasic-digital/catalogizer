@@ -97,6 +97,17 @@ describe('Settings with the real AuthProvider', () => {
 
   it('R1: non-admin (role_id 2): no Sync tab, no /sync/* request, Scans/SMB intact', async () => {
     vi.mocked(authApi.getAuthStatus).mockResolvedValue(status(USER) as any)
+    // FUTB-N3: fake timers (auto-advancing, so waitFor/findBy still work) let the test
+    // advance time after the queries settle and catch a timer-driven admin flip.
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      await nonAdminBody()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  async function nonAdminBody() {
     const { queryClient } = mount()
     await screen.findByText('Settings')
     await screen.findByText('No scans recorded yet.')
@@ -106,11 +117,15 @@ describe('Settings with the real AuthProvider', () => {
       expect(queryClient.getQueryState(['permissions'])?.status).toBe('success')
     })
     await act(async () => {})
+    // Advance well past any debounce/refetch/timer window after everything settled.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10_000)
+    })
     expect(screen.queryByRole('button', { name: /^Sync$/ })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Scans/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /SMB Discovery/ })).toBeInTheDocument()
     expect(syncCalls()).toBe(0)
-  })
+  }
 
   it('R1: admin (role_id 1) via the real provider sees the Sync tab and its data', async () => {
     vi.mocked(authApi.getAuthStatus).mockResolvedValue(status(ADMIN, ['*']) as any)
