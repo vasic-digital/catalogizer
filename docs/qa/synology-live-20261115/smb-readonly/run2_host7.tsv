@@ -1,0 +1,11 @@
+shares_seen	3
+share	DATA22
+entries	12
+dirs	11
+files	1
+names_sha256	84209abc08eaa9314068616832d9d8614e8c09cdcf30098b7952f2fde48e6f11
+read_size	6148
+read_sha256	1bdbb1d273353cb95ee7f7fb2d45569ec746a98eab7c53e8acd4fd2078654d0c
+requests	3
+writes_performed	0
+max_protocol_requested	SMB3
