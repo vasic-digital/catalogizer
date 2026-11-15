@@ -176,6 +176,45 @@ describe('AuthContext', () => {
     });
   });
 
+  it('falls back to the role name when the user carries no role_id (SSE-F4-R3)', async () => {
+    mockAuthApi.getAuthStatus.mockResolvedValue({
+      authenticated: true,
+      user: { id: 1, username: 'admin', role: { name: 'Admin' } },
+      permissions: [],
+    });
+    mockAuthApi.getPermissions.mockResolvedValue({ permissions: [] });
+    render(
+      <QueryClientProvider client={createQueryClient()}>
+        <AuthProvider>
+          <TestComponent />
+        </AuthProvider>
+      </QueryClientProvider>
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId('admin-status')).toHaveTextContent('Is Admin');
+    });
+  });
+
+  it('a role named Admin with a non-admin role_id is NOT admin (SSE-F4-R3)', async () => {
+    mockAuthApi.getAuthStatus.mockResolvedValue({
+      authenticated: true,
+      user: { id: 9, username: 'x', role: { name: 'Admin' }, role_id: 2 },
+      permissions: [],
+    });
+    mockAuthApi.getPermissions.mockResolvedValue({ permissions: [] });
+    render(
+      <QueryClientProvider client={createQueryClient()}>
+        <AuthProvider>
+          <TestComponent />
+        </AuthProvider>
+      </QueryClientProvider>
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId('user-info')).toHaveTextContent('User: x');
+    });
+    expect(screen.getByTestId('admin-status')).toHaveTextContent('Not Admin');
+  });
+
   it('detects admin user by role_id=1', async () => {
     mockAuthApi.getAuthStatus.mockResolvedValue({
       authenticated: true,

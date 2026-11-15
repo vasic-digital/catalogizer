@@ -184,7 +184,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     },
   })
 
-  const isUserAdmin = user?.role?.name === 'Admin' || user?.role_id === 1
+  // SSE-F4-R3: UI heuristic only, NOT the server rule. The server's RequireAdmin
+  // asks userRepo.IsAdmin (live role permissions: system.admin / * / system.*) and
+  // uses role_id == 1 only as a fallback. Here a numeric role_id is authoritative
+  // (role_id === 1) and the role name is used only when no role_id is present.
+  // Limitation: a custom role holding admin permissions but with role_id != 1 is
+  // not treated as admin by the UI (the server would still allow it).
+  const isUserAdmin =
+    typeof user?.role_id === 'number' ? user.role_id === 1 : user?.role?.name === 'Admin'
 
   const hasPermission = (permission: string): boolean => {
     if (isUserAdmin) return true
