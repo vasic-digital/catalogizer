@@ -2844,3 +2844,11 @@ RESOLVED: PGLAXFU-F1 (sqlmock PG-path fail-closed + live PG16 test, honest SKIP 
 - PGLAXFU-R5 (minor, test): nothing tests that the PG path fails closed when adminRoleIDsTx errors (mutant R5 ignoring its error survives everywhere); add sqlmock case with a corrupt/row-error on the first FROM roles query asserting error, Rollback, no UPDATE.
 - PGLAXFU-N3 (nit): live test only require.Error; assert the error text ("failed to unmarshal permissions") to pin which layer refused.
 - PGLAXFU-N4 (nit): live test skips only when HOST/PORT missing; missing USER/PASSWORD fails at connect; document.
+
+## SSEF4R-FD review (Opus round 2, GO-with-follow-ups, PROVISIONAL, commit 25704b6c2)
+RESOLVED: SSEF4R-FD (web route gates use the server vocabulary + wildcard matcher; permissionsGrant ports models.Permissions.HasPermission, 780-cell differential 0 divergences; dead admin:system fallback removed; routeGatePermissions.test.ts pins 8 gates, all 8 reverts killed). Reviewer: 6 catalog-web files, no gitlinks; 266 vitest pass; WebSocketContext.connectionStatus fails to resolve @vasic-digital/websocket-client on base too (environmental).
+- SSEF4R-FD-F2 (minor): /identities is gated media.view but /smb/* is admin-only; decide the intended gate.
+- SSEF4R-FD-F3 (minor): /conversion is gated media.convert vs server conversion.view/create/manage; align or document.
+- SSEF4R-FD-F6 (minor): siblings: api-client matcher (branch fix/apiclient-perm in review) and Android AuthRepository.kt:224-233 permission check.
+- SSEF4R-FD-m1 (minor, test): route-gate regex needs one-line double-quoted gate-first formatting; a new gated route in another syntax would not be extracted. Add a check that every requiredPermission occurrence was captured.
+- SSEF4R-FD-m2 (info): mutant A5 (`*` short-circuit) is equivalent.
