@@ -110,6 +110,9 @@ components:
           description: "Human-readable message; the default error envelope is only {error: ...}"
         details:
           type: string
+        code:
+          type: string
+          description: "Optional machine-readable code, for example private_network_confirmation_required, step_up_required, step_up_failed, step_up_throttled"
 
     HealthResponse:
       type: object
@@ -371,6 +374,13 @@ components:
           type: string
           nullable: true
           format: date-time
+        approved_class:
+          type: string
+          enum: [private, public]
+          description: |
+            Address class the root is approved for. WebDAV and S3 connections are pinned to it (a public approval refuses private
+            addresses, including after a redirect or a DNS change). SMB, FTP and NFS roots store the class but it is NOT enforced
+            on their connections yet (tracked as SECQ1-D).
 
     CreateStorageRootRequest:
       type: object
@@ -1220,6 +1230,13 @@ components:
         last_sync_at:
           type: string
           format: date-time
+        approved_class:
+          type: string
+          enum: [private, public]
+          description: |
+            Address class the endpoint is approved for (filled on create and update responses). It is enforced on every WebDAV request
+            of the sync (connection test, listing, upload, download) together with the strict outbound policy: a public approval refuses
+            private and loopback addresses, a private approval still needs CATALOGIZER_OUTBOUND_ALLOW_CIDRS for them.
 
     CreateSyncEndpointRequest:
       type: object
@@ -1250,6 +1267,11 @@ components:
           type: string
         sync_settings:
           type: string
+        confirm_private_network:
+          type: boolean
+          description: |
+            Required when the destination is on a private network or cannot be resolved now; without it the request is refused
+            with 409 private_network_confirmation_required.
 
     UpdateSyncEndpointRequest:
       type: object
@@ -1273,6 +1295,16 @@ components:
           type: string
         is_active:
           type: boolean
+        confirm_private_network:
+          type: boolean
+          description: Confirms a new URL on a private network (or one that cannot be resolved now); a URL change supersedes the earlier approval.
+        step_up_password:
+          type: string
+          description: |
+            The acting user's password. Required to widen the approved class (public to private). Failed attempts are throttled per
+            user (5 per 15 minutes, then 429 step_up_throttled with Retry-After); the client address plays no part. Attempts that are
+            still running count against the limit, so a burst of concurrent requests cannot run more password checks than the limit.
+            The endpoint must exist and be updatable by the caller before the password is checked.
 
     SyncSession:
       type: object
@@ -4030,6 +4062,9 @@ paths:
         (default deny) or the request fails with 403.
         A root that is, contains or aliases the application database, its SQLite companions or the key file/directory is refused
         with 403, and the symlink-resolved path is what is stored.
+        A WebDAV, S3, SMB, FTP or NFS root on a public address is approved for the public class automatically. A destination on a
+        private network, or one whose name cannot be resolved now, needs `confirm_private_network: true`, otherwise the request is
+        refused with 409 `private_network_confirmation_required` and nothing is stored. The response carries `approved_class`.
       security:
         - BearerAuth: []
       requestBody:
@@ -4039,6 +4074,12 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateStorageRootRequest'
       responses:
+        '409':
+          description: Private-network confirmation required (code private_network_confirmation_required); no root was stored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
         '403':
@@ -4057,10 +4098,98 @@ paths:
                     type: string
                   protocol:
                     type: string
+                  approved_class:
+                    type: string
+                    enum: [private, public]
                   message:
                     type: string
         '400':
           description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/storage/roots/{id}/approved-class:
+    put:
+      tags: [storage]
+      summary: Change the address class a storage root is approved for
+      description: |
+        Admin only. Narrowing (private to public) needs nothing more. Widening (public to private) is a step-up action: the request
+        must carry the acting administrator's password (`step_up_password`), and failed attempts are throttled per user (5 per
+        15 minutes, then 429 `step_up_throttled` with a Retry-After header; the client address plays no part).
+        The class is enforced on WebDAV and S3 connections. For SMB, FTP and NFS roots it is stored and shown but NOT enforced
+        yet (tracked as SECQ1-D), so changing it there has no effect on the connection.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [class]
+              properties:
+                class:
+                  type: string
+                  enum: [private, public]
+                step_up_password:
+                  type: string
+      responses:
+        '200':
+          description: Class stored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    format: int64
+                  approved_class:
+                    type: string
+                    enum: [private, public]
+                  approved_class_source:
+                    type: string
+                    example: operator
+        '400':
+          description: Invalid id, body or class
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized (missing or invalid token, or no acting user)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Caller is not an administrator, or widening without a valid step-up (code step_up_required or step_up_failed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Storage root not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Too many failed step-up attempts (code step_up_throttled)
+          headers:
+            Retry-After:
+              description: Seconds until the user may try again
+              schema:
+                type: integer
           content:
             application/json:
               schema:
@@ -7058,6 +7187,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '409':
+          description: Private-network confirmation required (code private_network_confirmation_required); no endpoint was stored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '502':
           description: Connection test to remote endpoint failed
           content:
@@ -7191,6 +7326,23 @@ paths:
       responses:
         '503':
           description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+        '409':
+          description: Private-network confirmation required for the new URL (code private_network_confirmation_required)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Too many failed step-up attempts (code step_up_throttled)
+          headers:
+            Retry-After:
+              description: Seconds until the user may try again
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '200':
           description: Sync endpoint updated
           content:

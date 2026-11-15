@@ -15,6 +15,7 @@ func RegisterStorageRoutes(api *gin.RouterGroup, h *ScanHandler, auth *middlewar
 	api.GET("/storage/list/*path", auth.RequireAdmin(), h.ListStoragePath)
 	api.GET("/storage/roots", auth.RequireAdmin(), h.GetStorageRoots)
 	api.POST("/storage/roots", auth.RequireAdmin(), h.CreateStorageRoot)
+	api.PUT("/storage/roots/:id/approved-class", auth.RequireAdmin(), h.SetStorageRootApprovedClass)
 	api.GET("/storage-roots", auth.RequireAdmin(), h.GetStorageRoots)
 	api.GET("/storage-roots/:id/status", h.GetStorageRootStatus)
 }

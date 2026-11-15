@@ -27,7 +27,7 @@ func RegisterS3Protocol() error {
 		// url = endpoint, path = "bucket[/prefix]", username = access key, password = secret key.
 		Keys: map[string]KeyType{
 			KeyURL: KeyString, KeyPath: KeyString, KeyUsername: KeyString, KeyPassword: KeyString,
-			KeyRegion: KeyString, KeyAddressing: KeyString,
+			KeyRegion: KeyString, KeyAddressing: KeyString, KeyApprovedClass: KeyString,
 		},
 		Required: []string{KeyURL, KeyPath},
 		New:      newS3FromSettings,
@@ -57,13 +57,18 @@ func newS3FromSettings(settings map[string]interface{}) (FileSystemClient, error
 	default:
 		return nil, fmt.Errorf("s3: addressing must be \"path\" or \"virtual\"")
 	}
+	approved, err := ApprovedClassFromSettings(settings)
+	if err != nil {
+		return nil, err
+	}
 	return NewS3Client(&S3Config{
-		Endpoint:  StringSetting(settings, KeyURL, ""),
-		Region:    StringSetting(settings, KeyRegion, ""),
-		Bucket:    bucket,
-		Prefix:    prefix,
-		AccessKey: StringSetting(settings, KeyUsername, ""),
-		SecretKey: StringSetting(settings, KeyPassword, ""),
-		PathStyle: pathStyle,
+		ApprovedClass: approved,
+		Endpoint:      StringSetting(settings, KeyURL, ""),
+		Region:        StringSetting(settings, KeyRegion, ""),
+		Bucket:        bucket,
+		Prefix:        prefix,
+		AccessKey:     StringSetting(settings, KeyUsername, ""),
+		SecretKey:     StringSetting(settings, KeyPassword, ""),
+		PathStyle:     pathStyle,
 	})
 }

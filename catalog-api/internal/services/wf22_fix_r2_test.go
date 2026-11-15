@@ -713,9 +713,9 @@ func TestWF22_StorageRootConnColumns(t *testing.T) {
 	var r models.StorageRoot
 	cols := strings.Split(models.StorageRootConnColumns, ", ")
 	assert.Equal(t, len(cols), len(r.ConnScanTargets()), "one Scan destination per selected column")
-	assert.Equal(t, "sr.protocol, sr.host, sr.port, sr.path, sr.username, sr.password, sr.domain, sr.url, sr.mount_point, sr.options", models.StorageRootConnColumnsFor("sr"))
+	assert.Equal(t, "sr.protocol, sr.host, sr.port, sr.path, sr.username, sr.password, sr.domain, sr.url, sr.mount_point, sr.options, sr.approved_class", models.StorageRootConnColumnsFor("sr"))
 	// every column the settings contract can consume is selected
-	for _, want := range []string{"host", "port", "path", "username", "password", "domain", "url", "mount_point", "options"} {
+	for _, want := range []string{"host", "port", "path", "username", "password", "domain", "url", "mount_point", "options", "approved_class"} {
 		assert.Contains(t, cols, want)
 	}
 }

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -43,6 +44,9 @@ func (h *SyncHandler) CreateEndpoint(c *gin.Context) {
 
 	created, err := h.syncService.CreateSyncEndpoint(currentUser.ID, &endpoint)
 	if err != nil {
+		if respondSyncClassError(c, err) {
+			return
+		}
 		status := http.StatusInternalServerError
 		if strings.Contains(err.Error(), "invalid") {
 			status = http.StatusBadRequest
@@ -127,8 +131,32 @@ func (h *SyncHandler) UpdateEndpoint(c *gin.Context) {
 		return
 	}
 
+	if updates.StepUpPassword != "" {
+		// the endpoint must exist and be updatable by this user BEFORE a password is checked (no password oracle on foreign endpoints)
+		if aerr := h.syncService.AuthorizeEndpointUpdate(endpointID, currentUser.ID); aerr != nil {
+			status := http.StatusInternalServerError
+			if strings.Contains(aerr.Error(), "unauthorized") {
+				status = http.StatusForbidden
+			} else if strings.Contains(aerr.Error(), "not found") {
+				status = http.StatusNotFound
+			}
+			syncFail(c, status, "Failed to update sync endpoint", aerr)
+			return
+		}
+		if !stepUpAttempt(c, currentUser.ID, true, func() bool {
+			ok, _ := services.CheckPassword(updates.StepUpPassword, currentUser.Salt, currentUser.PasswordHash)
+			return ok
+		}) {
+			return
+		}
+		updates.StepUpVerified = true
+	}
+
 	updated, err := h.syncService.UpdateEndpoint(endpointID, currentUser.ID, &updates)
 	if err != nil {
+		if respondSyncClassError(c, err) {
+			return
+		}
 		status := http.StatusInternalServerError
 		if strings.Contains(err.Error(), "unauthorized") {
 			status = http.StatusForbidden
@@ -392,4 +420,18 @@ func (h *SyncHandler) getCurrentUser(c *gin.Context) (*models.User, error) {
 		return nil, fmt.Errorf("auth error: %w", err)
 	}
 	return user, nil
+}
+
+// respondSyncClassError answers the two outcomes of the address-class approval (CAT-SECQ1-C); it reports whether it answered.
+func respondSyncClassError(c *gin.Context, err error) bool {
+	switch {
+	case errors.Is(err, services.ErrPrivateConfirmationRequired):
+		c.JSON(http.StatusConflict, gin.H{"success": false, "error": "this sync destination is on a private network (or cannot be resolved now); confirm it to approve private-network access",
+			"code": codePrivateConfirmationRequired, "hint": "repeat the request with confirm_private_network=true if the destination is meant to be on your LAN"})
+		return true
+	case errors.Is(err, services.ErrStepUpRequired):
+		c.JSON(http.StatusForbidden, gin.H{"success": false, "error": "widening the approved network class needs the password of the acting user (step_up_password)", "code": codeStepUpRequired})
+		return true
+	}
+	return false
 }

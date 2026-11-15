@@ -393,6 +393,7 @@ var r5bSweepAllowed = map[string]string{
 	"media_browse_handler.go|c.Error(rowsErr)":          "PRIVATE-GIN-ERROR: gin.ErrorTypePrivate; internal/middleware.ErrorHandler answers a fixed 'Internal server error' for it",
 	"binding_ingestion_handler.go|hostAllowedErr":       "CONST",
 	"smb_discovery.go|hostAllowedErr":                   "CONST",
+	"sync_handler.go|respondSyncClassError(c, err)":     "MAPPED: respondSyncClassError matches sentinel errors and answers authored text only (CAT-SECQ1-C)",
 }
 
 func r5bAllowedLine(file, line string) bool {

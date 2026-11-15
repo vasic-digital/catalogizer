@@ -1276,7 +1276,7 @@ func (s *CoverArtService) GenerateMissingVideoThumbnails(ctx context.Context, li
 		var t thumbnailTask
 		// Scan order MUST equal the select order: mi.id, f.path, then models.StorageRootConnColumnsFor
 		// (protocol, host, port, path, username, ...). A scan failure is returned, never swallowed (NEW-1).
-		if err := rows.Scan(&t.mediaItemID, &t.videoPath, &t.protocol, &t.host, &t.port, &t.rootPath, &t.username, &t.password, &t.domain, &t.url, &t.mountPoint, &t.options); err != nil {
+		if err := rows.Scan(&t.mediaItemID, &t.videoPath, &t.protocol, &t.host, &t.port, &t.rootPath, &t.username, &t.password, &t.domain, &t.url, &t.mountPoint, &t.options, &t.approvedClass); err != nil {
 			s.logger.Error("Failed to scan missing-thumbnail row", zap.Error(err))
 			return 0, fmt.Errorf("failed to scan missing thumbnail row: %w", err)
 		}
@@ -1363,18 +1363,19 @@ func resolveLocalVideoPath(root, rel string) (string, error) {
 
 // thumbnailTask holds the data needed to generate a video thumbnail.
 type thumbnailTask struct {
-	mediaItemID int64
-	videoPath   string
-	protocol    string
-	rootPath    sql.NullString
-	host        sql.NullString
-	port        sql.NullInt64
-	username    sql.NullString
-	password    sql.NullString
-	domain      sql.NullString
-	url         sql.NullString
-	mountPoint  sql.NullString
-	options     sql.NullString
+	mediaItemID   int64
+	videoPath     string
+	protocol      string
+	rootPath      sql.NullString
+	host          sql.NullString
+	port          sql.NullInt64
+	username      sql.NullString
+	password      sql.NullString
+	domain        sql.NullString
+	url           sql.NullString
+	mountPoint    sql.NullString
+	options       sql.NullString
+	approvedClass string
 }
 
 // storageRoot rebuilds the connection fields of the task's storage root, the input of the single settings mapping.
@@ -1387,7 +1388,7 @@ func (t thumbnailTask) storageRoot() *models.StorageRoot {
 		return &v
 	}
 	root := &models.StorageRoot{Protocol: t.protocol, Host: str(t.host), Path: str(t.rootPath), Username: str(t.username), Password: str(t.password),
-		Domain: str(t.domain), URL: str(t.url), MountPoint: str(t.mountPoint), Options: str(t.options)}
+		Domain: str(t.domain), URL: str(t.url), MountPoint: str(t.mountPoint), Options: str(t.options), ApprovedClass: t.approvedClass}
 	if t.port.Valid {
 		p := int(t.port.Int64)
 		root.Port = &p

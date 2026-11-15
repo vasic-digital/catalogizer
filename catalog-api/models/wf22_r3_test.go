@@ -18,7 +18,7 @@ func TestWF22R3_StorageRootMarshalNeverCarriesACredential(t *testing.T) {
 		"ID": "exposed", "Name": "exposed", "Protocol": "exposed", "Host": "exposed", "Port": "exposed", "Path": "exposed", "Username": "exposed",
 		"Password": "absent", "Domain": "exposed", "MountPoint": "exposed", "Options": "exposed", "URL": "redacted", "Enabled": "exposed",
 		"MaxDepth": "exposed", "AllowEmpty": "exposed", "EnableDuplicateDetection": "exposed", "EnableMetadataExtraction": "exposed",
-		"IncludePatterns": "exposed", "ExcludePatterns": "exposed", "CreatedAt": "exposed", "UpdatedAt": "exposed", "LastScanAt": "exposed",
+		"IncludePatterns": "exposed", "ExcludePatterns": "exposed", "CreatedAt": "exposed", "UpdatedAt": "exposed", "LastScanAt": "exposed", "ApprovedClass": "exposed",
 	}
 	rt := reflect.TypeOf(StorageRoot{})
 	for i := 0; i < rt.NumField(); i++ {

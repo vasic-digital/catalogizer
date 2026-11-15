@@ -23,6 +23,8 @@ type WebDAVConfig struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Path     string `json:"path"` // Base path on the WebDAV server
+	// ApprovedClass is the stored address-class approval of the root (CAT-SECQ1-C). Zero (ClassNever) means "not set": the default, private.
+	ApprovedClass netguard.Class `json:"-"`
 }
 
 // WebDAVClient implements FileSystemClient for WebDAV protocol
@@ -53,11 +55,11 @@ var (
 )
 
 // newWebDAVHTTPClient builds the client: connection-phase timeouts on the transport, no whole-request Timeout.
-func newWebDAVHTTPClient() *http.Client {
+func newWebDAVHTTPClient(approved netguard.Class) *http.Client {
 	// SECQ-1/W5: operator-class outbound policy. The dial checks the RESOLVED address of every connection (loopback, link-local and
 	// cloud-metadata addresses are refused, RFC 1918 / ULA / public stay reachable; see netguard/operator.go), every redirect hop is
 	// re-checked, and an environment proxy is honoured only after the destination host was checked.
-	return &http.Client{CheckRedirect: netguard.OperatorCheckRedirect, Transport: operatorStorageTransport()}
+	return &http.Client{CheckRedirect: netguard.OperatorCheckRedirectFor(effectiveClass(approved)), Transport: operatorStorageTransportFor(approved)}
 }
 
 // opContext bounds one metadata operation as a whole.
@@ -156,7 +158,7 @@ func NewWebDAVClient(config *WebDAVConfig) (*WebDAVClient, error) {
 
 	return &WebDAVClient{
 		config:  config,
-		client:  newWebDAVHTTPClient(),
+		client:  newWebDAVHTTPClient(config.ApprovedClass),
 		baseURL: baseURL,
 	}, nil
 }

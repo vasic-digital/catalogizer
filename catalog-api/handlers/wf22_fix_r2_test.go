@@ -34,6 +34,9 @@ type apiHarness struct {
 	r      *gin.Engine
 	scan   *services.UniversalScanner
 	handle *ScanHandler
+	// noAutoConfirm: by default the harness opts every POST /storage/roots body in to private-network confirmation (CAT-SECQ1-C), because
+	// the fixtures aim at allow-listed loopback servers (class private). The class tests set it to exercise the confirmation itself.
+	noAutoConfirm bool
 }
 
 func newAPIHarness(t *testing.T, withScanner bool) *apiHarness {
@@ -66,6 +69,16 @@ func newAPIHarness(t *testing.T, withScanner bool) *apiHarness {
 func (h *apiHarness) do(method, path string, body interface{}) (int, map[string]interface{}) {
 	h.t.Helper()
 	var rd io.Reader
+	if m, ok := body.(map[string]interface{}); ok && method == "POST" && path == "/storage/roots" && !h.noAutoConfirm {
+		if _, set := m["confirm_private_network"]; !set {
+			c := make(map[string]interface{}, len(m)+1)
+			for k, v := range m {
+				c[k] = v
+			}
+			c["confirm_private_network"] = true
+			body = c
+		}
+	}
 	if body != nil {
 		b, err := json.Marshal(body)
 		require.NoError(h.t, err)

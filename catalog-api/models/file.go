@@ -70,6 +70,10 @@ type StorageRoot struct {
 	CreatedAt                time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt                time.Time  `json:"updated_at" db:"updated_at"`
 	LastScanAt               *time.Time `json:"last_scan_at" db:"last_scan_at"`
+	// ApprovedClass is the stored address-class approval (migration v27, CAT-SECQ1-B/C): "private" or "public"; "" when the row was not
+	// loaded with it (the clients then use the default, private). It is consumed by filesystem.SettingsFromRoot and travels to the
+	// WebDAV / S3 operator transport as the class the root may reach.
+	ApprovedClass string `json:"approved_class,omitempty" db:"approved_class"`
 }
 
 // RedactedURL returns the storage root's URL without the password of its userinfo ("https://alice:***@host/dav"); "" when there is none.
@@ -102,17 +106,17 @@ func (r StorageRoot) MarshalJSON() ([]byte, error) {
 // StorageRootConnColumns lists, in the order of ConnScanTargets, the storage_roots columns the settings contract
 // (filesystem.SettingsFromRoot) consumes. EVERY query that builds a StorageRoot to hand to a client factory selects exactly these, so no caller can
 // forget the url of a WebDAV root or the mount point of an NFS one (WF22 H1/R1: two callers did).
-const StorageRootConnColumns = "protocol, host, port, path, username, password, domain, url, mount_point, options"
+const StorageRootConnColumns = "protocol, host, port, path, username, password, domain, url, mount_point, options, approved_class"
 
 // StorageRootConnColumnsFor is StorageRootConnColumns with every column qualified by the table alias (for joins).
 func StorageRootConnColumnsFor(alias string) string {
 	return alias + ".protocol, " + alias + ".host, " + alias + ".port, " + alias + ".path, " + alias + ".username, " + alias + ".password, " +
-		alias + ".domain, " + alias + ".url, " + alias + ".mount_point, " + alias + ".options"
+		alias + ".domain, " + alias + ".url, " + alias + ".mount_point, " + alias + ".options, " + alias + ".approved_class"
 }
 
 // ConnScanTargets returns the Scan destinations for StorageRootConnColumns.
 func (r *StorageRoot) ConnScanTargets() []interface{} {
-	return []interface{}{&r.Protocol, &r.Host, &r.Port, &r.Path, &r.Username, &r.Password, &r.Domain, &r.URL, &r.MountPoint, &r.Options}
+	return []interface{}{&r.Protocol, &r.Host, &r.Port, &r.Path, &r.Username, &r.Password, &r.Domain, &r.URL, &r.MountPoint, &r.Options, &r.ApprovedClass}
 }
 
 // FileMetadata represents file metadata

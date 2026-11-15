@@ -63,6 +63,9 @@ type S3Config struct {
 	SecretKey string `json:"secret_key"`
 	// PathStyle selects path-style addressing (endpoint/bucket/key). False selects virtual-host style (bucket.endpoint/key).
 	PathStyle bool `json:"path_style"`
+	// ApprovedClass is the stored address-class approval of the root (CAT-SECQ1-C): the most internal class the transport may reach.
+	// Zero (ClassNever) means "not set": the default, ClassPrivate. Never serialised.
+	ApprovedClass netguard.Class `json:"-"`
 }
 
 // S3Client implements FileSystemClient for S3-compatible object stores.
@@ -148,11 +151,11 @@ func (c *S3Client) Connect(ctx context.Context) error {
 	if httpC == nil {
 		c.mu.Lock()
 		if c.opTransport == nil {
-			c.opTransport = operatorStorageTransport()
+			c.opTransport = operatorStorageTransportFor(c.cfg.ApprovedClass)
 		}
 		tr := c.opTransport
 		c.mu.Unlock()
-		httpC = &http.Client{Transport: tr, CheckRedirect: netguard.OperatorCheckRedirect}
+		httpC = &http.Client{Transport: tr, CheckRedirect: netguard.OperatorCheckRedirectFor(effectiveClass(c.cfg.ApprovedClass))}
 	}
 	opts := awss3.Options{
 		Region:       c.cfg.Region,

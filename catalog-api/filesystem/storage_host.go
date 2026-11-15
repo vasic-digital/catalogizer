@@ -313,7 +313,20 @@ func scrubDialFunc(inner func(ctx context.Context, network, addr string) (net.Co
 
 // operatorStorageTransport is netguard.OperatorTransport with a dial whose errors do not name the resolved address (WebDAV, S3).
 func operatorStorageTransport() *http.Transport {
-	tr := netguard.OperatorTransport()
+	return operatorStorageTransportFor(netguard.ClassPrivate)
+}
+
+// effectiveClass maps the unset zero value (ClassNever) to the default approval, private.
+func effectiveClass(c netguard.Class) netguard.Class {
+	if c == netguard.ClassPublic {
+		return netguard.ClassPublic
+	}
+	return netguard.ClassPrivate
+}
+
+// operatorStorageTransportFor is operatorStorageTransport pinned to the stored approval of the root (CAT-SECQ1-C).
+func operatorStorageTransportFor(approved netguard.Class) *http.Transport {
+	tr := netguard.OperatorTransportFor(effectiveClass(approved))
 	tr.DialContext = scrubDialFunc(tr.DialContext)
 	return tr
 }

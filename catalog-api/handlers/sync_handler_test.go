@@ -106,6 +106,8 @@ func (s *SyncHandlerTestSuite) createSyncTables() {
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 			last_sync_at DATETIME,
+			approved_class TEXT NOT NULL DEFAULT 'private' CHECK (approved_class IN ('private', 'public')),
+			approved_class_source TEXT NOT NULL DEFAULT 'default' CHECK (approved_class_source IN ('default', 'auto', 'operator')),
 			FOREIGN KEY (user_id) REFERENCES users(id)
 		)`,
 		`CREATE TABLE IF NOT EXISTS sync_sessions (

@@ -91,7 +91,7 @@ func TestSyncService_UpdateEndpointEvictsClientForOldURL(t *testing.T) {
 	require.NoError(t, svc.testConnection(ep)) // caches a client for A
 	require.Greater(t, atomic.LoadInt64(hitsA), int64(0))
 
-	_, err = svc.UpdateEndpoint(id, 1, &models.UpdateSyncEndpointRequest{URL: urlB})
+	_, err = svc.UpdateEndpoint(id, 1, &models.UpdateSyncEndpointRequest{URL: urlB, ConfirmPrivateNetwork: true})
 	require.NoError(t, err)
 	beforeA := atomic.LoadInt64(hitsA)
 	beforeB := atomic.LoadInt64(hitsB)
@@ -178,7 +178,7 @@ func TestSyncService_CreateEndpointDoesNotShareClientAcrossURLs(t *testing.T) {
 	for _, u := range []string{urlA, urlB} {
 		_, err := svc.CreateSyncEndpoint(1, &models.SyncEndpoint{
 			Name: "n3", Type: models.SyncTypeWebDAV, URL: u,
-			SyncDirection: models.SyncDirectionDownload, LocalPath: root,
+			SyncDirection: models.SyncDirectionDownload, LocalPath: root, ConfirmPrivateNetwork: true,
 		})
 		require.NoError(t, err)
 	}

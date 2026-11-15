@@ -204,6 +204,7 @@ func setupStreamTestDB(t *testing.T) *database.DB {
 			mount_point TEXT,
 			options TEXT,
 			url TEXT,
+			approved_class TEXT NOT NULL DEFAULT 'private',
 			enabled BOOLEAN DEFAULT 1,
 			max_depth INTEGER DEFAULT 10,
 			enable_duplicate_detection BOOLEAN DEFAULT 1,

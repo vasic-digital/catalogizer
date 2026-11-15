@@ -206,7 +206,7 @@ func (h *PdfPagesHandler) pdfStorageRootForFile(ctx context.Context, fileID int6
 		SELECT sr.id, sr.name, sr.protocol, sr.host, sr.port, sr.path, sr.username,
 		       sr.password, sr.domain, sr.mount_point, sr.options, sr.url, sr.enabled,
 		       sr.max_depth, sr.enable_duplicate_detection, sr.enable_metadata_extraction,
-		       sr.include_patterns, sr.exclude_patterns, sr.created_at, sr.updated_at, sr.last_scan_at
+		       sr.include_patterns, sr.exclude_patterns, sr.created_at, sr.updated_at, sr.last_scan_at, sr.approved_class
 		FROM files f
 		JOIN storage_roots sr ON sr.id = f.storage_root_id
 		WHERE f.id = ?`
@@ -217,7 +217,7 @@ func (h *PdfPagesHandler) pdfStorageRootForFile(ctx context.Context, fileID int6
 		&root.Username, &root.Password, &root.Domain, &root.MountPoint, &root.Options,
 		&root.URL, &root.Enabled, &root.MaxDepth, &root.EnableDuplicateDetection,
 		&root.EnableMetadataExtraction, &root.IncludePatterns, &root.ExcludePatterns,
-		&root.CreatedAt, &root.UpdatedAt, &root.LastScanAt,
+		&root.CreatedAt, &root.UpdatedAt, &root.LastScanAt, &root.ApprovedClass,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("storage root for pdf file %d not found: %w", fileID, err)

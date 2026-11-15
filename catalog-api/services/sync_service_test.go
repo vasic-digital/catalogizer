@@ -431,14 +431,9 @@ func TestSyncService_ShouldSkipRemoteFile(t *testing.T) {
 }
 
 func TestSyncService_GetWebDAVClient(t *testing.T) {
-	service := NewSyncService(nil, nil, nil)
-
-	endpoint := &models.SyncEndpoint{
-		ID:       1,
-		URL:      "https://example.com/webdav",
-		Username: "user",
-		Password: "pass",
-	}
+	// A stored endpoint needs a readable approved class (the lookup fails closed); the endpoints are real rows of a real database.
+	service, repo, root := newGuardedSyncService(t)
+	endpoint := secq1cStoredEndpoint(t, repo, root, "https://example.com/webdav")
 
 	// First call creates client
 	client1, err := service.getWebDAVClient(endpoint)
@@ -451,15 +446,15 @@ func TestSyncService_GetWebDAVClient(t *testing.T) {
 	assert.Equal(t, client1, client2)
 
 	// Different endpoint creates new client
-	endpoint2 := &models.SyncEndpoint{
-		ID:       2,
-		URL:      "https://other.example.com/webdav",
-		Username: "user2",
-		Password: "pass2",
-	}
+	endpoint2 := secq1cStoredEndpoint(t, repo, root, "https://other.example.com/webdav")
 	client3, err := service.getWebDAVClient(endpoint2)
 	assert.NoError(t, err)
 	assert.NotNil(t, client3)
+	assert.NotSame(t, client1, client3)
+
+	// An endpoint that is not stored has no readable class: no client (fail closed)
+	_, err = service.getWebDAVClient(&models.SyncEndpoint{ID: 99999, URL: "https://example.com/webdav"})
+	assert.Error(t, err)
 }
 
 func TestSyncService_ScanLocalFiles(t *testing.T) {
