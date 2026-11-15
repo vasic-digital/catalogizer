@@ -2705,3 +2705,8 @@ Round-2 F1 (limiter concurrency: 60-way burst = exactly 5 checks, no slot leak, 
 - SECQ1C-M3 (minor, source asymmetry): CreateSyncEndpoint still tests via testConnection (ID 0, private default) not plan.class; use testConnectionAs(endpoint, plan.class) for WebDAV on create (approveCreated already refuses a rebinding).
 - SECQ1C-M4 (minor, test-instrumentation): removing the inflight==0 guard in purge survives author suite; adopt reviewer probe TestRV3_PanicAndWindow (scratch rv3.8kVErW zz_rv3_limiter_test.go, zz_rv3_probe_test.go).
 - SECQ1C-M5 (note): fixed window, up to 10 failures across a boundary, accepted by design. Also owed: SMB/FTP/NFS class pinning (SECQ1-D), operator decision whether approved private sync endpoints may drop the allow-list requirement.
+
+## SSE-OPQ-1 test follow-ups review (Opus, GO-with-follow-ups, PROVISIONAL, commit 2b62982a8)
+SSEOPQ-F1/F2/F3/F5 closed (reviewer mutants O2/O5/O6 plus 6 own mutants killed; full ./handlers 606 s ok with -timeout 50m, root -short ok). Unit-class only. Note: ./handlers takes ~606 s even at GOMAXPROCS=2, so the 10 min default go test timeout keeps failing; dominating test not measured.
+- SSEOPQ2-M1 (minor, test-instrumentation): F5 admin control only checks a["error"] != nil; assert it differs from scanErrorClassText for each row.
+- SSEOPQ2-M2 (minor, test-instrumentation): F5 local row uses fixed /tmp/rev2-missing-local-dir; build a missing path from a fresh temp-dir child never created.
