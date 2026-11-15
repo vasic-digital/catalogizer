@@ -4,6 +4,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ConversionTools } from '../ConversionTools'
 import toast from 'react-hot-toast'
 
+// Page-level tests that do not exercise gating: the user holds every conversion permission (gating has its own real-auth test).
+vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ hasPermission: () => true }) }))
+
 const mockGetConversionJobs = vi.fn()
 const mockStartConversion = vi.fn()
 const mockCancelConversion = vi.fn()

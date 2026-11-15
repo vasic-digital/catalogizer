@@ -64,7 +64,7 @@ const mockUseAuth = vi.mocked(useAuth)
 const authed = (admin = false) =>
   mockUseAuth.mockReturnValue({
     user: { id: 1, username: 'u', first_name: 'U', last_name: 'X', role: admin ? { id: 1, name: 'Admin' } : 'user' },
-    isAuthenticated: true,
+    isAuthenticated: true, hasPermission: () => true,
     isAdmin: admin,
     logout: mockLogout,
   } as never)
@@ -87,7 +87,7 @@ describe('Header navigation overflow ("More" menu) and mobile parity', () => {
   })
 
   it('has no More menu when logged out', () => {
-    mockUseAuth.mockReturnValue({ user: null, isAuthenticated: false, logout: mockLogout } as never)
+    mockUseAuth.mockReturnValue({ user: null, isAuthenticated: false, hasPermission: () => false, logout: mockLogout } as never)
     customRender(<Header />)
     expect(screen.queryByRole('button', { name: /more/i })).not.toBeInTheDocument()
   })

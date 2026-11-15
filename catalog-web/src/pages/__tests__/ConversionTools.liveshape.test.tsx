@@ -11,6 +11,9 @@ import { FormatConverter } from '@/components/conversion/FormatConverter'
 import { mapConversionJob } from '@/lib/conversionApi'
 import liveJobs from './fixtures/conversion_jobs_live.json'
 
+// Page-level tests that do not exercise gating: the user holds every conversion permission (gating has its own real-auth test).
+vi.mock('@/contexts/AuthContext', () => ({ useAuth: () => ({ hasPermission: () => true }) }))
+
 const mockGet = vi.fn()
 const mockDownload = vi.fn()
 vi.mock('@/lib/api', () => ({

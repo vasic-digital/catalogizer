@@ -3,9 +3,11 @@ import { FormatConverter } from '@/components/conversion/FormatConverter';
 import { conversionApi } from '@/lib/conversionApi';
 import { useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { useAuth } from '@/contexts/AuthContext';
 import type { ConversionJob } from '@/types/conversion';
 
 export const ConversionTools: React.FC = () => {
+  const { hasPermission } = useAuth();
   const [jobs, setJobs] = useState<ConversionJob[]>([]);
   const [supportedFormats] = useState(['mp4', 'mkv', 'avi', 'mov', 'webm', 'mp3', 'wav', 'flac']);
 
@@ -88,6 +90,8 @@ export const ConversionTools: React.FC = () => {
         onCancelConversion={handleCancelConversion}
         onRetryConversion={handleRetryConversion}
         onDownloadFile={handleDownloadFile}
+        canCreate={hasPermission('conversion.create')}
+        canManage={hasPermission('conversion.manage')}
       />
     </div>
   );

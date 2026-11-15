@@ -137,7 +137,7 @@ function App() {
                 <Route
                   path="/conversion"
                   element={
-                    <ProtectedRoute requiredPermission="media.convert">
+                    <ProtectedRoute requiredPermission="conversion.view">
                       <PageErrorBoundary pageName="Conversion Tools">
                         <ConversionTools />
                       </PageErrorBoundary>
@@ -197,7 +197,7 @@ function App() {
                 <Route
                   path="/identities"
                   element={
-                    <ProtectedRoute requiredPermission="media.view">
+                    <ProtectedRoute requireAdmin>
                       <PageErrorBoundary pageName="Identity &amp; Share Discovery">
                         <IdentityManagerPage />
                       </PageErrorBoundary>
