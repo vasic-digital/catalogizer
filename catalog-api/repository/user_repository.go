@@ -1053,9 +1053,8 @@ func (r *UserRepository) UpdateRole(role *models.Role) error {
 			q += `)`
 		} else {
 			ph := make([]string, len(rest))
-			for i, id := range rest {
+			for i := range rest {
 				ph[i] = "?"
-				_ = id
 			}
 			q += ` OR (SELECT COUNT(*) FROM users o WHERE o.is_active = ? AND ` + fmt.Sprintf(unlocked, "o") + ` AND o.role_id IN (` + strings.Join(ph, ",") + `)) >= 1)`
 			args = append(args, true, false, time.Now())
@@ -1065,20 +1064,31 @@ func (r *UserRepository) UpdateRole(role *models.Role) error {
 		}
 		return q, args, true
 	}
+	// currentlyAdmin fails closed (PGLAX1-F5): only a missing row (sql.ErrNoRows) or a system role means "not an
+	// administrator role"; any other scan or JSON error is returned and refuses the write.
 	currentlyAdmin := func(q interface {
 		QueryRow(string, ...interface{}) *sql.Row
-	}, rewrite bool) bool {
+	}, rewrite bool) (bool, error) {
 		sq := `SELECT permissions, is_system FROM roles WHERE id = ?`
 		if rewrite {
 			sq = r.db.Rewrite(sq)
 		}
 		var pj string
 		var sys bool
-		if q.QueryRow(sq, role.ID).Scan(&pj, &sys) != nil || sys {
-			return false
+		if serr := q.QueryRow(sq, role.ID).Scan(&pj, &sys); serr != nil {
+			if errors.Is(serr, sql.ErrNoRows) {
+				return false, nil
+			}
+			return false, fmt.Errorf("failed to read role before update: %w", serr)
+		}
+		if sys {
+			return false, nil
 		}
 		var perms models.Permissions
-		return json.Unmarshal([]byte(pj), &perms) == nil && perms.HasPermission(models.PermissionSystemAdmin)
+		if jerr := json.Unmarshal([]byte(pj), &perms); jerr != nil {
+			return false, fmt.Errorf("failed to parse current role permissions: %w", jerr)
+		}
+		return perms.HasPermission(models.PermissionSystemAdmin), nil
 	}
 
 	var n int64
@@ -1096,7 +1106,11 @@ func (r *UserRepository) UpdateRole(role *models.Role) error {
 		if aerr != nil {
 			return aerr
 		}
-		q, args, g := build(currentlyAdmin(tx, true), adminIDs)
+		wasAdminTx, cerr := currentlyAdmin(tx, true)
+		if cerr != nil {
+			return cerr
+		}
+		q, args, g := build(wasAdminTx, adminIDs)
 		guarded = g
 		res, xerr := tx.Exec(r.db.Rewrite(q), args...)
 		if xerr != nil {
@@ -1110,7 +1124,10 @@ func (r *UserRepository) UpdateRole(role *models.Role) error {
 		wasAdmin := false
 		var adminIDs []int
 		if strips {
-			if wasAdmin = currentlyAdmin(r.db, false); wasAdmin {
+			if wasAdmin, err = currentlyAdmin(r.db, false); err != nil {
+				return err
+			}
+			if wasAdmin {
 				if adminIDs, err = r.adminRoleIDs(); err != nil {
 					return err
 				}
