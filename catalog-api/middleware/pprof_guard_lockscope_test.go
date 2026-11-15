@@ -111,6 +111,7 @@ func TestPprofSamplingGuard_ReleaseThenNewWindowReportsOwnEnd(t *testing.T) {
 func TestPprofSamplingGuard_RefusalReportsHolderWindowNotOwnSeconds(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	hold := make(chan struct{})
+	defer close(hold)
 	entered := make(chan struct{}, 1)
 	r := gin.New()
 	r.GET("/debug/pprof/profile", PprofSamplingGuard(30), func(c *gin.Context) {
@@ -131,5 +132,4 @@ func TestPprofSamplingGuard_RefusalReportsHolderWindowNotOwnSeconds(t *testing.T
 		require.GreaterOrEqual(t, n, lo, "Retry-After %d below the holder window bracket (own seconds used?)", n)
 		require.LessOrEqual(t, n, 10)
 	}
-	close(hold)
 }

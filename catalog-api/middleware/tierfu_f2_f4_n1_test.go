@@ -92,7 +92,7 @@ func TestCORS_NoExposeHeadersForDisallowedOrAbsentOrigin(t *testing.T) {
 	r := gin.New()
 	r.Use(CORS())
 	r.GET("/x", func(c *gin.Context) { c.Status(http.StatusOK) })
-	for name, origin := range map[string]string{"disallowed": "http://evil.example", "absent": ""} {
+	for name, origin := range map[string]string{"disallowed": "http://evil.example", "absent": "", "prefix-extension": "http://app.example.evil.example"} {
 		for _, method := range []string{"GET", "OPTIONS"} {
 			w := httptest.NewRecorder()
 			req := httptest.NewRequest(method, "/x", nil)
