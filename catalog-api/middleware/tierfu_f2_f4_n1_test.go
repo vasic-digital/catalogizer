@@ -58,7 +58,7 @@ func TestCORS_ExposesRateLimitHeadersToAllowedOrigin(t *testing.T) {
 		for _, h := range splitCSV(w.Header().Get("Access-Control-Expose-Headers")) {
 			exposed[h] = true
 		}
-		for _, want := range []string{"Retry-After", "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"} {
+		for _, want := range []string{"Retry-After", "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset", "X-RateLimit-Window", "X-RateLimit-Algorithm"} {
 			require.True(t, exposed[want], "%s: %q not in Access-Control-Expose-Headers %q", method, want, w.Header().Get("Access-Control-Expose-Headers"))
 		}
 	}
@@ -83,4 +83,25 @@ func splitCSV(s string) []string {
 		}
 	}
 	return out
+}
+
+// TIERFU-M2. Expose-Headers is sent only to an allowed origin: a disallowed and an absent Origin get none.
+func TestCORS_NoExposeHeadersForDisallowedOrAbsentOrigin(t *testing.T) {
+	t.Setenv("CORS_ALLOWED_ORIGINS", "http://app.example")
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.Use(CORS())
+	r.GET("/x", func(c *gin.Context) { c.Status(http.StatusOK) })
+	for name, origin := range map[string]string{"disallowed": "http://evil.example", "absent": ""} {
+		for _, method := range []string{"GET", "OPTIONS"} {
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(method, "/x", nil)
+			if origin != "" {
+				req.Header.Set("Origin", origin)
+			}
+			r.ServeHTTP(w, req)
+			require.Empty(t, w.Header().Get("Access-Control-Expose-Headers"), "%s/%s", name, method)
+			require.Empty(t, w.Header().Get("Access-Control-Allow-Origin"), "%s/%s", name, method)
+		}
+	}
 }
