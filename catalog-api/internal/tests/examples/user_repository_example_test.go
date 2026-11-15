@@ -2,6 +2,7 @@ package examples
 
 import (
 	"database/sql"
+	"database/sql/driver"
 	"testing"
 	"time"
 
@@ -15,6 +16,19 @@ import (
 	"catalogizer/models"
 	"catalogizer/repository"
 )
+
+// recentTimeArg matches a time.Time bound parameter that is close to now (the "lock has expired"
+// cut-off the guarded DELETE binds). It is a real matcher, not AnyArg: a wrong type or a stale time fails.
+type recentTimeArg struct{ within time.Duration }
+
+func (m recentTimeArg) Match(v driver.Value) bool {
+	t, ok := v.(time.Time)
+	if !ok {
+		return false
+	}
+	d := time.Since(t)
+	return d >= -m.within && d <= m.within
+}
 
 // TestUserRepositoryExample demonstrates how to test a repository
 func TestUserRepositoryExample(t *testing.T) {
@@ -214,7 +228,7 @@ func TestUserRepositoryExample(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{"role_id", "is_active"}).AddRow(1, true))
 		// the guarded DELETE matches no row when no other active administrator exists
 		mock.ExpectExec(`DELETE FROM users WHERE id = \? AND \(SELECT COUNT\(\*\) FROM users o`).
-			WithArgs(7, 7, true, false, 1).
+			WithArgs(7, 7, true, false, recentTimeArg{within: time.Minute}, 1).
 			WillReturnResult(sqlmock.NewResult(0, 0))
 		mock.ExpectRollback()
 
