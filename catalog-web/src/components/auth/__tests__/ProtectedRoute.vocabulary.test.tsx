@@ -71,4 +71,16 @@ describe('wildcard boundary and admin (server HasPermission parity)', () => {
     await renderGate(['*'], 'media.convert')
     expect(await screen.findByText('Protected Content')).toBeInTheDocument()
   })
+  it('admin:* spans admin:system (colon boundary) but not system.admin', async () => {
+    await renderGate(['admin:*'], 'admin:system')
+    expect(await screen.findByText('Protected Content')).toBeInTheDocument()
+  })
+  it('a null permission entry is skipped, not thrown on', async () => {
+    await renderGate([null as unknown as string, 'media.view'], 'media.view')
+    expect(await screen.findByText('Protected Content')).toBeInTheDocument()
+  })
+  it('a null-only list grants nothing', async () => {
+    await renderGate([null as unknown as string], 'media.view')
+    expect(await screen.findByTestId('navigate-to')).toHaveTextContent('/dashboard')
+  })
 })

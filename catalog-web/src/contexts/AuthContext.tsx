@@ -23,6 +23,7 @@ const SYSTEM_ADMIN_PERMISSION = 'system.admin'
  */
 export const permissionsGrant = (perms: readonly string[] | undefined | null, permission: string): boolean => {
   for (const perm of perms ?? []) {
+    if (typeof perm !== 'string') continue
     if (perm === '*' || perm === permission) return true
     if (perm.length > 0 && perm.endsWith('*')) {
       const prefix = perm.slice(0, -1)
