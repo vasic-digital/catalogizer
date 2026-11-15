@@ -89,7 +89,7 @@ describe('AuthContext isAdmin follows the server rule', () => {
     // The /auth/permissions query must have run and been consumed before we judge.
     await waitFor(() => expect(mockAuthApi.getPermissions).toHaveBeenCalled())
     await new Promise((r) => setTimeout(r, 50))
-    expect(screen.getByTestId('admin')).toHaveTextContent('admin')
+    expect(screen.getByTestId('admin').textContent).toBe('admin')
     expect(result).toBe('admin')
   })
 })
