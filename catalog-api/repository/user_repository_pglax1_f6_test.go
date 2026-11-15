@@ -74,7 +74,7 @@ func (c *f6Conn) Query(q string, args []driver.Value) (driver.Rows, error) {
 
 func TestPGLAX1F6_ConcurrentStripOfTwoAdminRoles_KeepsOneAdministrator(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "f6.db")
-	bar := &f6Barrier{want: 2, release: make(chan struct{}), timeout: 3 * time.Second}
+	bar := &f6Barrier{want: 2, release: make(chan struct{}), timeout: 2 * time.Second}
 	drvName := "sqlite3_f6_" + strings.ReplaceAll(t.Name(), "/", "_")
 	sql.Register(drvName, f6Driver{b: bar})
 	sqlDB, err := sql.Open(drvName, path+"?_busy_timeout=20000&_txlock=immediate")

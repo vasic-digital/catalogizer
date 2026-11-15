@@ -1093,22 +1093,40 @@ func (r *UserRepository) UpdateRole(role *models.Role) error {
 
 	var n int64
 	var guarded bool
-	if strips && r.db.Dialect().Type == database.DialectPostgres {
+	if strips {
 		tx, berr := r.db.Begin()
 		if berr != nil {
 			return berr
 		}
 		defer tx.Rollback()
-		if _, lerr := tx.Exec(pgAdvisoryLockKey); lerr != nil {
-			return lerr
+		if r.db.Dialect().Type == database.DialectPostgres {
+			if _, lerr := tx.Exec(pgAdvisoryLockKey); lerr != nil {
+				return lerr
+			}
+		} else if _, lerr := tx.Exec(`UPDATE roles SET updated_at = updated_at WHERE id = ?`, role.ID); lerr != nil {
+			// PGLAX1-F6 (SQLite): a no-op write takes the database write lock BEFORE the administrator-role set and
+			// the role's current permissions are read, so two concurrent strips serialise and the second one reads
+			// the first one's committed result instead of a stale set.
+			return fmt.Errorf("failed to lock for role update: %w", lerr)
 		}
-		adminIDs, aerr := r.adminRoleIDsTx(tx)
-		if aerr != nil {
-			return aerr
+		isPG := r.db.Dialect().Type == database.DialectPostgres
+		var adminIDs []int
+		var wasAdminTx bool
+		if isPG {
+			var aerr error
+			if adminIDs, aerr = r.adminRoleIDsTx(tx); aerr != nil {
+				return aerr
+			}
 		}
-		wasAdminTx, cerr := currentlyAdmin(tx, true)
+		wasAdminTx, cerr := currentlyAdmin(tx, isPG)
 		if cerr != nil {
 			return cerr
+		}
+		if !isPG && wasAdminTx {
+			var aerr error
+			if adminIDs, aerr = r.adminRoleIDsTx(tx); aerr != nil {
+				return aerr
+			}
 		}
 		q, args, g := build(wasAdminTx, adminIDs)
 		guarded = g
@@ -1121,19 +1139,7 @@ func (r *UserRepository) UpdateRole(role *models.Role) error {
 			return err
 		}
 	} else {
-		wasAdmin := false
-		var adminIDs []int
-		if strips {
-			if wasAdmin, err = currentlyAdmin(r.db, false); err != nil {
-				return err
-			}
-			if wasAdmin {
-				if adminIDs, err = r.adminRoleIDs(); err != nil {
-					return err
-				}
-			}
-		}
-		q, args, g := build(wasAdmin, adminIDs)
+		q, args, g := build(false, nil)
 		guarded = g
 		res, xerr := r.db.Exec(q, args...)
 		if xerr != nil {

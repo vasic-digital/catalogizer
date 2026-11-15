@@ -230,21 +230,29 @@ func TestUserRepository_UpdateRole(t *testing.T) {
 		{
 			name: "success",
 			setup: func(mock sqlmock.Sqlmock) {
+				// PGLAX1-F6: strips run in a transaction that takes the write lock first.
+				mock.ExpectBegin()
+				mock.ExpectExec("UPDATE roles SET updated_at = updated_at").WillReturnResult(sqlmock.NewResult(0, 1))
 				// PGLAX1-F5: the current role is read first and must be readable (fail closed).
 				mock.ExpectQuery("FROM roles WHERE id").WillReturnRows(
 					sqlmock.NewRows([]string{"permissions", "is_system"}).AddRow(`["read"]`, false))
-				mock.ExpectExec("UPDATE roles SET").
+				mock.ExpectExec("UPDATE roles SET name").
 					WillReturnResult(sqlmock.NewResult(0, 1))
+				mock.ExpectCommit()
 			},
 		},
 		{
 			name: "not found or system role",
 			setup: func(mock sqlmock.Sqlmock) {
+				// PGLAX1-F6: strips run in a transaction that takes the write lock first.
+				mock.ExpectBegin()
+				mock.ExpectExec("UPDATE roles SET updated_at = updated_at").WillReturnResult(sqlmock.NewResult(0, 1))
 				// PGLAX1-F5: the current role is read first and must be readable (fail closed).
 				mock.ExpectQuery("FROM roles WHERE id").WillReturnRows(
 					sqlmock.NewRows([]string{"permissions", "is_system"}).AddRow(`["read"]`, false))
-				mock.ExpectExec("UPDATE roles SET").
+				mock.ExpectExec("UPDATE roles SET name").
 					WillReturnResult(sqlmock.NewResult(0, 0))
+				mock.ExpectCommit()
 			},
 			wantErr: true,
 			errMsg:  "role not found or is system role",
@@ -252,11 +260,15 @@ func TestUserRepository_UpdateRole(t *testing.T) {
 		{
 			name: "database error",
 			setup: func(mock sqlmock.Sqlmock) {
+				// PGLAX1-F6: strips run in a transaction that takes the write lock first.
+				mock.ExpectBegin()
+				mock.ExpectExec("UPDATE roles SET updated_at = updated_at").WillReturnResult(sqlmock.NewResult(0, 1))
 				// PGLAX1-F5: the current role is read first and must be readable (fail closed).
 				mock.ExpectQuery("FROM roles WHERE id").WillReturnRows(
 					sqlmock.NewRows([]string{"permissions", "is_system"}).AddRow(`["read"]`, false))
-				mock.ExpectExec("UPDATE roles SET").
+				mock.ExpectExec("UPDATE roles SET name").
 					WillReturnError(sql.ErrConnDone)
+				mock.ExpectRollback()
 			},
 			wantErr: true,
 		},
