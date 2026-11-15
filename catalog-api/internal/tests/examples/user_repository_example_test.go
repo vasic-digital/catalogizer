@@ -172,11 +172,12 @@ func TestUserRepositoryExample(t *testing.T) {
 	// Test 5: Delete user
 	t.Run("DeleteUser", func(t *testing.T) {
 		// Setup expectations
-		// Delete reads the admin roles first (outside the transaction), then in one
-		// transaction stamps and detaches the audit rows before removing the user.
-		mock.ExpectQuery(`SELECT id, name, description, permissions, is_system, created_at, updated_at\s+FROM roles`).
-			WillReturnRows(sqlmock.NewRows([]string{"id", "name", "description", "permissions", "is_system", "created_at", "updated_at"}))
+		// Delete opens one transaction, takes the write lock first (PGLAX1-F7), reads the admin
+		// roles inside it, then stamps and detaches the audit rows before removing the user.
 		mock.ExpectBegin()
+		mock.ExpectExec(`UPDATE roles SET updated_at = updated_at`).WillReturnResult(sqlmock.NewResult(0, 0))
+		mock.ExpectQuery(`FROM roles`).
+			WillReturnRows(sqlmock.NewRows([]string{"id", "permissions"}))
 		mock.ExpectQuery(`SELECT username FROM users WHERE id = \?`).
 			WithArgs(1).
 			WillReturnRows(sqlmock.NewRows([]string{"username"}).AddRow("testuser"))
@@ -207,10 +208,10 @@ func TestUserRepositoryExample(t *testing.T) {
 
 	// Test 5b: Delete of the last active administrator is refused and rolled back (PX-F4)
 	t.Run("DeleteUser_ProtectedLastAdmin", func(t *testing.T) {
-		mock.ExpectQuery(`SELECT id, name, description, permissions, is_system, created_at, updated_at\s+FROM roles`).
-			WillReturnRows(sqlmock.NewRows([]string{"id", "name", "description", "permissions", "is_system", "created_at", "updated_at"}).
-				AddRow(1, "admin", "Administrator", `["*"]`, true, time.Now(), time.Now()))
 		mock.ExpectBegin()
+		mock.ExpectExec(`UPDATE roles SET updated_at = updated_at`).WillReturnResult(sqlmock.NewResult(0, 0))
+		mock.ExpectQuery(`FROM roles`).
+			WillReturnRows(sqlmock.NewRows([]string{"id", "permissions"}).AddRow(1, `["*"]`))
 		mock.ExpectQuery(`SELECT username FROM users WHERE id = \?`).
 			WithArgs(7).
 			WillReturnRows(sqlmock.NewRows([]string{"username"}).AddRow("root"))
