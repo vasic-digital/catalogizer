@@ -28,6 +28,9 @@ type syncClassPlan struct {
 	class     netguard.Class // ClassPublic or ClassPrivate (an unresolvable destination plans as private)
 }
 
+// classifyEndpointForPlan is the classifier planSyncClass uses; tests replace it (unit class) to plan a destination as a chosen class.
+var classifyEndpointForPlan = netguard.ClassifyEndpoint
+
 // planSyncClass classifies the destination of endpoint. A local endpoint and a bucket URL (s3://, gs://) have no destination to classify.
 func planSyncClass(endpoint *models.SyncEndpoint) (syncClassPlan, error) {
 	if endpoint.Type != models.SyncTypeWebDAV && endpoint.Type != models.SyncTypeCloudStorage {
@@ -38,7 +41,7 @@ func planSyncClass(endpoint *models.SyncEndpoint) (syncClassPlan, error) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	c, err := netguard.ClassifyEndpoint(ctx, "", strings.TrimSpace(endpoint.URL))
+	c, err := classifyEndpointForPlan(ctx, "", strings.TrimSpace(endpoint.URL))
 	if err == nil {
 		return syncClassPlan{networked: true, class: c}, nil
 	}

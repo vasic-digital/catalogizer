@@ -336,6 +336,10 @@ func TestSSEOPQ1_NonFailedStatusReasonRedacted(t *testing.T) {
 func TestSSEOPQ1_StatusAllProtocols(t *testing.T) {
 	o := newOPQHarness(t, nil)
 	user, adm := cat001Token(t, 2, "2"), cat001Token(t, 1, "1")
+	// SSEOPQ2-M2: the missing local directory is a child of a fresh temp dir that is never created (no fixed /tmp path that could exist)
+	missingLocal := filepath.Join(t.TempDir(), "rev2-missing-local-dir")
+	_, statErr := os.Stat(missingLocal)
+	require.True(t, os.IsNotExist(statErr), "control: the local row's directory does not exist")
 	rows := []struct {
 		id                int
 		proto, host, path string
@@ -348,7 +352,7 @@ func TestSSEOPQ1_StatusAllProtocols(t *testing.T) {
 		{13, "ftp", "rev2needle-ftp.invalid", "/rev2ftp", "", 21},
 		{14, "webdav", "", "/rev2dav", "http://127.0.0.1:1/rev2dav", 0},
 		{15, "nfs", "rev2needle-nfs.invalid", "/rev2nfs", "", 0},
-		{16, "local", "", "/tmp/rev2-missing-local-dir", "", 0},
+		{16, "local", "", missingLocal, "", 0},
 	}
 	for _, r := range rows {
 		_, err := o.h.db.Exec(`INSERT INTO storage_roots (id, name, protocol, host, port, path, url, username, enabled) VALUES (?, ?, ?, ?, ?, ?, ?, 'rev2user', 1)`,
@@ -363,9 +367,11 @@ func TestSSEOPQ1_StatusAllProtocols(t *testing.T) {
 		require.NoError(t, json.Unmarshal([]byte(ab), &a), ab)
 		require.NoError(t, json.Unmarshal([]byte(ub), &u), ub)
 		require.NotNil(t, a["error"], "control: the admin sees an error for %s: %s", r.proto, ab)
+		// SSEOPQ2-M1: the admin control must see the RAW error, not the redacted class text (else the redaction assertion below is vacuous)
+		require.NotEqual(t, scanErrorClassText, a["error"], "control: the admin error for %s is raw, not the class text: %s", r.proto, ab)
 		assert.Equal(t, a["status"], u["status"], p)
 		assert.Equal(t, scanErrorClassText, u["error"], p)
-		for _, leak := range []string{"rev2needle", "127.0.0.1", "rev2share", "rev2ftp", "rev2dav", "rev2nfs", "rev2user", "rev2-missing"} {
+		for _, leak := range []string{"rev2needle", "127.0.0.1", "rev2share", "rev2ftp", "rev2dav", "rev2nfs", "rev2user", "rev2-missing", missingLocal} {
 			assert.NotContains(t, ub, leak, "%s leaks %q", p, leak)
 		}
 	}
