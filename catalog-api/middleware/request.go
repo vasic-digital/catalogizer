@@ -144,6 +144,10 @@ func CORS() gin.HandlerFunc {
 				c.Header("Access-Control-Allow-Origin", origin)
 				c.Header("Access-Control-Allow-Credentials", "true")
 				// RLW-FU2-F4: let a cross-origin browser client read the back-off and quota headers.
+				// TIERPGLA-F3 (honest scope): X-RateLimit-Algorithm is only emitted by SlidingWindowRedisRateLimit and
+				// TokenBucketRedisRateLimit (redis_rate_limiter.go); neither has a production caller today (checked by
+				// grep, no non-test reference outside that file), so on the live path the header is not sent and exposing
+				// it is harmless. It is listed so a limiter wired later is readable cross-origin without another change.
 				c.Header("Access-Control-Expose-Headers", "Retry-After, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-RateLimit-Window, X-RateLimit-Algorithm")
 				break
 			}
