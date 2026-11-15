@@ -23,11 +23,12 @@ vi.mock('react-hot-toast', async () => ({ __esModule: true, default: { success: 
 const mockAuthApi = vi.mocked(authApi)
 
 function Probe() {
-  const { isAdmin, user, isLoading } = useAuth()
+  const { isAdmin, user, isLoading, permissions } = useAuth()
   if (isLoading) return <div>Loading...</div>
   return (
     <div>
       <div data-testid="user">{user ? user.username : 'none'}</div>
+      <div data-testid="perms">{permissions.join(',')}</div>
       <div data-testid="admin">{isAdmin ? 'admin' : 'not-admin'}</div>
     </div>
   )
@@ -88,7 +89,8 @@ describe('AuthContext isAdmin follows the server rule', () => {
     const result = await adminFor({ id: 1, username: 'x', role_id: 1 }, ['system.admin'], ['read:media'])
     // The /auth/permissions query must have run and been consumed before we judge.
     await waitFor(() => expect(mockAuthApi.getPermissions).toHaveBeenCalled())
-    await new Promise((r) => setTimeout(r, 50))
+    // SSEF4R-FE: wait on the derived state, not a timer: the /auth/permissions list has been adopted into context state.
+    await waitFor(() => expect(screen.getByTestId('perms').textContent).toBe('read:media'))
     expect(screen.getByTestId('admin').textContent).toBe('admin')
     expect(result).toBe('admin')
   })
