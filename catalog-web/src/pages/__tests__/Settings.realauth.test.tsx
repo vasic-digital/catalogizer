@@ -142,7 +142,15 @@ describe('Settings with the real AuthProvider', () => {
     expect(screen.queryByText('Total Syncs')).not.toBeInTheDocument()
   })
 
-  it('R3: a role NAMED Admin whose role_id is not 1 is not shown the Sync tab (server gates on role_id)', async () => {
+  it('non-admin who selects SMB Discovery stays on it (fallback only affects the Sync tab)', async () => {
+    vi.mocked(authApi.getAuthStatus).mockResolvedValue(status(USER) as any)
+    mount()
+    await userEvent.setup().click(await screen.findByRole('button', { name: /SMB Discovery/ }))
+    expect(await screen.findByText('Network Discovery')).toBeInTheDocument()
+    expect(screen.queryByText('Scan History')).not.toBeInTheDocument()
+  })
+
+  it('R3: a role NAMED Admin whose role_id is not 1 is not shown the Sync tab (UI heuristic: role_id authoritative; server uses live role permissions)', async () => {
     vi.mocked(authApi.getAuthStatus).mockResolvedValue(
       status({ id: 9, username: 'impostor', role: { name: 'Admin' }, role_id: 2 }) as any
     )
