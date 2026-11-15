@@ -2763,3 +2763,10 @@ RESOLVED by this commit: SECQ1C-M1, M2, M3 (source: CreateSyncEndpoint now tests
 - SECQ1CFU-M1 (minor, test, services/sync_class_secq1c_fu_test.go:58-60): assert hits==0 BEFORE the "connection test failed" message so a regression fails on the real property.
 - SECQ1CFU-M2 (minor, test): approveCreated still classifies via the real AutoClassifyApprovedClass, not the seam, so the M3 public leg is protected twice; only the hits-zero assertion separates the layers; add a comment.
 - SECQ1CFU-N1 (nit): M1 handler test router has no adminGate unlike production main.go:1379; add a note.
+
+## TIERFU-PGLA-TESTS review (Opus, GO-with-follow-ups, PROVISIONAL, commit a8fadfbf2)
+RESOLVED: TIERFU-M1 (holder-window Retry-After test), TIERFU-M2 (disallowed/absent origin expose nothing), TIERFU-M3 (CORS exposes X-RateLimit-Window and X-RateLimit-Algorithm, origin-gated), PGLA-M2 (LockAccount zero-rows classification, sqlmock). PGLA-M1 (live PG interleave test) stays open. Reviewer could not reproduce the author's >13 min ./repository hang (main: ok 298 s; cause UNCONFIRMED, likely environment). Follow-ups:
+- TIERPGLA-F1 (minor, test): CORS prefix-match mutant (`strings.HasPrefix(origin, o)`) survives; add negative origin `http://app.example.evil.example` (middleware/tierfu_f2_f4_n1_test.go:95).
+- TIERPGLA-F2 (minor, test): sqlmock expectations at repository/user_repository_pgla_classify_test.go:47-48 do not pin the guarded UPDATE args / `role_id NOT IN` clause.
+- TIERPGLA-F3 (minor, process-doc): X-RateLimit-Algorithm is only emitted by SlidingWindowRedisRateLimit/TokenBucketRedisRateLimit, neither wired in production; exposing it is harmless but TIERFU-M3 claim must say so, or a wired limiter should emit it.
+- TIERPGLA-N1 (nit): pprof_guard_lockscope_test.go:131 use `defer close(hold)`.
