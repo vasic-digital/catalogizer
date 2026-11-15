@@ -2798,3 +2798,9 @@ RESOLVED: PGLA-X1 items 1-3 (UpdateRole last-admin guard; UpdateSettings writes 
 - PGLAX1-F6 (minor, SQLite only, reasoned not reproduced): wasAdmin and admin-role set read outside the guarded statement with no transaction; two concurrent strips can use a stale set; BEGIN IMMEDIATE would close it; same class as existing SQLite paths.
 - PGLAX1-N1 (nit): dead `_ = id` loop in UpdateRole build.
 - AuthService.UpdateUser can write is_active unguarded; AuthHandler.UpdateUser not mounted in main.go; whether another entrypoint mounts it UNCONFIRMED.
+
+## FU-TESTS-B review (Opus, GO, PROVISIONAL, commit 8d367fd58)
+RESOLVED: FUTA-F1 (case-variant CORS origins), FUTA-F2 (nearNow matcher pins the other-admin time arg), SSEF4R-FE (R3 and status-vs-permissions waits on state, not timers). Reviewer: 4 test files, all claimed and own mutants killed (base tests let them survive), web 5x deterministic 21/21, middleware+repository ok. Follow-ups:
+- FUTB-F1 (minor): nearNow 5 s tolerance (+3s mutant survives); tighten to ~1 s or document; remove unused `t` field (nit).
+- FUTB-F2 (minor): R1 non-admin test in Settings.realauth.test.tsx still has setTimeout(50); wait on query state.
+Found by the reviewer's `go test -short ./...` in catalog-api (3 packages red, UNVERIFIED on main by me until re-run; tracked as MAIN-POOLGUARD, MAIN-ERRLEAK, MAIN-EXAMPLES, see next section).
