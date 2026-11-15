@@ -97,10 +97,15 @@ describe('Settings with the real AuthProvider', () => {
 
   it('R1: non-admin (role_id 2): no Sync tab, no /sync/* request, Scans/SMB intact', async () => {
     vi.mocked(authApi.getAuthStatus).mockResolvedValue(status(USER) as any)
-    mount()
+    const { queryClient } = mount()
     await screen.findByText('Settings')
     await screen.findByText('No scans recorded yet.')
-    await new Promise((r) => setTimeout(r, 50))
+    // FUTB-F2: wait on the auth and permissions query state, then flush effects, instead of a fixed timer.
+    await waitFor(() => {
+      expect(queryClient.getQueryState(['auth-status'])?.status).toBe('success')
+      expect(queryClient.getQueryState(['permissions'])?.status).toBe('success')
+    })
+    await act(async () => {})
     expect(screen.queryByRole('button', { name: /^Sync$/ })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Scans/ })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /SMB Discovery/ })).toBeInTheDocument()

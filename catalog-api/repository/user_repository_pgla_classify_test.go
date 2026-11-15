@@ -14,8 +14,9 @@ import (
 
 // nearNow matches a time.Time bound argument within `within` of the moment of the call (FUTA-F2): the
 // "not locked at this moment" bound of the other-active-admin clause must be the real current time.
+// The bound is taken a few microseconds before the match runs (sqlmock, no I/O), so 1 s is ample slack
+// even on a loaded host while still failing a clause shifted by 2 s or more (FUTB-F1).
 type nearNow struct {
-	t      *testing.T
 	within time.Duration
 }
 
@@ -67,7 +68,7 @@ func TestLockAccount_ZeroRowsClassification(t *testing.T) {
 			// pin the guarded UPDATE (TIERPGLA-F2): the NOT IN admin-role clause, the last-admin sub-select and every bound argument
 			// (lock time, target id, true, admin role id, then the other-active-admin clause args) so removing or reshaping the guard fails.
 			mock.ExpectExec(`UPDATE users SET is_locked = 1, locked_until = \? WHERE id = \? AND NOT \(COALESCE\(is_locked, '0'\) = \? AND locked_until IS NULL\) AND \(role_id NOT IN \(\?\) OR \(SELECT COUNT\(\*\) FROM users o WHERE o\.id <> \? AND o\.is_active = \? .* AND o\.role_id IN \(\?\)\) >= 1\)`).
-				WithArgs(until, 7, true, 1, 7, true, false, nearNow{t: t, within: 5 * time.Second}, 1).WillReturnResult(sqlmock.NewResult(0, 0))
+				WithArgs(until, 7, true, 1, 7, true, false, nearNow{within: time.Second}, 1).WillReturnResult(sqlmock.NewResult(0, 0))
 			mock.ExpectQuery("SELECT role_id").WithArgs(7).WillReturnRows(c.reread())
 			if !c.wantLast {
 				mock.ExpectExec("UPDATE user_sessions SET is_active = 0").WithArgs(7).WillReturnResult(sqlmock.NewResult(0, 0))
