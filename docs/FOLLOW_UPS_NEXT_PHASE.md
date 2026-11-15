@@ -2890,3 +2890,25 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 - PGLAX1-F7-FU1 (minor, test): the "pool read after lock is equivalent" claim holds only when MaxOpenConnections > 1 (configurable); add a MaxOpenConnections=1 test for the 4 paths (probe template: scratchpad rvf7_probe_test.go.txt, mutants rvf7_mut.py).
 - PGLAX1-F7-FU2 (minor, test): BeforeLock subtests are the only guard against read-before-lock inside the tx (R4, R6); say so in the test comment.
 - PGLAX1-F7-FU3 (minor, pre-existing test gap): TestUserRepository_Delete "database error" case does not assert ExpectationsWereMet, so Rollback on the error path is not pinned.
+
+### SSEF4R-FD-m1 review follow-ups (Opus GO-with-follow-ups, 2026-11-15, PROVISIONAL)
+- SSEF4R-FD-m1-FU1 (minor, test-instrumentation): own mutants M3 (per-line subtraction), M5 (count-based subtraction), M6 (skip lines containing `//`) survive the helper tests; add golden cases: bad gate before a good one, good+bad on the same line, an occurrence on a `//` line.
+- SSEF4R-FD-m1-FU2 (minor, doc): F2/F3 note — role seeds are answerable (database/migrations_sqlite.go:281-285, migrations_postgres.go:254-260, migrations/000003_add_user_tables*.sql:57-61: Admin ["*"], User ["media.view","media.download"]); today only Admin can open /conversion, so a conversion.view gate removes access from no default role; every default User passes the /identities gate then gets 403. F2 fix should cite `<ProtectedRoute requireAdmin>` (App.tsx:150). Operator decision for F2/F3 gates still open.
+- SSEF4R-FD-m1-FU3 (nit): routeGateExtract.ts header says "one-line" but regex accepts newlines before <ProtectedRoute; auth.go range 239-266.
+- SSEF4R-FD-m1-FU4 (info): check does not cover requireAdmin/requiredRole props or spread props; MediaPlayer.test.tsx timing assertion flaky under load (root cause UNCONFIRMED).
+
+### TEST-HYGIENE-BUNDLE-2 review follow-ups (Opus GO-with-follow-ups, 2026-11-15, PROVISIONAL)
+- TH2-MINOR-1 (minor, test gap; production correct): the MaxOpenConnections=1 test covers only success paths. LockAccount alone does a refusal read inside the tx (`refusedByGuard(tx,true,...)` before Commit); reviewer mutant LA_REFUSED_POOL (refusedByGuard(r.db,...)) survives the whole TestPGLAX1F7_ suite. Add a sole-administrator LockAccount case expecting ErrLastAdmin to the single-connection test.
+- TH2-NIT-1: a PG role with trust auth and an empty password now SKIPs instead of running (consistent with pglaxfu); live PG FU1/FU2 run-paths checked by reading only (UNCONFIRMED live); the 15 s hang guard not tested under heavy load.
+
+### TH2-MINOR-1 review follow-ups (Opus GO-with-follow-ups, 2026-11-15, PROVISIONAL)
+- TH2M1-FU1 (minor, test-instrumentation): the is_locked read after the refused LockAccount in TestPGLAX1F7_LockAccount_SoleAdminRefusedOnSingleConnectionPool has no deadlock guard; if the refused path leaks the tx connection (reviewer mutant R7: no defer tx.Rollback()) it blocks until the package -timeout instead of failing at 15 s. Use QueryRowContext with a timeout.
+- TH2M1-FU2 (minor, process-doc): the test comment claims it pins "a refusal read after Commit loses the guard's view of the row"; reviewer mutant R8 (refusal read moved after Commit via r.db) survives, so reword, or register a hook-driven race test (an unguarded writer changing role_id/deleting/suspending the target between Commit and the read could make `refused` false; whether such a writer exists is UNCONFIRMED).
+
+### CAT-PG-LASTADMIN-1 review follow-ups (Opus GO-with-follow-ups on live PG16+PG15, 2026-11-15, PROVISIONAL; author tip d871866da was already on main via 4327febfd)
+- PGLAST-F1 (important, NOT this item): main -short suite red in internal/poolguard (adminRoleIDsTx false positive; fixed by MAIN-POOLGUARD-R3 in review) and internal/tests/examples (stale sqlmock; EXAMPLES-F7-FALLOUT-1 in progress).
+- PGLAST-F2 (minor, process-doc): ADMIN_GUIDE says a past lock_until "locks nobody" but it still writes is_locked=1 and revokes all sessions (last admin included); also "holds the administrator role" vs code/openapi "any role carrying system.admin".
+- PGLAST-F3 (nit): guard over-refuses re-locking an already timed-locked/inactive admin when no other effective admin exists (unreachable over HTTP).
+- PGLAST-F4 (nit): in the past-lock else branch `guarded` can never be true (dead classification branch); microsecond window writes an already-expired lock (harmless).
+- PGLAST-F5 (nit): unused AuthService.CheckAccountLockout would get ErrLastAdmin for the last admin if wired in; internal/auth AuthService.UpdateUser writes is_active/role unguarded but its handler is not routed (pre-existing, unreachable).
+- PGLAST-F6 (minor, test-instrumentation): on SQLite a pool re-read inside the tx deadlocks and only the go test timeout catches it (mutant M2 handler test); HTTP 409 test is a sequential SQLite simulation, no live-PG HTTP 409 run, no -race run.

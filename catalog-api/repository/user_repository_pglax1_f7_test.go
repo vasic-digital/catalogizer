@@ -142,6 +142,9 @@ func f7Assert(t *testing.T, writeErr, stripErr error, admins int) {
 
 const f7LockStmt = "UPDATE roles SET updated_at = updated_at WHERE id = 0"
 
+// PGLAX1-F7-FU2: the "BeforeLock" subtests below are the ONLY guard against the administrator set being read
+// inside the transaction but BEFORE the lock statement (reviewer mutants R4, R6): the "AtGuardedWrite" subtests
+// park after the lock/read, so they cannot see a read that precedes the lock.
 // Two park points per path: "AtGuardedWrite" (the read-strip-write interleave of the finding: the user write is
 // parked at its guarded statement) and "BeforeLock" (the guarded implementation parked at its lock statement, i.e.
 // before the administrator set is read; the strip commits first and the user write must read its result).

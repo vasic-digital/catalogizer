@@ -151,7 +151,7 @@ func TestPGLAX1F6_SingleConnectionPool_StripReadsAdminSetThroughTx(t *testing.T)
 		case err := <-done:
 			return err
 		case <-time.After(15 * time.Second):
-			t.Fatalf("UpdateRole(%d) hung with a single-connection pool: the admin set is read through the pool, not the transaction", id)
+			t.Fatalf("UpdateRole(%d) hung with a single-connection pool: an administrator-role-set or role-row read goes through the pool, not the transaction", id)
 			return nil
 		}
 	}
