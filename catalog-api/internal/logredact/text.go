@@ -211,6 +211,34 @@ func takeSchemeToken(s string, scheme string, j int) int {
 	return e
 }
 
+// lenientDecodeFast is the allocation-light twin of pctDecode without the offset table (HYGF4B-M-C): same decoding, one
+// builder allocation, and the input itself when no valid %XX escape is present.
+func lenientDecodeFast(run string) string {
+	first := -1
+	for i := 0; i+2 < len(run); i++ {
+		if run[i] == '%' && isHex(run[i+1]) && isHex(run[i+2]) {
+			first = i
+			break
+		}
+	}
+	if first < 0 {
+		return run
+	}
+	var d strings.Builder
+	d.Grow(len(run))
+	d.WriteString(run[:first])
+	for i := first; i < len(run); {
+		if run[i] == '%' && i+2 < len(run) && isHex(run[i+1]) && isHex(run[i+2]) {
+			d.WriteByte(unhex(run[i+1])<<4 | unhex(run[i+2]))
+			i += 3
+			continue
+		}
+		d.WriteByte(run[i])
+		i++
+	}
+	return d.String()
+}
+
 // pctDecode decodes %XX escapes of a word run and returns the decoded text plus, for every decoded byte, its raw start offset
 // (len(decoded)+1 entries), so a decoded position can be mapped back to the raw run.
 func pctDecode(run string) (string, []int) {

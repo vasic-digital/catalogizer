@@ -136,8 +136,7 @@ func lenientUnescape(s string) string {
 	if strings.IndexByte(s, '%') < 0 {
 		return s
 	}
-	d, _ := pctDecode(s)
-	return d
+	return lenientDecodeFast(s)
 }
 
 // decodeSegment percent-decodes seg at most maxSegmentDecodes rounds; more reports a segment that still decodes afterwards.
