@@ -2912,3 +2912,8 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 - PGLAST-F4 (nit): in the past-lock else branch `guarded` can never be true (dead classification branch); microsecond window writes an already-expired lock (harmless).
 - PGLAST-F5 (nit): unused AuthService.CheckAccountLockout would get ErrLastAdmin for the last admin if wired in; internal/auth AuthService.UpdateUser writes is_active/role unguarded but its handler is not routed (pre-existing, unreachable).
 - PGLAST-F6 (minor, test-instrumentation): on SQLite a pool re-read inside the tx deadlocks and only the go test timeout catches it (mutant M2 handler test); HTTP 409 test is a sequential SQLite simulation, no live-PG HTTP 409 run, no -race run.
+
+### EXAMPLES-F7-FALLOUT-1 review follow-ups (Opus GO, 2026-11-15, PROVISIONAL)
+- EXF7-N1 (nit, test): the `FROM roles` regex in TestUserRepositoryExample is loose (outside-tx ListRoles also matches; reviewer mutant CM6 caught only by ProtectedLastAdmin via column shape); tighten to `SELECT id, permissions FROM roles` so both DeleteUser subtests catch it independently.
+- EXF7-N2 (nit, test): lock regex does not pin `WHERE id = 0` (near-equivalent; same looseness as repository package tests).
+- EXF7-N3 (info): author's M5 not re-run by reviewer (UNCONFIRMED); full ./handlers and root package not run by the reviewer; sqlmock cannot pin an extra unexpected Rollback (deferred tx.Rollback() ignores the error).
