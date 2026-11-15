@@ -1,5 +1,8 @@
 // SSEF4R-FD-m1: gate extraction + completeness check for the route-gate test.
-// The extractor only understands one-line, double-quoted, gate-first formatting;
+// The extractor only understands double-quoted, gate-first formatting where
+// path="..." element={ <ProtectedRoute requiredPermission="..." may be separated
+// by whitespace including newlines (the regex's \s*); single quotes, a different
+// attribute order or props between the tag and requiredPermission are not captured;
 // the completeness check makes any other formatting fail loudly instead of being
 // silently ignored.
 export const GATE_RE =

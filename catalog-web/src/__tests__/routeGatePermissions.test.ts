@@ -74,4 +74,39 @@ describe('route-gate extractor completeness (SSEF4R-FD-m1)', () => {
     expect(missed[0].line).toBe(2)
     expect(extractGates(`${good}\n${bad}`)).toEqual([['/a', 'media.view']])
   })
+
+  // SSEF4R-FD-m1-FU1: golden cases that pin per-occurrence, offset-based reporting.
+  // Each kills a reviewer mutant of findUncapturedOccurrences: M5 (count-based
+  // subtraction), M3 (per-line subtraction), M6 (skip lines containing //).
+  const good = (p: string, perm: string) =>
+    `<Route path="${p}" element={<ProtectedRoute requiredPermission="${perm}"><X /></ProtectedRoute>} />`
+  const bad = (p: string, perm: string) =>
+    `<Route path='${p}' element={<ProtectedRoute requiredPermission='${perm}'><X /></ProtectedRoute>} />`
+
+  it('bad gate BEFORE a good one: the bad one (line 1) is reported, not the good one', () => {
+    const src = `${bad('/b', 'media.edit')}\n${good('/a', 'media.view')}`
+    const missed = findUncapturedOccurrences(src)
+    expect(missed).toHaveLength(1)
+    expect(missed[0].line).toBe(1)
+    expect(missed[0].text).toContain("requiredPermission='media.edit'")
+    expect(extractGates(src)).toEqual([['/a', 'media.view']])
+  })
+
+  it('good and bad gate on the SAME line: the bad one is still reported', () => {
+    const src = `${good('/a', 'media.view')} ${bad('/b', 'media.edit')}`
+    const missed = findUncapturedOccurrences(src)
+    expect(missed).toHaveLength(1)
+    expect(missed[0].line).toBe(1)
+    expect(extractGates(src)).toEqual([['/a', 'media.view']])
+    expect(() => assertAllGatesCaptured(src)).toThrow(/missed 1 requiredPermission.*line 1/)
+  })
+
+  it('an occurrence on a // comment line is reported (not skipped)', () => {
+    const src = `// TODO gate this with requiredPermission later\n${good('/a', 'media.view')}`
+    const missed = findUncapturedOccurrences(src)
+    expect(missed).toHaveLength(1)
+    expect(missed[0].line).toBe(1)
+    expect(missed[0].text).toContain('// TODO')
+    expect(() => assertAllGatesCaptured(src)).toThrow(/line 1/)
+  })
 })
