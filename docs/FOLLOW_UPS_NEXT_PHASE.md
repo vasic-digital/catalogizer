@@ -2813,3 +2813,11 @@ RESOLVED: PGLAX1-F1 (locked-member cases), F2 (Delete lock-order subtest), F3 (d
 - PGLAXFU-F3 (minor, design): a role with corrupt stored permissions JSON can now only be repaired through UpdateRole by including system.admin; consider an explicit repair path or document.
 - PGLAXFU-N1 (nit): commit 0f26adcfa breaks TestUserRepository_UpdateRole until e63e626eb (bisect hazard).
 - PGLAXFU-N2 (nit): F4 negative control branches on `if admins == 0`; make deterministic.
+
+## MAIN-ERRLEAK review (Opus, round 2 GO-with-follow-ups, PROVISIONAL, commit 57fcc22e0)
+RESOLVED: MAIN-ERRLEAK (errleak sweep red on main: respondSyncClassError added to safeWrappers; GetStorageRootStatus sinks pinned function-wide; TestClosureLeakShapesStayFlagged replaces the closure mapper). Round 1 was NO-GO (closure mapper unsound). Reviewer ran S1-S6,S8 shapes (flagged), 3 in-function leak mutants (sweep stays green, behavioural TestSSEOPQ1_F1 fails).
+- ERRLEAK-FU-A (minor, test): narrow the function-wide GetStorageRootStatus pin (AST test: every resp[...] RHS is literal/bool/probeErr(...), probeErr non-admin branch returns scanErrorClassText).
+- ERRLEAK-FU-B (minor, test): no behavioural redaction test for the TestConnection-failure branch of GetStorageRootStatus (Connect ok, TestConnection fails).
+- ERRLEAK-FU-C (minor, predates): S7 local closure shadowing the package mapper name is not detected.
+- ERRLEAK-FU-D (minor, predates): safeWrappers/mappers match by bare name only (no receiver/package check), now including respondSyncClassError.
+- ERRLEAK-FU-E (nit): TestClosureLeakShapesStayFlagged S6 fixture uses a new variable, not the shadowing shape.
