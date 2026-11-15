@@ -2726,3 +2726,11 @@ Live PG16 race test 50 rounds x 12 variants 0 violations; reviewer mutations M1/
 - PGLA-N1 (nit): on SQLite the re-read runs outside any tx (pre-existing, harmless).
 - PGLA-N2 (nit): the handler "race" test is a sequential simulation; real concurrency proof is the PG repository test.
 - PGLA-X1 (registered earlier, out of scope here): UpdateRole can strip system.admin from a non-system custom role; UpdateUserSettings/admin_handler fallback call an unguarded Update with a possibly stale read; adminRoleIDs read outside the advisory lock; TestD9SR3F3_UnknownUserLoginCostsLikeWrongPassword flaked once under load.
+
+## RLW-FU2-TIER (F2/F4/N1 + TIERTEST-M1/M2) review (Opus, GO-with-follow-ups, PROVISIONAL, commit a2ab563de)
+- TIERFU-M1 (important, test-instrumentation, pprof_guard_lockscope_test.go): M2 refused probe asks seconds=1 and the bracket [1,2] also accepts "own requested seconds" (reviewer mutant R6 survives); M1 competitors ask 10 = held window. Make the refused probe ask seconds=30 (keep <=2 assertion) and give M1 competitors a different seconds value than the holder.
+- TIERFU-M2 (minor, test): CORS expose-headers test has no negative case; add disallowed-origin and absent-origin cases asserting empty Access-Control-Expose-Headers (reviewer mutant R1 survives).
+- TIERFU-M3 (minor, request.go:147): X-RateLimit-Window / X-RateLimit-Algorithm are sent but not exposed; expose or document exclusion.
+- TIERFU-N1 (nit, pre-existing): CORS sends no Vary: Origin.
+- TIERFU-N2 (nit): internal/middleware/middleware.go:19 has a second divergent CORS() not on the live path; investigate history per section 11.4.124, do not delete.
+- TIERFU-N3 (nit): pprof guard end time via time.Unix(0,end) is wall clock, not monotonic.
