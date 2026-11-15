@@ -96,7 +96,7 @@ func TestSweepControls(t *testing.T) {
 		"stderr":   "package p\nfunc f(stderr io.Writer, err error) {\n\tfmt.Fprintf(stderr, \"FAILED: %v\", err)\n}\n",
 		"logger":   "package p\nfunc f(logger *zap.Logger, err error) {\n\tlogger.Error(\"x\", zap.Error(err))\n}\n",
 		"fixedvar": "package p\nfunc f(c *gin.Context, err error) {\n\tlog.Print(err)\n\tmsg := \"nope\"\n\tc.JSON(500, gin.H{\"error\": msg})\n}\n",
-		"scrub":    "package p\nfunc f(c *gin.Context, err error) {\n\tr := gin.H{}\n\tr[\"error\"] = services.ScrubErrorFor(err, root)\n\tc.JSON(200, r)\n}\n",
+		"scrub":    "package p\nimport \"catalogizer/internal/services\"\nfunc f(c *gin.Context, err error) {\n\tr := gin.H{}\n\tr[\"error\"] = services.ScrubErrorFor(err, root)\n\tc.JSON(200, r)\n}\n",
 		"needle":   "package p\nfunc f(c *gin.Context) {\n\tc.JSON(200, gin.H{\"ok\": \"ZZ-fabricated-needle-0\"})\n}\n",
 	}
 	for name, src := range neg {
