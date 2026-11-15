@@ -2757,3 +2757,9 @@ Differential 12000 cases old vs new: 0 regressions, 0 over-cap, 0 credentials lo
 - HYGF4D-M2 (minor, test): credential differing only in case from a path value must still be collected (mutant B, case-insensitive credential skip, survives author tests); e.g. path /share%2FS3cretOne with query token=s3cretone, require both.
 - HYGF4D-M3 (minor, pre-existing, known.go:53,70): params/header maps iterated in random order; which credentials are kept when they exceed the reserve against a full path pool is nondeterministic. Sort keys.
 - HYGF4D-N1 (nit): over-long comment known.go:33. HYGF4D-N2 (nit, inherent): extra collected values can mask a fragment of another secret via leftmost-match overlap (0 cases measured).
+
+## SECQ1C-FU (SECQ1C-M1..M4 + SSEOPQ2-M1/M2) review (Opus, GO-with-follow-ups, PROVISIONAL, commit 8758eb3ae)
+RESOLVED by this commit: SECQ1C-M1, M2, M3 (source: CreateSyncEndpoint now tests networked WebDAV under plan.class; reproduced pre-fix as one blind probe of an allow-listed private address, nothing stored), M4, SSEOPQ2-M1, SSEOPQ2-M2. SECQ1C-M5 stays open (fixed window accepted by design; SMB/FTP/NFS class pinning is CAT-SECQ1-D; allow-list question is an operator decision). Reviewer enumerated all callers: testConnection/testConnectionAs only from CreateSyncEndpoint and UpdateEndpoint. Follow-ups:
+- SECQ1CFU-M1 (minor, test, services/sync_class_secq1c_fu_test.go:58-60): assert hits==0 BEFORE the "connection test failed" message so a regression fails on the real property.
+- SECQ1CFU-M2 (minor, test): approveCreated still classifies via the real AutoClassifyApprovedClass, not the seam, so the M3 public leg is protected twice; only the hits-zero assertion separates the layers; add a comment.
+- SECQ1CFU-N1 (nit): M1 handler test router has no adminGate unlike production main.go:1379; add a note.
