@@ -86,6 +86,13 @@ func keysOf(fs []Finding) map[string]bool {
 	return m
 }
 
+// Mutation record (MAIN-POOLGUARD-R3, round-1 fixes): 28 mutants of scan.go/types.go, 24 killed by
+// this file. 4 survive and are equivalent by argument, not shown by a killing fixture: M11 (interface
+// receiver trusted) and M12 (type-parameter receiver trusted): the method object of an interface or
+// constraint has no FuncDecl, so resolution falls back to by name either way; M22 (union terms not
+// walked) and M25 (type-parameter constraint not walked): in a program that compiles neither can reach
+// incompleteMethodSet from a receiver staticMethod accepts. Z09 and Z10 (zrev) are flagged by neither
+// scanner: a by-name gap of the base, not a head regression.
 // sanctioned lists, per scanned root, the ONLY functions the by-name base flags and the head may drop:
 // each one's loop calls a method the type checker proves is statically dispatched to a CLOSED method
 // of a concrete type (no func value, interface or type-parameter call, field call or range-over-func
@@ -102,6 +109,13 @@ var sanctioned = map[string]map[string]string{
 	"testdata/rev5": {
 		"rev5.go:R39bClosedThroughHelper": "fx2.Pure.Load, closed through a static helper",
 	},
+	"testdata/rev6": {
+		"rev6.go:R49CompleteDespiteUnresolvedField": "Deep.String, same package, pure; complete method set (control)",
+	},
+	"testdata/zrev": {
+		"main.go:Z07GenericPure": "gn.Box[int].Load, other package, pure (generic origin)",
+		"main.go:Z12DeferGo":     "Deep.String, same package, pure, called through go/defer",
+	},
 	"../..": {
 		"repository/user_repository.go:UserRepository.adminRoleIDsTx": "models.Permissions.HasPermission, other package, pure",
 	},
@@ -109,11 +123,11 @@ var sanctioned = map[string]map[string]string{
 
 var corpora = []string{
 	"testdata/positive", "testdata/negative", "testdata/shapes", "testdata/rev4", "testdata/rev4mod",
-	"testdata/rev4/nm", "testdata/rev5", "testdata/rev5mod", "../..",
+	"testdata/rev4/nm", "testdata/rev5", "testdata/rev5mod", "testdata/rev6", "testdata/zrev", "testdata/zrevmod", "../..",
 }
 
 // The type-aware head must flag exactly what the by-name base flags on every corpus (reviewer shapes
-// S01-S23, T01-T15, R01-R34, own R35-R43, and the real tree), minus the sanctioned removals above.
+// S01-S23, T01-T15, R01-R34, Z01-Z12, own R35-R51, and the real tree), minus the sanctioned removals above.
 // A head-only finding is not unsafe, but none is expected on these corpora, so it fails too: that keeps
 // mutants that make the head follow the wrong decls visible.
 func TestPoolClassGuard_NeverLessStrictThanByName(t *testing.T) {
@@ -151,6 +165,11 @@ func TestPoolClassGuard_ReviewerShapesStayFlagged(t *testing.T) {
 		"testdata/rev4mod": {"R03ReplaceIface"},
 		"testdata/rev4/nm": {"R02NestedModuleIface"},
 		"testdata/rev5mod": {"R43OtherModuleSameImportPath"},
+		"testdata/rev6": {"R44AliasOfUnresolved", "R45GenericInstantiation", "R46PtrDefinedOverUnresolved",
+			"R47NamedOverIncompleteStruct", "R48ConstraintOverUnresolved", "R50DotFileIgnored", "R51IgnoreTaggedFile"},
+		"testdata/zrev": {"Z01IfaceEmbedsUnresolved", "Z01bSamePkg", "Z02UnderscoreFileIgnored", "Z03TaggedOnlyDecl",
+			"Z05DefinedOverUnresolved", "Z06DefinedIfaceOverUnresolved", "Z08GenericOpen", "Z11NamedFuncType"},
+		"testdata/zrevmod": {"Z04NestedStaleCopy"},
 		"testdata/rev5":    {"R35TaggedStructFirst", "R36SamePkgExactReachesPooled", "R37InvalidEmbeddingShadow", "R38RangeOverFuncCallback", "R39OpenOneLevelDown", "R40DepthBound", "R42RedeclaredType"},
 	}
 	for root, fns := range want {

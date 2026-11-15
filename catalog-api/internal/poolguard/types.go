@@ -16,7 +16,8 @@ package poolguard
 //
 // Every other call (plain function, interface method, type parameter, func-typed field, method value,
 // method expression, open method, anything in a package that could not be type-checked reliably) keeps
-// the base by-name resolution. A package is unreliable when it has build-constrained files, more than
+// the base by-name resolution. A package is unreliable when it has build-constrained files, files the go
+// tool ignores (name starting with _ or .), more than
 // one package clause, or a redeclaration (a platform variant always redeclares something, so the
 // build-constraint rule and the redeclaration rule overlap on purpose). An import that is not a reliable
 // package of the importer's OWN module (nearest go.mod, nested modules included) is left unresolved, so
@@ -158,6 +159,10 @@ func newTypeWorld(fset *token.FileSet, files map[string][]*ast.File, paths map[s
 			if buildConstrained(paths[dir][i], f) {
 				tp.ok, tp.failure = false, "build-constrained file "+paths[dir][i]
 			}
+			if b := filepath.Base(paths[dir][i]); strings.HasPrefix(b, "_") || strings.HasPrefix(b, ".") {
+				// The go tool ignores such files; the scanner would type-check declarations no build sees.
+				tp.ok, tp.failure = false, "file ignored by the go tool "+paths[dir][i]
+			}
 			if name == "" {
 				name = f.Name.Name
 			} else if name != f.Name.Name {
@@ -236,36 +241,60 @@ func (w *typeWorld) check(dir string) *typedPkg {
 	return tp
 }
 
-// invalidEmbedding reports whether t, or a type it embeds (transitively), is invalid. A struct that
-// embeds an unresolved type may have a method set the checker cannot see, so its selections are not
-// trusted.
-func invalidEmbedding(t types.Type, seen map[types.Type]bool) bool {
-	t = types.Unalias(t)
-	if p, ok := t.(*types.Pointer); ok {
-		t = types.Unalias(p.Elem())
-	}
-	if b, ok := t.(*types.Basic); ok && b.Kind() == types.Invalid {
+// incompleteMethodSet reports whether the method set of t may be incomplete because some type that
+// can contribute methods to it is unresolved (invalid). The checker silently drops the methods of an
+// invalid type, so a promoted method it reports could be shadowed in a real build by one it cannot see.
+// Walked, transitively: alias targets, pointer elements, the underlying type of a defined type (a
+// defined type over an unresolved type has an invalid underlying), embedded struct fields (instantiated
+// generic structs are substituted), embedded interfaces and type-set terms of interfaces, and the
+// constraint of a type parameter. Non-embedded fields and method signatures do not affect a method set.
+// The union and type-parameter branches are defensive: in a program that compiles, neither can sit in a
+// method-set-contributing position of a receiver staticMethod accepts (unions occur only in
+// constraints, a type parameter cannot be embedded, and interface and type-parameter receivers are
+// rejected before this walk), so no fixture can exercise them.
+func incompleteMethodSet(t types.Type, seen map[types.Type]bool) bool {
+	if t == nil {
 		return true
 	}
+	t = types.Unalias(t)
 	if seen[t] {
 		return false
 	}
 	seen[t] = true
-	st, ok := t.Underlying().(*types.Struct)
-	if !ok {
-		return false
-	}
-	for i := 0; i < st.NumFields(); i++ {
-		if f := st.Field(i); f.Embedded() && invalidEmbedding(f.Type(), seen) {
-			return true
+	switch v := t.(type) {
+	case *types.Basic:
+		return v.Kind() == types.Invalid
+	case *types.Pointer:
+		return incompleteMethodSet(v.Elem(), seen)
+	case *types.Named:
+		return incompleteMethodSet(v.Underlying(), seen)
+	case *types.TypeParam:
+		return incompleteMethodSet(v.Constraint(), seen)
+	case *types.Struct:
+		for i := 0; i < v.NumFields(); i++ {
+			if f := v.Field(i); f.Embedded() && incompleteMethodSet(f.Type(), seen) {
+				return true
+			}
+		}
+	case *types.Interface:
+		for i := 0; i < v.NumEmbeddeds(); i++ {
+			if incompleteMethodSet(v.EmbeddedType(i), seen) {
+				return true
+			}
+		}
+	case *types.Union:
+		for i := 0; i < v.Len(); i++ {
+			if incompleteMethodSet(v.Term(i).Type(), seen) {
+				return true
+			}
 		}
 	}
 	return false
 }
 
 // staticMethod returns the method a call dispatches to statically: a method value selection
-// (types.MethodVal) of a method declared on a concrete, non-interface type whose receiver has no
-// unresolved embedded type. It returns nil for every other call, and for every call in an unreliable
+// (types.MethodVal) of a method declared on a concrete, non-interface type whose receiver's method set
+// is complete (incompleteMethodSet). It returns nil for every other call, and for every call in an unreliable
 // package.
 func (tp *typedPkg) staticMethod(c *ast.CallExpr) *types.Func {
 	if tp == nil || !tp.ok || tp.info == nil {
@@ -290,7 +319,7 @@ func (tp *typedPkg) staticMethod(c *ast.CallExpr) *types.Func {
 	if _, isTP := types.Unalias(sel.Recv()).(*types.TypeParam); isTP {
 		return nil
 	}
-	if invalidEmbedding(sel.Recv(), map[types.Type]bool{}) {
+	if incompleteMethodSet(sel.Recv(), map[types.Type]bool{}) {
 		return nil
 	}
 	return m.Origin()
