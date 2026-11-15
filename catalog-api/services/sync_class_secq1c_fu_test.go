@@ -43,6 +43,8 @@ func TestSECQ1CFU_M2_UpdateTestsUnderPlannedClass(t *testing.T) {
 	require.NotZero(t, *hits)
 }
 
+// SECQ1CFU-M2: approveCreated still classifies via the real AutoClassifyApprovedClass, not the seam, so the public leg is protected twice;
+// only the hits-zero assertion separates the two layers.
 // M3: CreateSyncEndpoint tests a WebDAV destination under plan.class too (before the fix it used testConnection: ID 0, private default).
 func TestSECQ1CFU_M3_CreateTestsUnderPlannedClass(t *testing.T) {
 	svc, repo, root := newGuardedSyncService(t)
@@ -55,8 +57,9 @@ func TestSECQ1CFU_M3_CreateTestsUnderPlannedClass(t *testing.T) {
 	secq1cFUForceClass(t, netguard.ClassPublic)
 	_, err := svc.CreateSyncEndpoint(1, mk())
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "connection test failed", "planned public: tested under the public class")
+	// SECQ1CFU-M1: assert the real property (fixture never reached) BEFORE the message.
 	require.Zero(t, *hits, "the allow-listed loopback fixture was never reached")
+	require.Contains(t, err.Error(), "connection test failed", "planned public: tested under the public class")
 	eps, gerr := repo.GetUserEndpoints(1)
 	require.NoError(t, gerr)
 	require.Empty(t, eps, "nothing stored")
