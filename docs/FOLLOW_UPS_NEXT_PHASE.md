@@ -2931,3 +2931,10 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 - ADMD1-n5 (nit, doc, pre-existing): ADMIN_GUIDE unlock curl (:508-509) sends no body but openapi.yaml:5338 says empty body gives 400; add -d '{}'.
 - ADMD1-n6 (nit, doc): PUT /roles example: omitting description/permissions overwrites them; add a warning sentence.
 - ADMD1-n7 (info): check_twin_presence reported BLIND for ADMIN_GUIDE (no html/pdf twin); exemption UNCONFIRMED. No HTTP-level, PostgreSQL or real-login run.
+
+### CAT-NFS-EMU-2 review follow-ups (Opus GO-with-follow-ups, 2026-11-15, PROVISIONAL, evidence class EMULATOR)
+- NFSE2-m1 (minor, doc): unfs3_emulator_test.go:4 says pkg/nfs3 is "the same package the factory registers"; false today (no non-test RegisterProtocol for nfs3; product case "nfs" uses mount-based NewNFSClient). Fix comment, state the boundary: this leg proves the pkg/nfs3 library, not the product NFS path.
+- NFSE2-m2 (minor, test): WritesRefused half is a client-only guard (WriteFile returns constant ErrReadOnly, client.go:1215; export is rw); rename or note.
+- NFSE2-m3 (minor, script): nfs_emulator_live.sh:17-18 seed `podman exec` status unchecked, manifest pipeline lacks pipefail, JSON via printf unescaped (safe only for fixed names); check status, set pipefail.
+- NFSE2-n4 (nit): SC2034 unused `i` (:15); podman run lacks --pull=never. NFSE2-n5 (nit): strconv.Atoi errors ignored (:42-43); NFS_EMU_USE_PORTMAP=1 branch dead knob.
+- NFSE2-i6 (info/decisions): unfs3 lacks READDIRPLUS (NFS3ERR_NOTSUPP) so ListDirectory fails; READDIR fallback in pkg/nfs3 is a product-scope decision (gap pinned by TestUnfs3ListDirectoryIsKnownGap); factory.go nfs3 wiring gap; kernel-mount NFSClient untested rootless; lock entry/test_containerfiles.sh map/docs/scripts/nfs_build.md note on pinned Debian digest must be pulled first (owed); no N>=3 repeat; real Synology NFS stays separate.
