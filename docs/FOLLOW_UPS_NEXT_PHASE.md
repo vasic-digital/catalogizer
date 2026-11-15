@@ -2890,3 +2890,9 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 - PGLAX1-F7-FU1 (minor, test): the "pool read after lock is equivalent" claim holds only when MaxOpenConnections > 1 (configurable); add a MaxOpenConnections=1 test for the 4 paths (probe template: scratchpad rvf7_probe_test.go.txt, mutants rvf7_mut.py).
 - PGLAX1-F7-FU2 (minor, test): BeforeLock subtests are the only guard against read-before-lock inside the tx (R4, R6); say so in the test comment.
 - PGLAX1-F7-FU3 (minor, pre-existing test gap): TestUserRepository_Delete "database error" case does not assert ExpectationsWereMet, so Rollback on the error path is not pinned.
+
+### SSEF4R-FD-m1 review follow-ups (Opus GO-with-follow-ups, 2026-11-15, PROVISIONAL)
+- SSEF4R-FD-m1-FU1 (minor, test-instrumentation): own mutants M3 (per-line subtraction), M5 (count-based subtraction), M6 (skip lines containing `//`) survive the helper tests; add golden cases: bad gate before a good one, good+bad on the same line, an occurrence on a `//` line.
+- SSEF4R-FD-m1-FU2 (minor, doc): F2/F3 note — role seeds are answerable (database/migrations_sqlite.go:281-285, migrations_postgres.go:254-260, migrations/000003_add_user_tables*.sql:57-61: Admin ["*"], User ["media.view","media.download"]); today only Admin can open /conversion, so a conversion.view gate removes access from no default role; every default User passes the /identities gate then gets 403. F2 fix should cite `<ProtectedRoute requireAdmin>` (App.tsx:150). Operator decision for F2/F3 gates still open.
+- SSEF4R-FD-m1-FU3 (nit): routeGateExtract.ts header says "one-line" but regex accepts newlines before <ProtectedRoute; auth.go range 239-266.
+- SSEF4R-FD-m1-FU4 (info): check does not cover requireAdmin/requiredRole props or spread props; MediaPlayer.test.tsx timing assertion flaky under load (root cause UNCONFIRMED).
