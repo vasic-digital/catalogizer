@@ -60,8 +60,9 @@ func TestPGLAX1F7_UserWriteGuards_SingleConnectionPoolDoesNotHang(t *testing.T) 
 }
 
 // TH2-MINOR-1: LockAccount is the only guarded write whose refusal read (refusedByGuard) runs inside the
-// transaction, before Commit. With MaxOpenConnections=1 a refusal read through the pool (r.db) deadlocks, and a
-// refusal read after Commit loses the guard's view of the row. This pins the sole-administrator refusal path.
+// transaction, before Commit. With MaxOpenConnections=1 a refusal read through the pool (r.db) deadlocks. This pins
+// the sole-administrator refusal path completing on one connection and releasing that connection afterwards. It does
+// not pin the position of the refusal read relative to Commit (a read after Commit through the pool still passes).
 func TestPGLAX1F7_LockAccount_SoleAdminRefusedOnSingleConnectionPool(t *testing.T) {
 	db, err := database.NewConnection(&config.DatabaseConfig{Path: filepath.Join(t.TempDir(), "s.db"), MaxOpenConnections: 1})
 	require.NoError(t, err)
@@ -80,7 +81,12 @@ func TestPGLAX1F7_LockAccount_SoleAdminRefusedOnSingleConnectionPool(t *testing.
 	case <-time.After(15 * time.Second):
 		t.Fatal("deadlock: refused LockAccount did not finish on a single-connection pool")
 	}
+	// TH2M1-FU1: if the refused path leaked the transaction's only connection this read would block until the
+	// package timeout; the bounded context makes it fail fast instead.
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	var locked bool
-	require.NoError(t, db.QueryRow(`SELECT COALESCE(is_locked, '0') FROM users WHERE id = ?`, sole).Scan(&locked))
+	require.NoError(t, db.QueryRowContext(ctx, `SELECT COALESCE(is_locked, '0') FROM users WHERE id = ?`, sole).Scan(&locked),
+		"the connection was not released after the refused LockAccount")
 	require.False(t, locked, "the refused lock must not have been applied")
 }
