@@ -9,6 +9,43 @@ import (
 	"testing"
 )
 
+// TestLocalMapperClosure (MAIN-ERRLEAK): a closure whose returns are free of error text is a local mapper (the
+// scan_handler probeErr shape); a closure that can return raw error text, or a lookalike that is not a closure, is
+// still reported (golden-bad, section 11.4.201).
+func TestLocalMapperClosure(t *testing.T) {
+	good := "package p\nfunc f(c *gin.Context, err error, admin bool) {\n\tresp := gin.H{}\n\tprobeErr := func(err error) string {\n\t\tif !admin {\n\t\t\treturn classText\n\t\t}\n\t\treturn services.ScrubErrorFor(err, root)\n\t}\n\tresp[\"error\"] = probeErr(err)\n\tc.JSON(200, resp)\n}\n"
+	if got := hits(t, good); len(got) != 0 {
+		t.Errorf("clean closure mapper flagged: %v", got)
+	}
+	bad := map[string]string{
+		"rawReturn":   "package p\nfunc f(c *gin.Context, err error, admin bool) {\n\tresp := gin.H{}\n\tprobeErr := func(err error) string {\n\t\tif !admin {\n\t\t\treturn classText\n\t\t}\n\t\treturn err.Error()\n\t}\n\tresp[\"error\"] = probeErr(err)\n\tc.JSON(200, resp)\n}\n",
+		"noClosure":   "package p\nfunc f(c *gin.Context, err error) {\n\tresp := gin.H{}\n\tresp[\"error\"] = probeErr(err)\n\tc.JSON(200, resp)\n}\n",
+		"leakBesides": "package p\nfunc f(c *gin.Context, err error) {\n\tprobeErr := func(err error) string { return classText }\n\tc.JSON(500, gin.H{\"a\": probeErr(err), \"error\": err.Error()})\n}\n",
+	}
+	for name, src := range bad {
+		if got := hits(t, src); len(got) < 1 {
+			t.Errorf("golden-bad %s not flagged", name)
+		}
+	}
+}
+
+// TestSyncClassWrapper (MAIN-ERRLEAK): respondSyncClassError is a classified safe wrapper, a same-shaped wrapper
+// with another name is still a sink, and the wrapper's own body is still swept.
+func TestSyncClassWrapper(t *testing.T) {
+	ok := "package p\nfunc f(c *gin.Context, err error) {\n\tif respondSyncClassError(c, err) {\n\t\treturn\n\t}\n}\n"
+	if got := hits(t, ok); len(got) != 0 {
+		t.Errorf("classified wrapper flagged: %v", got)
+	}
+	other := "package p\nfunc f(c *gin.Context, err error) {\n\tif respondOtherClassError(c, err) {\n\t\treturn\n\t}\n}\n"
+	if got := hits(t, other); len(got) != 1 {
+		t.Errorf("unclassified wrapper must stay flagged: %v", got)
+	}
+	body := "package p\nfunc respondSyncClassError(c *gin.Context, err error) bool {\n\tc.JSON(409, gin.H{\"error\": err.Error()})\n\treturn true\n}\n"
+	if got := hits(t, body); len(got) != 1 {
+		t.Errorf("leak inside the wrapper body not flagged: %v", got)
+	}
+}
+
 func hits(t *testing.T, src string) []Site {
 	t.Helper()
 	s, err := Sweep("x.go", src)
