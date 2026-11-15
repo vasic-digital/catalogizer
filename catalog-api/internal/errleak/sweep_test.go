@@ -15,18 +15,32 @@ func TestClosureLeakShapesStayFlagged(t *testing.T) {
 	pre := "package p\nfunc f(c *gin.Context, err error, admin bool) {\n\tresp := gin.H{}\n"
 	post := "\tresp[\"error\"] = probeErr(err)\n\tc.JSON(200, resp)\n}\n"
 	cases := map[string]string{
-		"S1outerVar":    "\tmsg := err.Error()\n\tprobeErr := func(err error) string { return msg }\n",
-		"S2otherParam":  "\tprobeErr := func(e error) string { return fmt.Sprintf(\"probe: %v\", e) }\n",
-		"S3namedResult": "\tprobeErr := func(err error) (s string) {\n\t\ts = err.Error()\n\t\treturn\n\t}\n",
-		"S4reassigned":  "\tprobeErr := func(err error) string { return classText }\n\tprobeErr = func(err error) string { return err.Error() }\n",
-		"S5shadowed":    "\tprobeErr := func(err error) string { return classText }\n\t{\n\t\tprobeErr := func(err error) string { return err.Error() }\n\t\t_ = probeErr\n\t}\n",
-		"S6sameName":    "\tprobeErr := func(err error) string { return classText }\n\tprobeErr2 := err.Error()\n\tresp[\"x\"] = probeErr2\n",
-		"S8plain":       "\tprobeErr := func(e error) string { return e.Error() }\n",
+		"S1outerVar":       "\tmsg := err.Error()\n\tprobeErr := func(err error) string { return msg }\n",
+		"S2otherParam":     "\tprobeErr := func(e error) string { return fmt.Sprintf(\"probe: %v\", e) }\n",
+		"S3namedResult":    "\tprobeErr := func(err error) (s string) {\n\t\ts = err.Error()\n\t\treturn\n\t}\n",
+		"S4reassigned":     "\tprobeErr := func(err error) string { return classText }\n\tprobeErr = func(err error) string { return err.Error() }\n",
+		"S5shadowed":       "\tprobeErr := func(err error) string { return classText }\n\t{\n\t\tprobeErr := func(err error) string { return err.Error() }\n\t\t_ = probeErr\n\t}\n",
+		"S6shadowedByText": "\trootMsg := func(e error) string { return classText }\n\t_ = rootMsg\n\t{\n\t\trootMsg := err.Error() // shadows the closure name with a string that carries error text\n\t\tresp[\"x\"] = rootMsg\n\t}\n",
+		"S8plain":          "\tprobeErr := func(e error) string { return e.Error() }\n",
 	}
 	for name, mid := range cases {
 		if got := hits(t, pre+mid+post); len(got) < 1 {
 			t.Errorf("%s not flagged", name)
 		}
+	}
+}
+
+// TestShadowingShapeControl (ERRLEAK-FU-E): the S6 fixture really is the shadowing shape (an inner variable that reuses the closure's
+// name and carries error text); the same shape with fixed text is clean, so the flag comes from the shadowing variable, not the closure.
+func TestShadowingShapeControl(t *testing.T) {
+	mk := func(inner string) string {
+		return "package p\nfunc f(c *gin.Context, err error) {\n\tresp := gin.H{}\n\trootMsg := func(e error) string { return classText }\n\t_ = rootMsg\n\t{\n\t\trootMsg := " + inner + "\n\t\tresp[\"x\"] = rootMsg\n\t}\n\tc.JSON(200, resp)\n}\n"
+	}
+	if got := hits(t, mk("err.Error()")); len(got) != 1 {
+		t.Errorf("shadowing variable carrying error text: want 1 hit, got %v", got)
+	}
+	if got := hits(t, mk("\"fixed\"")); len(got) != 0 {
+		t.Errorf("shadowing variable with fixed text: want 0 hits, got %v", got)
 	}
 }
 
