@@ -2734,3 +2734,9 @@ Live PG16 race test 50 rounds x 12 variants 0 violations; reviewer mutations M1/
 - TIERFU-N1 (nit, pre-existing): CORS sends no Vary: Origin.
 - TIERFU-N2 (nit): internal/middleware/middleware.go:19 has a second divergent CORS() not on the live path; investigate history per section 11.4.124, do not delete.
 - TIERFU-N3 (nit): pprof guard end time via time.Unix(0,end) is wall clock, not monotonic.
+
+## SSE-F4-R1..R4 (Settings real-auth tests, AuthContext role_id rule, Settings tab fallback) review (Opus, GO-with-follow-ups, PROVISIONAL, commits d62dfa672 79db3b23d b5a878f50)
+- SSEF4R-M1 (important, mostly pre-existing, AuthContext.tsx isAdmin): UI admin heuristic (role_id===1) differs from the server rule (userRepo.IsAdmin: live role permissions system.admin / * / system.*). A custom admin role with id != 1 is admin on the server but gets no Sync tab; role 1 edited to lose `*` stays UI admin. UI gating only, not a security boundary. Fix: derive isAdmin from /auth/status `permissions` with the server matching rule.
+- SSEF4R-M2 (minor): three different admin rules in the UI (ProtectedRoute.tsx:37 name==='Admin'||role_id===1, Header.tsx:104 name only, AuthContext role_id first); make both use useAuth().isAdmin after M1.
+- SSEF4R-N1 (nit): role-name fallback in AuthContext reachable only for payloads without role_id; mutant `user?.role_id` truthiness survives (equivalent except role_id 0).
+- Environment note: 7 web test files fail identically on main for missing @vasic-digital/* packages (not a regression).
