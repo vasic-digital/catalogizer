@@ -151,7 +151,7 @@ export class AuthService {
    */
   public async hasPermission(permission: string): Promise<boolean> {
     const permissions = await this.getPermissions();
-    return permissions.includes(permission) || permissions.includes('admin:system');
+    return permissionsGrant(permissions, permission) || permissionsGrant(permissions, SYSTEM_ADMIN_PERMISSION);
   }
 
   /**
@@ -174,4 +174,24 @@ export class AuthService {
   public async revokeApiKey(keyId: number): Promise<void> {
     return this.http.delete<void>(`/auth/api-keys/${keyId}`);
   }
+}
+
+const SYSTEM_ADMIN_PERMISSION = 'system.admin';
+
+/**
+ * Port of the server's models.Permissions.HasPermission: exact match, "*", or a
+ * prefix wildcard on a segment boundary ("media.*", "admin:*"; "med*" and
+ * "media.*" vs "mediax.view" do not match). Non-string entries are ignored.
+ */
+export function permissionsGrant(perms: readonly unknown[] | undefined | null, permission: string): boolean {
+  for (const perm of perms ?? []) {
+    if (typeof perm !== 'string') continue;
+    if (perm === '*' || perm === permission) return true;
+    if (perm.length > 0 && perm.endsWith('*')) {
+      const prefix = perm.slice(0, -1);
+      if (prefix !== '' && !prefix.endsWith('.') && !prefix.endsWith(':')) continue;
+      if (permission.startsWith(prefix)) return true;
+    }
+  }
+  return false;
 }

@@ -282,12 +282,12 @@ describe('AuthService', () => {
 
   describe('permissions', () => {
     it('gets user permissions', async () => {
-      mockHttp.get.mockResolvedValueOnce(['read', 'write', 'admin:system']);
+      mockHttp.get.mockResolvedValueOnce(['read', 'write', 'system.admin']);
 
       const result = await authService.getPermissions();
 
       expect(mockHttp.get).toHaveBeenCalledWith('/auth/permissions');
-      expect(result).toEqual(['read', 'write', 'admin:system']);
+      expect(result).toEqual(['read', 'write', 'system.admin']);
     });
 
     it('returns true for existing permission via hasPermission', async () => {
@@ -298,8 +298,8 @@ describe('AuthService', () => {
       expect(result).toBe(true);
     });
 
-    it('returns true for admin:system wildcard via hasPermission', async () => {
-      mockHttp.get.mockResolvedValueOnce(['admin:system']);
+    it('returns true for system.admin wildcard via hasPermission', async () => {
+      mockHttp.get.mockResolvedValueOnce(['system.admin']);
 
       const result = await authService.hasPermission('any_permission');
 
