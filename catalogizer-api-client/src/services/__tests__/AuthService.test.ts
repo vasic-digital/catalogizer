@@ -282,24 +282,24 @@ describe('AuthService', () => {
 
   describe('permissions', () => {
     it('gets user permissions', async () => {
-      mockHttp.get.mockResolvedValueOnce(['read', 'write', 'admin:system']);
+      mockHttp.get.mockResolvedValueOnce({ role: 'User', permissions: ['read', 'write', 'system.admin'], is_admin: false });
 
       const result = await authService.getPermissions();
 
       expect(mockHttp.get).toHaveBeenCalledWith('/auth/permissions');
-      expect(result).toEqual(['read', 'write', 'admin:system']);
+      expect(result).toEqual(['read', 'write', 'system.admin']);
     });
 
     it('returns true for existing permission via hasPermission', async () => {
-      mockHttp.get.mockResolvedValueOnce(['read', 'write']);
+      mockHttp.get.mockResolvedValueOnce({ role: 'User', permissions: ['read', 'write'], is_admin: false });
 
       const result = await authService.hasPermission('read');
 
       expect(result).toBe(true);
     });
 
-    it('returns true for admin:system wildcard via hasPermission', async () => {
-      mockHttp.get.mockResolvedValueOnce(['admin:system']);
+    it('returns true for system.admin wildcard via hasPermission', async () => {
+      mockHttp.get.mockResolvedValueOnce({ role: 'User', permissions: ['system.admin'], is_admin: false });
 
       const result = await authService.hasPermission('any_permission');
 
@@ -307,7 +307,7 @@ describe('AuthService', () => {
     });
 
     it('returns false for missing permission via hasPermission', async () => {
-      mockHttp.get.mockResolvedValueOnce(['read']);
+      mockHttp.get.mockResolvedValueOnce({ role: 'User', permissions: ['read'], is_admin: false });
 
       const result = await authService.hasPermission('write');
 
