@@ -30,8 +30,8 @@ const (
 // KnownSecrets returns the credential values carried by one request (at most maxKnownSecrets values; the scan is linear). params are the route parameters (name -> value).
 func KnownSecrets(path, rawQuery string, header http.Header, params map[string]string) []string {
 	// Two pools (HYGF4B-M-B): path-derived pieces are attacker-shaped (one crafted segment can yield hundreds), so they get at most
-	// maxPathKnownSecrets slots when credentials need the reserve (otherwise up to maxKnownSecrets); header / query / route-parameter credentials are collected into their own pool and can never be
-	// starved by the path. Values are deduplicated, and a key name (secretSegmentKeys) is never itself a known secret (HYGF4B-M-A).
+	// maxPathKnownSecrets slots when credentials need the reserve (otherwise up to maxKnownSecrets); header / query /
+	// route-parameter credentials are collected into their own pool and can never be starved by the path. Values are deduplicated, and a key name (secretSegmentKeys) is never itself a known secret (HYGF4B-M-A).
 	// out is the path pool: it collects up to maxKnownSecrets distinct path values (the scan stops there); only its first pathCap
 	// entries are kept before the merge, the rest is the overflow that refills slots the credential pool leaves unused.
 	var out, prio []string
@@ -50,9 +50,10 @@ func KnownSecrets(path, rawQuery string, header http.Header, params map[string]s
 			prio = append(prio, v)
 		}
 	}
-	for name, v := range params {
+	// map iteration order is random: visit keys sorted so that, when credentials exceed the reserve, the kept set is deterministic
+	for _, name := range sortedKeys(params) {
 		if SensitiveKey(name) {
-			addPrio(v)
+			addPrio(params[name])
 		}
 	}
 	for _, pair := range strings.FieldsFunc(rawQuery, func(r rune) bool { return r == '&' || r == ';' }) {
@@ -67,11 +68,16 @@ func KnownSecrets(path, rawQuery string, header http.Header, params map[string]s
 			}
 		}
 	}
-	for name, vals := range header {
+	hnames := make([]string, 0, len(header))
+	for name := range header {
+		hnames = append(hnames, name)
+	}
+	sort.Strings(hnames)
+	for _, name := range hnames {
 		if !headerNames[strings.ToLower(name)] {
 			continue
 		}
-		for _, v := range vals {
+		for _, v := range header[name] {
 			addPrio(v)
 			for _, f := range strings.FieldsFunc(v, func(r rune) bool { return r == ' ' || r == ';' || r == ',' }) {
 				if _, val, ok := strings.Cut(f, "="); ok {
@@ -274,4 +280,13 @@ func preCutForKnown(s string) string {
 		s = s[:cut]
 	}
 	return s
+}
+
+func sortedKeys(m map[string]string) []string {
+	ks := make([]string, 0, len(m))
+	for k := range m {
+		ks = append(ks, k)
+	}
+	sort.Strings(ks)
+	return ks
 }
