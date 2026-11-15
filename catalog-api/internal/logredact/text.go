@@ -245,7 +245,7 @@ func pctDecode(run string) (string, []int) {
 	var d strings.Builder
 	offs := make([]int, 0, len(run)+1)
 	for i := 0; i < len(run); {
-		if run[i] == '%' && i+2 < len(run)+0 && isHex(run[i+1]) && isHex(run[i+2]) {
+		if run[i] == '%' && i+2 < len(run) && isHex(run[i+1]) && isHex(run[i+2]) {
 			offs = append(offs, i)
 			d.WriteByte(unhex(run[i+1])<<4 | unhex(run[i+2]))
 			i += 3
