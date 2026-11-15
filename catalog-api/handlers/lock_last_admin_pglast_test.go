@@ -15,11 +15,28 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// withinDeadlockGuard runs fn and fails the test after d instead of waiting for the go test timeout. The test
+// environment uses a single-connection SQLite pool, so a refusal read taken through the pool while the lock
+// transaction holds that connection blocks forever (PGLAST-F6). On timeout the stuck goroutine is leaked (the
+// process exits when the test binary ends); only the failure is made fast.
+func withinDeadlockGuard(t *testing.T, d time.Duration, what string, fn func()) {
+	t.Helper()
+	done := make(chan struct{})
+	go func() { defer close(done); fn() }()
+	select {
+	case <-done:
+	case <-time.After(d):
+		t.Fatalf("deadlock guard: %s did not finish within %s on a single-connection pool", what, d)
+	}
+}
+
+const lockGuardTimeout = 15 * time.Second
+
 func TestLockAccount_LastAdminRefused_ThenAllowedWithSecondAdmin(t *testing.T) {
 	e := newD9Env(t)
 	adm, err := e.repo.GetByUsername("rtadmin")
 	require.NoError(t, err)
-	err = e.repo.LockAccount(adm.ID, time.Now().Add(time.Hour))
+	withinDeadlockGuard(t, lockGuardTimeout, "refused LockAccount", func() { err = e.repo.LockAccount(adm.ID, time.Now().Add(time.Hour)) })
 	require.True(t, errors.Is(err, repository.ErrLastAdmin), "sole admin lock must be refused, got %v", err)
 	u, _ := e.repo.GetByID(adm.ID)
 	require.False(t, u.IsLocked, "refused lock must leave the account unlocked")
@@ -28,10 +45,12 @@ func TestLockAccount_LastAdminRefused_ThenAllowedWithSecondAdmin(t *testing.T) {
 	require.NoError(t, herr)
 	_, cerr := e.repo.Create(&models.User{Username: "second_admin", Email: "sa@example.test", PasswordHash: hash, Salt: salt, RoleID: 1, IsActive: true})
 	require.NoError(t, cerr)
-	require.NoError(t, e.repo.LockAccount(adm.ID, time.Now().Add(time.Hour)), "lock allowed while another active admin exists")
+	withinDeadlockGuard(t, lockGuardTimeout, "allowed LockAccount", func() { err = e.repo.LockAccount(adm.ID, time.Now().Add(time.Hour)) })
+	require.NoError(t, err, "lock allowed while another active admin exists")
 	// ...and the new sole effective admin can no longer be locked.
 	sa, _ := e.repo.GetByUsername("second_admin")
-	require.True(t, errors.Is(e.repo.LockAccount(sa.ID, time.Now().Add(time.Hour)), repository.ErrLastAdmin))
+	withinDeadlockGuard(t, lockGuardTimeout, "second refused LockAccount", func() { err = e.repo.LockAccount(sa.ID, time.Now().Add(time.Hour)) })
+	require.True(t, errors.Is(err, repository.ErrLastAdmin))
 }
 
 // lockRacer simulates the concurrent writer of the race: just before the
@@ -77,7 +96,9 @@ func TestLockAccountHTTP_LastAdminIs409_OthersUnchanged(t *testing.T) {
 	require.Equal(t, 200, w.Code, w.Body.String())
 
 	// The race: the target became the last effective administrator -> 409, not 500, and it stays unlocked.
-	w = e.do(e.adminTok, "POST", "/lkrace/users/"+rtItoa(ad2ID)+"/lock", body)
+	withinDeadlockGuard(t, lockGuardTimeout, "HTTP lock of the last administrator", func() {
+		w = e.do(e.adminTok, "POST", "/lkrace/users/"+rtItoa(ad2ID)+"/lock", body)
+	})
 	require.Equal(t, 409, w.Code, w.Body.String())
 	require.Contains(t, w.Body.String(), "last administrator")
 	u, _ = e.repo.GetByID(ad2ID)
