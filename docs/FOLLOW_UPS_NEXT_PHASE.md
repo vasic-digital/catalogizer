@@ -2750,3 +2750,10 @@ Differential old vs new over 9000 cases: 0 credential regressions, 0 unexplained
 - HYGF4C-N1 (nit, docs): "Two pools" and merge comments still say path gets at most maxPathKnownSecrets; constant comment duplicated.
 - HYGF4C-N2 (nit, pre-existing): text.go pctDecode `i+2 < len(run)+0` leftover.
 - M-C remains bounded only: pctDecode in text.go still builds its offsets slice.
+
+## HYGF4C (refill of unused path slots, M1..M4/N1/N2) review (Opus, GO-with-follow-ups, PROVISIONAL, commit 412405cce)
+Differential 12000 cases old vs new: 0 regressions, 0 over-cap, 0 credentials lost; new set is a strict superset of old. Follow-ups:
+- HYGF4D-M1 (important, test-instrumentation, known.go:189): `out = out[:pathCap:pathCap]` is load-bearing aliasing protection with no test (reviewer mutant C survives). Add: path of 63 pieces + `token=Piece000ZZ&token=NewCredA1&token=NewCredB2`; require Piece061ZZ collected.
+- HYGF4D-M2 (minor, test): credential differing only in case from a path value must still be collected (mutant B, case-insensitive credential skip, survives author tests); e.g. path /share%2FS3cretOne with query token=s3cretone, require both.
+- HYGF4D-M3 (minor, pre-existing, known.go:53,70): params/header maps iterated in random order; which credentials are kept when they exceed the reserve against a full path pool is nondeterministic. Sort keys.
+- HYGF4D-N1 (nit): over-long comment known.go:33. HYGF4D-N2 (nit, inherent): extra collected values can mask a fragment of another secret via leftmost-match overlap (0 cases measured).
