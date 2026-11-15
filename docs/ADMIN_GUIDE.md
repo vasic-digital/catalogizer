@@ -509,13 +509,19 @@ curl -X POST http://localhost:8080/api/v1/users/{user_id}/unlock \
   -H "Authorization: Bearer $ADMIN_TOKEN"
 ```
 
-The last effective administrator (an active, unlocked account that holds the
-administrator role) cannot be locked: the request is refused with HTTP 409
+The last effective administrator (an active, unlocked account whose role carries
+`system.admin`, directly or through `*` or a covering wildcard such as `system.*`)
+cannot be locked until a point in the future: the request is refused with HTTP 409
 `The last administrator cannot be locked` and nothing is changed. The check runs
 atomically with the lock, so two administrators locking each other at the same
 time cannot leave the system without an administrator. A `lock_until` that is
-already in the past locks nobody and is not refused. You also cannot lock your
-own account (400).
+already in the past is not refused, even for the last administrator, and it is
+NOT a no-op: the account is written as locked (`is_locked` set, `locked_until`
+in the past) and every session of the account is revoked, so that administrator
+has to log in again. Because the stored expiry has already passed, the account
+is treated as unlocked at once and can log in again (measured on SQLite: the
+account reports not locked and can log in). Use a future `lock_until` to keep an
+account out. You also cannot lock your own account (400).
 
 ### Deleting a User
 
@@ -557,14 +563,61 @@ curl -X GET http://localhost:8080/api/v1/roles/permissions \
 
 ### Updating a Role
 
+`name` is required (a request without it is refused with 400); system roles cannot be updated.
+
 ```bash
 curl -X PUT http://localhost:8080/api/v1/roles/{role_id} \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
+    "name": "media_manager",
     "permissions": ["media.read", "media.write", "collections.manage", "subtitles.manage"]
   }'
 ```
+
+A write that removes `system.admin` from the only role that gives an active,
+unlocked account administrator rights is refused with HTTP 409 `The last
+administrator role cannot lose administrator permission`.
+
+#### Repairing a role whose stored permissions are corrupt
+
+If the permissions JSON stored for a custom role cannot be parsed (for example a
+manual edit of the database), the role is unreadable and the damage spreads,
+because the last-administrator guard reads every role. What happens (measured on
+SQLite with the real repository code, each statement with its code location):
+
+- Reading that role (`GET /roles/{id}`) or listing roles fails
+  (`user_repository.go` `GetRole` / `ListRoles`, "failed to unmarshal permissions").
+- Every account whose role is the corrupt one fails the permission check
+  (`livePermissions`, `user_repository.go:432`; `AuthService.CheckPermission`,
+  `auth_service.go:508`), so permission checks for a member of the corrupt role return an error
+  (callers fail closed) instead of a clean yes/no, and if you are signed in
+  through the corrupt role you cannot call the repair yourself: sign in with
+  another administrator.
+- While ANY role is corrupt, these writes fail because they read all roles first
+  (`adminRoleIDs` / `adminRoleIDsTx`, `user_repository.go:312,347`): a lock with
+  any `lock_until` (`LockAccount`), a suspension (`SetSuspended(true)`), deleting
+  a user (`Delete`), and a user update that changes role or active state
+  (`UpdateGuarded`). Unlocking (`UnlockAccount`) and lifting a suspension still
+  work (they read no roles).
+- `UpdateRole` (`user_repository.go:1026`) on the corrupt role with permissions
+  that do NOT include `system.admin` fails ("failed to parse current role
+  permissions", HTTP 500 by `role_handler.go:200`, not exercised over HTTP), because it must first read the current value to run the
+  last-administrator guard. On PostgreSQL every write that removes `system.admin`
+  from any role also fails while a corrupt role exists; on SQLite only a role that
+  currently carries `system.admin` is affected.
+- `UpdateRole` on the corrupt role with a new permissions list that INCLUDES
+  `system.admin` skips the guard and the read, and succeeds. This is the only
+  repair path through the API.
+
+Procedure: as another administrator (not a member of the corrupt role) send
+`PUT /api/v1/roles/{role_id}` with `name` and a `permissions` list that includes
+`system.admin`, then read the role back (`GET /roles/{role_id}`) to confirm it
+parses. If the role must not be an administrator role, repair it first with
+`system.admin` and then update it again with the intended permissions; the second
+update is subject to the last-administrator guard (409 if it would leave no
+administrator). Which HTTP status each handler returns for these errors was read
+from `role_handler.go:188-200` and was not exercised over HTTP.
 
 ### Deleting a Role
 
