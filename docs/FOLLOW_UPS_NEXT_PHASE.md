@@ -2960,3 +2960,9 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 - ELFU-n3 (nit): newFileCtx guesses an unaliased import's local name from the last path element (versioned/renamed packages give wrong name; false positives only; e.g. catalogizer/internal/services/v2 over-flagged).
 - ELFU-n4 (nit, pre-existing): method-value sinks (j := c.JSON; j(...)) and generic-instantiated wrapper sinks (respondErr[int](c, err)) not seen; same-file mapper whose body leaks is trusted by design.
 - ELFU-i5 (info): differential harness shows head findings = base on real tree (366 prod files 13/13; 1116 incl tests 1261/1261; 0 lost, 0 gained); full ./handlers and root suites on head not run by reviewer; env failures confirmed on pristine main (poolguard known adminRoleIDsTx, SMBConnectionPooling, CreateStorageRootSMBSubdir).
+
+### TEST-HYGIENE-BUNDLE-3 review follow-ups (Opus GO-with-follow-ups, 2026-11-15, PROVISIONAL)
+- TH3-m1 (minor, test): PGLAST-F6 remainder stays open: no HTTP 409 run on live PostgreSQL; -race run only on the two handler tests. Do not close PGLAST-F6 as a whole.
+- TH3-m2 (minor, test): TH2M1-FU2 only reworded; nothing pins the refusal read happening inside the tx before Commit; hook-driven race test owed if that order matters (unguarded concurrent writer existence UNCONFIRMED).
+- TH3-n3 (nit): example regexes unanchored (`WHERE id = 0` also matches `id = 00`/`id = 0 OR ...`); near-equivalent. TH3-n4 (nit): after a guard timeout the leaked goroutine still writes captured err/w (harmless; possible extra -race report).
+- TH3-i5 (info): the 3 full-suite failures (CreateStorageRootSMBSubdir, poolguard adminRoleIDsTx known false positive, SMBConnectionPooling) fail identically on pristine main 2635b3e2e; full ./handlers, root -short and live PG not run.
