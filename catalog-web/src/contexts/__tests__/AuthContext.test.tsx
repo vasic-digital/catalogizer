@@ -349,13 +349,13 @@ describe('AuthContext', () => {
     });
   });
 
-  it('canAccess returns true when user has admin:system permission', async () => {
+  it('canAccess returns true when user has system.admin permission', async () => {
     mockAuthApi.getAuthStatus.mockResolvedValue({
       authenticated: true,
       user: { id: 2, username: 'superuser', role: { name: 'SuperUser' }, role_id: 5 },
-      permissions: ['admin:system'],
+      permissions: ['system.admin'],
     });
-    mockAuthApi.getPermissions.mockResolvedValue({ permissions: ['admin:system'] });
+    mockAuthApi.getPermissions.mockResolvedValue({ permissions: ['system.admin'] });
     const queryClient = createQueryClient();
 
     render(
@@ -378,6 +378,28 @@ describe('AuthContext', () => {
       permissions: ['read:other'],
     });
     mockAuthApi.getPermissions.mockResolvedValue({ permissions: ['read:other'] });
+    const queryClient = createQueryClient();
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <TestComponent />
+        </AuthProvider>
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('can-access-media-read')).toHaveTextContent('no');
+    });
+  });
+
+  it('canAccess returns false for the legacy admin:system string (SSEF4R-FD)', async () => {
+    mockAuthApi.getAuthStatus.mockResolvedValue({
+      authenticated: true,
+      user: { id: 2, username: 'legacy', role: { name: 'Legacy' }, role_id: 4 },
+      permissions: ['admin:system'],
+    });
+    mockAuthApi.getPermissions.mockResolvedValue({ permissions: ['admin:system'] });
     const queryClient = createQueryClient();
 
     render(

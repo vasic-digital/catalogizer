@@ -52,7 +52,7 @@ const mockAdminUser: User = {
   id: 2,
   username: 'admin',
   role_id: 1,
-  role: { id: 1, name: 'Admin', description: 'Administrator', permissions: ['admin:system'], is_system: true, created_at: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T00:00:00Z' },
+  role: { id: 1, name: 'Admin', description: 'Administrator', permissions: ['system.admin'], is_system: true, created_at: '2024-01-01T00:00:00Z', updated_at: '2024-01-01T00:00:00Z' },
 }
 
 function AuthStateDisplay() {
@@ -721,15 +721,15 @@ describe('AuthContext Integration Tests', () => {
       })
     })
 
-    it('canAccess returns true for users with admin:system permission', async () => {
+    it('canAccess returns true for users with system.admin permission', async () => {
       mockAuthApi.getAuthStatus.mockResolvedValue({
         authenticated: true,
         user: mockUser,
-        permissions: ['admin:system'],
+        permissions: ['system.admin'],
       })
       mockAuthApi.getPermissions.mockResolvedValue({
         role: 'user',
-        permissions: ['admin:system'],
+        permissions: ['system.admin'],
         is_admin: false,
       })
 

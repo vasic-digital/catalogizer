@@ -77,7 +77,7 @@ function App() {
                 <Route
                   path="/media"
                   element={
-                    <ProtectedRoute requiredPermission="read:media">
+                    <ProtectedRoute requiredPermission="media.view">
                       <PageErrorBoundary pageName="Media Browser">
                         <MediaBrowser />
                       </PageErrorBoundary>
@@ -87,7 +87,7 @@ function App() {
                 <Route
                   path="/analytics"
                   element={
-                    <ProtectedRoute requiredPermission="view:analysis">
+                    <ProtectedRoute requiredPermission="analytics.view">
                       <PageErrorBoundary pageName="Analytics">
                         <Analytics />
                       </PageErrorBoundary>
@@ -97,7 +97,7 @@ function App() {
                 <Route
                   path="/subtitles"
                   element={
-                    <ProtectedRoute requiredPermission="manage:subtitles">
+                    <ProtectedRoute requiredPermission="media.edit">
                       <PageErrorBoundary pageName="Subtitle Manager">
                         <SubtitleManager />
                       </PageErrorBoundary>
@@ -107,7 +107,7 @@ function App() {
                 <Route
                   path="/collections"
                   element={
-                    <ProtectedRoute requiredPermission="read:collections">
+                    <ProtectedRoute requiredPermission="media.view">
                       <PageErrorBoundary pageName="Collections">
                         <Collections />
                       </PageErrorBoundary>
@@ -137,7 +137,7 @@ function App() {
                 <Route
                   path="/conversion"
                   element={
-                    <ProtectedRoute requiredPermission="convert:media">
+                    <ProtectedRoute requiredPermission="media.convert">
                       <PageErrorBoundary pageName="Conversion Tools">
                         <ConversionTools />
                       </PageErrorBoundary>
@@ -157,7 +157,7 @@ function App() {
                 <Route
                   path="/browse"
                   element={
-                    <ProtectedRoute requiredPermission="read:media">
+                    <ProtectedRoute requiredPermission="media.view">
                       <PageErrorBoundary pageName="Entity Browser">
                         <EntityBrowser />
                       </PageErrorBoundary>
@@ -167,7 +167,7 @@ function App() {
                 <Route
                   path="/entity/:id"
                   element={
-                    <ProtectedRoute requiredPermission="read:media">
+                    <ProtectedRoute requiredPermission="media.view">
                       <PageErrorBoundary pageName="Entity Detail">
                         <EntityDetail />
                       </PageErrorBoundary>
@@ -197,7 +197,7 @@ function App() {
                 <Route
                   path="/identities"
                   element={
-                    <ProtectedRoute requiredPermission="read:media">
+                    <ProtectedRoute requiredPermission="media.view">
                       <PageErrorBoundary pageName="Identity &amp; Share Discovery">
                         <IdentityManagerPage />
                       </PageErrorBoundary>
