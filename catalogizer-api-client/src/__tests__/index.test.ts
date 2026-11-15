@@ -604,19 +604,19 @@ describe('CatalogizerClient', () => {
 
     describe('getPermissions', () => {
       it('gets user permissions', async () => {
-        const mockResponse = { data: ['read', 'write', 'system.admin'] };
+        const mockResponse = { data: { role: 'User', permissions: ['read', 'write', 'system.admin'], is_admin: false } };
         mockAxiosInstance.get.mockResolvedValueOnce(mockResponse);
 
         const result = await client.auth.getPermissions();
 
         expect(mockAxiosInstance.get).toHaveBeenCalledWith('/auth/permissions', undefined);
-        expect(result).toEqual(mockResponse.data);
+        expect(result).toEqual(mockResponse.data.permissions);
       });
     });
 
     describe('hasPermission', () => {
       it('returns true for existing permission', async () => {
-        const mockResponse = { data: ['read', 'write'] };
+        const mockResponse = { data: { role: 'User', permissions: ['read', 'write'], is_admin: false } };
         mockAxiosInstance.get.mockResolvedValueOnce(mockResponse);
 
         const result = await client.auth.hasPermission('read');
@@ -625,7 +625,7 @@ describe('CatalogizerClient', () => {
       });
 
       it('returns true for system.admin override', async () => {
-        const mockResponse = { data: ['system.admin'] };
+        const mockResponse = { data: { role: 'User', permissions: ['system.admin'], is_admin: false } };
         mockAxiosInstance.get.mockResolvedValueOnce(mockResponse);
 
         const result = await client.auth.hasPermission('any_permission');
@@ -634,7 +634,7 @@ describe('CatalogizerClient', () => {
       });
 
       it('returns false for missing permission', async () => {
-        const mockResponse = { data: ['read'] };
+        const mockResponse = { data: { role: 'User', permissions: ['read'], is_admin: false } };
         mockAxiosInstance.get.mockResolvedValueOnce(mockResponse);
 
         const result = await client.auth.hasPermission('write');

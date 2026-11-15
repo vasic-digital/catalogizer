@@ -143,7 +143,10 @@ export class AuthService {
    * Get user permissions
    */
   public async getPermissions(): Promise<string[]> {
-    return this.http.get<string[]>('/auth/permissions');
+    // Live body is the envelope {role, permissions, is_admin} (GetPermissionsGin).
+    const body = await this.http.get<{ permissions?: unknown } | null>('/auth/permissions');
+    const perms = body?.permissions;
+    return Array.isArray(perms) ? (perms as string[]) : [];
   }
 
   /**
@@ -184,7 +187,8 @@ const SYSTEM_ADMIN_PERMISSION = 'system.admin';
  * "media.*" vs "mediax.view" do not match). Non-string entries are ignored.
  */
 export function permissionsGrant(perms: readonly unknown[] | undefined | null, permission: string): boolean {
-  for (const perm of perms ?? []) {
+  if (!Array.isArray(perms)) return false;
+  for (const perm of perms) {
     if (typeof perm !== 'string') continue;
     if (perm === '*' || perm === permission) return true;
     if (perm.length > 0 && perm.endsWith('*')) {
