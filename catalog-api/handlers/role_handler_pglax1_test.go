@@ -36,16 +36,14 @@ func TestPGLAX1F4_RoleUpdateStrippingLastAdminIs409(t *testing.T) {
 	assert.Contains(t, []string(got.Permissions), "system.admin", "the refused write changed nothing")
 
 	// negative control: a strip that leaves another active administrator is applied (200).
-	_, err = e.db.Exec(`UPDATE users SET role_id = 1 WHERE username <> 'rtadmin' AND id = (SELECT MIN(id) FROM users WHERE username <> 'rtadmin')`)
-	require.NoError(t, err)
+	// PGLAXFU-N2: deterministic second administrator, created unconditionally (no branching on seeded state).
+	hash, salt, herr := e.authSvc.HashPasswordForUser("Throwaway-pw1!")
+	require.NoError(t, herr)
+	_, cerr := e.repo.Create(&models.User{Username: "second", Email: "second@example.test", PasswordHash: hash, Salt: salt, RoleID: 1, IsActive: true})
+	require.NoError(t, cerr)
 	var admins int
 	require.NoError(t, e.db.QueryRow(`SELECT COUNT(*) FROM users WHERE role_id = 1 AND is_active = 1`).Scan(&admins))
-	if admins == 0 {
-		hash, salt, herr := e.authSvc.HashPasswordForUser("Throwaway-pw1!")
-		require.NoError(t, herr)
-		_, cerr := e.repo.Create(&models.User{Username: "second", Email: "second@example.test", PasswordHash: hash, Salt: salt, RoleID: 1, IsActive: true})
-		require.NoError(t, cerr)
-	}
+	require.Equal(t, 1, admins, "exactly the created second administrator holds the system role")
 	w = e.do(e.adminTok, "PUT", "/api/v1/roles/"+rtItoa(role.ID), `{"name":"Ops","permissions":["media.view"]}`)
 	assert.Equal(t, 200, w.Code, w.Body.String())
 }
