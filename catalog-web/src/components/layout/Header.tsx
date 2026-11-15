@@ -29,6 +29,8 @@ interface NavItem {
   /** First breakpoint at which the item is shown inline; lower widths reach it through the "More" menu. */
   tier: 0 | 1 | 2 | 3
   adminOnly?: boolean
+  /** Server permission the destination's route gate requires (kept equal to the App.tsx gate). */
+  requiredPermission?: string
 }
 
 /**
@@ -45,7 +47,7 @@ export const NAV_ITEMS: NavItem[] = [
   { to: '/analytics', label: 'Analytics', tier: 2 },
   { to: '/subtitles', label: 'Subtitles', tier: 3 },
   { to: '/collections', label: 'Collections', icon: Folder, tier: 3 },
-  { to: '/conversion', label: 'Convert', tier: 3 },
+  { to: '/conversion', label: 'Convert', tier: 3, requiredPermission: 'conversion.view' },
   { to: '/admin', label: 'Admin', tier: 3, adminOnly: true },
 ]
 
@@ -67,7 +69,7 @@ const moreItemClass = (pathname: string, href: string, tier: number) => {
  * search, and user account controls.
  */
 export const Header: React.FC = () => {
-  const { user, isAuthenticated, isAdmin, logout } = useAuth()
+  const { user, isAuthenticated, isAdmin, hasPermission, logout } = useAuth()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const [isMoreOpen, setIsMoreOpen] = useState(false)
@@ -101,7 +103,9 @@ export const Header: React.FC = () => {
   }, [isMoreOpen])
   useEffect(() => { setIsMoreOpen(false) }, [location.pathname])
 
-  const navItems = NAV_ITEMS.filter((i) => !i.adminOnly || isAdmin)
+  const navItems = NAV_ITEMS.filter(
+    (i) => (!i.adminOnly || isAdmin) && (!i.requiredPermission || hasPermission(i.requiredPermission))
+  )
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen)
 

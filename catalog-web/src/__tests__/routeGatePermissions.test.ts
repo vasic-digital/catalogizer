@@ -16,21 +16,20 @@ const serverPermissions = new Set(
 
 const gates = extractGates(app)
 
-// F2 (/identities) and F3 (/conversion) are registered follow-ups: their current
-// values are pinned as-is, not endorsed.
+// F3 (SSEF4R-FD-F3): /conversion is gated conversion.view, the minimum the page loads with.
+// F2 (SSEF4R-FD-F2): /identities is admin-only (requireAdmin), asserted below.
 const expected: Record<string, string> = {
   '/media': 'media.view',
   '/analytics': 'analytics.view',
   '/subtitles': 'media.edit',
   '/collections': 'media.view',
-  '/conversion': 'media.convert',
+  '/conversion': 'conversion.view',
   '/browse': 'media.view',
   '/entity/:id': 'media.view',
-  '/identities': 'media.view',
 }
 
 describe('App.tsx route gates use the server permission vocabulary', () => {
-  it('finds all eight gated routes (control needle)', () => {
+  it('finds all seven permission-gated routes (control needle)', () => {
     expect(serverPermissions.has('media.view')).toBe(true)
     expect(serverPermissions.has('read:media')).toBe(false)
     expect(Object.fromEntries(gates)).toEqual(expected)
@@ -43,13 +42,23 @@ describe('App.tsx route gates use the server permission vocabulary', () => {
   })
 })
 
+describe('/identities is admin-only (SSEF4R-FD-F2)', () => {
+  it('route uses requireAdmin and no requiredPermission', () => {
+    const i = app.indexOf('path="/identities"')
+    expect(i).toBeGreaterThan(-1)
+    const block = app.slice(i, app.indexOf('</Route>', i) === -1 ? i + 400 : i + 400)
+    expect(block).toMatch(/<ProtectedRoute requireAdmin>/)
+    expect(block.split('IdentityManagerPage')[0]).not.toMatch(/requiredPermission/)
+  })
+})
+
 // SSEF4R-FD-m1: completeness. Every requiredPermission occurrence in the real
 // App.tsx must have been captured by the extractor; a gated route written in any
 // other syntax would otherwise be silently skipped.
 describe('route-gate extractor completeness (SSEF4R-FD-m1)', () => {
   it('real App.tsx: every requiredPermission occurrence is captured (control needle)', () => {
     const occurrences = [...app.matchAll(/requiredPermission/g)].length
-    expect(occurrences).toBe(8) // control: the instrument can see the real tree
+    expect(occurrences).toBe(7) // control: the instrument can see the real tree
     expect(gates.length).toBe(occurrences)
     expect(findUncapturedOccurrences(app)).toEqual([])
     expect(() => assertAllGatesCaptured(app)).not.toThrow()

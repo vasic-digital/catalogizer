@@ -39,6 +39,10 @@ interface FormatConverterProps {
   onRetryConversion?: (id: string) => void;
   /** Receives the job id; the download endpoint is addressed by job id, not by output path. */
   onDownloadFile?: (jobId: string) => void;
+  /** conversion.create: shows the New Conversion / Create Conversion Job controls. Defaults to true. */
+  canCreate?: boolean;
+  /** conversion.manage: shows the Cancel and Retry controls. Defaults to true. */
+  canManage?: boolean;
 }
 
 /**
@@ -51,7 +55,9 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
   onStartConversion,
   onCancelConversion,
   onRetryConversion,
-  onDownloadFile
+  onDownloadFile,
+  canCreate = true,
+  canManage = true
 }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -167,10 +173,12 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Format Converter</h2>
-        <Button onClick={() => setShowCreateModal(true)}>
-          <Settings className="w-4 h-4 mr-2" />
-          New Conversion
-        </Button>
+        {canCreate && (
+          <Button onClick={() => setShowCreateModal(true)}>
+            <Settings className="w-4 h-4 mr-2" />
+            New Conversion
+          </Button>
+        )}
       </div>
 
       {/* Active Jobs */}
@@ -205,7 +213,7 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
                           Download
                         </Button>
                       )}
-                      {job.status === 'failed' && (
+                      {canManage && job.status === 'failed' && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -215,7 +223,7 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
                           Retry
                         </Button>
                       )}
-                      {['pending', 'processing'].includes(job.status) && (
+                      {canManage && ['pending', 'processing'].includes(job.status) && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -287,10 +295,12 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
                   Start your first media format conversion
                 </p>
-                <Button onClick={() => setShowCreateModal(true)}>
-                  <Settings className="w-4 h-4 mr-2" />
-                  Create Conversion Job
-                </Button>
+                {canCreate && (
+                  <Button onClick={() => setShowCreateModal(true)}>
+                    <Settings className="w-4 h-4 mr-2" />
+                    Create Conversion Job
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>

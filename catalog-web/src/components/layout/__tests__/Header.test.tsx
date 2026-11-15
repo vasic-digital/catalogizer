@@ -68,7 +68,7 @@ describe('Header', () => {
 
   describe('Connection status slot (D1)', () => {
     it('docks the connection status inside the header, not as a page overlay', () => {
-      mockUseAuth.mockReturnValue({ user: null, isAuthenticated: true, logout: mockLogout })
+      mockUseAuth.mockReturnValue({ user: null, isAuthenticated: true, hasPermission: () => true, logout: mockLogout })
       customRender(<Header />)
       const slot = screen.getByTestId('connection-status-slot')
       expect(slot.closest('header')).not.toBeNull()
@@ -79,7 +79,7 @@ describe('Header', () => {
     it('renders the Catalogizer logo', () => {
       mockUseAuth.mockReturnValue({
         user: null,
-        isAuthenticated: false,
+        isAuthenticated: false, hasPermission: () => false,
         logout: mockLogout,
       })
 
@@ -92,7 +92,7 @@ describe('Header', () => {
     it('logo links to home page', () => {
       mockUseAuth.mockReturnValue({
         user: null,
-        isAuthenticated: false,
+        isAuthenticated: false, hasPermission: () => false,
         logout: mockLogout,
       })
 
@@ -107,7 +107,7 @@ describe('Header', () => {
     beforeEach(() => {
       mockUseAuth.mockReturnValue({
         user: null,
-        isAuthenticated: false,
+        isAuthenticated: false, hasPermission: () => false,
         logout: mockLogout,
       })
     })
@@ -160,7 +160,7 @@ describe('Header', () => {
           last_name: 'User',
           role: 'user',
         },
-        isAuthenticated: true,
+        isAuthenticated: true, hasPermission: () => true,
         logout: mockLogout,
       })
     })
@@ -198,7 +198,7 @@ describe('Header', () => {
           username: 'testuser',
           role: 'user',
         },
-        isAuthenticated: true,
+        isAuthenticated: true, hasPermission: () => true,
         logout: mockLogout,
       })
 
@@ -284,7 +284,7 @@ describe('Header', () => {
           role: { id: 1, name: 'Admin' },
           role_id: 1,
         },
-        isAuthenticated: true,
+        isAuthenticated: true, hasPermission: () => true,
         isAdmin: true,
         logout: mockLogout,
       })
@@ -312,7 +312,7 @@ describe('Header', () => {
           username: 'testuser',
           role: 'user',
         },
-        isAuthenticated: true,
+        isAuthenticated: true, hasPermission: () => true,
         logout: mockLogout,
       })
     })
@@ -348,7 +348,7 @@ describe('Header', () => {
           first_name: 'Test',
           role: 'user',
         },
-        isAuthenticated: true,
+        isAuthenticated: true, hasPermission: () => true,
         logout: mockLogout,
       })
     })
@@ -497,7 +497,7 @@ describe('Header', () => {
     beforeEach(() => {
       mockUseAuth.mockReturnValue({
         user: null,
-        isAuthenticated: false,
+        isAuthenticated: false, hasPermission: () => false,
         logout: mockLogout,
       })
     })
@@ -549,7 +549,7 @@ describe('Header', () => {
           role: { id: 1, name: 'Admin' },
           role_id: 1,
         },
-        isAuthenticated: true,
+        isAuthenticated: true, hasPermission: () => true,
         isAdmin: true,
         logout: mockLogout,
       })

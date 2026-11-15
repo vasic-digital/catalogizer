@@ -45,7 +45,7 @@ describe('Header search drives Browse (UI-D8)', () => {
     vi.clearAllMocks()
     vi.mocked(useAuth).mockReturnValue({
       user: { id: 1, username: 'qa', role: 'admin', permissions: [] },
-      isAuthenticated: true,
+      isAuthenticated: true, hasPermission: () => true,
       logout: vi.fn(),
     } as never)
   })

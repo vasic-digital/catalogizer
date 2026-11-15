@@ -25,13 +25,13 @@ const customRender = (ui: React.ReactElement) =>
 
 describe('Header Admin entry uses useAuth().isAdmin', () => {
   it('shows Admin for a custom admin role (role name Ops) when isAdmin is true', () => {
-    mockUseAuth.mockReturnValue({ user: { id: 1, username: 'o', first_name: 'O', last_name: 'P', role: { id: 7, name: 'Ops' }, role_id: 7 }, isAuthenticated: true, isAdmin: true, logout } as never)
+    mockUseAuth.mockReturnValue({ user: { id: 1, username: 'o', first_name: 'O', last_name: 'P', role: { id: 7, name: 'Ops' }, role_id: 7 }, isAuthenticated: true, hasPermission: () => true, isAdmin: true, logout } as never)
     customRender(<Header />)
     expect(screen.getAllByText('Admin').length).toBeGreaterThan(0)
   })
 
   it('hides Admin for role name Admin when isAdmin is false', () => {
-    mockUseAuth.mockReturnValue({ user: { id: 1, username: 'o', first_name: 'O', last_name: 'P', role: { id: 1, name: 'Admin' }, role_id: 1 }, isAuthenticated: true, isAdmin: false, logout } as never)
+    mockUseAuth.mockReturnValue({ user: { id: 1, username: 'o', first_name: 'O', last_name: 'P', role: { id: 1, name: 'Admin' }, role_id: 1 }, isAuthenticated: true, hasPermission: () => true, isAdmin: false, logout } as never)
     customRender(<Header />)
     expect(screen.queryByText('Admin')).not.toBeInTheDocument()
   })
