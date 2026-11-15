@@ -129,19 +129,29 @@ const maxSegmentDecodes = 3
 // segmentWork counts the bytes examined by the segment helpers: a deterministic cost oracle for tests (work counted, not time).
 var segmentWork atomic.Int64
 
+// lenientUnescape percent-decodes every valid %XX escape and keeps an invalid or truncated one ("%ZZ", "%Z", "%") as literal
+// bytes (HYGF4-F1). url.PathUnescape rejects the WHOLE segment on one bad escape, which hid a valid encoded separator and the
+// secret behind it; decoding leniently keeps the secret recognisable (fail closed).
+func lenientUnescape(s string) string {
+	if strings.IndexByte(s, '%') < 0 {
+		return s
+	}
+	d, _ := pctDecode(s)
+	return d
+}
+
 // decodeSegment percent-decodes seg at most maxSegmentDecodes rounds; more reports a segment that still decodes afterwards.
 func decodeSegment(seg string) (dec string, more bool) {
 	for i := 0; i < maxSegmentDecodes; i++ {
 		segmentWork.Add(int64(len(seg)) + 1)
-		u, err := url.PathUnescape(seg)
-		if err != nil || u == seg {
+		u := lenientUnescape(seg)
+		if u == seg {
 			return seg, false
 		}
 		seg = u
 	}
 	segmentWork.Add(int64(len(seg)) + 1)
-	u, err := url.PathUnescape(seg)
-	return seg, err == nil && u != seg
+	return seg, lenientUnescape(seg) != seg
 }
 
 // secretKey reports whether seg is a secret key; base is its base name ("" for an ambiguous segment), exact whether the
@@ -153,7 +163,7 @@ func secretKey(seg string) (base string, exact, embedded, ok bool) {
 	if more {
 		return "", false, false, true
 	}
-	if i := strings.IndexAny(dec, ";/\\"); i >= 0 {
+	if i := strings.IndexAny(dec, ";/\\%"); i >= 0 {
 		embedded = dec[i] != ';'
 		dec = dec[:i]
 	}

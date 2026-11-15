@@ -31,16 +31,30 @@ func KnownSecrets(path, rawQuery string, header http.Header, params map[string]s
 	segs := strings.Split(path, "/")
 	addSeg := func(sg string) {
 		add(sg)
-		if u, err := url.PathUnescape(sg); err == nil && u != sg {
+		if u := lenientUnescape(sg); u != sg {
 			add(u)
 		}
 	}
 scan:
 	for i := 0; i < len(segs) && len(out) < maxKnownSecrets; i++ {
 		segmentWork.Add(int64(len(segs[i])) + 1)
-		_, exact, embedded, ok := secretKey(segs[i])
+		base, exact, embedded, ok := secretKey(segs[i])
 		if !ok {
 			continue
+		}
+		if base == "" {
+			// ambiguous (still decodable after the last round): decode to a fixpoint (bounded) and collect every piece after a
+			// separator of every intermediate form, so a deeply encoded secret inside the key segment is known too
+			cur := segs[i]
+			for r := 0; r < 16; r++ {
+				segmentWork.Add(int64(len(cur)) + 1)
+				cur = lenientUnescape(cur)
+				if ps := strings.FieldsFunc(cur, func(c rune) bool { return c == '/' || c == '\\' || c == ';' }); len(ps) > 1 {
+					for _, piece := range ps[1:] {
+						addSeg(piece)
+					}
+				}
+			}
 		}
 		if embedded {
 			// secret inside the key segment after an (encoded) separator, plus the whole rest of the path
