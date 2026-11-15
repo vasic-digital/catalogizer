@@ -163,7 +163,7 @@ func secretKey(seg string) (base string, exact, embedded, ok bool) {
 	if more {
 		return "", false, false, true
 	}
-	if i := strings.IndexAny(dec, ";/\\"); i >= 0 {
+	if i := strings.IndexAny(dec, ";/\\%"); i >= 0 {
 		embedded = dec[i] != ';'
 		dec = dec[:i]
 	}

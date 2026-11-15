@@ -95,3 +95,56 @@ func TestHygF4F1_KnownDecodedFormOfLaterSegment(t *testing.T) {
 		t.Errorf("KnownSecrets = %q, want decoded S3cret/Val%%ZZ", ks)
 	}
 }
+
+// HYGF4-F1 round 1: an invalid escape between the key name and the separator (or in front of the secret segment).
+var f1R1Shapes = []string{
+	"/share%ZZ%2FS3cretVal/more", "/share%2%2FS3cretVal/more", "/share%%2FS3cretVal/more", "/share%G%2FS3cretVal",
+	"/token%E%2FS3cretVal", "/share%ZZ/S3cretVal", "/sh%61re%ZZ/S3cretVal", "/share%ZZ%5CS3cretVal/more",
+	"/share%2525252FS3cretVal%ZZ/more",
+}
+
+func TestHygF4F1R1_InvalidEscapeBeforeSeparator(t *testing.T) {
+	for _, in := range f1R1Shapes {
+		if got := SecretPath(in); strings.Contains(got, "S3cretVal") || strings.Contains(got, "more") || !strings.Contains(got, ":redacted") {
+			t.Errorf("SecretPath(%q) = %q", in, got)
+		}
+		if got := Path(in, ""); strings.Contains(got, "S3cretVal") {
+			t.Errorf("Path(%q) = %q", in, got)
+		}
+		if got := Text("lookup " + in + " failed"); strings.Contains(got, "S3cretVal") {
+			t.Errorf("Text(%q) = %q", in, got)
+		}
+		ks := KnownSecrets(in, "", nil, nil)
+		found := false
+		for _, k := range ks {
+			if strings.Contains(k, "S3cretVal") {
+				found = true
+			}
+		}
+		if !found {
+			t.Errorf("KnownSecrets(%q) = %q", in, ks)
+		}
+		if got := ErrorTextKnown("open "+in+": denied", ks); strings.Contains(got, "S3cretVal") {
+			t.Errorf("ErrorTextKnown(%q) = %q", in, got)
+		}
+		if got := PathKnown(in, "", ks); strings.Contains(got, "S3cretVal") {
+			t.Errorf("PathKnown(%q) = %q", in, got)
+		}
+	}
+}
+
+func TestHygF4F1R1_BenignUnchanged(t *testing.T) {
+	for _, in := range []string{"/other%ZZ%2FS3cretVal", "/sharing%ZZ/x", "/api/v1/media/42%ZZ/x", "/files/50%25/x"} {
+		if got := SecretPath(in); got != in {
+			t.Errorf("SecretPath(%q) = %q, want unchanged", in, got)
+		}
+	}
+}
+
+// Reviewer mutant A3: every valid escape of a segment is decoded in each round.
+func TestHygF4F1R1_AllEscapesDecodedPerRound(t *testing.T) {
+	ks := KnownSecrets("/share%2FA/S3cret%2FVal%41%ZZ", "", nil, nil)
+	if got := ErrorTextKnown("bad S3cret/ValA%ZZ x", ks); strings.Contains(got, "S3cret/ValA") {
+		t.Errorf("ErrorTextKnown leaked: %q (ks=%q)", got, ks)
+	}
+}
