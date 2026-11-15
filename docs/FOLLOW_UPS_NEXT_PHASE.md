@@ -2858,3 +2858,9 @@ RESOLVED: SSEF4R-API (hasPermission uses the server vocabulary; getPermissions u
 - SSEF4R-API-FU1 (minor, test): M6 survives (getPermissions without Array.isArray); add getPermissions()->[] cases for {permissions:'x'}, {permissions:null}, null, {}.
 - SSEF4R-API-FU2 (info): Android CatalogizerApi.kt:39 getPermissions(): Response<Map<String,Any>> is envelope-compatible; no Kotlin caller found, consumers' envelope handling UNCONFIRMED (covers SSEF4R-FD-F6 Android half).
 - Evidence limit: live differential did not run against a deployed catalog-api or PostgreSQL.
+
+## PGLA-M1 / TIERPGLA-F3 review (Opus, GO-with-follow-ups, PROVISIONAL, commits 2d33c7d91, 28720f5e6)
+RESOLVED: PGLA-M1 (live PG16 test proving the LockAccount last-admin re-read runs inside the tx with the advisory lock held; 7 of 9 reviewer mutants killed, M6/M7 equivalent; honest SKIP without env, fails closed when PG unreachable), TIERPGLA-F3 (comment-only; X-RateLimit-Algorithm never sent on the live path, confirmed by rename + go build ./... and grep with control). Reviewer: 2 files, no production logic change.
+- PGLA-M1-F1 (minor, test hygiene): test leaks one LOGIN role per run (deferred DROP ROLE runs before DROP DATABASE ... FORCE, error swallowed); drop the role after the database drop and check the error.
+- PGLA-M1-N1 (nit): probe checks only objid=7340001, not classid/objsubid; pin the full key.
+- PGLA-M1-N2 (nit): non-numeric CATALOGIZER_PG_TEST_PORT becomes 0 and reads as "not set" SKIP; fail when set but unparsable.
