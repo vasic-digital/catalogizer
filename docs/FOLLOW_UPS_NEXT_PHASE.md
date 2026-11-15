@@ -2821,3 +2821,9 @@ RESOLVED: MAIN-ERRLEAK (errleak sweep red on main: respondSyncClassError added t
 - ERRLEAK-FU-C (minor, predates): S7 local closure shadowing the package mapper name is not detected.
 - ERRLEAK-FU-D (minor, predates): safeWrappers/mappers match by bare name only (no receiver/package check), now including respondSyncClassError.
 - ERRLEAK-FU-E (nit): TestClosureLeakShapesStayFlagged S6 fixture uses a new variable, not the shadowing shape.
+
+## MAIN-EXAMPLES landed; MAIN-POOLGUARD HELD (Opus review GO-with-follow-ups, but F1 important)
+RESOLVED: MAIN-EXAMPLES (examples test binds 6-arg guarded DELETE; commit 019278272, cherry-picked from f338f63da). poolguard commit 44eecd82d NOT landed: new scanner misses 6 nested-query shapes base flagged (range var shadow, same-package interface param, embedded receiver promoted method, local struct literal with embedded Repo, type alias, closure param shadow). Fix per reviewer: filter by evident type only when it owns a same-package method of that name, else by-name; record RangeStmt and FuncLit params as unknown. Tracked as MAIN-POOLGUARD-R2 (author round with fresh fixtures).
+- POOLGUARD-F2 (minor): fixture for identifier bound to two types (kills M5).
+- POOLGUARD-F3 (minor, process-doc): examples bisect attribution: DELETE arg mismatch came from dc15ff32c, not e58c7aad9.
+- POOLGUARD-F4 (nit, pre-existing): method-value calls (f := r.HasPerm; f()) missed.
