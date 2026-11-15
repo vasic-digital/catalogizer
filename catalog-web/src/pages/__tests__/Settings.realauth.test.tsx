@@ -155,9 +155,11 @@ describe('Settings with the real AuthProvider', () => {
     vi.mocked(authApi.getAuthStatus).mockResolvedValue(
       status({ id: 9, username: 'impostor', role: { name: 'Admin' }, role_id: 2 }) as any
     )
-    mount()
+    const { queryClient } = mount()
     await screen.findByText('Scan History')
-    await new Promise((r) => setTimeout(r, 50))
+    // SSEF4R-FE: wait on the permissions query state, then flush effects, instead of a fixed timer.
+    await waitFor(() => expect(queryClient.getQueryState(['permissions'])?.status).toBe('success'))
+    await act(async () => {})
     expect(screen.queryByRole('button', { name: /^Sync$/ })).not.toBeInTheDocument()
     expect(syncCalls()).toBe(0)
   })
