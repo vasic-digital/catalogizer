@@ -2922,3 +2922,12 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 - WTB1-m1 (minor, test): extractor mutants E4 (text always from first line) and E7 (report only first uncaptured occurrence) survive; add a routeGateExtract case with two bad gates on lines 2 and 3 asserting length 2, each text, and /missed 2/.
 - WTB1-n1 (nit, doc): comment "well past any debounce/refetch/timer window" overstates; advance is exactly 10 s (equals Sync statistics refetchInterval 10000), a flip after 10 s is not caught (mutant T4); reword as "a 10 s window".
 - WTB1-n2 (info): `tsc -p .` excludes test files so tests are never type-checked; full strict tsc incl. tests UNCONFIRMED; full vitest suite not run by reviewer.
+
+### ADMINDOC-1 review follow-ups (Opus GO-with-follow-ups, 2026-11-15, PROVISIONAL)
+- ADMD1-m1 (minor, doc): ADMIN_GUIDE corrupt-role bullet says only role/active-state `UpdateGuarded` changes fail; every UpdateGuarded call fails (user_repository.go:269), so every user profile edit (user_handler.go:389, admin_handler.go:387) breaks while a role is corrupt; drop "that changes role or active state".
+- ADMD1-m2 (minor, doc): "every account whose role is the corrupt one fails the permission check" overstates; livePermissions returns (false,nil) for suspended/inactive members before unmarshal (:452); say "every active, unlocked member".
+- ADMD1-m3 (minor, doc): PostgreSQL sentence is code-read, not measured (mark UNCONFIRMED) and too narrow: adminRoleIDsTx runs for every UpdateRole whose new permissions lack system.admin (:1031, :1112-1116), not only roles that had it.
+- ADMD1-m4 (minor, doc): docs/api/openapi.yaml not updated: lock 409 text (:5323) lacks session revocation note; PUT /roles 409 (:5431) lacks the last-admin 409.
+- ADMD1-n5 (nit, doc, pre-existing): ADMIN_GUIDE unlock curl (:508-509) sends no body but openapi.yaml:5338 says empty body gives 400; add -d '{}'.
+- ADMD1-n6 (nit, doc): PUT /roles example: omitting description/permissions overwrites them; add a warning sentence.
+- ADMD1-n7 (info): check_twin_presence reported BLIND for ADMIN_GUIDE (no html/pdf twin); exemption UNCONFIRMED. No HTTP-level, PostgreSQL or real-login run.
