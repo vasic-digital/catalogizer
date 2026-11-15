@@ -16,8 +16,9 @@ import (
 const (
 	minKnownSecretLen = 4
 	maxKnownSecrets   = 64
-	// maxPathKnownSecrets is the path share of maxKnownSecrets when credentials need the reserve; unused reserve goes back to the path.
-	maxPathKnownSecrets = 48 // path share when the credential pool needs its full reserve (16 slots)
+	// maxPathKnownSecrets is the path share of maxKnownSecrets when the credential pool needs its full reserve (16 slots); slots the
+	// credentials leave unused go back to the path.
+	maxPathKnownSecrets = 48
 	maxKnownSecretLen   = 4096
 )
 
@@ -29,14 +30,16 @@ const (
 // KnownSecrets returns the credential values carried by one request (at most maxKnownSecrets values; the scan is linear). params are the route parameters (name -> value).
 func KnownSecrets(path, rawQuery string, header http.Header, params map[string]string) []string {
 	// Two pools (HYGF4B-M-B): path-derived pieces are attacker-shaped (one crafted segment can yield hundreds), so they get at most
-	// maxPathKnownSecrets slots; header / query / route-parameter credentials are collected into their own pool and can never be
+	// maxPathKnownSecrets slots when credentials need the reserve (otherwise up to maxKnownSecrets); header / query / route-parameter credentials are collected into their own pool and can never be
 	// starved by the path. Values are deduplicated, and a key name (secretSegmentKeys) is never itself a known secret (HYGF4B-M-A).
+	// out is the path pool: it collects up to maxKnownSecrets distinct path values (the scan stops there); only its first pathCap
+	// entries are kept before the merge, the rest is the overflow that refills slots the credential pool leaves unused.
 	var out, prio []string
 	pathCap := maxKnownSecrets // lowered once the credential pool is known
 	seenOut := map[string]bool{}
 	seenPrio := map[string]bool{}
 	add := func(v string) {
-		if len(v) >= minKnownSecretLen && len(v) <= maxKnownSecretLen && len(out) < pathCap && !seenOut[v] && !secretSegmentKeys[strings.ToLower(v)] {
+		if len(v) >= minKnownSecretLen && len(v) <= maxKnownSecretLen && len(out) < maxKnownSecrets && !seenOut[v] && !secretSegmentKeys[strings.ToLower(v)] {
 			seenOut[v] = true
 			out = append(out, v)
 		}
@@ -95,7 +98,7 @@ func KnownSecrets(path, rawQuery string, header http.Header, params map[string]s
 		}
 	}
 scan:
-	for i := 0; i < len(segs) && len(out) < pathCap; i++ {
+	for i := 0; i < len(segs) && len(out) < maxKnownSecrets; i++ {
 		segmentWork.Add(int64(len(segs[i])) + 1)
 		base, exact, embedded, ok := secretKey(segs[i])
 		if !ok {
@@ -160,7 +163,7 @@ scan:
 			// the secret position is everything after the key: collect it ONCE and stop scanning (linear cost)
 			for _, sg := range segs[j:] {
 				segmentWork.Add(int64(len(sg)) + 1)
-				if sg == "" || len(out) >= pathCap {
+				if sg == "" || len(out) >= maxKnownSecrets {
 					continue
 				}
 				addSeg(sg)
@@ -177,13 +180,33 @@ scan:
 			break scan
 		}
 	}
-	// merge: path pool first (at most maxPathKnownSecrets), then the credential pool up to the overall cap, skipping duplicates
+	// merge: the first pathCap path values, then the credential pool up to the overall cap (skipping values the path already
+	// holds), then the remaining path values refill every slot that is still free (a credential equal to a path value must not
+	// waste its reserved slot).
+	overflow := []string(nil)
+	if len(out) > pathCap {
+		overflow = out[pathCap:]
+		out = out[:pathCap:pathCap]
+	}
+	inOut := make(map[string]bool, maxKnownSecrets)
+	for _, v := range out {
+		inOut[v] = true
+	}
 	for _, v := range prio {
 		if len(out) >= maxKnownSecrets {
 			break
 		}
-		if !seenOut[v] {
-			seenOut[v] = true
+		if !inOut[v] {
+			inOut[v] = true
+			out = append(out, v)
+		}
+	}
+	for _, v := range overflow {
+		if len(out) >= maxKnownSecrets {
+			break
+		}
+		if !inOut[v] {
+			inOut[v] = true
 			out = append(out, v)
 		}
 	}
