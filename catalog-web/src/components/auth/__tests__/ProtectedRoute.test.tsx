@@ -96,6 +96,7 @@ describe('ProtectedRoute', () => {
         isAuthenticated: true,
         isLoading: false,
         user: { id: 1, username: 'admin', role: { id: 1, name: 'Admin' }, role_id: 1 },
+        isAdmin: true,
         hasPermission: vi.fn(),
       })
 
@@ -263,6 +264,7 @@ describe('ProtectedRoute', () => {
         isAuthenticated: true,
         isLoading: false,
         user: { id: 1, username: 'admin', role: { id: 1, name: 'Admin' }, role_id: 1 },
+        isAdmin: true,
         hasPermission: vi.fn().mockReturnValue(true),
       })
 

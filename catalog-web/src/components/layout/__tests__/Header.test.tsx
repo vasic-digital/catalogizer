@@ -285,6 +285,7 @@ describe('Header', () => {
           role_id: 1,
         },
         isAuthenticated: true,
+        isAdmin: true,
         logout: mockLogout,
       })
     })
@@ -549,6 +550,7 @@ describe('Header', () => {
           role_id: 1,
         },
         isAuthenticated: true,
+        isAdmin: true,
         logout: mockLogout,
       })
     })

@@ -67,7 +67,7 @@ const moreItemClass = (pathname: string, href: string, tier: number) => {
  * search, and user account controls.
  */
 export const Header: React.FC = () => {
-  const { user, isAuthenticated, logout } = useAuth()
+  const { user, isAuthenticated, isAdmin, logout } = useAuth()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const [isMoreOpen, setIsMoreOpen] = useState(false)
@@ -101,7 +101,6 @@ export const Header: React.FC = () => {
   }, [isMoreOpen])
   useEffect(() => { setIsMoreOpen(false) }, [location.pathname])
 
-  const isAdmin = user?.role?.name === 'Admin'
   const navItems = NAV_ITEMS.filter((i) => !i.adminOnly || isAdmin)
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen)

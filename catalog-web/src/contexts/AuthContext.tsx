@@ -13,6 +13,25 @@ const isNetworkError = (err: unknown): boolean =>
 import type { AuthContextType as _SharedAuthContextType } from '@vasic-digital/auth-context'
 import toast from 'react-hot-toast'
 
+// SYSTEM_ADMIN_PERMISSION is models.PermissionSystemAdmin on the server.
+const SYSTEM_ADMIN_PERMISSION = 'system.admin'
+
+/**
+ * permissionsGrantSystemAdmin ports the server's models.Permissions.HasPermission
+ * for the system.admin permission (exact, "*", or a segment-boundary prefix wildcard).
+ */
+export const permissionsGrantSystemAdmin = (perms: readonly string[] | undefined | null): boolean => {
+  for (const perm of perms ?? []) {
+    if (perm === '*' || perm === SYSTEM_ADMIN_PERMISSION) return true
+    if (perm.length > 0 && perm.endsWith('*')) {
+      const prefix = perm.slice(0, -1)
+      if (prefix !== '' && !prefix.endsWith('.') && !prefix.endsWith(':')) continue
+      if (SYSTEM_ADMIN_PERMISSION.startsWith(prefix)) return true
+    }
+  }
+  return false
+}
+
 interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
@@ -184,14 +203,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     },
   })
 
-  // SSE-F4-R3: UI heuristic only, NOT the server rule. The server's RequireAdmin
-  // asks userRepo.IsAdmin (live role permissions: system.admin / * / system.*) and
-  // uses role_id == 1 only as a fallback. Here a numeric role_id is authoritative
-  // (role_id === 1) and the role name is used only when no role_id is present.
-  // Limitation: a custom role holding admin permissions but with role_id != 1 is
-  // not treated as admin by the UI (the server would still allow it).
-  const isUserAdmin =
-    typeof user?.role_id === 'number' ? user.role_id === 1 : user?.role?.name === 'Admin'
+  // SSEF4R-M1: the UI admin decision mirrors the server rule. The server's
+  // RequireAdmin asks userRepo.IsAdmin, i.e. Permissions.HasPermission(
+  // "system.admin") over the user's live role permissions: an exact match, "*",
+  // or a prefix wildcard on a segment boundary ("system.*", "admin:*"; "sys*" does
+  // not span "system.admin"). The same matcher runs here on the /auth/status
+  // permissions; role_id and the role name are never consulted. UI gating only,
+  // the server stays the security boundary.
+  const isUserAdmin = !!authStatus?.authenticated && permissionsGrantSystemAdmin(authStatus.permissions)
 
   const hasPermission = (permission: string): boolean => {
     if (isUserAdmin) return true
