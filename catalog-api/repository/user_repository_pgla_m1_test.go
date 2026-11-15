@@ -32,7 +32,16 @@ import (
 
 func TestPGLAM1_ReReadRunsInsideTxWhileAdvisoryLockHeld(t *testing.T) {
 	host := os.Getenv("CATALOGIZER_PG_TEST_HOST")
-	port, _ := strconv.Atoi(os.Getenv("CATALOGIZER_PG_TEST_PORT"))
+	rawPort := os.Getenv("CATALOGIZER_PG_TEST_PORT")
+	port := 0
+	if rawPort != "" {
+		var perr error
+		port, perr = strconv.Atoi(rawPort)
+		// PGLA-M1-N2: a set-but-unparsable port is a configuration error, never an honest "not set" SKIP.
+		if perr != nil || port <= 0 {
+			t.Fatalf("CATALOGIZER_PG_TEST_PORT is set but not a positive integer: %q", rawPort)
+		}
+	}
 	user := os.Getenv("CATALOGIZER_PG_TEST_USER")
 	pass := os.Getenv("CATALOGIZER_PG_TEST_PASSWORD")
 	if host == "" || port == 0 {
@@ -45,21 +54,27 @@ func TestPGLAM1_ReReadRunsInsideTxWhileAdvisoryLockHeld(t *testing.T) {
 	name := fmt.Sprintf("tmp_pgla_m1_%d", time.Now().UnixNano())
 	_, err = adm.ExecContext(ctx, "CREATE DATABASE "+name)
 	require.NoError(t, err)
-	defer func() { _, _ = adm.ExecContext(ctx, "DROP DATABASE IF EXISTS "+name+" WITH (FORCE)") }()
+	rb := make([]byte, 9)
+	_, err = rand.Read(rb)
+	require.NoError(t, err)
+	appPass := hex.EncodeToString(rb)
+	appRole := "pgla_m1_app_" + hex.EncodeToString(rb[:4])
+	// PGLA-M1-F1: the database (which owns objects the role has privileges on) is dropped FIRST, then the
+	// role; both errors are checked and logged, never swallowed.
+	defer func() {
+		if _, derr := adm.ExecContext(ctx, "DROP DATABASE IF EXISTS "+name+" WITH (FORCE)"); derr != nil {
+			t.Errorf("cleanup: DROP DATABASE %s: %v", name, derr)
+		}
+		if _, derr := adm.ExecContext(ctx, "DROP ROLE IF EXISTS "+appRole); derr != nil {
+			t.Errorf("cleanup: DROP ROLE %s: %v", appRole, derr)
+		}
+	}()
 
 	owner, err := database.NewConnection(&config.DatabaseConfig{Type: "postgres", Host: host, Port: port, Name: name, User: user, Password: pass, SSLMode: "disable"})
 	require.NoError(t, err)
 	defer owner.Close()
 	require.NoError(t, owner.RunMigrations(ctx))
 
-	rb := make([]byte, 9)
-	_, err = rand.Read(rb)
-	require.NoError(t, err)
-	appPass := hex.EncodeToString(rb)
-	appRole := "pgla_m1_app_" + hex.EncodeToString(rb[:4])
-	defer func() {
-		_, _ = adm.ExecContext(ctx, "DROP ROLE IF EXISTS "+appRole)
-	}()
 	for _, stmt := range []string{
 		fmt.Sprintf("CREATE ROLE %s LOGIN NOSUPERUSER PASSWORD '%s'", appRole, appPass),
 		`CREATE TABLE pgla_m1_probe (id BIGSERIAL PRIMARY KEY, q TEXT NOT NULL, held BOOLEAN NOT NULL)`,
@@ -67,7 +82,7 @@ func TestPGLAM1_ReReadRunsInsideTxWhileAdvisoryLockHeld(t *testing.T) {
 		// pg_backend_pid() and pg_locks describe the very transaction doing the read.
 		`CREATE FUNCTION pgla_m1_users_probe() RETURNS boolean LANGUAGE sql VOLATILE SECURITY DEFINER AS $$
 			INSERT INTO pgla_m1_probe(q, held)
-			SELECT current_query(), EXISTS (SELECT 1 FROM pg_locks WHERE locktype = 'advisory' AND pid = pg_backend_pid() AND granted AND objid = 7340001);
+			SELECT current_query(), EXISTS (SELECT 1 FROM pg_locks WHERE locktype = 'advisory' AND pid = pg_backend_pid() AND granted AND classid = 0 AND objsubid = 1 AND objid = 7340001);
 			SELECT true $$`,
 		`GRANT EXECUTE ON FUNCTION pgla_m1_users_probe() TO PUBLIC`,
 		`ALTER TABLE users ENABLE ROW LEVEL SECURITY`,
