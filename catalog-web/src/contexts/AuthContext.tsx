@@ -17,20 +17,24 @@ import toast from 'react-hot-toast'
 const SYSTEM_ADMIN_PERMISSION = 'system.admin'
 
 /**
- * permissionsGrantSystemAdmin ports the server's models.Permissions.HasPermission
- * for the system.admin permission (exact, "*", or a segment-boundary prefix wildcard).
+ * permissionsGrant ports the server's models.Permissions.HasPermission: an exact
+ * match, "*", or a prefix wildcard on a segment boundary ("media.*", "admin:*";
+ * "med*" does not span "media.view", "media.*" does not span "mediax.view").
  */
-export const permissionsGrantSystemAdmin = (perms: readonly string[] | undefined | null): boolean => {
+export const permissionsGrant = (perms: readonly string[] | undefined | null, permission: string): boolean => {
   for (const perm of perms ?? []) {
-    if (perm === '*' || perm === SYSTEM_ADMIN_PERMISSION) return true
+    if (perm === '*' || perm === permission) return true
     if (perm.length > 0 && perm.endsWith('*')) {
       const prefix = perm.slice(0, -1)
       if (prefix !== '' && !prefix.endsWith('.') && !prefix.endsWith(':')) continue
-      if (SYSTEM_ADMIN_PERMISSION.startsWith(prefix)) return true
+      if (permission.startsWith(prefix)) return true
     }
   }
   return false
 }
+
+export const permissionsGrantSystemAdmin = (perms: readonly string[] | undefined | null): boolean =>
+  permissionsGrant(perms, SYSTEM_ADMIN_PERMISSION)
 
 interface AuthContextType {
   user: User | null
@@ -214,12 +218,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const hasPermission = (permission: string): boolean => {
     if (isUserAdmin) return true
-    return permissions.includes(permission)
+    return permissionsGrant(permissions, permission)
   }
 
   const canAccess = (resource: string, action: string): boolean => {
     const permission = `${action}:${resource}`
-    return hasPermission(permission) || hasPermission('admin:system')
+    return hasPermission(permission)
   }
 
   const value: AuthContextType = {

@@ -349,13 +349,13 @@ describe('AuthContext', () => {
     });
   });
 
-  it('canAccess returns true when user has admin:system permission', async () => {
+  it('canAccess returns true when user has system.admin permission', async () => {
     mockAuthApi.getAuthStatus.mockResolvedValue({
       authenticated: true,
       user: { id: 2, username: 'superuser', role: { name: 'SuperUser' }, role_id: 5 },
-      permissions: ['admin:system'],
+      permissions: ['system.admin'],
     });
-    mockAuthApi.getPermissions.mockResolvedValue({ permissions: ['admin:system'] });
+    mockAuthApi.getPermissions.mockResolvedValue({ permissions: ['system.admin'] });
     const queryClient = createQueryClient();
 
     render(
