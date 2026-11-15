@@ -44,8 +44,10 @@ func TestPGLAM1_ReReadRunsInsideTxWhileAdvisoryLockHeld(t *testing.T) {
 	}
 	user := os.Getenv("CATALOGIZER_PG_TEST_USER")
 	pass := os.Getenv("CATALOGIZER_PG_TEST_PASSWORD")
-	if host == "" || port == 0 {
-		t.Skip("CATALOGIZER_PG_TEST_HOST/PORT not set: PostgreSQL in-tx re-read test skipped (honest SKIP, not a pass)")
+	// PGLA-M1-FU1: all four variables are needed (a role allowed to CREATE/DROP DATABASE); any missing one is an
+	// honest SKIP, never a connect failure.
+	if host == "" || port == 0 || user == "" || pass == "" {
+		t.Skip("CATALOGIZER_PG_TEST_{HOST,PORT,USER,PASSWORD} not all set: PostgreSQL in-tx re-read test skipped (honest SKIP, not a pass)")
 	}
 	ctx := context.Background()
 	adm, err := sql.Open("postgres", fmt.Sprintf("postgres://%s:%s@%s:%d/postgres?sslmode=disable", user, pass, host, port))

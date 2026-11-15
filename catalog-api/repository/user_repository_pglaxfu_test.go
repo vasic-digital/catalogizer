@@ -97,7 +97,15 @@ func TestPGLAXFUR5_UpdateRole_PGPathFailsClosedWhenAdminSetUnreadable(t *testing
 
 func TestPGLAXFUF1_Live_UpdateRoleCorruptPermissionsFailsClosed(t *testing.T) {
 	host := os.Getenv("CATALOGIZER_PG_TEST_HOST")
-	port, _ := strconv.Atoi(os.Getenv("CATALOGIZER_PG_TEST_PORT"))
+	port := 0
+	if rawPort := os.Getenv("CATALOGIZER_PG_TEST_PORT"); rawPort != "" {
+		var perr error
+		port, perr = strconv.Atoi(rawPort)
+		// PGLA-M1-FU2: a set-but-unparsable port is a configuration error, never an honest "not set" SKIP.
+		if perr != nil || port <= 0 {
+			t.Fatalf("CATALOGIZER_PG_TEST_PORT is set but not a positive integer: %q", rawPort)
+		}
+	}
 	user := os.Getenv("CATALOGIZER_PG_TEST_USER")
 	pass := os.Getenv("CATALOGIZER_PG_TEST_PASSWORD")
 	// PGLAXFU-N4: the live test needs all four variables: CATALOGIZER_PG_TEST_HOST, _PORT, _USER, _PASSWORD
