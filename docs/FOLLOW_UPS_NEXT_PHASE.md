@@ -2917,3 +2917,8 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 - EXF7-N1 (nit, test): the `FROM roles` regex in TestUserRepositoryExample is loose (outside-tx ListRoles also matches; reviewer mutant CM6 caught only by ProtectedLastAdmin via column shape); tighten to `SELECT id, permissions FROM roles` so both DeleteUser subtests catch it independently.
 - EXF7-N2 (nit, test): lock regex does not pin `WHERE id = 0` (near-equivalent; same looseness as repository package tests).
 - EXF7-N3 (info): author's M5 not re-run by reviewer (UNCONFIRMED); full ./handlers and root package not run by the reviewer; sqlmock cannot pin an extra unexpected Rollback (deferred tx.Rollback() ignores the error).
+
+### WEB-TEST-BUNDLE-1 review follow-ups (Opus GO-with-follow-ups, 2026-11-15, PROVISIONAL)
+- WTB1-m1 (minor, test): extractor mutants E4 (text always from first line) and E7 (report only first uncaptured occurrence) survive; add a routeGateExtract case with two bad gates on lines 2 and 3 asserting length 2, each text, and /missed 2/.
+- WTB1-n1 (nit, doc): comment "well past any debounce/refetch/timer window" overstates; advance is exactly 10 s (equals Sync statistics refetchInterval 10000), a flip after 10 s is not caught (mutant T4); reword as "a 10 s window".
+- WTB1-n2 (info): `tsc -p .` excludes test files so tests are never type-checked; full strict tsc incl. tests UNCONFIRMED; full vitest suite not run by reviewer.
