@@ -10,9 +10,11 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
+	"fmt"
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -72,13 +74,22 @@ func (c *f6Conn) Query(q string, args []driver.Value) (driver.Rows, error) {
 	return c.Conn.(driver.Queryer).Query(q, args) //nolint:staticcheck
 }
 
-func TestPGLAX1F6_ConcurrentStripOfTwoAdminRoles_KeepsOneAdministrator(t *testing.T) {
+// f6DriverSeq makes every registered driver name unique within the process, so the tests can run with
+// -count>1 in ONE invocation (PGLAX1-F6-FU1: sql.Register panics on a duplicate name).
+var f6DriverSeq atomic.Int64
+
+// f6Setup opens a real SQLite file database behind the barrier driver. maxOpen > 0 limits the pool.
+func f6Setup(t *testing.T, maxOpen int) (*database.DB, *UserRepository) {
+	t.Helper()
 	path := filepath.Join(t.TempDir(), "f6.db")
 	bar := &f6Barrier{want: 2, release: make(chan struct{}), timeout: 2 * time.Second}
-	drvName := "sqlite3_f6_" + strings.ReplaceAll(t.Name(), "/", "_")
+	drvName := fmt.Sprintf("sqlite3_f6_%d", f6DriverSeq.Add(1))
 	sql.Register(drvName, f6Driver{b: bar})
 	sqlDB, err := sql.Open(drvName, path+"?_busy_timeout=20000&_foreign_keys=1")
 	require.NoError(t, err)
+	if maxOpen > 0 {
+		sqlDB.SetMaxOpenConns(maxOpen)
+	}
 	_, err = sqlDB.Exec("PRAGMA journal_mode=WAL") // as database.NewConnection does; default deferred BEGIN, as in production
 	require.NoError(t, err)
 	t.Cleanup(func() { sqlDB.Close() })
@@ -86,8 +97,11 @@ func TestPGLAX1F6_ConcurrentStripOfTwoAdminRoles_KeepsOneAdministrator(t *testin
 	require.NoError(t, db.RunMigrations(context.Background()))
 	_, err = db.Exec(`UPDATE users SET role_id = 2`)
 	require.NoError(t, err)
-	repo := NewUserRepository(db)
+	return db, NewUserRepository(db)
+}
 
+func TestPGLAX1F6_ConcurrentStripOfTwoAdminRoles_KeepsOneAdministrator(t *testing.T) {
+	db, repo := f6Setup(t, 0)
 	a := pglaX1Role(t, repo, "roleA", "system.admin")
 	b := pglaX1Role(t, repo, "roleB", "system.admin")
 	pglaX1User(t, repo, "ua", a, true)
@@ -116,4 +130,35 @@ func TestPGLAX1F6_ConcurrentStripOfTwoAdminRoles_KeepsOneAdministrator(t *testin
 	}
 	// The refusal must be the clean last-administrator refusal, not a database-busy failure that merely avoids the violation.
 	require.ErrorIs(t, loser, ErrLastAdmin)
+}
+
+// PGLAX1-F6-FU2: with a pool of ONE connection the strip's transaction owns the only connection, so any read of
+// the administrator-role set through the pool (r.db) instead of the transaction waits for a connection that is
+// never released and the call hangs. A hang therefore pins "the SQLite strip reads the admin set through tx".
+func TestPGLAX1F6_SingleConnectionPool_StripReadsAdminSetThroughTx(t *testing.T) {
+	db, repo := f6Setup(t, 1)
+	a := pglaX1Role(t, repo, "roleA", "system.admin")
+	b := pglaX1Role(t, repo, "roleB", "system.admin")
+	pglaX1User(t, repo, "ua", a, true)
+	pglaX1User(t, repo, "ub", b, true)
+
+	strip := func(id int, name string) error {
+		done := make(chan error, 1)
+		go func() {
+			done <- repo.UpdateRole(&models.Role{ID: id, Name: name, Permissions: models.Permissions{"media.view"}})
+		}()
+		select {
+		case err := <-done:
+			return err
+		case <-time.After(15 * time.Second):
+			t.Fatalf("UpdateRole(%d) hung with a single-connection pool: the admin set is read through the pool, not the transaction", id)
+			return nil
+		}
+	}
+	require.NoError(t, strip(a, "strippedA"), "another administrator role keeps an active member, so the strip of A is allowed")
+	require.ErrorIs(t, strip(b, "strippedB"), ErrLastAdmin, "B is now the only administrator role")
+	admins := 0
+	require.NoError(t, db.QueryRow(`SELECT COUNT(*) FROM users u JOIN roles r ON r.id = u.role_id
+		WHERE u.is_active = 1 AND r.permissions LIKE '%system.admin%'`).Scan(&admins))
+	require.Equal(t, 1, admins)
 }
