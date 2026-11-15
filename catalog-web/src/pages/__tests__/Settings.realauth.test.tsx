@@ -67,7 +67,8 @@ vi.mock('@/lib/mediaApi', async () => ({
 const ADMIN = { id: 1, username: 'root', role: { name: 'Admin' }, role_id: 1 }
 const USER = { id: 2, username: 'bob', role: { name: 'User' }, role_id: 2 }
 
-const status = (user: object) => ({ authenticated: true, user, permissions: [] })
+// The Admin role is seeded with '*'; isAdmin follows the server rule on these permissions (SSEF4R-M1).
+const status = (user: object, permissions: string[] = []) => ({ authenticated: true, user, permissions })
 
 function mount() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -107,7 +108,7 @@ describe('Settings with the real AuthProvider', () => {
   })
 
   it('R1: admin (role_id 1) via the real provider sees the Sync tab and its data', async () => {
-    vi.mocked(authApi.getAuthStatus).mockResolvedValue(status(ADMIN) as any)
+    vi.mocked(authApi.getAuthStatus).mockResolvedValue(status(ADMIN, ['*']) as any)
     mount()
     const syncTab = await screen.findByRole('button', { name: /^Sync$/ })
     await userEvent.setup().click(syncTab)
@@ -116,7 +117,7 @@ describe('Settings with the real AuthProvider', () => {
   })
 
   it('R2/R4: admin on the Sync tab who loses admin lands on Scans, not a blank panel, and no further /sync/* query', async () => {
-    vi.mocked(authApi.getAuthStatus).mockResolvedValue(status(ADMIN) as any)
+    vi.mocked(authApi.getAuthStatus).mockResolvedValue(status(ADMIN, ['*']) as any)
     const { queryClient } = mount()
     const user = userEvent.setup()
     await user.click(await screen.findByRole('button', { name: /^Sync$/ }))
@@ -150,7 +151,7 @@ describe('Settings with the real AuthProvider', () => {
     expect(screen.queryByText('Scan History')).not.toBeInTheDocument()
   })
 
-  it('R3: a role NAMED Admin whose role_id is not 1 is not shown the Sync tab (UI heuristic: role_id authoritative; server uses live role permissions)', async () => {
+  it('R3: a role NAMED Admin whose permissions do not grant system.admin is not shown the Sync tab (isAdmin follows the server rule on /auth/status permissions)', async () => {
     vi.mocked(authApi.getAuthStatus).mockResolvedValue(
       status({ id: 9, username: 'impostor', role: { name: 'Admin' }, role_id: 2 }) as any
     )

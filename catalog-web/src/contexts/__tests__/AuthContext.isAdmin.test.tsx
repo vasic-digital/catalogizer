@@ -70,6 +70,8 @@ describe('AuthContext isAdmin follows the server rule', () => {
 
   it.each([
     [['sys*']],
+    [['em.*']],
+    [['stem.*']],
     [['media.*']],
     [['admin:system']],
     [['system.administrator']],
@@ -83,7 +85,11 @@ describe('AuthContext isAdmin follows the server rule', () => {
   })
 
   it('uses the /auth/status permissions, not a differing /auth/permissions list', async () => {
-    expect(await adminFor({ id: 1, username: 'x', role_id: 1 }, ['system.admin'], ['read:media'])).toBe('admin')
-    vi.clearAllMocks()
+    const result = await adminFor({ id: 1, username: 'x', role_id: 1 }, ['system.admin'], ['read:media'])
+    // The /auth/permissions query must have run and been consumed before we judge.
+    await waitFor(() => expect(mockAuthApi.getPermissions).toHaveBeenCalled())
+    await new Promise((r) => setTimeout(r, 50))
+    expect(screen.getByTestId('admin')).toHaveTextContent('admin')
+    expect(result).toBe('admin')
   })
 })

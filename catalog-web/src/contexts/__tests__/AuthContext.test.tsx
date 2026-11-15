@@ -213,6 +213,10 @@ describe('AuthContext', () => {
       </QueryClientProvider>
     );
 
+    // Wait for the user to load first so the assertion cannot pass from the initial state.
+    await waitFor(() => {
+      expect(screen.getByTestId('user-info')).toHaveTextContent('User: admin');
+    });
     await waitFor(() => {
       expect(screen.getByTestId('admin-status')).toHaveTextContent('Not Admin');
     });
