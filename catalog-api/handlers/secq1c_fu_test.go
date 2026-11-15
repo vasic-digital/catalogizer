@@ -39,6 +39,7 @@ func (s *SyncHandlerTestSuite) putAs(token, path string, body map[string]interfa
 
 // SECQ1C-M1: a user who neither owns the endpoint nor holds share.edit is refused (403 "unauthorized") BEFORE any password is checked:
 // no throttle slot is reserved and the answer is not step_up_failed. A user holding share.edit (control) is admitted to the password check.
+// SECQ1CFU-N1: the suite router has no adminGate (production main.go mounts one); this test covers handler-level ownership only.
 func (s *SyncHandlerTestSuite) TestSECQ1CFU_M1_ForeignEndpointCostsNoPasswordCheck() {
 	freshThrottle(s.T())
 	foreign := s.secq1cFUUser(52, `[]`)

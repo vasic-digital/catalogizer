@@ -209,61 +209,75 @@ func (r *UserRepository) Update(user *models.User) error {
 // reports whether a row was updated; (false, nil) means the guard no longer
 // holds and the caller must re-read and decide again.
 func (r *UserRepository) UpdateGuarded(user *models.User, expectedRoleID int, expectedActive bool) (bool, error) {
-	adminIDs, err := r.adminRoleIDs()
-	if err != nil {
-		return false, err
-	}
-	isAdmin := func(id int) bool { return containsInt(adminIDs, id) }
 	// The write removes an administrator when the stored row is an active
 	// admin and the new state is not (role without admin rights, or inactive).
 	// The lock columns are NOT written here: a suspension is written only by
 	// SetSuspended (and LockAccount/UnlockAccount), never from a caller's
 	// possibly stale read of the row.
-	removesAdmin := expectedActive && isAdmin(expectedRoleID) && !(user.IsActive && isAdmin(user.RoleID))
-
-	query := `
+	build := func(adminIDs []int) (string, []interface{}, bool) {
+		isAdmin := func(id int) bool { return containsInt(adminIDs, id) }
+		removesAdmin := expectedActive && isAdmin(expectedRoleID) && !(user.IsActive && isAdmin(user.RoleID))
+		query := `
 		UPDATE users SET
 			username = ?, email = ?, first_name = ?, last_name = ?, display_name = ?,
 			avatar_url = ?, time_zone = ?, language = ?, is_active = ?, settings = ?,
 			role_id = ?, updated_at = ?
 		WHERE id = ? AND role_id = ? AND is_active = ?`
-	args := []interface{}{
-		user.Username, user.Email, user.FirstName, user.LastName, user.DisplayName,
-		user.AvatarURL, user.TimeZone, user.Language, user.IsActive, user.Settings,
-		user.RoleID, time.Now(), user.ID, expectedRoleID, expectedActive}
-	if removesAdmin {
-		clause, cargs := otherActiveAdminsClause(user.ID, adminIDs)
-		query += " AND " + clause
-		args = append(args, cargs...)
+		args := []interface{}{
+			user.Username, user.Email, user.FirstName, user.LastName, user.DisplayName,
+			user.AvatarURL, user.TimeZone, user.Language, user.IsActive, user.Settings,
+			user.RoleID, time.Now(), user.ID, expectedRoleID, expectedActive}
+		if removesAdmin {
+			clause, cargs := otherActiveAdminsClause(user.ID, adminIDs)
+			query += " AND " + clause
+			args = append(args, cargs...)
+		}
+		return query, args, removesAdmin
 	}
 
-	exec := func(q Execer, qs string) (int64, error) {
-		res, xerr := q.Exec(qs, args...)
-		if xerr != nil {
-			return 0, xerr
-		}
-		return res.RowsAffected()
-	}
 	var n int64
-	if removesAdmin && r.db.Dialect().Type == database.DialectPostgres {
-		// READ COMMITTED would let two transactions each see the other admin;
-		// serialise admin-removing writes with a transaction-scoped advisory lock.
+	var removesAdmin bool
+	// A write that changes the role or activation of an active row MAY remove an administrator. On PostgreSQL
+	// that decision and the administrator-role set it rests on are made inside the advisory-locked transaction
+	// (PGLA-X1: a set read before the lock can be stale), so the lock is taken for every such write.
+	mayRemove := expectedActive && (user.RoleID != expectedRoleID || !user.IsActive)
+	if mayRemove && r.db.Dialect().Type == database.DialectPostgres {
 		tx, berr := r.db.Begin()
 		if berr != nil {
 			return false, berr
 		}
 		defer tx.Rollback()
-		if _, lerr := tx.Exec(`SELECT pg_advisory_xact_lock(7340001)`); lerr != nil {
+		if _, lerr := tx.Exec(pgAdvisoryLockKey); lerr != nil {
 			return false, lerr
 		}
-		if n, err = exec(tx, r.db.Rewrite(query)); err != nil {
+		adminIDs, aerr := r.adminRoleIDsTx(tx)
+		if aerr != nil {
+			return false, aerr
+		}
+		var q string
+		var args []interface{}
+		q, args, removesAdmin = build(adminIDs)
+		res, xerr := tx.Exec(r.db.Rewrite(q), args...)
+		if xerr != nil {
+			return false, xerr
+		}
+		n, _ = res.RowsAffected()
+		if err := tx.Commit(); err != nil {
 			return false, err
 		}
-		if err = tx.Commit(); err != nil {
+	} else {
+		adminIDs, err := r.adminRoleIDs()
+		if err != nil {
 			return false, err
 		}
-	} else if n, err = exec(r.db, query); err != nil {
-		return false, err
+		var q string
+		var args []interface{}
+		q, args, removesAdmin = build(adminIDs)
+		res, xerr := r.db.Exec(q, args...)
+		if xerr != nil {
+			return false, xerr
+		}
+		n, _ = res.RowsAffected()
 	}
 	if n > 0 {
 		return true, nil
@@ -307,6 +321,50 @@ func (r *UserRepository) adminRoleIDs() ([]int, error) {
 		}
 	}
 	return ids, nil
+}
+
+// pgAdvisoryLockKey is the transaction-scoped advisory lock every admin-removing write serialises on.
+const pgAdvisoryLockKey = `SELECT pg_advisory_xact_lock(7340001)`
+
+// adminRoleIDsTx is adminRoleIDs read through an open transaction. PGLA-X1: on PostgreSQL the
+// administrator-role set must be read AFTER the advisory lock is held, inside the same transaction as the
+// guarded write; a set read before the lock can be made stale by a concurrent UpdateRole / role grant.
+func (r *UserRepository) adminRoleIDsTx(tx *sql.Tx) ([]int, error) {
+	rows, err := tx.Query(r.db.Rewrite(`SELECT id, permissions FROM roles`))
+	if err != nil {
+		return nil, fmt.Errorf("failed to list roles: %w", err)
+	}
+	defer rows.Close()
+	ids := []int{}
+	for rows.Next() {
+		var id int
+		var permsJSON string
+		if err := rows.Scan(&id, &permsJSON); err != nil {
+			return nil, fmt.Errorf("failed to scan role: %w", err)
+		}
+		var perms models.Permissions
+		if err := json.Unmarshal([]byte(permsJSON), &perms); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal permissions: %w", err)
+		}
+		if perms.HasPermission(models.PermissionSystemAdmin) {
+			ids = append(ids, id)
+		}
+	}
+	return ids, rows.Err()
+}
+
+// UpdateSettings writes ONLY the settings column. PGLA-X1: the settings endpoint used to read the whole row and
+// save it back through the unguarded Update, so a concurrent role or activation change (for example the
+// promotion that made another administrator removable) was silently reverted by a stale read.
+func (r *UserRepository) UpdateSettings(userID int, settingsJSON string) error {
+	res, err := r.db.Exec(`UPDATE users SET settings = ?, updated_at = ? WHERE id = ?`, settingsJSON, time.Now(), userID)
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
 }
 
 // otherActiveAdminsClause is a SQL condition true when at least one active,
@@ -439,28 +497,28 @@ var ErrAccountSuspended = errors.New("account is suspended")
 // LockAccount applies a timed lock and revokes the user's sessions. A permanent suspension (is_locked with no
 // locked_until) is never replaced by a timed lock: it is already stricter.
 func (r *UserRepository) LockAccount(userID int, lockUntil time.Time) error {
-	query := `UPDATE users SET is_locked = 1, locked_until = ? WHERE id = ? AND NOT (COALESCE(is_locked, '0') = ? AND locked_until IS NULL)`
-	args := []interface{}{lockUntil, userID, true}
 	// CAT-PG-LASTADMIN-1: a locked administrator no longer counts as one, so a
 	// timed lock removes an administrator exactly like a suspension and gets the
 	// same atomic last-administrator guard (same statement; on PostgreSQL also
 	// serialised with the shared advisory lock, because READ COMMITTED would let
 	// two transactions each see the other administrator as still available).
-	adminIDs, err := r.adminRoleIDs()
-	if err != nil {
-		return err
-	}
-	// A lock that is already expired removes nobody, so it is not guarded.
-	guarded := len(adminIDs) > 0 && lockUntil.After(time.Now())
-	if guarded {
-		ph := make([]string, len(adminIDs))
-		for i, id := range adminIDs {
-			ph[i] = "?"
-			args = append(args, id)
+	// PGLA-X1: on PostgreSQL the administrator-role set is read after the lock, in the same transaction.
+	build := func(adminIDs []int) (string, []interface{}, bool) {
+		query := `UPDATE users SET is_locked = 1, locked_until = ? WHERE id = ? AND NOT (COALESCE(is_locked, '0') = ? AND locked_until IS NULL)`
+		args := []interface{}{lockUntil, userID, true}
+		// A lock that is already expired removes nobody, so it is not guarded.
+		guarded := len(adminIDs) > 0 && lockUntil.After(time.Now())
+		if guarded {
+			ph := make([]string, len(adminIDs))
+			for i, id := range adminIDs {
+				ph[i] = "?"
+				args = append(args, id)
+			}
+			clause, cargs := otherActiveAdminsClause(userID, adminIDs)
+			query += " AND (role_id NOT IN (" + strings.Join(ph, ",") + ") OR " + clause + ")"
+			args = append(args, cargs...)
 		}
-		clause, cargs := otherActiveAdminsClause(userID, adminIDs)
-		query += " AND (role_id NOT IN (" + strings.Join(ph, ",") + ") OR " + clause + ")"
-		args = append(args, cargs...)
+		return query, args, guarded
 	}
 	// refusedByGuard re-reads the row to tell "the guard held the write back"
 	// from "already suspended / no such user". On PostgreSQL it runs inside the
@@ -469,7 +527,7 @@ func (r *UserRepository) LockAccount(userID int, lockUntil time.Time) error {
 	type rower interface {
 		QueryRow(query string, args ...interface{}) *sql.Row
 	}
-	refusedByGuard := func(q rower, rewrite bool) bool {
+	refusedByGuard := func(q rower, rewrite bool, adminIDs []int) bool {
 		sq := `SELECT role_id, COALESCE(is_locked, '0'), locked_until FROM users WHERE id = ?`
 		if rewrite {
 			sq = r.db.Rewrite(sq)
@@ -482,35 +540,46 @@ func (r *UserRepository) LockAccount(userID int, lockUntil time.Time) error {
 	}
 	var n int64
 	refused := false
-	if guarded && r.db.Dialect().Type == database.DialectPostgres {
+	var err error
+	if lockUntil.After(time.Now()) && r.db.Dialect().Type == database.DialectPostgres {
 		tx, berr := r.db.Begin()
 		if berr != nil {
 			return berr
 		}
 		defer tx.Rollback()
-		if _, lerr := tx.Exec(`SELECT pg_advisory_xact_lock(7340001)`); lerr != nil {
+		if _, lerr := tx.Exec(pgAdvisoryLockKey); lerr != nil {
 			return lerr
 		}
+		adminIDs, aerr := r.adminRoleIDsTx(tx)
+		if aerr != nil {
+			return aerr
+		}
+		query, args, guarded := build(adminIDs)
 		res, xerr := tx.Exec(r.db.Rewrite(query), args...)
 		if xerr != nil {
 			return xerr
 		}
 		n, _ = res.RowsAffected()
-		if n == 0 {
-			refused = refusedByGuard(tx, true)
+		if n == 0 && guarded {
+			refused = refusedByGuard(tx, true, adminIDs)
 		}
 		if err = tx.Commit(); err != nil {
 			return err
 		}
 	} else {
+		adminIDs, aerr := r.adminRoleIDs()
+		if aerr != nil {
+			return aerr
+		}
+		query, args, guarded := build(adminIDs)
 		res, xerr := r.db.Exec(query, args...)
 		if xerr != nil {
 			return xerr
 		}
 		n, _ = res.RowsAffected()
-	}
-	if n == 0 && guarded && r.db.Dialect().Type != database.DialectPostgres {
-		refused = refusedByGuard(r.db, false)
+		if n == 0 && guarded && r.db.Dialect().Type != database.DialectPostgres {
+			refused = refusedByGuard(r.db, false, adminIDs)
+		}
 	}
 	if refused {
 		return ErrLastAdmin
@@ -559,42 +628,51 @@ func (r *UserRepository) SetSuspended(userID int, suspended bool) error {
 		_, err := r.db.Exec(`UPDATE users SET is_locked = ?, locked_until = NULL, updated_at = ? WHERE id = ?`, false, time.Now(), userID)
 		return err
 	}
-	adminIDs, err := r.adminRoleIDs()
-	if err != nil {
-		return err
-	}
-	query := `UPDATE users SET is_locked = ?, locked_until = NULL, updated_at = ? WHERE id = ?`
-	args := []interface{}{true, time.Now(), userID}
-	guarded := len(adminIDs) > 0
-	if guarded {
-		ph := make([]string, len(adminIDs))
-		for i, id := range adminIDs {
-			ph[i] = "?"
-			args = append(args, id)
+	build := func(adminIDs []int) (string, []interface{}) {
+		query := `UPDATE users SET is_locked = ?, locked_until = NULL, updated_at = ? WHERE id = ?`
+		args := []interface{}{true, time.Now(), userID}
+		if len(adminIDs) > 0 {
+			ph := make([]string, len(adminIDs))
+			for i, id := range adminIDs {
+				ph[i] = "?"
+				args = append(args, id)
+			}
+			clause, cargs := otherActiveAdminsClause(userID, adminIDs)
+			query += " AND (role_id NOT IN (" + strings.Join(ph, ",") + ") OR " + clause + ")"
+			args = append(args, cargs...)
 		}
-		clause, cargs := otherActiveAdminsClause(userID, adminIDs)
-		query += " AND (role_id NOT IN (" + strings.Join(ph, ",") + ") OR " + clause + ")"
-		args = append(args, cargs...)
+		return query, args
 	}
 	var n int64
-	if guarded && r.db.Dialect().Type == database.DialectPostgres {
+	if r.db.Dialect().Type == database.DialectPostgres {
+		// PGLA-X1: the administrator-role set is read after the advisory lock, inside the same transaction.
 		tx, berr := r.db.Begin()
 		if berr != nil {
 			return berr
 		}
 		defer tx.Rollback()
-		if _, lerr := tx.Exec(`SELECT pg_advisory_xact_lock(7340001)`); lerr != nil {
+		if _, lerr := tx.Exec(pgAdvisoryLockKey); lerr != nil {
 			return lerr
 		}
+		adminIDs, aerr := r.adminRoleIDsTx(tx)
+		if aerr != nil {
+			return aerr
+		}
+		query, args := build(adminIDs)
 		res, xerr := tx.Exec(r.db.Rewrite(query), args...)
 		if xerr != nil {
 			return xerr
 		}
 		n, _ = res.RowsAffected()
-		if err = tx.Commit(); err != nil {
+		if err := tx.Commit(); err != nil {
 			return err
 		}
 	} else {
+		adminIDs, err := r.adminRoleIDs()
+		if err != nil {
+			return err
+		}
+		query, args := build(adminIDs)
 		res, xerr := r.db.Exec(query, args...)
 		if xerr != nil {
 			return xerr
@@ -620,15 +698,28 @@ func (r *UserRepository) SetSuspended(userID int, suspended bool) error {
 func (r *UserRepository) Delete(id int) error {
 	// Read before the transaction: a second pooled connection taken while the
 	// transaction holds the only one would deadlock a single-connection pool.
-	adminIDs, err := r.adminRoleIDs()
-	if err != nil {
-		return err
+	pg := r.db.Dialect().Type == database.DialectPostgres
+	var adminIDs []int
+	var err error
+	if !pg {
+		if adminIDs, err = r.adminRoleIDs(); err != nil {
+			return err
+		}
 	}
 	tx, err := r.db.Begin()
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
 	defer tx.Rollback()
+	if pg {
+		// PGLA-X1: take the shared advisory lock first and read the administrator-role set inside it.
+		if _, lerr := tx.Exec(pgAdvisoryLockKey); lerr != nil {
+			return lerr
+		}
+		if adminIDs, err = r.adminRoleIDsTx(tx); err != nil {
+			return err
+		}
+	}
 	// Detaching the audit rows must not make them anonymous: stamp who they belonged to into details first.
 	var username string
 	if err := tx.QueryRow(r.db.Rewrite(`SELECT username FROM users WHERE id = ?`), id).Scan(&username); err != nil && err != sql.ErrNoRows {
@@ -659,11 +750,6 @@ func (r *UserRepository) Delete(id int) error {
 		clause, cargs := otherActiveAdminsClause(id, adminIDs)
 		del += " AND " + clause
 		delArgs = append(delArgs, cargs...)
-		if r.db.Dialect().Type == database.DialectPostgres {
-			if _, lerr := tx.Exec(`SELECT pg_advisory_xact_lock(7340001)`); lerr != nil {
-				return lerr
-			}
-		}
 	}
 	res, err := tx.Exec(r.db.Rewrite(del), delArgs...)
 	if err != nil {
@@ -934,33 +1020,120 @@ func (r *UserRepository) CreateRole(role *models.Role) (int, error) {
 	return int(id), nil
 }
 
+// UpdateRole rewrites a custom role. PGLA-X1: a write that strips system.admin from a role that currently grants
+// it removes every active member of that role from the administrator set, so it carries the same atomic
+// last-administrator guard as the user writes: it is refused with ErrLastAdmin unless an active, effectively
+// unlocked member of ANOTHER administrator role remains (or the role has no such member). On PostgreSQL the
+// read of the current permissions and of the administrator-role set happens after the shared advisory lock,
+// in the same transaction as the write.
 func (r *UserRepository) UpdateRole(role *models.Role) error {
-	query := `
-		UPDATE roles SET name = ?, description = ?, permissions = ?, updated_at = ?
-		WHERE id = ? AND is_system = 0
-	`
-
 	permissionsJSON, err := json.Marshal(role.Permissions)
 	if err != nil {
 		return fmt.Errorf("failed to marshal permissions: %w", err)
 	}
+	strips := !role.Permissions.HasPermission(models.PermissionSystemAdmin)
 
-	result, err := r.db.Exec(query, role.Name, role.Description, string(permissionsJSON),
-		time.Now(), role.ID)
-
-	if err != nil {
-		return fmt.Errorf("failed to update role: %w", err)
+	const base = `UPDATE roles SET name = ?, description = ?, permissions = ?, updated_at = ? WHERE id = ? AND is_system = 0`
+	build := func(wasAdmin bool, adminIDs []int) (string, []interface{}, bool) {
+		args := []interface{}{role.Name, role.Description, string(permissionsJSON), time.Now(), role.ID}
+		if !(strips && wasAdmin) {
+			return base, args, false
+		}
+		var rest []int
+		for _, id := range adminIDs {
+			if id != role.ID {
+				rest = append(rest, id)
+			}
+		}
+		unlocked := `(%[1]s.is_locked IS NULL OR %[1]s.is_locked = ? OR (%[1]s.locked_until IS NOT NULL AND %[1]s.locked_until <= ?))`
+		// Nobody active in this role is affected, OR another administrator role keeps an active member.
+		q := base + ` AND (NOT EXISTS (SELECT 1 FROM users m WHERE m.role_id = ? AND m.is_active = ? AND ` + fmt.Sprintf(unlocked, "m") + `)`
+		args = append(args, role.ID, true, false, time.Now())
+		if len(rest) == 0 {
+			q += `)`
+		} else {
+			ph := make([]string, len(rest))
+			for i, id := range rest {
+				ph[i] = "?"
+				_ = id
+			}
+			q += ` OR (SELECT COUNT(*) FROM users o WHERE o.is_active = ? AND ` + fmt.Sprintf(unlocked, "o") + ` AND o.role_id IN (` + strings.Join(ph, ",") + `)) >= 1)`
+			args = append(args, true, false, time.Now())
+			for _, id := range rest {
+				args = append(args, id)
+			}
+		}
+		return q, args, true
+	}
+	currentlyAdmin := func(q interface {
+		QueryRow(string, ...interface{}) *sql.Row
+	}, rewrite bool) bool {
+		sq := `SELECT permissions, is_system FROM roles WHERE id = ?`
+		if rewrite {
+			sq = r.db.Rewrite(sq)
+		}
+		var pj string
+		var sys bool
+		if q.QueryRow(sq, role.ID).Scan(&pj, &sys) != nil || sys {
+			return false
+		}
+		var perms models.Permissions
+		return json.Unmarshal([]byte(pj), &perms) == nil && perms.HasPermission(models.PermissionSystemAdmin)
 	}
 
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("failed to get rows affected: %w", err)
+	var n int64
+	var guarded bool
+	if strips && r.db.Dialect().Type == database.DialectPostgres {
+		tx, berr := r.db.Begin()
+		if berr != nil {
+			return berr
+		}
+		defer tx.Rollback()
+		if _, lerr := tx.Exec(pgAdvisoryLockKey); lerr != nil {
+			return lerr
+		}
+		adminIDs, aerr := r.adminRoleIDsTx(tx)
+		if aerr != nil {
+			return aerr
+		}
+		q, args, g := build(currentlyAdmin(tx, true), adminIDs)
+		guarded = g
+		res, xerr := tx.Exec(r.db.Rewrite(q), args...)
+		if xerr != nil {
+			return fmt.Errorf("failed to update role: %w", xerr)
+		}
+		n, _ = res.RowsAffected()
+		if err := tx.Commit(); err != nil {
+			return err
+		}
+	} else {
+		wasAdmin := false
+		var adminIDs []int
+		if strips {
+			if wasAdmin = currentlyAdmin(r.db, false); wasAdmin {
+				if adminIDs, err = r.adminRoleIDs(); err != nil {
+					return err
+				}
+			}
+		}
+		q, args, g := build(wasAdmin, adminIDs)
+		guarded = g
+		res, xerr := r.db.Exec(q, args...)
+		if xerr != nil {
+			return fmt.Errorf("failed to update role: %w", xerr)
+		}
+		n, _ = res.RowsAffected()
 	}
-
-	if rowsAffected == 0 {
+	if n == 0 {
+		if guarded {
+			// Tell "the guard held the write back" from "role vanished / became a system role".
+			var one int
+			if r.db.QueryRow(`SELECT 1 FROM roles WHERE id = ? AND is_system = 0`, role.ID).Scan(&one) == nil {
+				return ErrLastAdmin
+			}
+		}
 		return errors.New("role not found or is system role")
 	}
-
 	return nil
 }
 

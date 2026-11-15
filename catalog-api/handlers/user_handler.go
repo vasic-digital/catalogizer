@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"log"
@@ -813,8 +814,18 @@ func (h *UserHandler) UpdateUserSettings(w http.ResponseWriter, r *http.Request)
 	}
 	user.Settings = string(settingsJSON)
 
-	err = h.userRepo.Update(user)
+	// PGLA-X1: write ONLY the settings column. Saving the whole row read above (Update) would carry its role_id /
+	// is_active back to the database and silently revert a concurrent role or activation change.
+	if su, ok := h.userRepo.(settingsUpdater); ok {
+		err = su.UpdateSettings(user.ID, user.Settings)
+	} else {
+		err = h.userRepo.Update(user)
+	}
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			http.Error(w, "User not found", http.StatusNotFound)
+			return
+		}
 		http.Error(w, "Failed to update user settings", http.StatusInternalServerError)
 		return
 	}
@@ -924,6 +935,11 @@ func (h *UserHandler) allowedToAssignRole(w http.ResponseWriter, caller *models.
 // guardedUserUpdater is implemented by the production user repository.
 type guardedUserUpdater interface {
 	UpdateGuarded(user *models.User, expectedRoleID int, expectedActive bool) (bool, error)
+}
+
+// settingsUpdater writes ONLY the settings column (implemented by the production user repository).
+type settingsUpdater interface {
+	UpdateSettings(userID int, settingsJSON string) error
 }
 
 // suspensionSetter writes ONLY the lock columns (permanent suspension on/off).
