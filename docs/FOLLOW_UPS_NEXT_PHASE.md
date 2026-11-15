@@ -2804,3 +2804,12 @@ RESOLVED: FUTA-F1 (case-variant CORS origins), FUTA-F2 (nearNow matcher pins the
 - FUTB-F1 (minor): nearNow 5 s tolerance (+3s mutant survives); tighten to ~1 s or document; remove unused `t` field (nit).
 - FUTB-F2 (minor): R1 non-admin test in Settings.realauth.test.tsx still has setTimeout(50); wait on query state.
 Found by the reviewer's `go test -short ./...` in catalog-api (3 packages red, UNVERIFIED on main by me until re-run; tracked as MAIN-POOLGUARD, MAIN-ERRLEAK, MAIN-EXAMPLES, see next section).
+
+## PGLAX1-FU review (Opus, GO-with-follow-ups, PROVISIONAL, branch pglax1-fu e63e626eb)
+RESOLVED: PGLAX1-F1 (locked-member cases), F2 (Delete lock-order subtest), F3 (deactivate variants; live PG16 16 variants x 50 rounds 0 violations in author and reviewer runs; mutant ignoring deactivation gives 17-18/20 violations), F4 (UpdateRole maps ErrLastAdmin to 409), F5 (currentlyAdmin fails closed), N1. Follow-ups:
+- PGLAXFU-F1 (minor, test): PG-path fail-closed test for UpdateRole (corrupt-JSON role on live PG or sqlmock row error after the lock); mutant M8 (PG path ignores cerr) survives.
+- PGLAXFU-F2 (minor, test): handler negative controls for UpdateRole: not found => 404, generic repo error => 500 not 409; mutant M5 (every error -> 409) survives.
+- PGLAX1-F6 stays OPEN (minor, SQLite, reasoned not reproduced): wasAdmin and admin-role set read outside the guarded UPDATE without a transaction; the subquery counts members of other roles without re-checking they still grant system.admin; two admin roles A and B each with one active member, both stripped concurrently => zero admins. BEGIN IMMEDIATE or re-check permissions inside the subquery closes it.
+- PGLAXFU-F3 (minor, design): a role with corrupt stored permissions JSON can now only be repaired through UpdateRole by including system.admin; consider an explicit repair path or document.
+- PGLAXFU-N1 (nit): commit 0f26adcfa breaks TestUserRepository_UpdateRole until e63e626eb (bisect hazard).
+- PGLAXFU-N2 (nit): F4 negative control branches on `if admins == 0`; make deterministic.
