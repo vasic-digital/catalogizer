@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"catalogizer/filesystem"
@@ -44,6 +45,7 @@ func TestNFS3WIRE1_OnlyVetStorageRootLegRefusesMetadataHost(t *testing.T) {
 	h := newAPIHarness(t, false)
 	code, body := h.do("POST", "/storage/roots", map[string]interface{}{"name": "nfs3-meta-only-vet", "protocol": "nfs3", "host": "169.254.169.254", "path": "/export"})
 	require.Equal(t, 400, code, "only the VetStorageRoot leg can refuse here: %v", body)
+	require.Contains(t, fmt.Sprint(body["error"]), "storage host is not allowed", "the refusal must come from the host policy: %v", body)
 	var n int
 	require.NoError(t, h.db.QueryRow(`SELECT COUNT(*) FROM storage_roots`).Scan(&n))
 	require.Equal(t, 0, n)
