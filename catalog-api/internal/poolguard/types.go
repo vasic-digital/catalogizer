@@ -392,7 +392,13 @@ func importsC(f *ast.File) bool {
 			continue
 		}
 		// The literal may be interpreted ("C") or raw (`C`): compare the unquoted value.
-		if v, err := strconv.Unquote(im.Path.Value); err == nil && v == "C" {
+		v, err := strconv.Unquote(im.Path.Value)
+		if err != nil {
+			// Defence in depth: ParseFile rejects such a literal first, but if one ever reaches here the
+			// file cannot be classified, so treat it as cgo (unreliable) rather than as a plain file.
+			return true
+		}
+		if v == "C" {
 			return true
 		}
 	}

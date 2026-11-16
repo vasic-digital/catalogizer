@@ -1,6 +1,8 @@
 package poolguard
 
 import (
+	"go/ast"
+	"go/token"
 	"os"
 	"path/filepath"
 	"sort"
@@ -174,7 +176,7 @@ func TestPoolClassGuard_ReviewerShapesStayFlagged(t *testing.T) {
 		"testdata/zr2": {"N01AliasChain", "N02GenericEmbedding", "N03Recursive", "N04PtrToHolder", "N05MethodExpr",
 			"N06WindowsSuffix", "N07UnreliablePkgIface", "N08Vendored", "N10GenericUnresolvedArg", "N11CgoFileOnlyDecl",
 			"N12DotImport"},
-		"testdata/zr3":  {"M1RawStringCgoImport", "M2CgoFileSortsLast"},
+		"testdata/zr3":  {"M1RawStringCgoImport", "M2CgoFileSortsLast", "M3EscapedCgoImport"},
 		"testdata/rev5": {"R35TaggedStructFirst", "R36SamePkgExactReachesPooled", "R37InvalidEmbeddingShadow", "R38RangeOverFuncCallback", "R39OpenOneLevelDown", "R40DepthBound", "R42RedeclaredType"},
 	}
 	for root, fns := range want {
@@ -268,4 +270,39 @@ func TestPoolClassGuard_RealCodeControlNeedle(t *testing.T) {
 			require.Equal(t, tc.indirect, hit[0].Indirect, hit[0].String())
 		})
 	}
+}
+
+// PGR3R-m2: gofmt rewrites an import path literal to its canonical interpreted form, so a repo-wide gofmt -w
+// would turn these fixtures into `"C"` and silently drop the raw and escaped coverage while the findings
+// test still passed. Pin the literal forms on disk.
+func TestPoolClassGuard_CgoFixturesKeepTheirLiteralForm(t *testing.T) {
+	for path, want := range map[string]string{
+		"testdata/zr3/raw/z.go": "import `C`",
+		"testdata/zr3/esc/z.go": `import "\x43"`,
+	} {
+		b, err := os.ReadFile(path)
+		require.NoError(t, err)
+		require.Contains(t, string(b), want, "%s was rewritten (gofmt -w?): the literal form it exists to cover is gone", path)
+	}
+}
+
+func importsCOf(t *testing.T, lit string) bool {
+	t.Helper()
+	f := &ast.File{Imports: []*ast.ImportSpec{{Path: &ast.BasicLit{Kind: token.STRING, Value: lit}}}}
+	return importsC(f)
+}
+
+// PGR3R-m1 / PGR3R-n3: the import-path decision is made on the unquoted value; a literal that cannot be
+// unquoted is unreliable and is treated as cgo (the file may be dropped by the go tool), never as plain.
+func TestPoolClassGuard_ImportsCUnquoting(t *testing.T) {
+	require.True(t, importsCOf(t, `"C"`))
+	require.True(t, importsCOf(t, "`C`"))
+	require.True(t, importsCOf(t, `"\x43"`), "escaped interpreted literal")
+	require.True(t, importsCOf(t, `"C"`), "unicode-escaped literal")
+	require.False(t, importsCOf(t, `"D"`))
+	require.False(t, importsCOf(t, `"\x44"`))
+	require.False(t, importsCOf(t, `"database/sql"`))
+	require.True(t, importsCOf(t, `"C`), "unterminated literal: unreliable, treated as cgo")
+	require.True(t, importsCOf(t, `"\q"`), "invalid escape: unreliable, treated as cgo")
+	require.False(t, importsC(&ast.File{Imports: []*ast.ImportSpec{{}}}), "nil Path is skipped")
 }
