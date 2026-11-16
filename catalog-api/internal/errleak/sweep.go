@@ -28,7 +28,7 @@ var sinkNames = map[string]bool{"Error": true, "JSON": true, "String": true, "Ab
 // mappers turn an error into authored client text (each is unit-tested elsewhere).
 var mappers = map[string]bool{"validationText": true, "paramRequiredText": true, "localRootMessage": true,
 	"rootURLMessage": true, "authClientMessage": true, "sentinelText": true, "syncDetails": true, "rootSpecMessage": true,
-	"clientErrorText": true, "clientValidationDetails": true, "ScrubErrorFor": true}
+	"clientErrorText": true, "clientValidationDetails": true}
 
 // pkgMappers lists the sanctioned mappers that live in another package, with the EXACT import path that must
 // qualify them (ERRLEAK-FU-D, ELFU-m1): `services.ScrubErrorFor` counts only when the qualifier is an imported

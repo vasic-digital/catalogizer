@@ -40,8 +40,13 @@ func identityCases() map[string]identityCase {
 		"D_services_path_catalogizer_services": {fnSrc("import \"catalogizer/services\"\n", "\tc.JSON(500, gin.H{\"error\": services.ScrubErrorFor(err, root)})\n"), 1},
 		"D_services_path_x_services":           {fnSrc("import \"x/services\"\n", "\tc.JSON(500, gin.H{\"error\": services.ScrubErrorFor(err, root)})\n"), 1},
 		"D_services_path_x_myservices":         {fnSrc("import services \"x/myservices\"\n", "\tc.JSON(500, gin.H{\"error\": services.ScrubErrorFor(err, root)})\n"), 1},
-		"D_services_path_vendored":             {fnSrc("import \"vendor/catalogizer/internal/services\"\n", "\tc.JSON(500, gin.H{\"error\": services.ScrubErrorFor(err, root)})\n"), 1},
-		"D_local_var_named_services":           {fnSrc(impSvc, "\tservices := obj\n\tc.JSON(500, gin.H{\"error\": services.ScrubErrorFor(err, root)})\n"), 1},
+		// suffix-mutant killer, not a realistic shape (module mode keeps the same import path for vendored code)
+		"D_services_path_vendored":     {fnSrc("import \"vendor/catalogizer/internal/services\"\n", "\tc.JSON(500, gin.H{\"error\": services.ScrubErrorFor(err, root)})\n"), 1},
+		"D_dot_import_bare_scrub":      {fnSrc("import . \"evil/x\"\n", "\tc.JSON(500, gin.H{\"error\": ScrubErrorFor(err, root)})\n"), 1},
+		"D_no_import_bare_scrub":       {fnSrc("", "\tc.JSON(500, gin.H{\"error\": ScrubErrorFor(err, root)})\n"), 1},
+		"D_services_subpackage":        {fnSrc("import services \"catalogizer/internal/services/evil\"\n", "\tc.JSON(500, gin.H{\"error\": services.ScrubErrorFor(err, root)})\n"), 1},
+		"D_services_path_case_variant": {fnSrc("import services \"Catalogizer/Internal/Services\"\n", "\tc.JSON(500, gin.H{\"error\": services.ScrubErrorFor(err, root)})\n"), 1},
+		"D_local_var_named_services":   {fnSrc(impSvc, "\tservices := obj\n\tc.JSON(500, gin.H{\"error\": services.ScrubErrorFor(err, root)})\n"), 1},
 		// --- golden-good (must stay clean) ---
 		"G_real_mapper":             {fnSrc("", "\tc.JSON(400, gin.H{\"error\": \"bad: \" + validationText(err)})\n"), 0},
 		"G_real_wrapper":            {fnSrc("", "\twriteJobError(c, err, \"x\")\n"), 0},
