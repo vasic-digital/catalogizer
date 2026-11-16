@@ -1,0 +1,17 @@
+        	            	--- Expected
+        	            	--- Expected
+        	            	--- Expected
+        	            	--- Expected
+        	            	--- Expected
+        	            	--- Expected
+--- FAIL: TestSync404_ForeignIdLooksLikeMissingId (0.63s)
+    --- FAIL: TestSync404_ForeignIdLooksLikeMissingId/GetEndpoint (0.00s)
+    --- FAIL: TestSync404_ForeignIdLooksLikeMissingId/UpdateEndpoint (0.00s)
+    --- FAIL: TestSync404_ForeignIdLooksLikeMissingId/DeleteEndpoint (0.00s)
+    --- FAIL: TestSync404_ForeignIdLooksLikeMissingId/StartSync (0.00s)
+    --- FAIL: TestSync404_ForeignIdLooksLikeMissingId/GetSession (0.00s)
+    --- FAIL: TestSync404_ForeignIdLooksLikeMissingId/ScheduleSync (0.00s)
+--- PASS: TestSync404_OwnerAndShareViewHolderKeepTheirAnswers (0.71s)
+FAIL
+FAIL	catalogizer/handlers	1.624s
+FAIL
