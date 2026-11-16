@@ -1,9 +1,0 @@
---- PASS: TestSync404_ForeignIdLooksLikeMissingId (1.27s)
-    --- PASS: TestSync404_ForeignIdLooksLikeMissingId/GetEndpoint (0.00s)
-    --- PASS: TestSync404_ForeignIdLooksLikeMissingId/UpdateEndpoint (0.00s)
-    --- PASS: TestSync404_ForeignIdLooksLikeMissingId/DeleteEndpoint (0.02s)
-    --- PASS: TestSync404_ForeignIdLooksLikeMissingId/StartSync (0.00s)
-    --- PASS: TestSync404_ForeignIdLooksLikeMissingId/GetSession (0.00s)
-    --- PASS: TestSync404_ForeignIdLooksLikeMissingId/ScheduleSync (0.00s)
---- PASS: TestSync404_OwnerAndShareViewHolderKeepTheirAnswers (0.50s)
-ok  	catalogizer/handlers	1.931s

@@ -107,23 +107,6 @@ func (s *SyncService) GetUserEndpoints(userID int) ([]models.SyncEndpoint, error
 	return s.syncRepo.GetUserEndpoints(userID)
 }
 
-// errEndpointNotFound / errSessionNotFound carry the same text the repository returns for a missing row, so a caller that may not see a record
-// gets the same answer for a foreign id as for a missing id (CAT-SYNC-404-1, the CAT-JOB-404-1 decision).
-var (
-	errEndpointNotFound = fmt.Errorf("endpoint not found")
-	errSessionNotFound  = fmt.Errorf("session not found")
-)
-
-// denyOrHide builds the refusal for a non-owner who lacks the permission an action needs. A caller that may view shares already knows the
-// record exists, so it keeps the explicit refusal (403). Every other caller, and a caller whose permission lookup fails, is answered as if the
-// record did not exist (404), so the status code is no existence oracle.
-func (s *SyncService) denyOrHide(userID int, refusal string, notFound error) error {
-	if canView, err := s.authService.CheckPermission(userID, models.PermissionViewShares); err == nil && canView {
-		return fmt.Errorf("%s", refusal)
-	}
-	return notFound
-}
-
 func (s *SyncService) GetEndpoint(endpointID int, userID int) (*models.SyncEndpoint, error) {
 	endpoint, err := s.syncRepo.GetEndpoint(endpointID)
 	if err != nil {
@@ -133,7 +116,7 @@ func (s *SyncService) GetEndpoint(endpointID int, userID int) (*models.SyncEndpo
 	if endpoint.UserID != userID {
 		hasPermission, err := s.authService.CheckPermission(userID, models.PermissionViewShares)
 		if err != nil || !hasPermission {
-			return nil, s.denyOrHide(userID, "unauthorized to view this endpoint", errEndpointNotFound)
+			return nil, fmt.Errorf("unauthorized to view this endpoint")
 		}
 	}
 
@@ -150,7 +133,7 @@ func (s *SyncService) AuthorizeEndpointUpdate(endpointID int, userID int) error 
 	if endpoint.UserID != userID {
 		hasPermission, err := s.authService.CheckPermission(userID, models.PermissionEditShares)
 		if err != nil || !hasPermission {
-			return s.denyOrHide(userID, "unauthorized to update this endpoint", errEndpointNotFound)
+			return fmt.Errorf("unauthorized to update this endpoint")
 		}
 	}
 	return nil
@@ -165,7 +148,7 @@ func (s *SyncService) UpdateEndpoint(endpointID int, userID int, updates *models
 	if endpoint.UserID != userID {
 		hasPermission, err := s.authService.CheckPermission(userID, models.PermissionEditShares)
 		if err != nil || !hasPermission {
-			return nil, s.denyOrHide(userID, "unauthorized to update this endpoint", errEndpointNotFound)
+			return nil, fmt.Errorf("unauthorized to update this endpoint")
 		}
 	}
 
@@ -269,7 +252,7 @@ func (s *SyncService) DeleteEndpoint(endpointID int, userID int) error {
 	if endpoint.UserID != userID {
 		hasPermission, err := s.authService.CheckPermission(userID, models.PermissionDeleteShares)
 		if err != nil || !hasPermission {
-			return s.denyOrHide(userID, "unauthorized to delete this endpoint", errEndpointNotFound)
+			return fmt.Errorf("unauthorized to delete this endpoint")
 		}
 	}
 
@@ -285,7 +268,7 @@ func (s *SyncService) StartSync(endpointID int, userID int) (*models.SyncSession
 	if endpoint.UserID != userID {
 		hasPermission, err := s.authService.CheckPermission(userID, models.PermissionEditShares)
 		if err != nil || !hasPermission {
-			return nil, s.denyOrHide(userID, "unauthorized to sync this endpoint", errEndpointNotFound)
+			return nil, fmt.Errorf("unauthorized to sync this endpoint")
 		}
 	}
 
@@ -1183,7 +1166,7 @@ func (s *SyncService) GetSession(sessionID int, userID int) (*models.SyncSession
 	if session.UserID != userID {
 		hasPermission, err := s.authService.CheckPermission(userID, models.PermissionViewShares)
 		if err != nil || !hasPermission {
-			return nil, s.denyOrHide(userID, "unauthorized to view this session", errSessionNotFound)
+			return nil, fmt.Errorf("unauthorized to view this session")
 		}
 	}
 
@@ -1199,7 +1182,7 @@ func (s *SyncService) ScheduleSync(endpointID int, userID int, schedule *models.
 	if endpoint.UserID != userID {
 		hasPermission, err := s.authService.CheckPermission(userID, models.PermissionEditShares)
 		if err != nil || !hasPermission {
-			return nil, s.denyOrHide(userID, "unauthorized to schedule sync for this endpoint", errEndpointNotFound)
+			return nil, fmt.Errorf("unauthorized to schedule sync for this endpoint")
 		}
 	}
 
