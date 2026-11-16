@@ -1312,7 +1312,7 @@ components:
           type: boolean
           description: |
             Required when the destination is on a private network or cannot be resolved now; without it the request is refused
-            with 409 private_network_confirmation_required.
+            with 400 private_network_confirmation_required.
 
     UpdateSyncEndpointRequest:
       type: object
@@ -7328,7 +7328,7 @@ paths:
                   data:
                     $ref: '#/components/schemas/SyncEndpoint'
         '400':
-          description: Invalid request body or endpoint configuration
+          description: Invalid request body or endpoint configuration, or private-network confirmation required (code private_network_confirmation_required; no endpoint was stored)
           content:
             application/json:
               schema:
@@ -7341,12 +7341,6 @@ paths:
                 $ref: '#/components/schemas/Error'
         '500':
           description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '409':
-          description: Private-network confirmation required (code private_network_confirmation_required); no endpoint was stored
           content:
             application/json:
               schema:
@@ -7485,12 +7479,6 @@ paths:
       responses:
         '503':
           description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
-        '409':
-          description: Private-network confirmation required for the new URL (code private_network_confirmation_required)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
         '429':
           description: Too many failed step-up attempts (code step_up_throttled)
           headers:
@@ -7514,7 +7502,7 @@ paths:
                   data:
                     $ref: '#/components/schemas/SyncEndpoint'
         '400':
-          description: Invalid request body or endpoint configuration
+          description: Invalid request body or endpoint configuration, or private-network confirmation required for the new URL (code private_network_confirmation_required)
           content:
             application/json:
               schema:

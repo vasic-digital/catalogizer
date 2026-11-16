@@ -426,7 +426,7 @@ func (h *SyncHandler) getCurrentUser(c *gin.Context) (*models.User, error) {
 func respondSyncClassError(c *gin.Context, err error) bool {
 	switch {
 	case errors.Is(err, services.ErrPrivateConfirmationRequired):
-		c.JSON(http.StatusConflict, gin.H{"success": false, "error": "this sync destination is on a private network (or cannot be resolved now); confirm it to approve private-network access",
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "error": "this sync destination is on a private network (or cannot be resolved now); confirm it to approve private-network access",
 			"code": codePrivateConfirmationRequired, "hint": "repeat the request with confirm_private_network=true if the destination is meant to be on your LAN"})
 		return true
 	case errors.Is(err, services.ErrStepUpRequired):
