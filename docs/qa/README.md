@@ -9,6 +9,7 @@ Back to the documentation index: [docs/README.md](../README.md). Descriptions ar
 | File | Description |
 |---|---|
 | [CATALOGIZER_QA.md](CATALOGIZER_QA.md) | Catalogizer AI QA System Integration Guide - The Catalogizer AI QA System is now fully integrated into your Catalogizer project, providing comprehensive zero-defect quality assurance for all components. This system... |
+| [EVIDENCE_LABEL_REWRITE_20261116.md](EVIDENCE_LABEL_REWRITE_20261116.md) | Evidence label rewrite, 2026-11-16 (CAT-GENERIC-HOSTS-1): host labels and vendor names substituted by operator decision; mapping, exact substitution, affected directories, originals at `bd86adcad` |
 | [EVIDENCE_WAIVERS.txt](EVIDENCE_WAIVERS.txt) | (plain-text artefact; not read, listed by name only) |
 | [QA_TESTING_GUIDE.md](QA_TESTING_GUIDE.md) | Catalogizer QA Testing Guide - ![Test Status](https://img.shields.io/badge/tests-automated-brightgreen) |
 | [android-boot-20261105/README.md](android-boot-20261105/README.md) | Android QA boot, 2026-11-05 (Roadmap-Item CAT-AND-1) - Outputs: <module>/app/build/outputs/apk/debug/app-debug.apk, sha256 in apk-sha256.txt. |

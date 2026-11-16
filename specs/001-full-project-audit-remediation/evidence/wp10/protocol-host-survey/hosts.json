@@ -10,7 +10,7 @@
  "rules": "read-only, depth-1 listings, <=2 requests/s per host, names and counts only, no file content copied",
  "hosts": [
   {
-   "alias": "NAS",
+   "alias": "LiveHost1",
    "ip": "192.168.1.25",
    "claim": {
     "smb": "yes",

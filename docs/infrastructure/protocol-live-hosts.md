@@ -1,4 +1,4 @@
-# protocol live hosts (owner-supplied, read-only)
+# Protocol live hosts (owner-supplied, read-only)
 
 | Field | Value |
 |---|---|
@@ -18,7 +18,7 @@ Stored only in the gitignored, mode 0600 `/home/milosvasic/Projects/catalogizer/
 
 | Alias | IP | Read-only account can list | Read-only account denied (NT_STATUS_ACCESS_DENIED) | Protocols |
 |---|---|---|---|---|
-| NAS | 192.168.1.25 | DATA8 | MASS1-5, MASS6-9, music | SMB 2.02-3.11 open; NFS closed from anton |
+| LiveHost1 | 192.168.1.25 | DATA8 | MASS1-5, MASS6-9, music | SMB 2.02-3.11 open; NFS closed from anton |
 | LiveHost2 | 192.168.1.40 | Data | usbshare1, usbshare2-1, usbshare2-2 | SMB 2.02-3.11 open; NFS closed from anton |
 | LiveHost3 | 192.168.1.127 | DATA12 | - | SMB 2.02-3.11 open; NFS closed from anton |
 | LiveHost4 | 192.168.1.128 | DATA18 | - | SMB 2.02-3.11 open; NFS closed from anton |
@@ -39,7 +39,7 @@ and after the first byte. Each read is a single observation per share, so the ra
 
 | Host | NFS | FTP | FTPS (explicit, port 21) | SFTP | Best read (total / after first byte) |
 |---|---|---|---|---|---|
-| NAS | v2/v3 offered, no exports listed, all MNT refused (ACCES) | port 21 closed | not reachable (same port) | port 22 closed (connection refused) | none yet |
+| LiveHost1 | v2/v3 offered, no exports listed, all MNT refused (ACCES) | port 21 closed | not reachable (same port) | port 22 closed (connection refused) | none yet |
 | LiveHost2 | as above | works, 5.1 / 63.6 ms, 54.8 MiB/s (86.7 after first byte), 4 shares | works, 25.6 / 49.2 ms, 23.3 (73.5) | works, 8.7 / 86.3 ms, 10.7 (11.6) | FTP / FTP |
 | LiveHost3 | as above | works, 6.1 / 145.7 ms, 77.6 (93.3) | works, 28.7 / 194.5 ms, 25.3 (58.2) | works, 5.7 / 51.2 ms, 13.1 (13.9) | FTP / FTP |
 | LiveHost4 | as above | works, 4.8 / 16.5 ms, 85.8 (107.1) | works, 25.2 / 31.5 ms, 26.5 (65.5) | works, 6.8 / 34.4 ms, 3.4 (13.2) | FTP / FTP |
@@ -58,7 +58,7 @@ Findings (all from the evidence files; names and addresses are not recorded):
 - **SFTP**: OpenSSH_8.2, `sftp` subsystem v3, curve25519-sha256 + chacha20-poly1305, host keys ecdsa-sha2-nistp256, ssh-ed25519, ssh-rsa on hosts 2-7; password authentication works for `reader`. Over FTP and SFTP the account lists a
   WIDER set than over SMB: `usbshare1` and `usbshare2-2` (LiveHost2) and `WORK20` (LiveHost5) were denied over SMB on 2026-10-06 but list and read over FTP/SFTP, while `usbshare2-1` and the `music` shares list empty (no file readable in the sample); the share-level
   permissions of the NAS differ per protocol and are worth the owner's review. The sampled entries carry mode 755 / 555 owned by the NAS user, so the read-only property of `reader` is inferred from permissions only (no write was attempted) and is UNCONFIRMED beyond that.
-- **Host 1 (NAS)**: SMB and NFS (portmap) answer; FTP (21) and SSH (22) refuse connections (re-checked at the end of the run), so FTP, FTPS and SFTP are not enabled there yet.
+- **Host 1 (LiveHost1)**: SMB and NFS (portmap) answer; FTP (21) and SSH (22) refuse connections (re-checked at the end of the run), so FTP, FTPS and SFTP are not enabled there yet.
 - Plain FTP is the fastest for hosts 2-5 and has the lowest listing latency; FTPS costs about 20 ms per listing for the TLS data channel. SFTP is steady but slower per byte. For hosts 6 and 7 the total rates are dominated by a slow first request.
 
 ## Use in tests
@@ -74,7 +74,7 @@ Read-only, 1 request per second, depth <= 3, <= 5000 entries and <= 80 listing r
 
 | Host | Share | Top-level entries | Sampled entries | Truncated by bound |
 |---|---|---|---|---|
-| NAS | DATA8 | 7 | 637 | yes |
+| LiveHost1 | DATA8 | 7 | 637 | yes |
 | LiveHost2 | Data | 14 | 11169 | yes |
 | LiveHost3 | DATA12 | 12 | 5188 | yes |
 | LiveHost4 | DATA18 | 13 | 1000 | yes |

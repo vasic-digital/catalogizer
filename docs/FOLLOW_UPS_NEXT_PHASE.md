@@ -3287,3 +3287,10 @@ HAUTHZ-F3 CLOSED PROVISIONAL (ErrReportNotFound -> 404, identical to GET; FU2-M1
 - SMBCOPYR-m4: leftover `.copy-*.tmp` visible to scans; path in error text.
 - SMBCOPYR-m5: REPORT.md cites b91ecc76d for LOGSHARE-TOK-1-F1 but that commit introduced the collision; renumber landed via aed566da5/3a33fb054. Correct citation.
 - SMBCOPYR-M5/R2-R7: surviving mutants (final ctx check, srcFile.Close, temp location, stat-error, deadline, chunk write error, temp Close error); need an injectable writer seam. Chunk-cancel test adopted (smb_copy_chunk_cancel_test.go, kills M7).
+
+### CAT-GENERIC-HOSTS-1 review follow-ups (round 2, PROVISIONAL)
+
+- GENHOST-M3 (ask-operator): vendor-specific operating-system and emulation terms remain in documents after the vendor-name rewrite: the NAS vendor's web-UI ports 5000/5001 (`docs/infrastructure/protocol-live-hosts.md`, `docs/qa/protocol-live-20261115/README.md`), the NAS vendor's package-centre WebDAV instructions (this file, L605-606; `catalog-api/filesystem/live_webdav_test.go`), and the emulation-research terms for the vendor OS, its virtual-appliance image and its community clone (`docs/requests/background_queue.md` L76-88, `docs/research/device_emulation_plan_20261112.md|html`). They name a vendor OS, not the vendor. Question for the operator: generalise these too (for example "vendor NAS web UI ports", "vendor OS emulation"), or keep them as factual technical terms? Until answered they stay; UNCONFIRMED whether "zero vendor term" extends to them.
+- GENHOST-ABBR (ask-operator): abbreviation ids `CAT-SYN-LIVE-1` and log names `synlive_*` were kept as ids (they do not contain the vendor name); say if they should be renamed.
+- GENHOST-ENV: operators must rename the local gitignored `.env` variables to `LIVE_HOST_*` (no alias is read); the code path SKIPs with `credentials_absent` until then.
+- GENHOST-RO-LEG-TEST: `tests/infra/test_nas_readonly_leg.sh` ended pass=40 fail=1 (`C: the leg's container mounts were never sampled (the mount check is blind)`) in the scratch clone without containers; UNCONFIRMED whether it also fails on `main` (not run there).

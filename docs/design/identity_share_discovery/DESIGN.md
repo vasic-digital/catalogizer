@@ -228,7 +228,7 @@ Each PWU ships four-layer coverage (§11.4.4(b)) + the §11.4.169 test-type matr
 
 ### 3.1 Operator-gated items (flag honestly, §11.4.3/§11.4.21)
 
-- **Real LAN NAS to probe with the provided identities** — autonomous CI uses **containerized** SMB/FTP/NFS/WebDAV servers (§11.4.76) for deterministic proof; a **real NAS/NAS sweep** with `CATALOGIZER_IDENTITY_*` is `operator_attended` (needs the physical LAN + real hosts). NOT a faked PASS — a tracked migration item.
+- **Real LAN NAS to probe with the provided identities** — autonomous CI uses **containerized** SMB/FTP/NFS/WebDAV servers (§11.4.76) for deterministic proof; a **real NAS sweep** with `CATALOGIZER_IDENTITY_*` is `operator_attended` (needs the physical LAN + real hosts). NOT a faked PASS — a tracked migration item.
 - **OS keystore on each platform** (Keychain/Secret Service/Android Keystore/DPAPI) — may need per-platform operator setup; honest fallback to encrypted file store meanwhile (§11.4.81).
 - **NFS on macOS/Windows** — build-tag-gated today (`nfs_client_darwin.go`/`_windows.go`); per-OS parity needs validation (§11.4.81).
 
@@ -237,7 +237,7 @@ Each PWU ships four-layer coverage (§11.4.4(b)) + the §11.4.169 test-type matr
 ## 4. Open Questions for the Operator (§11.4.66)
 
 1. **Protocol scope, first cut:** SMB is the only protocol with a discovery path today (`smb_discovery.go`). Do we ship **SMB-first** (P1–P5 SMB-only, then fan out FTP/NFS/WebDAV in P6+), or build all four probers up front? (Recommended: SMB-first — fastest to real evidence, lowest blast radius.)
-2. **Real hosts on the LAN:** Is there a real NAS/NAS (or other SMB/NFS host) reachable on this LAN to probe with the `CATALOGIZER_IDENTITY_*` identities for §11.4.143/§11.4.159 live evidence, or do we rely solely on containerized servers for autonomous proof and mark real-NAS as `operator_attended`?
+2. **Real hosts on the LAN:** Is there a real NAS (or other SMB/NFS host) reachable on this LAN to probe with the `CATALOGIZER_IDENTITY_*` identities for §11.4.143/§11.4.159 live evidence, or do we rely solely on containerized servers for autonomous proof and mark real-NAS as `operator_attended`?
 3. **Secret store:** OS keystore (Keychain/Secret Service/Android Keystore/DPAPI) per platform, or the `security/pkg/securestorage` encrypted file store as the single cross-platform default? (Recommended: encrypted file store as default, keystore as opt-in per §11.4.81.)
 4. **Existing plaintext `storage_roots.password`:** confirm we migrate it into the secret store and null the plaintext column (one-time data migration, §11.4.10 debt repayment) vs. leave inline-cred shares as legacy.
 5. **Anonymous-first safety:** any hosts where an anonymous mount attempt is undesirable (e.g., would trip an IDS/lockout)? Should anonymous probing be opt-out per host?

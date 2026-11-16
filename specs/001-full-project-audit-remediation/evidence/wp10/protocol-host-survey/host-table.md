@@ -10,7 +10,7 @@
 
 | Alias | IP | SMB claim | SMB measured | NFS claim | NFS measured | DSM 5000/5001 | Anonymous / guest | SMB dialects accepted |
 |---|---|---|---|---|---|---|---|---|
-| NAS | 192.168.1.25 | yes | 445=open 139=open; read-only account lists 4 of 4 claimed shares | some hosts, which unknown | 2049=closed_refused 111=closed_refused udp111=udp111_no_reply: closed from anton | open / open | NT_STATUS_LOGON_FAILURE / NT_STATUS_ACCOUNT_DISABLED | 3_11, 3_02, 3_00, 2_10, 2_02 |
+| LiveHost1 | 192.168.1.25 | yes | 445=open 139=open; read-only account lists 4 of 4 claimed shares | some hosts, which unknown | 2049=closed_refused 111=closed_refused udp111=udp111_no_reply: closed from anton | open / open | NT_STATUS_LOGON_FAILURE / NT_STATUS_ACCOUNT_DISABLED | 3_11, 3_02, 3_00, 2_10, 2_02 |
 | LiveHost2 | 192.168.1.40 | yes | 445=open 139=open; read-only account lists 4 of 4 claimed shares | some hosts, which unknown | 2049=closed_refused 111=closed_refused udp111=udp111_no_reply: closed from anton | open / open | NT_STATUS_LOGON_FAILURE / NT_STATUS_ACCOUNT_DISABLED | 3_11, 3_02, 3_00, 2_10, 2_02 |
 | LiveHost3 | 192.168.1.127 | yes | 445=open 139=open; read-only account lists 1 of 1 claimed shares | some hosts, which unknown | 2049=closed_refused 111=closed_refused udp111=udp111_no_reply: closed from anton | open / open | NT_STATUS_LOGON_FAILURE / NT_STATUS_ACCOUNT_DISABLED | 3_11, 3_02, 3_00, 2_10, 2_02 |
 | LiveHost4 | 192.168.1.128 | yes | 445=open 139=open; read-only account lists 1 of 1 claimed shares | some hosts, which unknown | 2049=closed_refused 111=closed_refused udp111=udp111_no_reply: closed from anton | open / open | NT_STATUS_LOGON_FAILURE / NT_STATUS_ACCOUNT_DISABLED | 3_11, 3_02, 3_00, 2_10, 2_02 |
@@ -24,10 +24,10 @@ SMB1 (NT1) is refused on every host (no compatible protocol). The claimed share 
 
 | Host | Share | Read-only account access | Top-level entries | Capacity |
 |---|---|---|---|---|
-| NAS | DATA8 | listable | 7 (7 dirs, 0 files) | 0.09 / 7.22 TiB free/total |
-| NAS | MASS1-5 | NT_STATUS_ACCESS_DENIED | - | - |
-| NAS | MASS6-9 | NT_STATUS_ACCESS_DENIED | - | - |
-| NAS | music | NT_STATUS_ACCESS_DENIED | - | - |
+| LiveHost1 | DATA8 | listable | 7 (7 dirs, 0 files) | 0.09 / 7.22 TiB free/total |
+| LiveHost1 | MASS1-5 | NT_STATUS_ACCESS_DENIED | - | - |
+| LiveHost1 | MASS6-9 | NT_STATUS_ACCESS_DENIED | - | - |
+| LiveHost1 | music | NT_STATUS_ACCESS_DENIED | - | - |
 | LiveHost2 | Data | listable | 14 (13 dirs, 1 files) | 0.04 / 7.22 TiB free/total |
 | LiveHost2 | usbshare1 | NT_STATUS_ACCESS_DENIED | - | - |
 | LiveHost2 | usbshare2-1 | NT_STATUS_ACCESS_DENIED | - | - |

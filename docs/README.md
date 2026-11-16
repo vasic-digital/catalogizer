@@ -92,6 +92,7 @@ Comprehensive documentation for the Catalogizer multi-platform media collection 
 |----------|-------------|
 | [QA Testing Guide](qa/QA_TESTING_GUIDE.md) | QA process and test case management |
 | [Catalogizer QA](qa/CATALOGIZER_QA.md) | QA test plan and execution summary |
+| [Evidence label rewrite 2026-11-16](qa/EVIDENCE_LABEL_REWRITE_20261116.md) | Host-agnostic relabelling of dated evidence (CAT-GENERIC-HOSTS-1): mapping, exact substitution, originals at `bd86adcad` |
 
 ## Security
 

@@ -1980,7 +1980,7 @@ owner_answers_without_decision_id:
   verbatim: false
   source_keys:
   - owner_answers_2026-10-06_autonomy_and_protocol_hosts.protocol_live_hosts
-  text: NAS 192.168.1.25 (DATA8 MASS1-5 MASS6-9 music); LiveHost2 .40 (Data usbshare1 usbshare2-1 usbshare2-2);
+  text: LiveHost1 192.168.1.25 (DATA8 MASS1-5 MASS6-9 music); LiveHost2 .40 (Data usbshare1 usbshare2-1 usbshare2-2);
     LiveHost3 .127 (DATA12); LiveHost4 .128 (DATA18); LiveHost5 .129 (DATA20 music WORK20); LiveHost6 .130
     (DATA20-2 DATA20-3 music); LiveHost7 .131 (DATA22 DATA22-2 music) (relayed by the conductor, not a verbatim
     owner quotation).
