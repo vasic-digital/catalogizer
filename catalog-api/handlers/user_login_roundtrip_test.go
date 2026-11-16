@@ -52,7 +52,12 @@ func newRTEnv(t *testing.T) *rtEnv {
 	sqlDB.SetMaxOpenConns(1)
 	db := database.WrapDB(sqlDB, database.DialectSQLite)
 	require.NoError(t, db.RunMigrations(context.Background()))
+	return newRTEnvOn(t, db)
+}
 
+// newRTEnvOn wires the real stack on an already-migrated database (SQLite or PostgreSQL).
+func newRTEnvOn(t *testing.T, db *database.DB) *rtEnv {
+	t.Helper()
 	repo := repository.NewUserRepository(db)
 	authSvc := services.NewAuthService(repo, "test-jwt-secret-throwaway")
 	adapter := &AuthServiceAdapter{Inner: authSvc}

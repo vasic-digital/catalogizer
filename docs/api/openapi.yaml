@@ -5310,10 +5310,10 @@ paths:
           required: true
           schema:
             type: integer
-      description: "Locks an account until the RFC 3339 time in the JSON body `{\"lock_until\": \"...\"}`. Needs `user.manage` (checked first, also for your own id). Only a caller with `system.admin` may act on an account whose role carries `system.admin`; for any other caller such a target answers 403 (also when the target's role cannot be resolved). Locking your own account is refused with 400. A lock that is written also revokes every session of the account (`user_repository.go:602-607`)."
+      description: "Locks an account until the RFC 3339 time in the JSON body `{\"lock_until\": \"...\"}`. Needs `user.manage` (checked first, also for your own id). Only a caller with `system.admin` may act on an account whose role carries `system.admin`; for any other caller such a target answers 403 (also when the target's role cannot be resolved). Locking your own account is refused with 400. Sessions are revoked after the lock statement whether or not a row was written (an already permanently suspended target also answers 200); if the revocation fails the answer is 500 and the lock stays (`user_repository.go:602-607`)."
       responses:
         '200':
-          description: "`{\"message\":\"Account locked successfully\"}`. Every session of the account is revoked."
+          description: "`{\"message\":\"Account locked successfully\"}`. Every session of the account is revoked (also when the target was already permanently suspended and no row was written)."
         '400':
           description: "Non-integer id, the caller's own id (`Cannot lock your own account`), invalid JSON body, or `lock_until` not RFC 3339."
         '401':
@@ -5325,7 +5325,7 @@ paths:
         '409':
           description: "The lock would remove the last effective administrator (an active, unlocked account holding `system.admin`): `The last administrator cannot be locked`. Nothing is written and no session is revoked. A lock whose `lock_until` is already in the past removes nobody and is not refused."
         '500':
-          description: "Service error."
+          description: "Service error. Includes a failed session revocation after the lock was written: the lock stays in place."
   /api/v1/users/{id}/unlock:
     post:
       tags: [users]
@@ -5368,6 +5368,8 @@ paths:
       responses:
         '201':
           description: Role created
+        '409':
+          description: "`Role name already exists` (unique role name; same answer on SQLite and PostgreSQL, measured over the real handler)."
     get:
       tags: [roles]
       summary: List roles
