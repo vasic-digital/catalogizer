@@ -56,8 +56,8 @@ export const FormatConverter: React.FC<FormatConverterProps> = ({
   onCancelConversion,
   onRetryConversion,
   onDownloadFile,
-  canCreate = true,
-  canManage = true
+  canCreate = false,
+  canManage = false
 }) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
