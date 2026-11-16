@@ -1,11 +1,11 @@
 {
-  "alias": "Synology7",
+  "alias": "LiveHost7",
   "auth_tls_ms": [
     16.2,
     15.0,
     14.9
   ],
-  "banner": "220 Synology7 FTP server ready.",
+  "banner": "220 LiveHost7 FTP server ready.",
   "connect_ms": [
     7.4,
     2.3,

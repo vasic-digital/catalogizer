@@ -11,7 +11,7 @@
 ## Purpose
 
 Records the legs of the real-service stack that need an external credential or device: `available`, or `blocked-unavailable` with the reason and the variable NAMES (never values), BLOCKED-ON ODG-01 for
-credentials: `nas_smb_readonly` (`SYNOLOGY_SMB_USER`, `SYNOLOGY_SMB_PASSWORD`, `SYNOLOGY_IP_3`, `SYNOLOGY_IP_4` in the gitignored env file), `minio` (`image_unavailable`), `nfs_owner_host` (`odg08_unanswered`).
+credentials: `nas_smb_readonly` (`LIVE_HOST_SMB_USER`, `LIVE_HOST_SMB_PASSWORD`, `LIVE_HOST_IP_3`, `LIVE_HOST_IP_4` in the gitignored env file), `minio` (`image_unavailable`), `nfs_owner_host` (`odg08_unanswered`).
 A record never says `pass`.
 
 ## Usage

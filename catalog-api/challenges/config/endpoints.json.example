@@ -1,9 +1,9 @@
 {
   "endpoints": [
     {
-      "id": "synology-data8",
-      "name": "Synology NAS Data8",
-      "host": "synology.local",
+      "id": "protocol-host-data8",
+      "name": "NAS Data8",
+      "host": "nas.local",
       "port": 445,
       "share": "data8",
       "username": "reader",

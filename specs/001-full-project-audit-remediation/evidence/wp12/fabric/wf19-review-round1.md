@@ -78,7 +78,7 @@ Even with patient callers, a burst of cancellations leaves a backlog that all la
 
 **Impact:**
 - The fabric's own rationale ("repeating a failed login can lock the account out", in both `errors.go` and the docs) holds per call but not across calls.
-- A scan that borrows per file or per directory after a password change hammers the NAS with failed logins. Synology-class auto-block works by counting failed logins per IP.
+- A scan that borrows per file or per directory after a password change hammers the NAS with failed logins. NAS-class auto-block works by counting failed logins per IP.
 - `NewWorkerPool` in `pkg/ftp` is built exactly this way.
 
 **Fix direction:**

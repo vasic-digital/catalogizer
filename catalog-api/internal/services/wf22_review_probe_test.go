@@ -5,7 +5,7 @@ package services
 // specs/001-full-project-audit-remediation/evidence/wp12/scanner/fix-r2-reviewer-probes-verbatim/ with its RED log. Differences from the
 // original are listed here and nowhere else:
 //   - R3: the default stays "an empty root fails" (the owner decision of ODG-20); the probe asserts that failure now names allow_empty and that a
-//     root with allow_empty=true completes, for the empty share and for the Synology-metadata-only share.
+//     root with allow_empty=true completes, for the empty share and for the NAS-metadata-only share.
 //   - R4: the original counted the whole directory (len of the server-side slice) in the list hook, a measure no per-directory stream can meet
 //     (listing /a at all costs its 500 entries on the server side). The fake now honours the list limit the scanner passes
 //     (filesystem.WithListLimit) and the hook counts what was RETURNED; a second probe asserts /b is never listed.
@@ -93,7 +93,7 @@ func TestReviewProbe_R2_DepthBoundIsSilentTruncation(t *testing.T) {
 	assert.True(t, err != nil || st.GetSnapshot().ErrorCount > 0, "a truncated tree must not end clean (doc: never truncates silently)")
 }
 
-// R3: a legitimately empty share (or a fresh Synology share holding only @eaDir / #recycle) ends FAILED through the real job path, with no way
+// R3: a legitimately empty share (or a fresh NAS share holding only @eaDir / #recycle) ends FAILED through the real job path, with no way
 // to configure AllowEmptyRoot from a StorageRoot or the API. Polarity: assert the share's job is not failed.
 func TestReviewProbe_R3_LegitEmptyShareJobFails(t *testing.T) {
 	// control: a populated share completes (the instrument reads status correctly)
@@ -106,13 +106,13 @@ func TestReviewProbe_R3_LegitEmptyShareJobFails(t *testing.T) {
 	m.addSubdir("/", "#recycle")
 	// default: an empty answer is also what an unreachable source looks like, so it fails - and says how to declare the share empty
 	st = runJob(t, "ftp", &memFactory{client: m}, context.Background())
-	t.Logf("R3 synology-fresh share, default: status=%s reason=%q", st.Status, st.Reason)
+	t.Logf("R3 nas-fresh share, default: status=%s reason=%q", st.Status, st.Reason)
 	assert.Equal(t, "failed", st.Status)
 	assert.Contains(t, st.Reason, "allow_empty")
 	// per-root allow_empty: the same share completes
 	st = runJobRoot(t, &memFactory{client: m}, &models.StorageRoot{Name: "root-empty", Protocol: "ftp", AllowEmpty: true})
-	t.Logf("R3 synology-fresh share, allow_empty: status=%s reason=%q", st.Status, st.Reason)
-	assert.Equal(t, "completed", st.Status, "a share holding only Synology metadata directories is a legitimately empty share when the root says so")
+	t.Logf("R3 nas-fresh share, allow_empty: status=%s reason=%q", st.Status, st.Reason)
+	assert.Equal(t, "completed", st.Status, "a share holding only NAS metadata directories is a legitimately empty share when the root says so")
 	// and a genuinely empty share
 	e := newMemFS()
 	e.addDir("/")

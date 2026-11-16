@@ -9,7 +9,7 @@ import (
 //
 // The generic scanner treats an EMPTY root as a failure by default: an empty listing is also what an unreachable, mis-addressed or
 // wrongly-authorised source looks like, and "completed with 0 files" for those is the PASS-bluff the scanner exists to prevent. A share that
-// is legitimately empty (a fresh Synology share holding only @eaDir / #recycle, an archive volume not yet filled) needs a way to say so, per
+// is legitimately empty (a fresh NAS share holding only @eaDir / #recycle, an archive volume not yet filled) needs a way to say so, per
 // root, explicitly: allow_empty = true. The default is false, so every existing root keeps the strict behaviour.
 func (db *DB) addStorageRootsAllowEmptyColumn(ctx context.Context) error {
 	if db.dialect.IsPostgres() {

@@ -863,7 +863,7 @@ Operator-gated items (flag honestly, §11.4.3/§11.4.21)</h3>
 <ul>
 <li><strong>Real LAN NAS to probe with the provided identities</strong>
 — autonomous CI uses <strong>containerized</strong> SMB/FTP/NFS/WebDAV
-servers (§11.4.76) for deterministic proof; a <strong>real Synology/NAS
+servers (§11.4.76) for deterministic proof; a <strong>real NAS
 sweep</strong> with <code>CATALOGIZER_IDENTITY_*</code> is
 <code>operator_attended</code> (needs the physical LAN + real hosts).
 NOT a faked PASS — a tracked migration item.</li>
@@ -883,7 +883,7 @@ with a discovery path today (<code>smb_discovery.go</code>). Do we ship
 <strong>SMB-first</strong> (P1–P5 SMB-only, then fan out FTP/NFS/WebDAV
 in P6+), or build all four probers up front? (Recommended: SMB-first —
 fastest to real evidence, lowest blast radius.)</li>
-<li><strong>Real hosts on the LAN:</strong> Is there a real Synology/NAS
+<li><strong>Real hosts on the LAN:</strong> Is there a real NAS
 (or other SMB/NFS host) reachable on this LAN to probe with the
 <code>CATALOGIZER_IDENTITY_*</code> identities for §11.4.143/§11.4.159
 live evidence, or do we rely solely on containerized servers for

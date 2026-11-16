@@ -1,8 +1,0 @@
-2026-11-15T21:26:14Z
-Synology1 ping=up 445:open 2049:open 111:open 21:closed 22:closed 5000:open 5001:open 139:open 80:open 443:open
-Synology2 ping=up 445:open 2049:open 111:open 21:open 22:open 5000:open 5001:open 139:open 80:open 443:open
-Synology3 ping=up 445:open 2049:open 111:open 21:open 22:open 5000:open 5001:open 139:open 80:open 443:open
-Synology4 ping=up 445:open 2049:open 111:open 21:open 22:open 5000:open 5001:open 139:open 80:open 443:open
-Synology5 ping=up 445:open 2049:open 111:open 21:open 22:open 5000:open 5001:open 139:open 80:open 443:open
-Synology6 ping=up 445:open 2049:open 111:open 21:open 22:open 5000:open 5001:open 139:open 80:open 443:open
-Synology7 ping=up 445:open 2049:open 111:open 21:open 22:open 5000:open 5001:open 139:open 80:open 443:open

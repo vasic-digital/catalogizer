@@ -47,7 +47,7 @@ Expected: the first full run exposes existing tests encoding superseded premises
 
 If the next review finds a NEW defect of the "fix verified on a simplified model" class, round 4 MUST be a structural round (fresh fixer, re-derive ground truth from the protocol libraries' source, replace rather than layer).
 
-Not claimed: the re-review (OWED, independent); behaviour against a live Samba/Synology/WebDAV server (none contacted); the SMB probe cost on a real share root (needs `pkg/smb` `Stat(".")`, outside scope).
+Not claimed: the re-review (OWED, independent); behaviour against a live Samba/NAS/WebDAV server (none contacted); the SMB probe cost on a real share root (needs `pkg/smb` `Stat(".")`, outside scope).
 
 ## 5. Addendum (written AFTER the first full runs, still inside round 3; the sections above are unchanged)
 

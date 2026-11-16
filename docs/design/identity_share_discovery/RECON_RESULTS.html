@@ -211,28 +211,28 @@ working (host, identity, real-shares) bindings — FACT</h2>
 <tbody>
 <tr>
 <td>192.168.0.108</td>
-<td><code>90:09:d0</code> = <strong>Synology</strong></td>
+<td><code>90:09:d0</code> = <strong>NAS</strong></td>
 <td>rejected (guest required)</td>
 <td>#1</td>
 <td><code>Data</code></td>
 </tr>
 <tr>
 <td>192.168.0.109</td>
-<td>Synology</td>
+<td>NAS</td>
 <td>rejected</td>
 <td>#1</td>
 <td><code>DATA18</code></td>
 </tr>
 <tr>
 <td>192.168.0.110</td>
-<td>Synology</td>
+<td>NAS</td>
 <td>rejected</td>
 <td>#1</td>
 <td><code>DATA12</code></td>
 </tr>
 <tr>
 <td>192.168.0.111</td>
-<td>Synology</td>
+<td>NAS</td>
 <td>rejected</td>
 <td>#1</td>
 <td><code>DATA20</code>, <code>music</code>, <code>WORK20</code></td>
@@ -260,7 +260,7 @@ implementation</h2>
 <code>smb_discovery.go enumerateShares</code> previously
 <strong>guessed</strong> from a hardcoded common-name list
 (<code>shared/public/media/music/videos/data/...</code>) — it MISSED
-every real Synology share (<code>Data</code>, <code>DATA18</code>,
+every real NAS share (<code>Data</code>, <code>DATA18</code>,
 <code>DATA12</code>, <code>DATA20</code>, <code>WORK20</code>,
 <code>Projects</code>). Replaced with real <code>ListSharenames()</code>
 SRVSVC enumeration (IPC$ filtered). Proven by
@@ -278,7 +278,7 @@ identity #2 — exactly the "try each identity until one passes, remember
 the working binding" mechanic the operator specified. The remembered
 binding key is
 <code>(host, share, identity-index, protocol=smb)</code>.</li>
-<li><strong>Catalog ingest targets:</strong> the Synology media lives
+<li><strong>Catalog ingest targets:</strong> the NAS media lives
 under <code>DATA*</code>/<code>WORK20</code>/<code>music</code> shares
 on <code>.108–.111</code> — these become <code>storage_roots</code> (one
 per working <code>(host, share, identity)</code>), scanned by

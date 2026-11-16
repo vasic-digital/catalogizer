@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # test_nas_readonly_leg.sh - T132 real-NAS leg (RED first). Oracle for scripts/test-infra/nas_readonly_leg.sh and client/nas_smb_ro.sh, the clearly separated READ-ONLY leg against
-# the owner's real Synology hosts. Oracle strategy (11.4.245): SPECIFIED (the owner's rules: read-only, <= 2 requests/s, credentials only from the gitignored env file and never in
+# the owner's real protocol live hosts. Oracle strategy (11.4.245): SPECIFIED (the owner's rules: read-only, <= 2 requests/s, credentials only from the gitignored env file and never in
 # argv / environment / logs / evidence, SKIP not FAIL when the env file is absent, names and content never recorded) and INVARIANT (no credential value occurs in any file or any
 # process argv / container environment sampled during a run). Sections:
 #   A static: every smbclient -c command of the client script starts with ls or get; no write-class verb exists (control needle: a planted `del` is found)
@@ -32,14 +32,14 @@ o=$(TI_ENV_FILE="$FX/no-such.env" bash "$LEG" 2>&1); rc=$?
 check "B: absent env file exits 0 (SKIP, not FAIL)" "$rc" 0
 case "$o" in "SKIP nas_readonly reason=env_absent"*) ok "B: the output is SKIP nas_readonly reason=env_absent";; *) bad "B: wrong output: $o";; esac
 check "B: nothing was created for the skipped run" "$(ls -d /tmp/catalogizer-nas-ro.* "$TI_REPO"/.audit/out/nas-ro-* 2>/dev/null | sort | tr '\n' ' ')" "$before"
-printf 'SYNOLOGY_IP_3=192.0.2.1\n' >"$FX/partial.env"
+printf 'LIVE_HOST_IP_3=192.0.2.1\n' >"$FX/partial.env"
 o=$(TI_ENV_FILE="$FX/partial.env" bash "$LEG" --hosts 3 2>&1); rc=$?
 check "B: an env file without the credentials exits 0 (SKIP)" "$rc" 0
-case "$o" in "SKIP nas_readonly reason=credentials_absent variables: SYNOLOGY_SMB_USER SYNOLOGY_SMB_PASSWORD"*) ok "B: the SKIP names the missing variables (names only)";; *) bad "B: wrong output: $o";; esac
+case "$o" in "SKIP nas_readonly reason=credentials_absent variables: LIVE_HOST_SMB_USER LIVE_HOST_SMB_PASSWORD"*) ok "B: the SKIP names the missing variables (names only)";; *) bad "B: wrong output: $o";; esac
 
 # ---- C secrecy (sentinel credentials, unroutable address) ----
 SU="SENTINELUSER$RANDOM$RANDOM"; SP="SENTINELPASS$RANDOM$RANDOM"
-printf 'SYNOLOGY_SMB_USER=%s\nSYNOLOGY_SMB_PASSWORD=%s\nSYNOLOGY_IP_3=192.0.2.1\n' "$SU" "$SP" >"$FX/sentinel.env"; chmod 600 "$FX/sentinel.env"
+printf 'LIVE_HOST_SMB_USER=%s\nLIVE_HOST_SMB_PASSWORD=%s\nLIVE_HOST_IP_3=192.0.2.1\n' "$SU" "$SP" >"$FX/sentinel.env"; chmod 600 "$FX/sentinel.env"
 secrecy() { # secrecy <leg script>: runs the leg against the sentinel env, samples process argv and container env; prints one FAIL line per violation; exit status = count
   local leg=$1 n=0 pid hits=0 s mseen=0
   # WF12 F14: only the out directory of THIS run (nas-ro-<pid of the leg>) is ever read or removed: a real NAS leg of another stream keeps its auth file
@@ -66,7 +66,7 @@ secrecy() { # secrecy <leg script>: runs the leg against the sentinel env, sampl
     if [ -e "$od/auth" ]; then echo "FAIL the auth file was left behind"; n=$((n+1)); else echo "FAIL a credential value is in a file of the out directory"; n=$((n+1)); fi
   fi
   [ "$rc" -ne 0 ] || { echo "FAIL the leg against an unroutable address did not FAIL (rc=0)"; n=$((n+1)); }
-  grep -q 'FAIL nas_readonly host=Synology3' "$FX/c.out" || { echo "FAIL the failure of the unreachable host was not reported"; n=$((n+1)); }
+  grep -q 'FAIL nas_readonly host=LiveHost3' "$FX/c.out" || { echo "FAIL the failure of the unreachable host was not reported"; n=$((n+1)); }
   rm -rf -- "${od:?}"
   return "$n"
 }
@@ -138,13 +138,13 @@ if [ "${NAS_NO_REAL:-0}" = 1 ] || [ ! -r "$REALENV" ]; then echo "SKIP: D: the r
   EVJ="${NAS_EV:-$FX}/nas-readonly-leg.json"; mkdir -p "$(dirname "$EVJ")"
   o=$(bash "$LEG" --hosts 3,4 --json-out "$EVJ" 2>&1); rc=$?
   check "D: the real two-host read-only leg exits 0" "$rc" 0
-  printf '%s\n' "$o" | grep -q '^NAS Synology3 ok=true' && printf '%s\n' "$o" | grep -q '^NAS Synology4 ok=true' && ok "D: both hosts PASS" || bad "D: a host did not pass: $(printf '%s' "$o" | tr '\n' ';' | cut -c1-300)"
+  printf '%s\n' "$o" | grep -q '^NAS LiveHost3 ok=true' && printf '%s\n' "$o" | grep -q '^NAS LiveHost4 ok=true' && ok "D: both hosts PASS" || bad "D: a host did not pass: $(printf '%s' "$o" | tr '\n' ';' | cut -c1-300)"
   jq -e '.writes_performed == 0 and .names_recorded == false and .content_recorded == false and (.hosts | length == 2) and all(.hosts[]; .ok == true and .writes_performed == "0" and (.requests | tonumber) <= 3)' "$EVJ" >/dev/null 2>&1 && ok "D: the record states writes_performed 0, names and content not recorded, at most 3 requests per host" || bad "D: the record is wrong: $(cat "$EVJ" 2>/dev/null | head -c 300)"
   # any dotted IPv4 (not only 192.168.): control needle first, the same pattern must see a planted 10.x address
   IPRE='([0-9]{1,3}\.){3}[0-9]{1,3}'; echo "host 10.20.30.40" >"$FX/ipneedle.txt"
   grep -qE "$IPRE" "$FX/ipneedle.txt" && ok "D: control needle: the IP scan sees a planted 10.x address" || bad "D: control needle: the IP scan is blind"
   if grep -qE "$IPRE" "$EVJ" "$FX"/*.out 2>/dev/null; then bad "D: an IP address is in the record"; else ok "D: no IP address is recorded"; fi
-  realpw="$(sed -n 's/^SYNOLOGY_SMB_PASSWORD=//p' "$REALENV" | head -1 | sed -e 's/^"\(.*\)"$/\1/' -e "s/^'\(.*\)'$/\1/")"
+  realpw="$(sed -n 's/^LIVE_HOST_SMB_PASSWORD=//p' "$REALENV" | head -1 | sed -e 's/^"\(.*\)"$/\1/' -e "s/^'\(.*\)'$/\1/")"
   if [ -n "$realpw" ]; then
     leaks=$( { printf '%s\n' "$o"; cat "$EVJ"; } | grep -cF -- "$realpw"); check "D: the real password occurs in no output of the leg" "$leaks" 0
     if [ -n "${NAS_EV:-}" ]; then check "D: the real password occurs in no evidence file under $NAS_EV" "$(grep -rlF -- "$realpw" "$NAS_EV" 2>/dev/null | wc -l)" 0; fi
@@ -168,7 +168,7 @@ PY
   # mutation 1: a write verb in the client
   cp "$CLI" "$M/client/cli1.sh"; pymut "$M/client/cli1.sh" "-c 'ls'" "-c 'del everything'" && { [ -n "$(write_verbs "$M/client/cli1.sh")" ] && { ok "mutation write_verb_in_client CAUGHT (section A scan)"; echo "write_verb_in_client CAUGHT" >>"$MUTLOG"; } || { bad "mutation write_verb_in_client SURVIVED"; echo "write_verb_in_client SURVIVED" >>"$MUTLOG"; }; }
   # mutation 2: the password goes into argv (the op id)
-  pymut "$M/nas_readonly_leg.sh" '--op-id "nas-ro-$$-$i"' '--op-id "nas-ro-$$-$i-$(envval SYNOLOGY_SMB_PASSWORD)"' && { r=$(secrecy "$M/nas_readonly_leg.sh"); k=$?; [ "$k" -gt 0 ] && { ok "mutation password_in_argv CAUGHT ($(printf '%s' "$r" | head -1 | cut -c1-90))"; echo "password_in_argv CAUGHT" >>"$MUTLOG"; } || { bad "mutation password_in_argv SURVIVED"; echo "password_in_argv SURVIVED" >>"$MUTLOG"; }; }
+  pymut "$M/nas_readonly_leg.sh" '--op-id "nas-ro-$$-$i"' '--op-id "nas-ro-$$-$i-$(envval LIVE_HOST_SMB_PASSWORD)"' && { r=$(secrecy "$M/nas_readonly_leg.sh"); k=$?; [ "$k" -gt 0 ] && { ok "mutation password_in_argv CAUGHT ($(printf '%s' "$r" | head -1 | cut -c1-90))"; echo "password_in_argv CAUGHT" >>"$MUTLOG"; } || { bad "mutation password_in_argv SURVIVED"; echo "password_in_argv SURVIVED" >>"$MUTLOG"; }; }
   # mutation 3: the auth file is left behind
   cp "$TI_REPO/$SD/nas_readonly_leg.sh" "$M/nas_readonly_leg.sh"; pymut "$M/nas_readonly_leg.sh" 'cleanup() { rm -f -- "${OUT:?}/auth"; case "$OUT" in "$RTD"/catalogizer-nas-ro.*) rm -rf -- "${OUT:?}";; esac; case "$VIEW" in "$TI_ROOT"/.audit/scratch/ti-view.*) rm -rf -- "$VIEW";; esac; }' 'cleanup() { case "$VIEW" in "$TI_ROOT"/.audit/scratch/ti-view.*) rm -rf -- "$VIEW";; esac; }' && { r=$(secrecy "$M/nas_readonly_leg.sh"); k=$?; [ "$k" -gt 0 ] && { ok "mutation auth_file_left CAUGHT ($(printf '%s' "$r" | head -1 | cut -c1-90))"; echo "auth_file_left CAUGHT" >>"$MUTLOG"; } || { bad "mutation auth_file_left SURVIVED"; echo "auth_file_left SURVIVED" >>"$MUTLOG"; }; }
   # mutation 4 (WF12 F3): the leg's container gets the repository (and its .env) mounted again

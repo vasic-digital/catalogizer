@@ -879,7 +879,7 @@ Container limits:
 
 ```bash
 podman run --cpus=2 --memory=4g --network host \
-  --add-host=synology.local:192.168.0.241 \
+  --add-host=nas.local:192.168.0.241 \
   catalog-api
 
 podman run --cpus=1 --memory=2g \

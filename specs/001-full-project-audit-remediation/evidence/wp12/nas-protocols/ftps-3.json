@@ -1,9 +1,9 @@
 {
-  "alias": "Synology3",
+  "alias": "LiveHost3",
   "auth_tls_ms": [
     26.2
   ],
-  "banner": "220 Synology3 FTP server ready.",
+  "banner": "220 LiveHost3 FTP server ready.",
   "connect_ms": [
     5.0
   ],

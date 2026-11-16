@@ -30,7 +30,7 @@
   },
   "hosts": [
     {
-      "alias": "Synology1",
+      "alias": "LiveHost1",
       "protocols": {
         "nfs-rpc": {
           "status": "no_exports_listed_all_mounts_refused",
@@ -93,7 +93,7 @@
       "caveat": "one 1 MiB sample per share: a single observation; the first request of a share can include disk spin-up (compare the two rankings)"
     },
     {
-      "alias": "Synology2",
+      "alias": "LiveHost2",
       "protocols": {
         "nfs-rpc": {
           "status": "no_exports_listed_all_mounts_refused",
@@ -124,7 +124,7 @@
           "read_mib_per_s_median_total": 54.76,
           "read_mib_per_s_median_after_first_byte": 86.69,
           "shares_listed": 4,
-          "server": "220 Synology2 FTP server ready.",
+          "server": "220 LiveHost2 FTP server ready.",
           "tls": null,
           "host_key_types": [],
           "mlsd": true
@@ -142,7 +142,7 @@
           "read_mib_per_s_median_total": 23.32,
           "read_mib_per_s_median_after_first_byte": 73.49,
           "shares_listed": 4,
-          "server": "220 Synology2 FTP server ready.",
+          "server": "220 LiveHost2 FTP server ready.",
           "tls": {
             "negotiated": "TLSv1.3",
             "accepts": {
@@ -183,7 +183,7 @@
       "caveat": "one 1 MiB sample per share: a single observation; the first request of a share can include disk spin-up (compare the two rankings)"
     },
     {
-      "alias": "Synology3",
+      "alias": "LiveHost3",
       "protocols": {
         "nfs-rpc": {
           "status": "no_exports_listed_all_mounts_refused",
@@ -214,7 +214,7 @@
           "read_mib_per_s_median_total": 77.6,
           "read_mib_per_s_median_after_first_byte": 93.32,
           "shares_listed": 1,
-          "server": "220 Synology3 FTP server ready.",
+          "server": "220 LiveHost3 FTP server ready.",
           "tls": null,
           "host_key_types": [],
           "mlsd": true
@@ -232,7 +232,7 @@
           "read_mib_per_s_median_total": 25.34,
           "read_mib_per_s_median_after_first_byte": 58.15,
           "shares_listed": 1,
-          "server": "220 Synology3 FTP server ready.",
+          "server": "220 LiveHost3 FTP server ready.",
           "tls": {
             "negotiated": "TLSv1.3",
             "accepts": {
@@ -273,7 +273,7 @@
       "caveat": "one 1 MiB sample per share: a single observation; the first request of a share can include disk spin-up (compare the two rankings)"
     },
     {
-      "alias": "Synology4",
+      "alias": "LiveHost4",
       "protocols": {
         "nfs-rpc": {
           "status": "no_exports_listed_all_mounts_refused",
@@ -304,7 +304,7 @@
           "read_mib_per_s_median_total": 85.76,
           "read_mib_per_s_median_after_first_byte": 107.08,
           "shares_listed": 1,
-          "server": "220 Synology4 FTP server ready.",
+          "server": "220 LiveHost4 FTP server ready.",
           "tls": null,
           "host_key_types": [],
           "mlsd": true
@@ -322,7 +322,7 @@
           "read_mib_per_s_median_total": 26.48,
           "read_mib_per_s_median_after_first_byte": 65.52,
           "shares_listed": 1,
-          "server": "220 Synology4 FTP server ready.",
+          "server": "220 LiveHost4 FTP server ready.",
           "tls": {
             "negotiated": "TLSv1.3",
             "accepts": {
@@ -363,7 +363,7 @@
       "caveat": "one 1 MiB sample per share: a single observation; the first request of a share can include disk spin-up (compare the two rankings)"
     },
     {
-      "alias": "Synology5",
+      "alias": "LiveHost5",
       "protocols": {
         "nfs-rpc": {
           "status": "no_exports_listed_all_mounts_refused",
@@ -394,7 +394,7 @@
           "read_mib_per_s_median_total": 81.56,
           "read_mib_per_s_median_after_first_byte": 97.86,
           "shares_listed": 3,
-          "server": "220 Synology5 FTP server ready.",
+          "server": "220 LiveHost5 FTP server ready.",
           "tls": null,
           "host_key_types": [],
           "mlsd": true
@@ -412,7 +412,7 @@
           "read_mib_per_s_median_total": 26.12,
           "read_mib_per_s_median_after_first_byte": 46.24,
           "shares_listed": 3,
-          "server": "220 Synology5 FTP server ready.",
+          "server": "220 LiveHost5 FTP server ready.",
           "tls": {
             "negotiated": "TLSv1.3",
             "accepts": {
@@ -453,7 +453,7 @@
       "caveat": "one 1 MiB sample per share: a single observation; the first request of a share can include disk spin-up (compare the two rankings)"
     },
     {
-      "alias": "Synology6",
+      "alias": "LiveHost6",
       "protocols": {
         "nfs-rpc": {
           "status": "no_exports_listed_all_mounts_refused",
@@ -484,7 +484,7 @@
           "read_mib_per_s_median_total": 1.8,
           "read_mib_per_s_median_after_first_byte": 42.55,
           "shares_listed": 3,
-          "server": "220 Synology6 FTP server ready.",
+          "server": "220 LiveHost6 FTP server ready.",
           "tls": null,
           "host_key_types": [],
           "mlsd": true
@@ -502,7 +502,7 @@
           "read_mib_per_s_median_total": 0.61,
           "read_mib_per_s_median_after_first_byte": 47.1,
           "shares_listed": 3,
-          "server": "220 Synology6 FTP server ready.",
+          "server": "220 LiveHost6 FTP server ready.",
           "tls": {
             "negotiated": "TLSv1.3",
             "accepts": {
@@ -543,7 +543,7 @@
       "caveat": "one 1 MiB sample per share: a single observation; the first request of a share can include disk spin-up (compare the two rankings)"
     },
     {
-      "alias": "Synology7",
+      "alias": "LiveHost7",
       "protocols": {
         "nfs-rpc": {
           "status": "no_exports_listed_all_mounts_refused",
@@ -574,7 +574,7 @@
           "read_mib_per_s_median_total": 0.64,
           "read_mib_per_s_median_after_first_byte": 59.95,
           "shares_listed": 3,
-          "server": "220 Synology7 FTP server ready.",
+          "server": "220 LiveHost7 FTP server ready.",
           "tls": null,
           "host_key_types": [],
           "mlsd": true
@@ -592,7 +592,7 @@
           "read_mib_per_s_median_total": 0.33,
           "read_mib_per_s_median_after_first_byte": 108.36,
           "shares_listed": 3,
-          "server": "220 Synology7 FTP server ready.",
+          "server": "220 LiveHost7 FTP server ready.",
           "tls": {
             "negotiated": "TLSv1.3",
             "accepts": {

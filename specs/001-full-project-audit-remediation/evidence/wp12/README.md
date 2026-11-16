@@ -11,7 +11,7 @@ Tests were run ONE AT A TIME (concurrent run_pinned containers trip the anti-mes
 | `t130-red.txt`, `t130-green-run1..3.txt`, `corpus.sha256`, `seed-mutations.txt` | T130 | deterministic seeder, 6 mutations CAUGHT |
 | `t131-red.txt`, `t131-green-run1..3.txt`, `updown-mutations.txt` | T131 | per-project lease and label-only teardown, 4 mutations CAUGHT |
 | `t132-red-<proto>.txt`, `t132-green-<proto>-run1..3.txt`, `ev/` (ledgers `ledger-<proto>/`, `roundtrip-<proto>-run<n>.txt`, `roundtrip-<proto>-mutations.txt`) | T132 | round trips x3 as `ev/1` records for postgres, redis, ftp, smb, webdav; minio BLOCKED (`t132-green-minio-run1.txt`, `minio-blocked.txt`) |
-| `nas-leg-red.txt`, `nas-leg-green-run1..3.txt`, `nas-readonly-leg.json`, `nas-mutations.txt` | T132 real-NAS leg | read-only leg against two real Synology hosts; no name, content, IP or credential recorded |
+| `nas-leg-red.txt`, `nas-leg-green-run1..3.txt`, `nas-readonly-leg.json`, `nas-mutations.txt` | T132 real-NAS leg | read-only leg against two real protocol live hosts; no name, content, IP or credential recorded |
 | `t133-red.txt`, `t133-green-run1..3.txt`, `concurrency.json`, `concurrency-mutations.txt` | T133 | two stacks at once |
 | `t135-red.txt`, `t135-green-run1..3.txt`, `blocked-external.json` | T135 | blocked-external records (names only) |
 | `shellcheck-test-infra.txt` | all | shellcheck -S warning: 12 warnings (unused variables, ls|grep), no error |

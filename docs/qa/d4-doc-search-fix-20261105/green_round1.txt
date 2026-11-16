@@ -68,7 +68,7 @@ ok  	catalogizer/services	2.445s
 --- PASS: TestGenericScanner_FailedRecordIsNotRememberedAsDone (0.00s)
 --- PASS: TestGenericScanner_AllRecordsFailingFailsTheScan (0.00s)
 --- PASS: TestGenericScanner_HostileEntryNamesAreNotFollowed (0.00s)
---- PASS: TestGenericScanner_SkipsSynologyMetadataDirectories (0.00s)
+--- PASS: TestGenericScanner_SkipsNASMetadataDirectories (0.00s)
 --- PASS: TestGenericScanner_ProgressIsReported (0.00s)
 --- PASS: TestScanFailureKindsAreDistinct (0.00s)
 --- PASS: TestPluggableScannerStrategyFollowsWorkers (0.00s)

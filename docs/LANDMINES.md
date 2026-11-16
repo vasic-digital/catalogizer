@@ -616,10 +616,10 @@
 
 ### RULE-CONT-005: catalog-api container needs `--add-host` for NAS
 
-- **Context:** `synology.local` is an mDNS name unavailable to the
+- **Context:** `nas.local` is an mDNS name unavailable to the
   container network.
-- **Detection:** catalog-api logs `lookup synology.local: no such host`.
-- **Fix:** `--add-host=synology.local:192.168.0.241`.
+- **Detection:** catalog-api logs `lookup nas.local: no such host`.
+- **Fix:** `--add-host=nas.local:192.168.0.241`.
 
 ---
 

@@ -38,8 +38,8 @@ cb3e6c395243d4b5131e3a7213cbafabbbe75c0dc3ad861accff7cb2be6e8c76  ./out-t104/mut
 0a5edd5d1a8c7f19410ea1b85128b440ed78713a4b7361b6fc1fa92bcb1926bc  ./out-t106/mut-run1.txt
 37fe06ea34c157effdee938f6b48a276e4f0f50478ecec28bad5323e45903877  ./out-t106/mut-run2.txt
 4df1e9b2c85613cf9881ebeadbe433889ced1eb6bfb0f29cb42403075586a6ac  ./out-t106/mut-run3.txt
-85c2b4a8d853fe84d1cfcc5a5191f9b8bf71375c64876656b96828142ea69a5e  ./pins-baseline-recursive.txt
-b639b8f13a2cb3e243f6df4b0c6b932929951317f14d1b2086b8b9e3ac8add60  ./pins-baseline.txt
+6608be22c88af4ee791d3d26ec0decebf4950f4d46171af327d2c913516453b2  ./pins-baseline-recursive.txt
+f6e095c6e4dcf58b2faf828110a2355596ef9b23ff09cde9bb9042578bbc5799  ./pins-baseline.txt
 c065cb05028283bfdee0fd383852ab913f911e168d67d61afb44afd0b652fc78  ./README.md
 10ed0a5823702d156610ba0113faa61b27fe1e06b7582d48bda0ce3f9d7f869e  ./rust-coverage-tools.json
 66dd2ec77fe4666d8baa8726be851529d225b59adc2e543576cc3bd8a93fa585  ./t104-green-run1.txt

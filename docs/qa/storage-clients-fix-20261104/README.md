@@ -14,7 +14,7 @@ Roadmap-Item: CAT-ST. Base main 4d04560f. Files: catalog-api/filesystem/{ftp_cli
 M1 remove op semaphore -> parallel-stat FAIL; M2 remove ctx.Err() check (FTP) -> FTPCancelled FAIL; M3 remove deadline arming -> silent-server FAIL (15 s hang); M4 SMB DialTimeout/Dial instead of ctx -> mid-handshake FAIL (20 s); M5 remove SMB ctx checks -> OperationsFail FAIL; M6 disable leading-slash rule -> SmbPath FAIL.
 ## Known limits
 - ReadFile: the turn covers the RETR exchange only; reading the returned transfer while using the same client concurrently still interleaves (one client, one active transfer).
-- Live Synology (SMB/FTP) confirmation of these changes was NOT run (no Synology access used); owed. FTP real-server tests need python3 + pyftpdlib (FTP_PYFTPDLIB_DIR; Python >= 3.12 also pyasynchat/pyasyncore) and SKIP honestly otherwise.
+- Live NAS (SMB/FTP) confirmation of these changes was NOT run (no NAS access used); owed. FTP real-server tests need python3 + pyftpdlib (FTP_PYFTPDLIB_DIR; Python >= 3.12 also pyasynchat/pyasyncore) and SKIP honestly otherwise.
 
 ## Review round 1 (Opus NO-GO) remediation, head after 3cae7498
 - F1: session dial (connect, banner, Login, CWD/PWD) armed with ftpDialTimeout + ctx deadline + ctx-cancel expiry (armDial); applies to Connect and the reconnect after a cut. Tests TestRV_ReconnectAfterCutBounded (RED: 25 s HANG; GREEN 10.5 s = the 10 s reconnect bound), TestFTPConnectSilentBannerHonoursContext.

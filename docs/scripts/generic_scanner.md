@@ -33,7 +33,7 @@ set the status `completed` for a populated root with 0 files found. Every protoc
 | No credential in a reason | the clients redact URLs they put in errors (`url.URL.Redacted`), and `ScanStatus.fail/cancel/setNote` plus the event payload scrub URL userinfo and the root's literal secrets (password, URL password) |
 
 Directory listing errors below the root are skipped only when they are positively "not readable by this account" (`os.ErrPermission`/`ErrNotExist` by type, FTP 550/553, "permission denied", "STATUS_ACCESS_DENIED", HTTP 403/404, ...).
-Anything else fails the scan: skipping an unrecognised failure turns an outage into a smaller catalog. `@eaDir`, `#recycle` and `#snapshot` directories (Synology) are never entered, at any depth.
+Anything else fails the scan: skipping an unrecognised failure turns an outage into a smaller catalog. `@eaDir`, `#recycle` and `#snapshot` directories (NAS) are never entered, at any depth.
 
 ## Through the API (revision 2)
 

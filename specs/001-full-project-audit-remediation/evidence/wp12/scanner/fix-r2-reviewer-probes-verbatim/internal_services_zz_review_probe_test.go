@@ -80,7 +80,7 @@ func TestReviewProbe_R2_DepthBoundIsSilentTruncation(t *testing.T) {
 	assert.True(t, err != nil || st.GetSnapshot().ErrorCount > 0, "a truncated tree must not end clean (doc: never truncates silently)")
 }
 
-// R3: a legitimately empty share (or a fresh Synology share holding only @eaDir / #recycle) ends FAILED through the real job path, with no way
+// R3: a legitimately empty share (or a fresh NAS share holding only @eaDir / #recycle) ends FAILED through the real job path, with no way
 // to configure AllowEmptyRoot from a StorageRoot or the API. Polarity: assert the share's job is not failed.
 func TestReviewProbe_R3_LegitEmptyShareJobFails(t *testing.T) {
 	// control: a populated share completes (the instrument reads status correctly)
@@ -92,8 +92,8 @@ func TestReviewProbe_R3_LegitEmptyShareJobFails(t *testing.T) {
 	m.addSubdir("/", "@eaDir")
 	m.addSubdir("/", "#recycle")
 	st = runJob(t, "ftp", &memFactory{client: m}, context.Background())
-	t.Logf("R3 synology-fresh share: status=%s reason=%q", st.Status, st.Reason)
-	assert.NotEqual(t, "failed", st.Status, "a share holding only Synology metadata directories is a legitimately empty share")
+	t.Logf("R3 nas-fresh share: status=%s reason=%q", st.Status, st.Reason)
+	assert.NotEqual(t, "failed", st.Status, "a share holding only NAS metadata directories is a legitimately empty share")
 }
 
 // R4: bounds are checked AFTER a whole BFS level has been listed and held in memory, so MaxEntries does not bound server load or memory.

@@ -45,7 +45,7 @@ services:
     container_name: catalogizer-api-test
     network_mode: host
     extra_hosts:
-      - "synology.local:192.168.0.241"
+      - "nas.local:192.168.0.241"
     environment:
       - GIN_MODE=release
       - DB_TYPE=sqlite

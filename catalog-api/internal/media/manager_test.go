@@ -324,13 +324,13 @@ func TestMediaConfig_JSONFieldNames(t *testing.T) {
 
 func TestWatchPath_FieldValues(t *testing.T) {
 	wp := WatchPath{
-		SmbRoot:   "synology",
-		LocalPath: "/mnt/smb/synology",
+		SmbRoot:   "nas",
+		LocalPath: "/mnt/smb/nas",
 		Enabled:   true,
 	}
 
-	assert.Equal(t, "synology", wp.SmbRoot)
-	assert.Equal(t, "/mnt/smb/synology", wp.LocalPath)
+	assert.Equal(t, "nas", wp.SmbRoot)
+	assert.Equal(t, "/mnt/smb/nas", wp.LocalPath)
 	assert.True(t, wp.Enabled)
 }
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# test_nas_protocols.sh - WP-12 oracle for scripts/test-infra/nas_protocols.sh, client/nas_proto.py and client/nas_proto_nfs.sh (the READ-ONLY NFS/FTP/FTPS/SFTP survey of the real Synology hosts).
+# test_nas_protocols.sh - WP-12 oracle for scripts/test-infra/nas_protocols.sh, client/nas_proto.py and client/nas_proto_nfs.sh (the READ-ONLY NFS/FTP/FTPS/SFTP survey of the real protocol live hosts).
 # Oracle strategy (11.4.245): SPECIFIED (the owner's rules: read-only, <= 1 request/s per host, credentials only from the gitignored env file and never in argv/logs/evidence, SKIP not FAIL
 # when the env file is absent, names and addresses never recorded) and INVARIANT (no credential value or host address occurs in the committed evidence; SHA256SUMS verifies).
 # Sections:  A static: no write-class verb in the clients (control needles: planted verbs ARE found), credentials only reach the 0600 file   B unit: tests/infra/nas_proto_unit.py (real TCP RPC fixture)
@@ -42,10 +42,10 @@ check "B: the unit oracle ran at least 30 checks (it is not empty)" "$([ "$(prin
 o=$(TI_ENV_FILE="$FX/no-such.env" bash "$ORCH" 2>&1); rc=$?
 check "C: absent env file exits 0" "$rc" 0
 case "$o" in "SKIP nas_protocols reason=env_absent"*) ok "C: output is SKIP nas_protocols reason=env_absent";; *) bad "C: wrong output: $o";; esac
-printf 'SYNOLOGY_IP_3=192.0.2.1\n' >"$FX/partial.env"
+printf 'LIVE_HOST_IP_3=192.0.2.1\n' >"$FX/partial.env"
 o=$(TI_ENV_FILE="$FX/partial.env" bash "$ORCH" --hosts 3 2>&1); rc=$?
 check "C: env file without credentials exits 0" "$rc" 0
-case "$o" in "SKIP nas_protocols reason=credentials_absent variables: SYNOLOGY_SMB_USER SYNOLOGY_SMB_PASSWORD"*) ok "C: the SKIP names the missing variables (names only)";; *) bad "C: wrong output: $o";; esac
+case "$o" in "SKIP nas_protocols reason=credentials_absent variables: LIVE_HOST_SMB_USER LIVE_HOST_SMB_PASSWORD"*) ok "C: the SKIP names the missing variables (names only)";; *) bad "C: wrong output: $o";; esac
 o=$(bash "$ORCH" --hosts 9 2>&1); check "C: a host outside 1..7 is a usage error (exit 2)" "$?" 2
 o=$(bash "$ORCH" --protocols smb 2>&1); check "C: an unknown protocol is a usage error (exit 2)" "$?" 2
 
@@ -60,9 +60,9 @@ if [ -s "$EV/SHA256SUMS" ]; then
   done; ok "D: every per-host-per-protocol file carries the identity header (head, run_at, tool sha256, writes 0)"
   ENVF="$TI_REPO/.env"
   if [ -r "$ENVF" ]; then
-    leak=0; u=$(python3 -I "$TI_REPO/$SD/dotenv_get.py" "$ENVF" SYNOLOGY_SMB_USER); pw=$(python3 -I "$TI_REPO/$SD/dotenv_get.py" "$ENVF" SYNOLOGY_SMB_PASSWORD)
+    leak=0; u=$(python3 -I "$TI_REPO/$SD/dotenv_get.py" "$ENVF" LIVE_HOST_SMB_USER); pw=$(python3 -I "$TI_REPO/$SD/dotenv_get.py" "$ENVF" LIVE_HOST_SMB_PASSWORD)
     for pat in "$u" "$pw"; do [ -n "$pat" ] && grep -rqF -- "$pat" "$EV" && leak=1; done
-    for i in 1 2 3 4 5 6 7; do ip=$(python3 -I "$TI_REPO/$SD/dotenv_get.py" "$ENVF" "SYNOLOGY_IP_$i"); [ -n "$ip" ] && grep -rqF -- "$ip" "$EV" && leak=1; done
+    for i in 1 2 3 4 5 6 7; do ip=$(python3 -I "$TI_REPO/$SD/dotenv_get.py" "$ENVF" "LIVE_HOST_IP_$i"); [ -n "$ip" ] && grep -rqF -- "$ip" "$EV" && leak=1; done
     check "D: neither the credential values nor any host address occur in the evidence" "$leak" 0
     printf '%s\n' "$pw" >"$FX/needle.txt"; [ -n "$pw" ] && grep -rqF -- "$pw" "$FX" && ok "D: control needle: the leak scan finds the password when it is present" || bad "D: control needle: the leak scan is blind"
   else blocked "D: no .env, the leak scan against the real values is skipped (honest SKIP)"; fi

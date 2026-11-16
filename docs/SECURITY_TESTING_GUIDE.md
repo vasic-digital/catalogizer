@@ -37,7 +37,7 @@ export ADMIN_PASSWORD="<your-admin-password>"
 export SMB_PASSWORD="your-smb-password-here"
 export FTP_PASSWORD="your-ftp-password-here"
 export WEBDAV_PASSWORD="your-webdav-password-here"
-export SYNOLOGY_SECRET="your-synology-secret-here"
+export LIVE_HOST_SECRET="your-host-secret-here"
 ```
 
 ## Running Security Tests

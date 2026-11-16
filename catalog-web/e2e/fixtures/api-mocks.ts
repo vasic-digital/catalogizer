@@ -110,7 +110,7 @@ export async function mockDashboardEndpoints(page: Page) {
       contentType: 'application/json',
       body: JSON.stringify({
         roots: [
-          { id: 1, path: '//synology.local/media', protocol: 'smb', status: 'connected' },
+          { id: 1, path: '//nas.local/media', protocol: 'smb', status: 'connected' },
           { id: 2, path: '/data/local', protocol: 'local', status: 'connected' },
         ],
       }),

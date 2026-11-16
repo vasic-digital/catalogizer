@@ -5,7 +5,7 @@ import "catalogizer/internal/services"
 // isHostAllowed validates that a hostname/IP is a legitimate SMB probe target.
 // It blocks loopback, link-local, multicast, cloud-metadata IPs, and
 // unqualified single-label names. Private RFC-1918 ranges ARE allowed
-// because the identity-epic targets the LAN (Synology NAS at 192.168.0.0/24).
+// because the identity-epic targets the LAN (NAS at 192.168.0.0/24).
 //
 // Security invariants (§11.4 SSRF prevention):
 //   - Loopback (127.0.0.0/8, ::1) — blocked (probe would hit this host, not a NAS)

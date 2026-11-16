@@ -12,8 +12,8 @@ if [ ! -f "$TI_REPO/$SUT_REL" ]; then bad "script absent: $SUT_REL"; ti_summary;
 export TI_ROOT="$TI_REPO"
 FX="$TI_REPO/.audit/scratch/blk-fx.$$"; mkdir -p "$FX"; trap 'rm -rf -- "${FX:?}"; ti_cleanup' EXIT
 SV="SENTINELVALUE$RANDOM$RANDOM"
-printf 'SYNOLOGY_SMB_USER=%s\nSYNOLOGY_SMB_PASSWORD=%s\nSYNOLOGY_IP_3=192.0.2.3\nSYNOLOGY_IP_4=192.0.2.4\n' "$SV" "$SV" >"$FX/full.env"
-printf 'SYNOLOGY_SMB_USER=%s\nSYNOLOGY_IP_3=192.0.2.3\nSYNOLOGY_IP_4=192.0.2.4\n' "$SV" >"$FX/nopw.env"
+printf 'LIVE_HOST_SMB_USER=%s\nLIVE_HOST_SMB_PASSWORD=%s\nLIVE_HOST_IP_3=192.0.2.3\nLIVE_HOST_IP_4=192.0.2.4\n' "$SV" "$SV" >"$FX/full.env"
+printf 'LIVE_HOST_SMB_USER=%s\nLIVE_HOST_IP_3=192.0.2.3\nLIVE_HOST_IP_4=192.0.2.4\n' "$SV" >"$FX/nopw.env"
 SHA64=$(printf 'x' | sha256sum | cut -d' ' -f1)
 echo '{"schema":"nfs-fallback/1","state":"blocked","reason":"odg08_unanswered","unconfirmed":"the application kernel NFS mount path"}' >"$FX/fb-blocked.json"
 echo '{"schema":"nfs-fallback/1","state":"not_needed","fallback_run":false,"attempt_record":{"file":"wp10/nfs-attempt.json","state":"pass","sha256":"'"$SHA64"'"}}' >"$FX/fb-notneeded.json"
@@ -31,9 +31,9 @@ battery() { local sut=$1 n=0; LEAK=0
   run "$sut" "$FX/full.env"
   if [ "$RC" = 0 ] && [ "$(leg nas_smb_readonly .state)" = available ]; then :; else echo "FAIL a complete env file did not give available (rc=$RC state=$(leg nas_smb_readonly .state))"; n=$((n+1)); fi
   run "$sut" "$FX/absent.env"
-  if [ "$(leg nas_smb_readonly .state)" = blocked-unavailable ] && [ "$(leg nas_smb_readonly .reason)" = credentials_absent ] && [ "$(leg nas_smb_readonly '.variables | sort | join(",")')" = "SYNOLOGY_IP_3,SYNOLOGY_IP_4,SYNOLOGY_SMB_PASSWORD,SYNOLOGY_SMB_USER" ] && [ "$(leg nas_smb_readonly .blocked_on)" = ODG-01 ]; then :; else echo "FAIL an absent env file was not blocked-unavailable/credentials_absent listing all four names"; n=$((n+1)); fi
+  if [ "$(leg nas_smb_readonly .state)" = blocked-unavailable ] && [ "$(leg nas_smb_readonly .reason)" = credentials_absent ] && [ "$(leg nas_smb_readonly '.variables | sort | join(",")')" = "LIVE_HOST_IP_3,LIVE_HOST_IP_4,LIVE_HOST_SMB_PASSWORD,LIVE_HOST_SMB_USER" ] && [ "$(leg nas_smb_readonly .blocked_on)" = ODG-01 ]; then :; else echo "FAIL an absent env file was not blocked-unavailable/credentials_absent listing all four names"; n=$((n+1)); fi
   run "$sut" "$FX/nopw.env"
-  if [ "$(leg nas_smb_readonly .state)" = blocked-unavailable ] && [ "$(leg nas_smb_readonly '.variables | join(",")')" = SYNOLOGY_SMB_PASSWORD ]; then :; else echo "FAIL a missing password was not reported by name only (vars=$(leg nas_smb_readonly '.variables | join(",")'))"; n=$((n+1)); fi
+  if [ "$(leg nas_smb_readonly .state)" = blocked-unavailable ] && [ "$(leg nas_smb_readonly '.variables | join(",")')" = LIVE_HOST_SMB_PASSWORD ]; then :; else echo "FAIL a missing password was not reported by name only (vars=$(leg nas_smb_readonly '.variables | join(",")'))"; n=$((n+1)); fi
   if jq -e 'any(.legs[]; .state == "pass")' "$FX/rec.json" >/dev/null 2>&1; then echo "FAIL a record says pass"; n=$((n+1)); fi
   if [ "$(leg minio .state)" = blocked-unavailable ] && [ "$(leg minio .reason)" = image_unavailable ] && [ "$(leg nfs_owner_host .state)" = blocked-unavailable ] && [ "$(leg nfs_owner_host .blocked_on)" = ODG-08 ]; then :; else echo "FAIL the minio / nfs_owner_host legs are not recorded blocked-unavailable"; n=$((n+1)); fi
   # WF12 F7 + WF17 BE3: the nfs_owner_host leg is DERIVED from the T134a record in EVERY state, citing the real input path and its sha256
@@ -73,9 +73,9 @@ PY
     rm -rf -- "${d:?}"; }
   mut always_available caught '  if [ -z "$val" ]; then missing+=("$v")' '  if false; then missing+=("$v")'
   mut nfs_leg_hard_coded caught 'case "$FBSTATE" in' 'case "forced" in'
-  mut value_leaked caught 'missing+=("$v")' 'missing+=("$v:$(envval SYNOLOGY_SMB_USER)")'
+  mut value_leaked caught 'missing+=("$v")' 'missing+=("$v:$(envval LIVE_HOST_SMB_USER)")'
   # WF17-BE-B1 (reviewer B1): the user value written into the `available` note
-  mut be_b1_value_in_available_note caught "nas='{\"leg\":\"nas_smb_readonly\",\"state\":\"available\",\"note\":\"credentials present in the gitignored env file (names only checked); the leg itself records its own result\"}'" "nas='{\"leg\":\"nas_smb_readonly\",\"state\":\"available\",\"note\":\"credentials present for '\"\$(envval SYNOLOGY_SMB_USER)\"'\"}'"
+  mut be_b1_value_in_available_note caught "nas='{\"leg\":\"nas_smb_readonly\",\"state\":\"available\",\"note\":\"credentials present in the gitignored env file (names only checked); the leg itself records its own result\"}'" "nas='{\"leg\":\"nas_smb_readonly\",\"state\":\"available\",\"note\":\"credentials present for '\"\$(envval LIVE_HOST_SMB_USER)\"'\"}'"
   # BE3 (proof lens): the blocked leg drops derived_from
   mut be3_blocked_leg_drops_derived_from caught 'unconfirmed:(.unconfirmed // "the application kernel NFS mount path"), derived_from:{file:$f, sha256:$sha}, note:' 'unconfirmed:(.unconfirmed // "the application kernel NFS mount path"), note:'
   mut bare_not_needed_accepted caught '[ "$FBOK" = ok ] || FBSTATE=""' 'FBSTATE="$(jq -r ".state // empty" "$FB" 2>/dev/null)"'

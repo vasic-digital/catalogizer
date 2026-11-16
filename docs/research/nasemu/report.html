@@ -300,9 +300,9 @@ rootless)</strong></td>
 <td>bridge/NAT default (shares host IP), macvlan (own IP, host can't
 reach it without 2nd macvlan), DHCP mode needs
 <code>/dev/vhost-net</code> + device_cgroup_rules</td>
-<td>FAQ: code is open-source, no Synology material shipped; installing
-requires accepting Synology EULA which <strong>does not permit
-non-Synology hardware; "only run on an official Synology NAS"</strong>.
+<td>FAQ: code is open-source, no NAS material shipped; installing
+requires accepting NAS EULA which <strong>does not permit
+non-NAS hardware; "only run on an official NAS"</strong>.
 DSM <code>.pat</code> auto-downloaded (default DSM 7.0.1) or supplied
 via <code>URL</code> / bind <code>/boot.pat</code> =&gt; supply a pinned
 local <code>.pat</code> for reproducibility; its sha256 can be recorded.
@@ -324,8 +324,8 @@ last push 2022-10-22 (stale, not archived)</td>
 Arc in QEMU</td>
 <td>UNCONFIRMED</td>
 <td>VM-level</td>
-<td>README: DSM owned by Synology; educational use. Bootloader hack that
-boots DSM off non-Synology hardware: same EULA problem as vdsm plus
+<td>README: DSM owned by NAS; educational use. Bootloader hack that
+boots DSM off non-NAS hardware: same EULA problem as vdsm plus
 circumvention connotation. <strong>Recommend exclude</strong>; vdsm is
 the cleaner path (same EULA issue, no loader hack).</td>
 </tr>
@@ -590,11 +590,11 @@ href="https://github.com/IceWhaleTech/CasaOS">https://github.com/IceWhaleTech/Ca
 researched (UNCONFIRMED); exclude.</td>
 </tr>
 <tr>
-<td>Synology Web API docs</td>
+<td>NAS Web API docs</td>
 <td><a
-href="https://help.synology.com/developer-guide/integrate_dsm/web_authentication.html">https://help.synology.com/developer-guide/integrate_dsm/web_authentication.html</a>
+href="https://help.vendor-docs.example/developer-guide/integrate_dsm/web_authentication.html">https://help.vendor-docs.example/developer-guide/integrate_dsm/web_authentication.html</a>
 ; File Station API Guide PDF
-<code>cndl.synology.cn/download/Document/Software/DeveloperGuide/Package/FileStation/All/enu/Synology_File_Station_API_Guide.pdf</code></td>
+<code>cndl.vendor-docs.example/download/Document/Software/DeveloperGuide/Package/FileStation/All/enu/Vendor_File_Station_API_Guide.pdf</code></td>
 <td>proprietary docs</td>
 <td>—</td>
 <td>—</td>
@@ -605,16 +605,16 @@ details). Login via <code>SYNO.API.Auth</code>; 2FA error 406 reported
 by community only.</td>
 </tr>
 <tr>
-<td>Open-source Synology API mocks</td>
+<td>Open-source NAS API mocks</td>
 <td>none found</td>
 <td>—</td>
 <td>—</td>
 <td>—</td>
 <td>—</td>
 <td>—</td>
-<td>Search found only clients (py-synologydsm-api, kwent/syno,
-ProtoThis/python-synology) and an MCP server whose tests use a "fake DSM
-over real HTTP" (joaomelorodrigues/synology-mcp, UNCONFIRMED coverage).
+<td>Search found only clients (py-vendordsm-api, kwent/syno,
+ProtoThis/python-vendor-nas) and an MCP server whose tests use a "fake DSM
+over real HTTP" (joaomelorodrigues/vendor-nas-mcp, UNCONFIRMED coverage).
 <strong>No standalone reusable DSM mock exists</strong> =&gt; a
 FileStation/Auth shim would be our own work; real fidelity only from
 vdsm.</td>
@@ -630,7 +630,7 @@ fidelity option (ProFTPD/vsftpd) later. Kernel NFS and NFS-Ganesha are
 not rootless-feasible; <code>rclone serve nfs</code> is the evidenced
 path.</li>
 <li>VM tier: vdsm (MIT, very active, v7.67 yesterday) is the only
-sensible DSM route; its EULA problem (Synology hardware only) is
+sensible DSM route; its EULA problem (NAS hardware only) is
 explicit in the project's own FAQ and cannot be mitigated technically —
 operator attestation is the only gate. XPEnology loaders add
 circumvention connotation: exclude. macOS: project itself restricts to
@@ -638,10 +638,10 @@ Apple hardware: opt-in only. Windows: operator-supplied licence.</li>
 <li>Host: KVM works for this user via ACL, but RAM headroom (~16 GiB),
 57 GiB free disk, and load ~20 make the VM tier admit-or-refuse
 material; hostbudget lacks a disk axis.</li>
-<li>No open-source Synology API mock exists; a lightweight shim would be
+<li>No open-source NAS API mock exists; a lightweight shim would be
 new code.</li>
 <li>Remaining UNCONFIRMED: rootless viability of vdsm/dockur (tun,
-<code>NET_ADMIN</code>, vhost-net), Synology API PDF parameter details,
+<code>NET_ADMIN</code>, vhost-net), NAS API PDF parameter details,
 vsftpd/unfs3/Apache/nginx licences from primary pages, Unraid, whether
 /dev/sda1 (7.3T) is mounted and free.</li>
 </ol>

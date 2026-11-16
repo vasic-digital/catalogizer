@@ -52,9 +52,9 @@
   {
    "evidence": {
     "listing": true,
-    "pass_env": "SYNOLOGY_SMB_PASSWORD",
+    "pass_env": "LIVE_HOST_SMB_PASSWORD",
     "port": 445,
-    "user_env": "SYNOLOGY_SMB_USER"
+    "user_env": "LIVE_HOST_SMB_USER"
    },
    "probe": "nas",
    "rc": 0,

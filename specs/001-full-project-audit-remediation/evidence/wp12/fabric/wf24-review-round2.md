@@ -196,7 +196,7 @@ The cache is set only after the first `Connect` returns, and it is keyed by `Sto
 - `450 "/Movies/Access Denied (2019).mkv: Resource temporarily unavailable"` gives `auth`.
 - `451 "/home/m/not logged in.txt: …"` gives `auth`.
 
-Both should be `transient`. The S9 path-text class comes back through the 4yz text check (`errors.go:154-158`). Some FTP servers, ProFTPD-style, echo the path in 4yz and 5yz replies. That echo is UNCONFIRMED for the Synology server.
+Both should be `transient`. The S9 path-text class comes back through the 4yz text check (`errors.go:154-158`). Some FTP servers, ProFTPD-style, echo the path in 4yz and 5yz replies. That echo is UNCONFIRMED for the NAS server.
 
 **Fix direction.**
 - Apply the 4yz "login failed" text rule only to replies to USER, PASS and ACCT. `pkg/ftp` already marks those with `MarkAuth` (`proto.go:526,539`).
@@ -339,6 +339,6 @@ The 11.4.276 class shared by N1 and N2 is "fix verified on a simplified model of
 
 **Not claimed / UNCONFIRMED.**
 - A live Samba server returning `STATUS_LOGON_FAILURE`. The error value was built from go-smb2's exported type and traced, not observed on the wire.
-- Synology FTP echoing paths in 4yz replies.
+- NAS FTP echoing paths in 4yz replies.
 - The load of SMB `ReadDir(".")` on the real NAS share roots.
 - No NAS was contacted.

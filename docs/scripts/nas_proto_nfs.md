@@ -18,4 +18,4 @@ the first 1 MiB of ONE file read through `nfs-cat | head -c` and discarded. Timi
 assembled into JSON by `nas_protocols.sh`.
 
 Verified against the unprivileged user-space NFS fixture of the test infrastructure (v3 walk and 1 MiB read; a path that does not exist reports `MNT3ERR_NOENT`; v4 is not offered by the fixture and is recorded as refused).
-On the real hosts no path is mountable from this client (see `docs/infrastructure/synology-hosts.md`), so the walker has not run against a real NAS.
+On the real hosts no path is mountable from this client (see `docs/infrastructure/protocol-live-hosts.md`), so the walker has not run against a real NAS.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""nas_proto.py - WP-12 READ-ONLY protocol survey of ONE Synology host (runs inside IMG-GO through scripts/containers/run_pinned.sh; stdlib only).
+"""nas_proto.py - WP-12 READ-ONLY protocol survey of ONE protocol live host (runs inside IMG-GO through scripts/containers/run_pinned.sh; stdlib only).
 
 Usage:  nas_proto.py <rpc|ftp|ftps|sftp> <index 1-7> <ip> <out dir>
 
@@ -35,7 +35,7 @@ MAX_DEPTH = 3
 MAX_ENTRIES = 2000
 READ_BYTES = 1048576
 PORTMAP_PORT, NFS_PORT = 111, 2049          # module attributes so that the unit test can point the RPC code at an unprivileged local fixture
-SKIP_PREFIX = ("@", "#")          # Synology system directories (@eaDir, #recycle, @tmp): counted, never descended
+SKIP_PREFIX = ("@", "#")          # NAS system directories (@eaDir, #recycle, @tmp): counted, never descended
 IPV4 = re.compile(r"\b\d{1,3}(?:\.\d{1,3}){3}\b")
 
 
@@ -220,7 +220,7 @@ def parse_exports(b):
 
 
 def do_rpc(idx, ip, out):
-    rec = {"schema": "wp12-nas-protocol/1", "alias": "Synology%s" % idx, "protocol": "nfs-rpc", "writes_performed": 0}
+    rec = {"schema": "wp12-nas-protocol/1", "alias": "LiveHost%s" % idx, "protocol": "nfs-rpc", "writes_performed": 0}
     t0 = time.monotonic()
     try:
         st, body = rpc_call(ip, PORTMAP_PORT, 100000, 2, 4)
@@ -320,7 +320,7 @@ def parse_list_line(line):
 
 def do_ftp(idx, ip, out, tls):
     proto = "ftps" if tls else "ftp"
-    rec = {"schema": "wp12-nas-protocol/1", "alias": "Synology%s" % idx, "protocol": proto, "writes_performed": 0, "names_recorded": False, "content_recorded": False,
+    rec = {"schema": "wp12-nas-protocol/1", "alias": "LiveHost%s" % idx, "protocol": proto, "writes_performed": 0, "names_recorded": False, "content_recorded": False,
            "limits": {"max_listing_requests_per_share": MAX_REQ_PER_SHARE, "max_depth": MAX_DEPTH, "max_entries": MAX_ENTRIES, "read_sample_bytes": READ_BYTES, "max_requests_per_second": 1}}
     user, pw = open(os.path.join(out, "cred")).read().split("\n")[:2]
     pacer = Pacer()
@@ -593,7 +593,7 @@ def parse_attrs(d, off):
 
 
 def do_sftp(idx, ip, out):
-    rec = {"schema": "wp12-nas-protocol/1", "alias": "Synology%s" % idx, "protocol": "sftp", "writes_performed": 0, "names_recorded": False, "content_recorded": False,
+    rec = {"schema": "wp12-nas-protocol/1", "alias": "LiveHost%s" % idx, "protocol": "sftp", "writes_performed": 0, "names_recorded": False, "content_recorded": False,
            "limits": {"max_listing_requests_per_share": MAX_REQ_PER_SHARE, "max_depth": MAX_DEPTH, "max_entries": MAX_ENTRIES, "read_sample_bytes": READ_BYTES, "max_requests_per_second": 1}}
     user, pw = open(os.path.join(out, "cred")).read().split("\n")[:2]
     pacer = Pacer()

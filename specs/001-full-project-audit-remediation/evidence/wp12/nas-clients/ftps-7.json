@@ -1,6 +1,6 @@
 {
   "schema": "wp12-nas-client/1",
-  "alias": "Synology7",
+  "alias": "LiveHost7",
   "protocol": "ftps",
   "client_package": "pkg/ftp",
   "chain": "Confined>Retrying>Limited>ReadOnly>tripwire>client",

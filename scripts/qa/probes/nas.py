@@ -3,7 +3,7 @@
 Usage: nas.py --host H [--port 445] --user-env U --pass-env P [--smbclient PATH] [--timeout S]
 Blocked reasons: credential_absent, service_unreachable (TCP connect or listing failed for a non-credential reason), credential_rejected
 (NT_STATUS_LOGON_FAILURE / ACCESS_DENIED), host_resource_unavailable (no smbclient on the host). The password goes to smbclient through the
-PASSWD environment variable, never argv; it appears nowhere in the output. For the Synology read-only account use SYNOLOGY_* variable names."""
+PASSWD environment variable, never argv; it appears nowhere in the output. For the NAS read-only account use LIVE_HOST_* variable names."""
 import argparse
 import os
 import socket

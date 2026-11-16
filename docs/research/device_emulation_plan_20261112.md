@@ -80,7 +80,7 @@ host and must be rebuilt before any Tauri live run.
 
 Sources: `docs/CONTINUATION.md` Rev 20 (lines 16, 26-27, 37, 67, 87-91, 98-100) and
 `docs/FOLLOW_UPS_NEXT_PHASE.md` (lines 1503-1520 Android/Tauri, 1425/1578/1614 second LAN host,
-605/1245/1384 Synology, 1617-1699 Tauri wizard).
+605/1245/1384 NAS, 1617-1699 Tauri wizard).
 
 Rule applied. Under §11.4.289 an emulator running the REAL artifact (the real APK, the real Tauri binary)
 against the REAL API is LIVE-class evidence for claims scoped to the emulated target; it is not a test
@@ -104,10 +104,10 @@ double. Two limits bind every row below:
 | Android phone (CAT-ANDROID-LOGIN-1, AND-FU-3/4/6) | AVD `pixel_6`, API 34 `default;x86_64` (image on host), KVM | install, launch, server-URL entry, real qa_admin login via secret-safe input, browse/search/play against the real API, AND-FU-6 "Connected" on unreachable server reproduction | ARM-only native code paths, real touch latency, radios/Wi-Fi roaming, battery, OEM skins, HW codecs, real performance figures, release gate | COVERABLE for the emulated-target claim |
 | Android TV (AND-FU-2, TV player items) | AVD `tv_1080p`, API 34 `android-tv;x86` (image on host, 8.2 GiB) | leanback launch, D-pad navigation/focus, login, browse, playback with software decode | HDMI/CEC, HW decode (HEVC/HDR/Dolby), real remote (IR/BT), TV OEM firmware, 4K output timing | COVERABLE for the emulated-target claim |
 | Display access from a second machine (AND-FU-4) | n/a | none: needs a second machine by definition | the SSH-tunnel + scrcpy path from another host | SKIP `hardware_not_present` |
-| "Anton" SMB second machine (CONTINUATION 87-91: "Anton.local IS this host") and bare-IP SMB | rootless netavark bridge with a peer container (own netns, own IP) running a real Samba; optional containerized QEMU Linux guest for a second kernel | client works against an SMB server at a different IP over a virtual L2 link (not loopback, not the API's own netns), bare-IP addressing, port 445 vs non-445, cut-recovery by stopping the peer, N>=3 | a physical NIC, switch, router, MTU/Wi-Fi loss, a Windows SMB server, Synology's Samba build | COVERABLE as "virtual LAN peer"; physical second-host claim stays SKIP |
+| "Anton" SMB second machine (CONTINUATION 87-91: "Anton.local IS this host") and bare-IP SMB | rootless netavark bridge with a peer container (own netns, own IP) running a real Samba; optional containerized QEMU Linux guest for a second kernel | client works against an SMB server at a different IP over a virtual L2 link (not loopback, not the API's own netns), bare-IP addressing, port 445 vs non-445, cut-recovery by stopping the peer, N>=3 | a physical NIC, switch, router, MTU/Wi-Fi loss, a Windows SMB server, NAS's Samba build | COVERABLE as "virtual LAN peer"; physical second-host claim stays SKIP |
 | NFS / FTP / FTPS / SFTP / WebDAV / S3 on a second host | same peer pattern: userspace NFS (rclone/ganesha), vsftpd or pure-ftpd, atmoz/sftp, a WebDAV server, Garage (image on host) | protocol client behaviour at a non-local IP | kernel-NFS server behaviour (needs root), client-side NFS kernel mount (needs root; the earlier probe used sudo) | COVERABLE for userspace servers; kernel-NFS SKIP |
 | TRUSTED_PROXIES / rate-limit from a second LAN host (STK3-FU-1, QA-MON-FU-4, TP-FU-3) | peer container on a separate bridge sending through the nginx front door | API sees a distinct client IP arriving over a veth/bridge path, XFF handling with a non-primary source | "real remote NIC" (stays UNCONFIRMED, as the 2026-11-06 substitute run already states) | PARTIAL, label precisely |
-| Synology SMB/FTP/NFS/WebDAV, idle-deadline, cut-recovery (CAT-SYN-LIVE-1, ST-NFS, LV3-2) | none | none: generic Samba/FTP fixtures prove nothing about the Synology firmware; DSM emulation (XPEnology-class) is not pursued (DSM licence is tied to Synology hardware; operator to confirm) | all Synology claims | SKIP `hardware_not_present` (drives OFF since 2026-11-05) |
+| NAS SMB/FTP/NFS/WebDAV, idle-deadline, cut-recovery (CAT-SYN-LIVE-1, ST-NFS, LV3-2) | none | none: generic Samba/FTP fixtures prove nothing about the NAS firmware; DSM emulation (XPEnology-class) is not pursued (DSM licence is tied to NAS hardware; operator to confirm) | all NAS claims | SKIP `hardware_not_present` (drives OFF since 2026-11-05) |
 | Real phone / real TV hardware | none | none | every hardware claim and the §11.4.298 release gate | SKIP `hardware_not_present` |
 
 Already proven once (do not re-claim): both debug APKs built in a rootless JDK 17 container and the phone
@@ -302,7 +302,7 @@ author dispatches including review rounds.
 
 Operator decisions needed before step 2 live runs: (a) disk: approve pruning or a target for the ~300 MB-
 1 GB of new image layers; (b) whether the in-device secret exposure of G6 is acceptable; (c) Windows
-image + licence (G10) or permanent SKIP; (d) confirm the macOS and Synology-DSM licence readings above.
+image + licence (G10) or permanent SKIP; (d) confirm the macOS and Vendor-DSM licence readings above.
 
 ## 6. Findings outside scope and UNCONFIRMED list
 
@@ -329,6 +329,6 @@ UNCONFIRMED:
 * Whether the host emulator 37.1.11 binary runs inside Debian bookworm-slim with only the listed libs
   (G3 assumption; needs the first RED/GREEN).
 * Whether rootless netavark allows `--device /dev/net/tun` + tap inside a container for QEMU (G9).
-* WebView2 behaviour under Wine; legal reading of macOS and Synology DSM licences (operator).
+* WebView2 behaviour under Wine; legal reading of macOS and NAS DSM licences (operator).
 * Whether a reusable lease engine exists in the constitution for G12.
 * Whether upstream `vasic-digital/Containers` has unpushed work on other mirrors (only `origin` checked).

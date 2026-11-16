@@ -10,4 +10,4 @@ M18-per-dir-bound-removed	KILLED rc=1	TestGenericScanner_BoundsFailInsteadOfTrun
 M19-factory-skips-validation	KILLED rc=1	TestFactory_CreateClientRejectsUnknownKey, TestRegisterProtocol_Lifecycle
 M20-registered-protocol-not-resolved-on-demand	SURVIVED rc=0	
 M21-hostile-names-followed	KILLED rc=1	TestGenericScanner_HostileEntryNamesAreNotFollowed
-M22-skip-dirs-ignored	KILLED rc=1	TestGenericScanner_SkipsSynologyMetadataDirectories
+M22-skip-dirs-ignored	KILLED rc=1	TestGenericScanner_SkipsNASMetadataDirectories

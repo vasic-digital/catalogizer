@@ -41,7 +41,7 @@
 - `GET /api/v1/entities/browse/movie` returns The Matrix's cover as `…/image-proxy?url=https://image.tmdb.org/t/p/w500/dXNAPwY7VrqMAo51EKhhCJfaGb5.jpg` (not the placeholder).
 - `GET /api/v1/image-proxy?...` returns a **real 500×750 progressive JPEG, 110 270 bytes** — confirmed with my eyes to be the genuine "The Matrix" (1999) poster (`covers_pipeline_proof/matrix_poster.jpg`). This is exactly what the app's Coil loader fetches → real covers render in the app.
 
-**Honest note (§11.4.6):** the 14 catalog items are **seed/test data** (e.g. "Track Name", "The Dark Side of the Moon"); the real SMB share is unreachable (`127.0.0.1:1445` refused). Real-content covers depend on the deferred identity-share-discovery epic populating the catalog from the Synology NAS. The cover **pipeline** is proven correct; real-content covers follow once the catalog holds real titles.
+**Honest note (§11.4.6):** the 14 catalog items are **seed/test data** (e.g. "Track Name", "The Dark Side of the Moon"); the real SMB share is unreachable (`127.0.0.1:1445` refused). Real-content covers depend on the deferred identity-share-discovery epic populating the catalog from the NAS. The cover **pipeline** is proven correct; real-content covers follow once the catalog holds real titles.
 
 **Deployment note for the operator:** the app (`com.catalogizer.androidtv`) is configured for server `http://192.168.0.132:8080` — **this host**. The catalog-api must run bound to the LAN (`HOST=0.0.0.0`) with the valid `TMDB_API_KEY` set, against `data/catalogizer.db` (sqlite). It is currently running so; logging into the app as your `admin` will show the enriched covers.
 

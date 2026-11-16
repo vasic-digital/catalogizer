@@ -112,7 +112,7 @@ Redis 7 Alpine provides caching. It uses config/redis.conf for configuration, ha
 
 Nginx serves as the reverse proxy. It uses config/nginx.conf and config/nginx/catalogizer.prod.conf for its configuration. Nginx handles TLS termination, static file serving, and request routing to the backend API. It also handles HTTP/3 (QUIC) protocol support and Brotli compression.
 
-The catalog-api service is configured with several important environment variables. DB_TYPE must be set to postgres for production. DB_HOST, DB_PORT, DB_NAME, DB_USER, and DB_PASSWORD connect it to PostgreSQL. JWT_SECRET must be a strong, unique secret for token signing. GIN_MODE should be set to release for production. The API container needs --add-host=synology.local:192.168.0.241 if accessing NAS storage.
+The catalog-api service is configured with several important environment variables. DB_TYPE must be set to postgres for production. DB_HOST, DB_PORT, DB_NAME, DB_USER, and DB_PASSWORD connect it to PostgreSQL. JWT_SECRET must be a strong, unique secret for token signing. GIN_MODE should be set to release for production. The API container needs --add-host=nas.local:192.168.0.241 if accessing NAS storage.
 
 For HTTP/3 support, the backend uses quic-go/http3 with self-signed TLS certificates generated at startup. Brotli compression middleware using andybalholm/brotli compresses responses. The fallback chain is HTTP/3 with Brotli, then HTTP/2 with gzip. HTTP/1.1 is never acceptable in production.
 

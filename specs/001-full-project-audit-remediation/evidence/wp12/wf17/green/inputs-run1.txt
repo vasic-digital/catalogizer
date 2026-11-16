@@ -161,7 +161,7 @@ PASS: OUT: the failure names the unwritten evidence
 PASS: OUT: blocked_external --out to an unwritable path exits 1
 PASS: DOTENV: dotenv_get.py agrees with python-dotenv on every key of the mixed-dialect file (CRLF, export, spaces, last duplicate, quotes, inline comment)
 PASS: DOTENV: blocked_external reads the CRLF/export/spaces file as available (the reference reads all four names)
-PASS: DOTENV: a non-IPv4 SYNOLOGY_IP_4 is not 'available' (the leg's client refuses it too): credentials_invalid
+PASS: DOTENV: a non-IPv4 LIVE_HOST_IP_4 is not 'available' (the leg's client refuses it too): credentials_invalid
 PASS: EMPTY: up.sh --services "" exits 2
 PASS: EMPTY: up.sh --seed "" exits 2
 PASS: EMPTY: up.sh --ev-dir "" exits 2

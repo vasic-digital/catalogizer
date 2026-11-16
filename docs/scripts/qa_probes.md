@@ -18,7 +18,7 @@ One real, independent availability probe per dependency (doc12 section 10.3): `s
 python3 scripts/qa/probes/service.py --url http://HOST:PORT/health
 python3 scripts/qa/probes/credential.py --env PASS_VAR [--user-env USER_VAR --login-url URL]
 python3 scripts/qa/probes/device.py --serial S [--expect-serialno X] [--package P] [--adb PATH]
-python3 scripts/qa/probes/nas.py --host H --user-env U --pass-env P        # the Synology read-only account: SYNOLOGY_SMB_USER / SYNOLOGY_SMB_PASSWORD
+python3 scripts/qa/probes/nas.py --host H --user-env U --pass-env P        # the NAS read-only account: LIVE_HOST_SMB_USER / LIVE_HOST_SMB_PASSWORD
 ```
 
 ## Honest boundary

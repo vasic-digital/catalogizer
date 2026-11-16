@@ -2,7 +2,7 @@
 
 // Package nasclients is the READ-ONLY harness of the real-NAS client leg (scripts/test-infra/nas_clients_leg.sh, docs/scripts/nas_clients_leg.md).
 // It drives the NEW protocol clients of submodules/filesystem (pkg/ftp FTP and explicit FTPS with certificate pinning, pkg/sftp with host-key pinning, pkg/nfs3)
-// against the owner's Synology hosts through the fabric chain Confined > Retrying > Limited > ReadOnly > tripwire > client. It does not modify any package.
+// against the owner's protocol live hosts through the fabric chain Confined > Retrying > Limited > ReadOnly > tripwire > client. It does not modify any package.
 //
 // Safety properties, each of them recorded as evidence and none of them an assumption:
 //   - the ONLY write-class path to the client is a TRIPWIRE below decorators.ReadOnly: a write-class call that reached it is refused there (nothing is ever sent to a NAS) and counted;
@@ -588,7 +588,7 @@ type hostResult struct {
 }
 
 func newHostResult(n int, proto, pkg string) *hostResult {
-	return &hostResult{Schema: "wp12-nas-client/1", Alias: fmt.Sprintf("Synology%d", n), Protocol: proto, ClientPackage: pkg, Chain: chainName,
+	return &hostResult{Schema: "wp12-nas-client/1", Alias: fmt.Sprintf("LiveHost%d", n), Protocol: proto, ClientPackage: pkg, Chain: chainName,
 		MeasuredAt: time.Now().UTC().Format(time.RFC3339),
 		Limits:     map[string]interface{}{"max_depth": maxDepth, "max_entries": maxEntries, "max_listing_requests_per_share": maxListPerShare, "max_requests_per_second": 1, "read_sample_bytes": maxReadBytes}}
 }
