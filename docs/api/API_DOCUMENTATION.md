@@ -5123,7 +5123,7 @@ Remote synchronization endpoints (WebDAV, S3, GCS, local).
 Create a sync endpoint configuration.
 
 **Description:** Registers a remote sync destination.
-**Auth:** Required
+**Auth:** Administrator only (403 for other authenticated users; SYNC-ADMIN-1)
 **Rate Limit:** Standard (2000/min)
 
 **Request Body:**
@@ -5170,7 +5170,7 @@ Get a specific sync endpoint.
 Update a sync endpoint configuration.
 
 **Description:** Modifies sync endpoint settings.
-**Auth:** Required
+**Auth:** Administrator only (403 for other authenticated users; SYNC-ADMIN-1)
 **Rate Limit:** Standard (2000/min)
 
 ---
@@ -5180,7 +5180,7 @@ Update a sync endpoint configuration.
 Delete a sync endpoint.
 
 **Description:** Removes a sync destination configuration.
-**Auth:** Required
+**Auth:** Administrator only (403 for other authenticated users; SYNC-ADMIN-1)
 **Rate Limit:** Standard (2000/min)
 
 ---
@@ -5190,7 +5190,7 @@ Delete a sync endpoint.
 Start a sync operation on an endpoint.
 
 **Description:** Triggers immediate synchronization.
-**Auth:** Required
+**Auth:** Administrator only (403 for other authenticated users; SYNC-ADMIN-1)
 **Rate Limit:** Standard (2000/min)
 
 **Response:** 202 Accepted
@@ -5229,7 +5229,7 @@ Get a specific sync session.
 Create a sync schedule.
 
 **Description:** Sets up automatic recurring synchronization.
-**Auth:** Required
+**Auth:** Administrator only (403 for other authenticated users; SYNC-ADMIN-1)
 **Rate Limit:** Standard (2000/min)
 
 **Request Body:**
@@ -5259,7 +5259,7 @@ Get sync statistics.
 Clean up old sync sessions.
 
 **Description:** Removes completed sync session records older than a threshold.
-**Auth:** Required
+**Auth:** Administrator only (403 for other authenticated users; SYNC-ADMIN-1)
 **Rate Limit:** Standard (2000/min)
 
 ---
@@ -5314,7 +5314,7 @@ Content-Type: `application/json`
 | `success` | boolean |
 | `data` | array of SyncSession |
 
-**Errors:** 401 (unauthorized), 500 (internal server error)
+**Errors:** 401 (unauthorized), 403 (not an administrator), 500 (internal server error), 503 (`Could not verify admin role`)
 
 ---
 ### GET /api/v1/sync/providers
