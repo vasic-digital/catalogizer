@@ -314,18 +314,19 @@ describe('apiService', () => {
   })
 
   describe('toggleFavorite', () => {
-    it('sends POST to /api/media/:id/favorite', async () => {
+    it('sends PUT {favorite} to /api/v1/media/:id/favorite', async () => {
       mockInvoke.mockImplementation(async (cmd) => {
         if (cmd === 'get_config') return defaultConfig as any
         if (cmd === 'make_http_request') return '{}' as any
         return undefined as any
       })
 
-      await apiService.toggleFavorite(5)
+      await apiService.toggleFavorite(5, false)
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
         url: 'http://localhost:8080/api/v1/media/5/favorite',
-        method: 'POST',
+        method: 'PUT',
+        body: JSON.stringify({ favorite: false }),
       }))
     })
   })

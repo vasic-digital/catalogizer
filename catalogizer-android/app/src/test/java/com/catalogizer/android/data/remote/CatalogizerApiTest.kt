@@ -197,7 +197,7 @@ class CatalogizerApiTest {
     fun `setFavoriteStatus accepts favorite data`() = runTest {
         coEvery { mockApi.setFavoriteStatus(1L, any()) } returns Response.success(Unit)
 
-        val favoriteData = mapOf<String, Any>("isFavorite" to true)
+        val favoriteData = mapOf<String, Any>("favorite" to true)
         val result = mockApi.setFavoriteStatus(1L, favoriteData)
 
         assertTrue(result.isSuccessful)

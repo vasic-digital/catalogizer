@@ -153,11 +153,12 @@ describe('apiService (extended edge cases)', () => {
         return undefined as any
       })
 
-      await apiService.toggleFavorite(42)
+      await apiService.toggleFavorite(42, true)
 
       expect(mockInvoke).toHaveBeenCalledWith('make_http_request', expect.objectContaining({
         url: 'http://localhost:8080/api/v1/media/42/favorite',
-        method: 'POST',
+        method: 'PUT',
+        body: JSON.stringify({ favorite: true }),
       }))
     })
 

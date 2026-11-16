@@ -172,9 +172,9 @@ describe('MediaService', () => {
       const toggleResult = { is_favorite: true };
       mockHttp.put.mockResolvedValueOnce(toggleResult);
 
-      const result = await mediaService.toggleFavorite(42);
+      const result = await mediaService.toggleFavorite(42, true);
 
-      expect(mockHttp.put).toHaveBeenCalledWith('/media/42/favorite');
+      expect(mockHttp.put).toHaveBeenCalledWith('/media/42/favorite', { favorite: true });
       expect(result).toEqual(toggleResult);
     });
   });

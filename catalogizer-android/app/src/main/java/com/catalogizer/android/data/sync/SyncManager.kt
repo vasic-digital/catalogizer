@@ -258,7 +258,12 @@ class SyncManager(
             Json.Default.decodeFromString<FavoriteData>(it)
         } ?: return
 
-        api.setFavoriteStatus(favoriteData.mediaId, mapOf("isFavorite" to favoriteData.isFavorite))
+        // Server contract: PUT /media/:id/favorite {"favorite": bool}. A non-2xx answer must not be treated as
+        // synced: throwing lets the caller keep the operation queued and count a retry.
+        val response = api.setFavoriteStatus(favoriteData.mediaId, mapOf("favorite" to favoriteData.isFavorite))
+        if (!response.isSuccessful) {
+            throw java.io.IOException("Favorite sync failed for media ${favoriteData.mediaId}: HTTP ${response.code()}")
+        }
     }
 
     private suspend fun syncRating(operation: SyncOperation) {
