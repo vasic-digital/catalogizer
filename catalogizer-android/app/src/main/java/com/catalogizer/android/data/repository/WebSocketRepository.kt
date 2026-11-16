@@ -131,6 +131,8 @@ class WebSocketRepository(
             val ticket = try {
                 minter.mint(token)
             } catch (e: WsTicketUnauthorizedException) {
+                // WSF2B2RR-m2: a 401 raised by a superseded/cancelled attempt is stale; a newer attempt owns the state.
+                if (!isActive) return@launch
                 _events.value = WebSocketEvent.Error(e.message ?: "Unauthorized")
                 return@launch // a 401 is final: no reconnect loop with a token the server refuses
             } catch (e: Exception) {
@@ -163,6 +165,9 @@ class WebSocketRepository(
                 old?.close()
                 c.connect()
             } catch (e: Exception) {
+                // WSF2B2RR-m2: a failure in a superseded/cancelled attempt (clientFactory/URI) is stale: publish nothing.
+                if (e is CancellationException && !isActive) throw e
+                if (!isActive) return@launch
                 _events.value = WebSocketEvent.Error(e.message ?: "Connection failed")
             }
         }
