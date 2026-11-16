@@ -7522,7 +7522,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: 'Administrator role required (decided from the database on every request; body {"success":false,"error":"Admin role required"}), or the caller is an administrator who does not own the endpoint (the service answers unauthorized, mapped to 403)'
+          description: 'Administrator role required (decided from the database on every request; body {"success":false,"error":"Admin role required"}), or the caller is an administrator who does not own the endpoint and lacks the share.edit permission (the permission check also refuses when it fails; the service answers unauthorized, mapped to 403; the default Admin role holds all permissions), or a step-up refusal (code step_up_required, or step_up_failed when the supplied step_up_password is wrong)'
           content:
             application/json:
               schema:
@@ -7583,7 +7583,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: 'Administrator role required (decided from the database on every request; body {"success":false,"error":"Admin role required"}), or the caller is an administrator who does not own the endpoint (the service answers unauthorized, mapped to 403)'
+          description: 'Administrator role required (decided from the database on every request; body {"success":false,"error":"Admin role required"}), or the caller is an administrator who does not own the endpoint and lacks the share.delete permission (the permission check also refuses when it fails; the service answers unauthorized, mapped to 403; the default Admin role holds all permissions)'
           content:
             application/json:
               schema:
@@ -7639,7 +7639,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: 'Administrator role required (decided from the database on every request; body {"success":false,"error":"Admin role required"}), or the caller is an administrator who does not own the endpoint (the service answers unauthorized, mapped to 403)'
+          description: 'Administrator role required (decided from the database on every request; body {"success":false,"error":"Admin role required"}), or the caller is an administrator who does not own the endpoint and lacks the share.edit permission (the permission check also refuses when it fails; the service answers unauthorized, mapped to 403; the default Admin role holds all permissions)'
           content:
             application/json:
               schema:
@@ -7824,7 +7824,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: 'Administrator role required (decided from the database on every request; body {"success":false,"error":"Admin role required"}), or the caller is an administrator who does not own the endpoint (the service answers unauthorized, mapped to 403)'
+          description: 'Administrator role required (decided from the database on every request; body {"success":false,"error":"Admin role required"}), or the caller is an administrator who does not own the endpoint named in the request and lacks the share.edit permission (the permission check also refuses when it fails; the service answers unauthorized, mapped to 403; the default Admin role holds all permissions)'
           content:
             application/json:
               schema:

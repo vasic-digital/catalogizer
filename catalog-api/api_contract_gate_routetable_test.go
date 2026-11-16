@@ -8,10 +8,11 @@ package main
 //	spec markers  \  table RequireAdmin rows  ⊆  permissionGatedMarkedExceptions   (explicit, reasoned, reviewed list)
 //	code per-route admin registrations  ⊆  table RequireAdmin rows   (a new admin route cannot skip the table)
 //
-// The code scan (api_contract_gate_codescan_test.go) is AST based over every discovered route-registering file and compares FULL
-// paths in both directions. Limits (UNCONFIRMED beyond them): gates it cannot see in the AST (a gate applied by a helper it does not
-// model) are reported as table rows without a code registration. /metrics and /debug/pprof/* are not in the spec and are not
-// marked (tracked follow-up ADMD1F1-S1-FU-NONSPEC-ADMIN).
+// The code scan (api_contract_gate_codescan_test.go) is AST based over every discovered file and fail closed: a gin route call whose
+// receiver, full path or admin-looking middleware it cannot resolve is reported in routeScan.unresolved and fails the real-source
+// test. Paths are compared in full, both directions. Limit (UNCONFIRMED beyond it): a gate form it does not model AND that does not
+// look like "admin" in its text is counted ungated; the converse direction then fails only when the table already has a RequireAdmin
+// row for the route. /metrics and /debug/pprof/* are not in the spec and are not marked (tracked follow-up ADMD1F1-S1-FU-NONSPEC-ADMIN).
 
 import (
 	"bufio"

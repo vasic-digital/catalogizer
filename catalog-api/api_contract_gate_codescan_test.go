@@ -15,6 +15,7 @@ import (
 	"go/token"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -33,16 +34,20 @@ type scanEnv struct {
 type scanSeed struct {
 	groups    map[string]scanEnv
 	gates     map[string]bool
+	strs      map[string]string
 	wrapGated bool
 }
 
 func (s scanSeed) key() string {
 	var ks []string
 	for k, v := range s.groups {
-		ks = append(ks, k+"="+v.prefix+"|"+strconv.FormatBool(v.gated))
+		ks = append(ks, k+"="+v.prefix+"|"+strconv.FormatBool(v.gated)+strconv.FormatBool(v.unknown))
 	}
 	for k, v := range s.gates {
 		ks = append(ks, "g:"+k+strconv.FormatBool(v))
+	}
+	for k, v := range s.strs {
+		ks = append(ks, "s:"+k+"="+v)
 	}
 	sort.Strings(ks)
 	return strings.Join(ks, ",") + strconv.FormatBool(s.wrapGated)
@@ -59,7 +64,15 @@ type routeScan struct {
 	files      map[string]bool // files in which at least one route registration was seen
 }
 
-var routeMethods = map[string]bool{"GET": true, "POST": true, "PUT": true, "DELETE": true, "PATCH": true}
+// every gin route-registering method; Handle and Match carry the path as the SECOND argument.
+var routeMethods = map[string]bool{"GET": true, "POST": true, "PUT": true, "DELETE": true, "PATCH": true, "HEAD": true, "OPTIONS": true, "Any": true, "Handle": true, "Match": true}
+
+func routePathIdx(name string) int {
+	if name == "Handle" || name == "Match" {
+		return 1
+	}
+	return 0
+}
 
 func exprStr(e ast.Expr) string {
 	var b bytes.Buffer
@@ -77,6 +90,16 @@ func isGateType(e ast.Expr) bool { return exprStr(e) == "gin.HandlerFunc" }
 type fnInfo struct {
 	decl *ast.FuncDecl
 	file string
+	id   string
+}
+
+func (f fnInfo) hasGroupParam() bool {
+	for _, fl := range f.decl.Type.Params.List {
+		if isGroupType(fl.Type) {
+			return true
+		}
+	}
+	return false
 }
 
 func discoverGoSources(root string) ([]string, error) {
@@ -101,89 +124,114 @@ func discoverGoSources(root string) ([]string, error) {
 	return out, err
 }
 
-func joinRoute(prefix, lit string) string {
-	return prefix + lit
+// joinRoute is gin's joinPaths(absolutePath, relativePath) (RouterGroup.calculateAbsolutePath); the root group's base is "/".
+func joinRoute(abs, rel string) string {
+	if rel == "" {
+		return abs
+	}
+	final := path.Join(abs, rel)
+	if rel[len(rel)-1] == '/' && final[len(final)-1] != '/' {
+		return final + "/"
+	}
+	return final
 }
 
-// scanRouteSources parses the given files and returns every route registration with its resolved full path and gate state.
+// scanRouteSources parses the given files and returns every route registration with its resolved full path and gate state. Anything
+// it cannot resolve (receiver, path, gate, redefined group name, group parameter no caller binds) is put in routeScan.unresolved.
 func scanRouteSources(t *testing.T, files []string) *routeScan {
 	t.Helper()
 	fset := token.NewFileSet()
-	funcs := map[string][]fnInfo{}
+	var all []fnInfo
+	byName := map[string][]fnInfo{}
+	imports := map[string]map[string]bool{} // file -> local package names: `zap.Any(...)` is a package function, never a gin route method
+	globals := map[string]string{}
+	badGlobal := map[string]bool{}
 	for _, f := range files {
 		af, err := parser.ParseFile(fset, f, nil, 0)
 		require.NoError(t, err, f)
+		imps := map[string]bool{}
+		for _, im := range af.Imports {
+			ip, _ := strconv.Unquote(im.Path.Value)
+			if im.Name != nil {
+				imps[im.Name.Name] = true
+			} else {
+				imps[path.Base(ip)] = true
+			}
+		}
+		imports[filepath.ToSlash(f)] = imps
 		for _, d := range af.Decls {
-			if fd, ok := d.(*ast.FuncDecl); ok && fd.Body != nil {
-				funcs[fd.Name.Name] = append(funcs[fd.Name.Name], fnInfo{fd, filepath.ToSlash(f)})
-			}
-		}
-	}
-	// gate wrappers: methods that return a handler chain built from a *Gate field (AliasHandler.syncHandlers)
-	wrappers := map[string]bool{}
-	for name, infos := range funcs {
-		for _, fi := range infos {
-			if fi.decl.Recv == nil || fi.decl.Type.Results == nil || !strings.Contains(exprStr(fi.decl.Type.Results.List[0].Type), "HandlerFunc") {
-				continue
-			}
-			ast.Inspect(fi.decl.Body, func(n ast.Node) bool {
-				if s, ok := n.(*ast.SelectorExpr); ok && strings.HasSuffix(s.Sel.Name, "Gate") {
-					wrappers[name] = true
+			switch dd := d.(type) {
+			case *ast.FuncDecl:
+				if dd.Body != nil {
+					fi := fnInfo{dd, filepath.ToSlash(f), filepath.ToSlash(f) + "#" + strconv.Itoa(int(dd.Pos()))}
+					all = append(all, fi)
+					byName[dd.Name.Name] = append(byName[dd.Name.Name], fi)
 				}
-				return true
-			})
-		}
-	}
-	// functions that build the root engine (their result is a root group with an empty prefix)
-	engineFuncs := map[string]bool{}
-	for name, infos := range funcs {
-		for _, fi := range infos {
-			if fi.decl.Type.Results != nil {
-				for _, r := range fi.decl.Type.Results.List {
-					if strings.HasSuffix(exprStr(r.Type), "gin.Engine") {
-						engineFuncs[name] = true
+			case *ast.GenDecl:
+				for _, sp := range dd.Specs {
+					if vs, ok := sp.(*ast.ValueSpec); ok && len(vs.Names) == len(vs.Values) {
+						for i, nm := range vs.Names {
+							if bl, ok := vs.Values[i].(*ast.BasicLit); ok && bl.Kind == token.STRING {
+								v, _ := strconv.Unquote(bl.Value)
+								if old, dup := globals[nm.Name]; dup && old != v {
+									badGlobal[nm.Name] = true
+								}
+								globals[nm.Name] = v
+							}
+						}
 					}
 				}
 			}
 		}
 	}
+	for n := range badGlobal {
+		delete(globals, n)
+	}
+	// gate wrappers: methods that return a handler chain built from a *Gate field (AliasHandler.syncHandlers)
+	wrappers := map[string]bool{}
+	engineFuncs := map[string]bool{}
+	for _, fi := range all {
+		if fi.decl.Type.Results == nil {
+			continue
+		}
+		for _, r := range fi.decl.Type.Results.List {
+			if strings.HasSuffix(exprStr(r.Type), "gin.Engine") {
+				engineFuncs[fi.decl.Name.Name] = true
+			}
+		}
+		if fi.decl.Recv != nil && strings.Contains(exprStr(fi.decl.Type.Results.List[0].Type), "HandlerFunc") {
+			ast.Inspect(fi.decl.Body, func(n ast.Node) bool {
+				if s, ok := n.(*ast.SelectorExpr); ok && strings.HasSuffix(s.Sel.Name, "Gate") {
+					wrappers[fi.decl.Name.Name] = true
+				}
+				return true
+			})
+		}
+	}
 	res := &routeScan{files: map[string]bool{}}
-	seeds := map[string]map[string]scanSeed{} // callee -> key -> seed
+	seeded := map[string]bool{} // fn id -> has at least one call-site seed
+	queued := map[string]bool{} // fn id + seed key
 	type job struct {
 		fi   fnInfo
 		seed *scanSeed
 	}
-	done := map[string]bool{}
 	var queue []job
-	// every function is walked unseeded first (functions without group params are the roots)
-	var names []string
-	for n := range funcs {
-		names = append(names, n)
-	}
-	sort.Strings(names)
-	for _, n := range names {
-		for _, fi := range funcs[n] {
+	for _, fi := range all {
+		if !fi.hasGroupParam() {
 			queue = append(queue, job{fi, nil})
 		}
 	}
+	report := func(file, fn, msg string) { res.unresolved = append(res.unresolved, file+": "+fn+": "+msg) }
 	walk := func(j job) {
 		fd := j.fi.decl
-		id := j.fi.file + ":" + fd.Name.Name + ":" + strconv.Itoa(int(fd.Pos()))
-		if j.seed != nil {
-			id += "#" + j.seed.key()
-		}
-		if done[id] {
-			return
-		}
-		done[id] = true
+		fname := fd.Name.Name
 		groups := map[string]scanEnv{}
 		gates := map[string]bool{}
-		hasGroupParam := false
+		strs := map[string]string{}
 		for _, fl := range fd.Type.Params.List {
 			for _, nm := range fl.Names {
 				switch {
 				case isGroupType(fl.Type):
-					hasGroupParam = true
 					if j.seed != nil {
 						if e, ok := j.seed.groups[nm.Name]; ok {
 							groups[nm.Name] = e
@@ -193,12 +241,14 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 					groups[nm.Name] = scanEnv{unknown: true}
 				case isGateType(fl.Type):
 					gates[nm.Name] = j.seed != nil && j.seed.gates[nm.Name]
+				case exprStr(fl.Type) == "string":
+					if j.seed != nil {
+						if v, ok := j.seed.strs[nm.Name]; ok {
+							strs[nm.Name] = v
+						}
+					}
 				}
 			}
-		}
-		if hasGroupParam && j.seed == nil {
-			// a function with group parameters is analysed only through its call-site seeds; the unseeded walk is still run so a
-			// registration that no caller binds is reported (fail closed) instead of silently skipped
 		}
 		wrapGated := j.seed != nil && j.seed.wrapGated
 		var isGate func(e ast.Expr) bool
@@ -210,15 +260,42 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 				return isGate(x.X)
 			case *ast.CallExpr:
 				if s, ok := x.Fun.(*ast.SelectorExpr); ok {
-					if s.Sel.Name == "RequireAdmin" {
+					if s.Sel.Name == "RequireAdmin" || (wrappers[s.Sel.Name] && wrapGated) {
 						return true
 					}
-					if wrappers[s.Sel.Name] && wrapGated {
+				}
+				for _, a := range x.Args { // a wrapper around an admin gate (metricsSkipIfScrape(RequireAdmin())) still carries it
+					if isGate(a) {
 						return true
 					}
 				}
 			}
 			return false
+		}
+		var evalStr func(e ast.Expr) (string, bool)
+		evalStr = func(e ast.Expr) (string, bool) {
+			switch x := e.(type) {
+			case *ast.BasicLit:
+				if x.Kind == token.STRING {
+					v, err := strconv.Unquote(x.Value)
+					return v, err == nil
+				}
+			case *ast.Ident:
+				if v, ok := strs[x.Name]; ok {
+					return v, true
+				}
+				v, ok := globals[x.Name]
+				return v, ok
+			case *ast.ParenExpr:
+				return evalStr(x.X)
+			case *ast.BinaryExpr:
+				if x.Op == token.ADD {
+					l, ok1 := evalStr(x.X)
+					r, ok2 := evalStr(x.Y)
+					return l + r, ok1 && ok2
+				}
+			}
+			return "", false
 		}
 		var recv func(e ast.Expr) (scanEnv, bool)
 		recv = func(e ast.Expr) (scanEnv, bool) {
@@ -226,24 +303,27 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 			case *ast.Ident:
 				v, ok := groups[x.Name]
 				return v, ok
+			case *ast.SelectorExpr:
+				v, ok := groups[exprStr(x)]
+				return v, ok
 			case *ast.ParenExpr:
 				return recv(x.X)
 			case *ast.CallExpr:
 				if id, isID := x.Fun.(*ast.Ident); isID && engineFuncs[id.Name] {
-					return scanEnv{}, true
+					return scanEnv{prefix: "/"}, true
 				}
 				s, ok := x.Fun.(*ast.SelectorExpr)
 				if !ok {
 					return scanEnv{}, false
 				}
-				if s.Sel.Name == "Group" && len(x.Args) >= 1 {
+				switch {
+				case s.Sel.Name == "Group" && len(x.Args) >= 1:
 					b, ok := recv(s.X)
 					if !ok {
 						return scanEnv{}, false
 					}
 					n := scanEnv{prefix: b.prefix, gated: b.gated, unknown: b.unknown}
-					if bl, ok := x.Args[0].(*ast.BasicLit); ok && bl.Kind == token.STRING {
-						lit, _ := strconv.Unquote(bl.Value)
+					if lit, ok := evalStr(x.Args[0]); ok {
 						n.prefix = joinRoute(b.prefix, lit)
 					} else {
 						n.unknown = true
@@ -254,77 +334,120 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 						}
 					}
 					return n, true
-				}
-				if s.Sel.Name == "Use" {
+				case s.Sel.Name == "Use":
 					return recv(s.X)
-				}
-				if engineFuncs[s.Sel.Name] {
-					return scanEnv{}, true
-				}
-				if (s.Sel.Name == "New" || s.Sel.Name == "Default") && exprStr(s.X) == "gin" {
-					return scanEnv{}, true
+				case (s.Sel.Name == "New" || s.Sel.Name == "Default") && exprStr(s.X) == "gin", engineFuncs[s.Sel.Name]:
+					return scanEnv{prefix: "/"}, true
 				}
 			}
 			return scanEnv{}, false
 		}
+		bind := func(lhs, rhs ast.Expr) {
+			switch lhs.(type) {
+			case *ast.Ident, *ast.SelectorExpr:
+			default:
+				return
+			}
+			k := exprStr(lhs)
+			if k == "_" {
+				return
+			}
+			if e, ok := recv(rhs); ok {
+				if old, has := groups[k]; has && old != e {
+					report(j.fi.file, fname, "group name "+k+" is redefined with a different value (block scoping is not modelled)")
+				}
+				groups[k] = e
+			} else if isGate(rhs) {
+				gates[k] = true
+			} else if v, ok := evalStr(rhs); ok {
+				strs[k] = v
+			}
+		}
 		ast.Inspect(fd.Body, func(n ast.Node) bool {
 			switch x := n.(type) {
-			case *ast.AssignStmt:
-				if len(x.Rhs) == 1 && len(x.Lhs) > 1 {
-					if id, ok := x.Lhs[0].(*ast.Ident); ok {
-						if e, ok := recv(x.Rhs[0]); ok {
-							groups[id.Name] = e
+			case *ast.FuncLit:
+				for _, fl := range x.Type.Params.List {
+					for _, nm := range fl.Names {
+						if isGroupType(fl.Type) {
+							groups[nm.Name] = scanEnv{unknown: true}
 						}
 					}
 				}
+			case *ast.AssignStmt:
 				if len(x.Lhs) == len(x.Rhs) {
 					for i := range x.Lhs {
-						id, ok := x.Lhs[i].(*ast.Ident)
-						if !ok {
-							continue
-						}
-						if e, ok := recv(x.Rhs[i]); ok {
-							groups[id.Name] = e
-						} else if isGate(x.Rhs[i]) {
-							gates[id.Name] = true
-						}
+						bind(x.Lhs[i], x.Rhs[i])
+					}
+				} else if len(x.Rhs) == 1 && len(x.Lhs) > 1 {
+					bind(x.Lhs[0], x.Rhs[0])
+				}
+			case *ast.ValueSpec:
+				if len(x.Names) == len(x.Values) {
+					for i := range x.Names {
+						bind(x.Names[i], x.Values[i])
 					}
 				}
 			case *ast.CallExpr:
-				s, ok := x.Fun.(*ast.SelectorExpr)
-				if ok && s.Sel.Name == "Use" {
-					if id, isID := s.X.(*ast.Ident); isID {
-						if e, has := groups[id.Name]; has {
-							for _, a := range x.Args {
-								if isGate(a) {
-									e.gated = true
+				s, isSel := x.Fun.(*ast.SelectorExpr)
+				if isSel && s.Sel.Name == "Use" {
+					if e, has := recv(s.X); has {
+						for _, a := range x.Args {
+							if isGate(a) {
+								e.gated = true
+							}
+						}
+						k := exprStr(s.X)
+						if _, direct := groups[k]; direct {
+							groups[k] = e
+						}
+					}
+				}
+				if id, isID := x.Fun.(*ast.SelectorExpr); isID && imports[j.fi.file][exprStr(id.X)] {
+					isSel = false // package-qualified function (zap.Any), not a method on a router value
+				}
+				if isSel && routeMethods[s.Sel.Name] {
+					pi := routePathIdx(s.Sel.Name)
+					if len(x.Args) >= pi+2 { // path plus at least one handler: a gin registration, not a lookalike
+						call := exprStr(s.X) + "." + s.Sel.Name + "(" + exprStr(x.Args[pi]) + ")"
+						base, has := recv(s.X)
+						switch {
+						case !has:
+							report(j.fi.file, fname, call+" receiver does not resolve to a known group")
+						case base.unknown:
+							report(j.fi.file, fname, call+" full path is unresolved (group prefix unknown)")
+						default:
+							res.files[j.fi.file] = true
+							lit, okp := evalStr(x.Args[pi])
+							method := strings.ToUpper(s.Sel.Name)
+							switch s.Sel.Name {
+							case "Any":
+								method = "ANY"
+							case "Match":
+								method = "MATCH"
+							case "Handle":
+								if m, ok := evalStr(x.Args[0]); ok {
+									method = strings.ToUpper(m)
+								} else {
+									report(j.fi.file, fname, call+" HTTP method is not a constant")
 								}
 							}
-							groups[id.Name] = e
+							gated := base.gated
+							for i, a := range x.Args[pi+1:] {
+								if isGate(a) {
+									gated = true
+								} else if _, isLit := a.(*ast.FuncLit); !isLit && i < len(x.Args[pi+1:])-1 && strings.Contains(strings.ToLower(exprStr(a)), "admin") && !strings.Contains(exprStr(a), "RequireSelfOrAdmin") {
+									report(j.fi.file, fname, call+" has an admin-looking middleware the scanner cannot model: "+exprStr(a))
+								}
+							}
+							if !okp {
+								report(j.fi.file, fname, call+" path is not a constant after call-site binding")
+							} else {
+								res.routes = append(res.routes, scanRoute{method, joinRoute(base.prefix, lit), j.fi.file, gated})
+							}
 						}
 					}
 				}
-				if ok && routeMethods[s.Sel.Name] && len(x.Args) >= 1 {
-					if base, has := recv(s.X); has {
-						gated := base.gated
-						for _, a := range x.Args[1:] {
-							if isGate(a) {
-								gated = true
-							}
-						}
-						res.files[j.fi.file] = true
-						if bl, isLit := x.Args[0].(*ast.BasicLit); isLit && bl.Kind == token.STRING && !base.unknown {
-							lit, _ := strconv.Unquote(bl.Value)
-							res.routes = append(res.routes, scanRoute{s.Sel.Name, joinRoute(base.prefix, lit), j.fi.file, gated})
-						} else if j.seed == nil || !hasGroupParam || base.unknown {
-							if base.unknown && hasGroupParam && j.seed != nil {
-								// seeded walk but this receiver is still unbound
-							}
-							res.unresolved = append(res.unresolved, j.fi.file+": "+fd.Name.Name+": "+exprStr(x.Fun)+"("+exprStr(x.Args[0])+") full path unresolved")
-						}
-					}
-				}
-				// call-site binding of group / gate arguments to the callee's parameters
+				// call-site binding of group / gate / string arguments to every same-name, same-arity callee with group parameters
 				var cname string
 				switch f := x.Fun.(type) {
 				case *ast.Ident:
@@ -332,7 +455,10 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 				case *ast.SelectorExpr:
 					cname = f.Sel.Name
 				}
-				for _, ci := range funcs[cname] {
+				for _, ci := range byName[cname] {
+					if !ci.hasGroupParam() {
+						continue
+					}
 					var pnames []string
 					var ptypes []ast.Expr
 					for _, fl := range ci.decl.Type.Params.List {
@@ -344,18 +470,20 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 					if len(pnames) != len(x.Args) {
 						continue
 					}
-					sd := scanSeed{groups: map[string]scanEnv{}, gates: map[string]bool{}}
-					bound := false
+					sd := scanSeed{groups: map[string]scanEnv{}, gates: map[string]bool{}, strs: map[string]string{}}
 					for i, a := range x.Args {
 						switch {
 						case isGroupType(ptypes[i]):
 							if e, ok := recv(a); ok {
 								sd.groups[pnames[i]] = e
-								bound = true
 							}
 						case isGateType(ptypes[i]):
 							if isGate(a) {
 								sd.gates[pnames[i]] = true
+							}
+						case exprStr(ptypes[i]) == "string":
+							if v, ok := evalStr(a); ok {
+								sd.strs[pnames[i]] = v
 							}
 						}
 					}
@@ -378,15 +506,12 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 						}
 						r = ce.Fun
 					}
-					if bound {
-						if seeds[cname] == nil {
-							seeds[cname] = map[string]scanSeed{}
-						}
-						if _, dup := seeds[cname][sd.key()]; !dup {
-							seeds[cname][sd.key()] = sd
-							cp := sd
-							queue = append(queue, job{ci, &cp})
-						}
+					seeded[ci.id] = true
+					qk := ci.id + "#" + sd.key()
+					if !queued[qk] {
+						queued[qk] = true
+						cp := sd
+						queue = append(queue, job{ci, &cp})
 					}
 				}
 			}
@@ -394,42 +519,21 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 		})
 	}
 	for i := 0; i < len(queue); i++ {
-		j := queue[i]
-		if j.seed == nil {
-			// functions with group params are walked only when seeded (unseeded ones are checked below)
-			hasGP := false
-			for _, fl := range j.fi.decl.Type.Params.List {
-				if isGroupType(fl.Type) {
-					hasGP = true
-				}
-			}
-			if hasGP {
-				continue
-			}
-		}
-		walk(j)
+		walk(queue[i])
 	}
-	// group-param functions that register routes but were never seeded: fail closed
-	for _, n := range names {
-		for _, fi := range funcs[n] {
-			hasGP := false
-			for _, fl := range fi.decl.Type.Params.List {
-				if isGroupType(fl.Type) {
-					hasGP = true
-				}
-			}
-			if !hasGP || len(seeds[n]) > 0 {
-				continue
-			}
-			ast.Inspect(fi.decl.Body, func(nd ast.Node) bool {
-				if c, ok := nd.(*ast.CallExpr); ok {
-					if s, ok := c.Fun.(*ast.SelectorExpr); ok && routeMethods[s.Sel.Name] && len(c.Args) >= 1 {
-						res.unresolved = append(res.unresolved, fi.file+": "+n+": registers routes but no call site binds its group parameter")
-					}
-				}
-				return true
-			})
+	// group-parameter functions that register routes but no call site binds: fail closed
+	for _, fi := range all {
+		if !fi.hasGroupParam() || seeded[fi.id] {
+			continue
 		}
+		ast.Inspect(fi.decl.Body, func(nd ast.Node) bool {
+			if c, ok := nd.(*ast.CallExpr); ok {
+				if s, ok := c.Fun.(*ast.SelectorExpr); ok && routeMethods[s.Sel.Name] && len(c.Args) >= routePathIdx(s.Sel.Name)+2 {
+					report(fi.file, fi.decl.Name.Name, "registers routes but no call site binds its group parameter")
+				}
+			}
+			return true
+		})
 	}
 	sort.Strings(res.unresolved)
 	var uniq []string
@@ -460,8 +564,7 @@ func codeAdminRoutes(s *routeScan) [][2]string {
 }
 
 func normFull(method, path string) string {
-	k := normRoute(method, path)
-	return strings.TrimRight(k, "/")
+	return normRoute(method, path)
 }
 
 // tableMissingFromCode: table RequireAdmin rows that no admin-gated code registration explains (the converse direction, so that a
@@ -473,7 +576,7 @@ func tableMissingFromCode(code [][2]string, rows []tableRow) []string {
 	}
 	var out []string
 	for k := range tableAdminRoutes(rows) {
-		if !have[strings.TrimRight(k, "/")] {
+		if !have[k] {
 			out = append(out, "table RequireAdmin row with no admin-gated code registration: "+k)
 		}
 	}
