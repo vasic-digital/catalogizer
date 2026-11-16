@@ -20,8 +20,11 @@ after the disk-headroom gate. The tag is `localhost/catalogizer-infra-nfs:<first
 scripts/test-infra/nfs_build.sh [--need <bytes>]      # prints image=, image_id=, digest=, image_ref=localhost/catalogizer-infra-nfs@sha256:...
 ```
 
-`image_ref` is what `up.sh --services nfs` stores as `TI_NFS_IMAGE` for `docker-compose.test-infra.nfs.yml`. Owed: a lock entry `IMG-INFRA-NFS` (class service) and the `test_containerfiles.sh` image map
-entry, by a reviewed change of the WP-11 files (this task did not edit them).
+`image_ref` is what `up.sh --services nfs` stores as `TI_NFS_IMAGE` for `docker-compose.test-infra.nfs.yml`. Lock entry `IMG-INFRA-NFS` (class service) is in `build/containers/images.lock.yaml` for `localhost/catalogizer-infra-nfs:57392374e84d8212`
+(digest = platform_digest `sha256:64c75fe9d3af407547037324a8d8f1af9a6fee43eb3f70a814793eec128c4e61`, written by `scripts/containers/resolve_pin.sh`, PROVISIONAL), and the
+`test_containerfiles.sh` checker map has the entry `infra-nfs` -> `IMG-INFRA-NFS` (NFSE2 follow-up). The Containerfile lives in `scripts/test-infra/nfs/`, not under
+`build/containers/`, so the checker's directory rules (C1-C5) do not run for it; only the lock entry and the map are added. The lock digest is the local build's digest; the
+tag is content-derived, so a rebuild with changed inputs yields a new tag and needs a new lock entry.
 
 ## WF17 fix round 5 (revision 2)
 
