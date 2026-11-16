@@ -3069,3 +3069,9 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 - ADMD1RR-mc: "Unlocking ... still work" claim in the same paragraph needs a "read from code" marker.
 - ADMD1RR-md: same class remains: handlers/user_handler.go:395 and :411 match only SQLite "UNIQUE constraint failed" for the update "Username or email already exists" 409 (500 on PostgreSQL, UNCONFIRMED live). Reuse a dialect-neutral classifier (cf. service_handlers.go:418, external_metadata_repository.go:151) + PG leg.
 - ADMD1RR-n1: malformed DSN can echo fragments of the connection string in test failure output. n2: lib/pq in stdlib import group; test imports lib/pq twice (staticcheck ST1019). n3: "duplicate key value" and "violates unique constraint" checks redundant.
+
+## ADMD1RRR review follow-ups (Opus GO-with-follow-ups on 7f2a7a9eb; PROVISIONAL)
+- ADMD1RRR-I1 (important, pre-existing, same class, NOT in the landed diff): `PUT /api/v1/admin/users/:id` with an existing email returns 500 "Failed to update user" on SQLite and PostgreSQL (fresh-email control 200), reproduced live by the reviewer. handlers/admin_handler.go ~387-401: both UpdateGuarded and plain Update branches map every non-ErrLastAdmin error to 500. Fix: use isUniqueViolation in both branches + live PG test. Dispatched as its own item.
+- ADMD1RRR-m1: mutant "create site back to SQLite-only text" survives: add a duplicate user create step on PostgreSQL to dupUserUpdateChecks.
+- ADMD1RRR-m2: mutant "plain Update branch maps any error to 409" survives: send the NUL first_name negative through the plain router too.
+- ADMD1RRR-n1: test header comment says FK violation, code uses NUL byte. n2: untidy import block. n3: isRoleNameConflict is a one-line alias with a stale doc comment.
