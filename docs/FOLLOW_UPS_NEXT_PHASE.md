@@ -3139,3 +3139,6 @@ Evidence: RED 3 of 48 on parent source with the new tests, GREEN 48/48; full :ap
 - ADMD1RRRRRRRRR-m2 (minor, process-doc): owner-branch wording omits "and lacks the view-shares permission" (PermissionViewShares, sync_service.go:116-120); the 403 does not quote its two body strings.
 - ADMD1RRRRRRRRR-n1 (nit, test-instrumentation): guard still silently passes array-valued `type` (3.1 style), non-map property schemas and `format`.
 - ADMD1RRRRRRRRR-n2 (nit, test-instrumentation): nothing guards content/schema of the merged 403 (reviewer mutant M4 survived).
+
+## NFS3RDFUFUFU (review of NFS3RDFUFU-fu, Opus GO-with-follow-ups, PROVISIONAL)
+- NFS3RDFUFUFU-n1 (nit, process-doc): comment "pages <= limit+3 < maxPages" in pkg/nfs3/client.go is false when MaxEntries >= math.MaxInt-8 (maxPages saturates); unreachable in practice. Qualify the comment ("except at MaxInt saturation").
