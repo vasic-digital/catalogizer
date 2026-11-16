@@ -3357,3 +3357,9 @@ HAUTHZ-F2 fixed: PUT /media/:id/favorite and GET /media/:id use the new `user_fa
 - ECOPY-3 (nit): openapi lacks 400/401 on the copy routes.
 - ECOPY-4 (nit, test): no combined admin-gate + copy test for the 403 collision.
 - ECOPY-5 (nit, docs): HAUTHZ-O1-FU1 heading says CLOSED while body says PROVISIONAL; reword so CLOSED is not read as VERIFIED.
+
+### f3tests review follow-ups (Opus GO-with-follow-ups; PROVISIONAL, 2026-11-17)
+- F3T-1 (minor, test): ErrorReporting handler test does not pin the 404 body (mutant C3 survives); assert body == http.StatusText(code)+"\n" for every case.
+- F3T-2 (minor, test): service log assertion captures only std `log`, has no positive control, and never asserts report id absent (mutants B4/B5 survive); add needle + report-id assertion or narrow the comment.
+- F3T-3 (nit): exp boundary `!Before` vs `After` unpinned (equivalent at ns resolution).
+- F3T-4 (nit, flake risk): SEC-WS token test has only 150 ms margin before expiry; use ~1 s lifetime and sleep past it.
