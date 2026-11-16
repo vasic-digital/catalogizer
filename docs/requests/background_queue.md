@@ -109,3 +109,4 @@ Answered 2026-11-15 22:15 CET: F2 web admin-only; F3 conversion.view; allow-list
 
 ### BG-OPQ-2026-11-16 - operator decision sweep 6 (received 2026-11-16 14:02 CET, status: QUEUED until answered)
 Operator order: gather every operator-blocked item, decision point, blocker and show-stopper and present them as interactive questions with options. Blocker: awaiting operator answers (asked in-session via AskUserQuestion).
+Answered 2026-11-16 (interactive): NFS READDIR fallback in pkg/nfs3 then wire nfs3 into factory.go; use constitution multi-forge release tool (CON-412) for v2.5.0 pages (dry-run first, tokens by NAME); m3w mirror: keep, diagnose access read-only, no removal; verification wave then v2.5.0-rc.1 first (quiesce, load <15). Status: DONE for asked items.
