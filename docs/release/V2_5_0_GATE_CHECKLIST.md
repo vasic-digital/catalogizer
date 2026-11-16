@@ -4,7 +4,7 @@
 |---|---|
 | Revision | 3 |
 | Created | 2026-11-14 |
-| Based on | `main` `ae1d2ae45` (2026-11-16; scratch clone, read-mostly). Rev 2 was based on `25cb9e40c`, which is the commit the `v2.4.3` tag points to (`git rev-parse v2.4.3^{commit}`). The only commands executed for this revision: git queries, `sha256sum -c` over four evidence directories, `scripts/release/check_release_consistency.sh` twice (G6/G11), and `git ls-remote` on the 15 remotes of the main checkout (G10). `docs/CONTINUATION.md` is still Rev 21 (last modified 2026-11-14), so it does not describe anything landed after `25cb9e40c` |
+| Based on | `main` `ae1d2ae45` (2026-11-16; scratch clone, read-mostly). Rev 2 was based on `25cb9e40c`, which is the commit the `v2.4.3` tag points to (`git rev-parse v2.4.3^{commit}`). The only commands executed for this revision: git queries, `sha256sum -c` over the two new evidence directories that have a `SHA256SUMS`, `scripts/release/check_release_consistency.sh` twice (G6/G11), and `git ls-remote` on the 15 remotes of the main checkout (G10). `docs/CONTINUATION.md` is still Rev 21 (last modified 2026-11-14), so it does not describe anything landed after `25cb9e40c` |
 | Status | DRAFT. Rev 2 was independently reviewed 2026-11-14 (NO-GO round 1, revised); Rev 3 is NOT yet reviewed. Every state below is "as of the repo text now" unless a command is named |
 | Sources | `docs/CONTINUATION.md` (Rev 21; its section 7a is not re-checked here), `docs/FOLLOW_UPS_NEXT_PHASE.md`, `docs/WORKABLE_ITEMS_REGISTER.md`, `docs/CHANGELOG.md`, `docs/requests/background_queue.md` (BG-OPQ-2026-11-13b), `scripts/release/*`, `docs/qa/*` |
 
