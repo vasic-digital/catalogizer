@@ -37,19 +37,21 @@ Abbreviation ids that do not contain the vendor name (`CAT-SYN-LIVE-1`, `synlive
 
 ## Exact substitution used for the raw logcat
 
-File `docs/reports/qa-sessions/2026-04-22-T16-28/logcat.txt` (NetBIOS names in tool output). The label rule, applied with perl, in the order of the general rule set:
+File `docs/reports/qa-sessions/2026-04-22-T16-28/logcat.txt` (NetBIOS names in tool output). The logcat is an EXCEPTION to the general label scheme: it was relabelled with an older, cruder ordered rule set, and it is committed as-is (it was not altered afterwards; it is raw evidence, relabelled, and the rules below reproduce the committed bytes exactly). Let V stand for the former vendor name (written here as `V` so this note does not contain it). The ordered rules, applied with perl, each over the whole file, were:
 
-```
-s/SYNO(?:)LOGY([2-7])\b/LIVEHOST$1/g
-```
+1. `V NAS` becomes `NAS` (this collapsed recorded `storage_root_name` values, for example `V NAS Data1` became `NAS Data1`);
+2. `V` followed by a digit becomes `LiveHost` followed by that digit (hosts 2 to 7 are `LiveHost2` to `LiveHost7`);
+3. remaining upper-case `V` becomes `LIVEHOST`;
+4. remaining `V` (mixed case) becomes `NAS`;
+5. lower-case `v` becomes `nas`.
 
-(the empty group `(?:)` only splits the upper-case former vendor name so this note does not contain it; the replacement has the same length, so column padding is unchanged). The general rule set also contained the lower- and mixed-case equivalents of the table above, applied in this order: environment names, id, `<Vendor><n>` aliases, path and file names, third-party reference names, then the generic prose fallbacks.
+Consequence: in this one logcat host 1 appears as `NAS` (device `NAS`, serviceName `NAS`, `NAS.local`), NOT as `LiveHost1`, and some recorded storage root names lost their vendor word entirely. Everywhere else in the rewrite host 1 is `LiveHost1`. The general rule set (environment names, id, `<Vendor><n>` aliases, path and file names, third-party reference names, generic prose fallbacks) applied to all other files; the scanner copies under `.../scanner/fix-r2-reviewer-probes-verbatim/*_test.go` were relabelled by it as well.
 
 ## Evidence directories and files touched
 
 `docs/qa/`: `anton-smb-n3-20261112`, `baseline-v2.4.2-20261114`, `d4-doc-search-fix-20261105`, `findings_20260626`, `live-map-20261103/80_session_scratchpad_evidence`, `protocol-live-20261115` (and `nas-clients`, `smb-readonly`), `retest-20261112`, `smb-subdir-20261110/live-run-anton-20261111T190325Z`, `stack3-rebuild-live-20261105`, `storage-clients-fix-20261104`, and two index files in `docs/qa/`; `docs/reports/qa-sessions/2026-04-21-T/challenges`, `docs/reports/qa-sessions/2026-04-22-T16-28`; `docs/research` and `docs/research/nasemu`; `docs/design/identity_share_discovery`; `specs/001-full-project-audit-remediation` (progress, decisions, `evidence/reconcile`, `evidence/wp10/protocol-host-survey`, `evidence/wp11`, `evidence/wp12` with `fabric`, `ftp`, `nas-clients`, `nas-protocols`, `nas-survey`, `nfs3`, `protocol-analysis`, `scanner`, `sftp`, `wf17/green`, `evidence/wp24`).
 
-Manifests regenerated for changed files: those in the directories above that carry a `SHA256SUMS` or `MANIFEST.sha256`. Pre-existing mismatches that were not caused by this change (for example `evidence/wp11/SHA256SUMS` entries `README.md` and `t124-race-red.txt.done`, and `docs/qa/stack3-rebuild-live-20261105/MANIFEST.sha256` entry `live_storage_done.txt`) were left as they were.
+Manifests regenerated for changed files: those in the directories above that carry a `SHA256SUMS` or `MANIFEST.sha256`. Pre-existing mismatches that were not caused by this change (for example `evidence/wp11/SHA256SUMS` entries `README.md` and `t124-race-red.txt.done`, `evidence/wp12/SHA256SUMS` entry `README.md` (it FAILED on main before this change and now verifies OK only because the README was rewritten), and `docs/qa/stack3-rebuild-live-20261105/MANIFEST.sha256` entry `live_storage_done.txt`) were left as they were.
 
 ## gate_api.rec
 
