@@ -3049,3 +3049,8 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 ## WBF1R3 review follow-ups (Opus round 3, GO; PROVISIONAL)
 - WBF1R3-n1: `npx tsc -p catalog-web/tsconfig.node.json` fails on TypeScript 4.9.5 (TS6046 `moduleResolution: "bundler"`); pre-existing, same on main. Upgrade TS or change the setting.
 - WBF1R3-n2: MediaPlayer.test.tsx overrides `video.setAttribute` in the WBF1-m3 test and never restores it (harmless, element is test-local).
+
+## SSEFURR review follow-ups (Opus GO-with-follow-ups; PROVISIONAL)
+- SSEFURRR-m1: `Error.error` description says "absent only on bodyless errors"; ~287 `http.Error(...)` calls in wrapped net/http handlers (user, role, configuration, log_management, error_reporting, auth, client_errors) send text/plain bodies with no `error` field. Reword to include text/plain errors.
+- SSEFURRR-m2: 27 gated operations still lack the precise 503 string or have no 503 (subtitles search/download/translate, storage approved-class, challenges/*, analytics media/reports, sync GETs/sessions, /admin/* and /sync/* alias ops keep generic "fail closed" wording).
+- SSEFURRR-m3: POST /scans and POST /subtitles/translate 503 text covers only handler meaning, not the gate's 503.
