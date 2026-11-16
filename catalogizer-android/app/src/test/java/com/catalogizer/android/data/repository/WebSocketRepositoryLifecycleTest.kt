@@ -237,4 +237,75 @@ class WebSocketRepositoryLifecycleTest {
         assertEquals(0, RecSocket.made[0].closes)
         r.disconnect()
     }
+
+    @Test fun `WSF2B2RR-m1 disconnect then a mint IOException publishes no Error and mints and builds nothing more`() = runTest {
+        lateinit var r: WebSocketRepository
+        val m = object : WsTicketMinter {
+            var calls = 0
+            override suspend fun mint(token: String): String {
+                calls++
+                r.disconnect(); throw java.io.IOException("raced disconnect")
+            }
+        }
+        r = repo(this, m)
+        r.connect(); runCurrent()
+        assertEquals("disconnect() race: event must stay Disconnected", WebSocketEvent.Disconnected, r.events.value)
+        advanceTimeBy(60_000); runCurrent()
+        assertEquals("no reconnect mint after disconnect", 1, m.calls)
+        assertEquals("no socket after disconnect", 0, RecSocket.made.size)
+        assertEquals(WebSocketEvent.Disconnected, r.events.value)
+    }
+
+    @Test fun `WSF2B2RR-m2 a 401 raised by a cancelled attempt publishes no Error`() = runTest {
+        lateinit var r: WebSocketRepository
+        val m = object : WsTicketMinter {
+            var calls = 0
+            override suspend fun mint(token: String): String {
+                calls++
+                if (calls == 1) { r.connect(); throw WsTicketUnauthorizedException() }
+                return "t$calls"
+            }
+        }
+        r = repo(this, m)
+        r.connect(); runCurrent()
+        advanceTimeBy(60_000); runCurrent()
+        assertEquals("stale 401 from a superseded attempt must not publish Error", WebSocketEvent.Disconnected, r.events.value)
+        assertEquals("the newer live attempt still connects", 1, RecSocket.connects)
+        r.disconnect()
+    }
+
+    @Test fun `WSF2B2RR-m2 a 401 after disconnect publishes no Error`() = runTest {
+        lateinit var r: WebSocketRepository
+        val m = object : WsTicketMinter {
+            override suspend fun mint(token: String): String { r.disconnect(); throw WsTicketUnauthorizedException() }
+        }
+        r = repo(this, m)
+        r.connect(); runCurrent()
+        advanceTimeBy(60_000); runCurrent()
+        assertEquals(WebSocketEvent.Disconnected, r.events.value)
+    }
+
+    @Test fun `WSF2B2RR-m2 a clientFactory failure in a cancelled attempt publishes no Error`() = runTest {
+        val m = GateMinter(); val r = repo(this, m)
+        var first = true
+        val base = r.clientFactory
+        r.clientFactory = { u, l ->
+            if (first) { first = false; r.connect(); throw IllegalStateException("factory raced the cancel") }
+            base(u, l)
+        }
+        r.connect(); runCurrent()
+        advanceTimeBy(60_000); runCurrent()
+        assertEquals("stale factory failure must not publish Error", WebSocketEvent.Disconnected, r.events.value)
+        assertEquals("only the live attempt built a socket", 1, RecSocket.made.size)
+        assertEquals(1, RecSocket.connects)
+        r.disconnect()
+    }
+
+    @Test fun `WSF2B2RR-m2 a clientFactory failure in a live attempt still publishes Error`() = runTest {
+        val m = GateMinter(); val r = repo(this, m)
+        r.clientFactory = { _, _ -> throw IllegalStateException("boom") }
+        r.connect(); runCurrent()
+        assertEquals(WebSocketEvent.Error("boom"), r.events.value)
+        r.disconnect()
+    }
 }
