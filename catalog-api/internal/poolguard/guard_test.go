@@ -298,7 +298,7 @@ func TestPoolClassGuard_ImportsCUnquoting(t *testing.T) {
 	require.True(t, importsCOf(t, `"C"`))
 	require.True(t, importsCOf(t, "`C`"))
 	require.True(t, importsCOf(t, `"\x43"`), "escaped interpreted literal")
-	require.True(t, importsCOf(t, `"C"`), "unicode-escaped literal")
+	require.True(t, importsCOf(t, `"\u0043"`), "unicode-escaped literal")
 	require.False(t, importsCOf(t, `"D"`))
 	require.False(t, importsCOf(t, `"\x44"`))
 	require.False(t, importsCOf(t, `"database/sql"`))

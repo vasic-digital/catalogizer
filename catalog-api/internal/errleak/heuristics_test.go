@@ -18,6 +18,7 @@ func TestNameHeuristicsStayTight(t *testing.T) {
 		"stdoutWriter_name_not_stream":      {"\tfmt.Fprintln(stdoutWriter, err)\n", 1},
 		"Err_prefix_lowercase_not_sentinel": {"\tc.JSON(500, gin.H{\"e\": res.ErrorBody.Error()})\n", 1},
 		"Errored_not_sentinel":              {"\tc.JSON(500, gin.H{\"e\": res.Errored.Error()})\n", 1},
+		"bare_Err_field_is_error_value":     {"\tc.JSON(500, gin.H{\"e\": e.Err.Error()})\n", 1},
 		// golden-good: must stay clean
 		"os_Stderr":     {"\tfmt.Fprintf(os.Stderr, \"%v\", err)\n", 0},
 		"os_Stdout":     {"\tfmt.Fprintln(os.Stdout, err)\n", 0},
