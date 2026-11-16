@@ -3118,3 +3118,9 @@ Evidence: RED 3 of 48 on parent source with the new tests, GREEN 48/48; full :ap
 - ADMD1RRRRRR-m2 (minor, test-instrumentation): failed-winner-lookup branch (existing_id omitted) is never exercised through the handler (mutant sets existing_id even on lookup failure survives); add a handler test, e.g. hook deletes the row after causing the conflict, or inject a DB error.
 - ADMD1RRRRRR-n1 (nit): StorageRootConflict schema marks nothing required though code always sends name and hint; consider oneOf.
 - ADMD1RRRRRR-n2 (nit, pre-existing): PUT /admin/users 409 text says "demoted or deactivated"; admin_handler.go:415 also says "or suspended".
+- NFS3RDFUFU-m1 (minor): no test lists a directory near the cap with many honestly vanished entries (mutant "vanished LOOKUP counted twice" survives); add cap 250 on /many with 3 NOENTs expecting 247 entries.
+- NFS3RDFUFU-m2 (minor): negative FallbackMaxEntries test uses only -1 (mutant "== -1 only" survives); add -2 / math.MinInt.
+- NFS3RDFUFU-m3 (minor): after the attempted-entry cap the page cap (maxPages / ErrNotProgressing "needed more than N pages") is unreachable; its test was re-pointed (mutant disabling it survives). Document as belt-and-braces or remove with git-history proof (§11.4.124).
+- NFS3RDFUFU-n1 (nit): comment on ...AllNoentCannotBypassMaxEntries says READDIRPLUS-without-attributes path but it sets PlusStatus=NotSupp (fallback path).
+- NFS3RDFUFU-n2 (nit): cap error "has more than %d entries" can fire for offered-but-vanished entries; reword "offered more than".
+- NFS3RDFUFU-n3 (nit, existing): cap error quotes path with %q but no test pins it (mutant %s survives); add control-character path test.
