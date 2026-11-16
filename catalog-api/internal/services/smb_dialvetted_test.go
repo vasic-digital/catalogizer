@@ -237,3 +237,23 @@ func TestProductionSMBDialer_HonoursContextCancel(t *testing.T) {
 	require.Error(t, err)
 	require.Less(t, time.Since(start), 2*time.Second)
 }
+
+// CPN1R-m3: the exported vetted-IP probe does not trust its caller: every address is re-checked, nothing is dialled for a blocked one.
+func TestProbeVettedIPsWithIdentities_RefusesBlockedIPsWithoutDialling(t *testing.T) {
+	dialled := 0
+	s := NewSMBDiscoveryService(zap.NewNop()).WithProbeSeam(func(context.Context, string, []net.IP, SMBIdentity) ([]SMBShareInfo, error) {
+		dialled++
+		return nil, nil
+	})
+	for _, bad := range []string{"127.0.0.1", "169.254.169.254", "0.0.0.0", "::1", "::ffff:127.0.0.1"} {
+		res, err := s.ProbeVettedIPsWithIdentities(context.Background(), "x.test", []net.IP{net.ParseIP("8.8.8.8"), net.ParseIP(bad)}, nil)
+		require.ErrorIs(t, err, ErrInvalidSMBInput, bad)
+		require.False(t, res.Authenticated, bad)
+	}
+	require.Zero(t, dialled)
+	// control: a private LAN address and a public one are still accepted.
+	res, err := s.ProbeVettedIPsWithIdentities(context.Background(), "x.test", []net.IP{net.ParseIP("192.168.1.5"), net.ParseIP("8.8.8.8")}, nil)
+	require.NoError(t, err)
+	require.True(t, res.Authenticated)
+	require.Equal(t, 1, dialled)
+}
