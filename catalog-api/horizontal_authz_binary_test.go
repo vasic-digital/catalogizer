@@ -243,7 +243,7 @@ func TestHorizontalAuthz_RealBinary(t *testing.T) {
 			assert.Contains(t, []int{403, 404}, code, "A has no favorite for this entity: %s", raw)
 		})
 		e.ok("favorite B still has it", "GET", fmt.Sprintf("/api/v1/favorites/check/%s/%d", e.mtype, m0), e.b, nil, `"is_favorite":true`)
-		// PUT /media/:id/favorite writes the GLOBAL media_items.is_favorite: open finding HAUTHZ-F2, see TestHorizontalAuthz_OpenFinding_MediaFavoriteFlag.
+		// PUT /media/:id/favorite writes the GLOBAL media_items.is_favorite: finding HAUTHZ-F2 fixed (CAT-HAUTHZ-F2), see TestHorizontalAuthz_MediaFavoriteFlag.
 	})
 
 	// ---- entity user-metadata: write path only ---------------------------------------------------------------------------------
@@ -496,27 +496,30 @@ func TestHorizontalAuthz_RealBinary(t *testing.T) {
 	})
 }
 
-// TestHorizontalAuthz_OpenFinding_MediaFavoriteFlag reproduces finding HAUTHZ-F2 (CAT-HAUTHZ-1): PUT /api/v1/media/:id/favorite
-// updates media_items.is_favorite, ONE row per item shared by every user, and GET /api/v1/media/:id returns it to everybody.
-// A user's favorite flag is therefore visible to, and overwritable by, every other user. Fixing it needs a per-user store (the
-// favorites table plus a caller-aware GetMediaByID), so it is reported, not patched. The test is gated so the suite stays
-// green while the finding is open; run it with HAUTHZ_OPEN_FINDINGS=1 to see it RED.
-func TestHorizontalAuthz_OpenFinding_MediaFavoriteFlag(t *testing.T) {
+// TestHorizontalAuthz_MediaFavoriteFlag covers finding HAUTHZ-F2 (CAT-HAUTHZ-1), FIXED by CAT-HAUTHZ-F2: PUT /api/v1/media/:id/favorite
+// used to update media_items.is_favorite, ONE row per item shared by every user, and GET /api/v1/media/:id returned it to everybody.
+// The flag is now the caller's own user_favorites row. B's favorite is invisible to A, A's toggle cannot change B's, B keeps its own.
+func TestHorizontalAuthz_MediaFavoriteFlag(t *testing.T) {
 	if testing.Short() {
 		t.Skip("builds and runs the server binary")
-	}
-	if os.Getenv("HAUTHZ_OPEN_FINDINGS") != "1" {
-		t.Skip("open finding HAUTHZ-F2 (global media favorite flag); set HAUTHZ_OPEN_FINDINGS=1 to run it")
 	}
 	e := hzSetup(t)
 	c := e.c
 	m1 := e.media[1]
-	// the legacy global flag: PUT /media/:id/favorite writes media_items.is_favorite (one row per item, not per user)
 	t.Run("noleak/media favorite flag is per user", func(t *testing.T) {
 		code, raw := c.do("PUT", fmt.Sprintf("/api/v1/media/%d/favorite", m1), e.b, map[string]bool{"favorite": true})
 		require.Equal(t, 200, code, "%s", raw)
 		_, got := c.do("GET", fmt.Sprintf("/api/v1/media/%d", m1), e.a, nil)
 		t.Logf("HZ|media favorite flag|%d|BODY-CHECKED", code)
 		assert.Equal(t, false, hzJSON(t, got)["is_favorite"], "B's favorite flag must not be visible to A: %s", got)
+		_, got = c.do("GET", fmt.Sprintf("/api/v1/media/%d", m1), e.b, nil)
+		assert.Equal(t, true, hzJSON(t, got)["is_favorite"], "B must still see its own favorite: %s", got)
+	})
+	t.Run("noleak/media favorite A toggle-off keeps B's", func(t *testing.T) {
+		code, raw := c.do("PUT", fmt.Sprintf("/api/v1/media/%d/favorite", m1), e.a, map[string]bool{"favorite": false})
+		require.Equal(t, 200, code, "%s", raw)
+		_, got := c.do("GET", fmt.Sprintf("/api/v1/media/%d", m1), e.b, nil)
+		t.Logf("HZ|media favorite A toggle|%d|BODY-CHECKED", code)
+		assert.Equal(t, true, hzJSON(t, got)["is_favorite"], "A's toggle must not clear B's favorite: %s", got)
 	})
 }

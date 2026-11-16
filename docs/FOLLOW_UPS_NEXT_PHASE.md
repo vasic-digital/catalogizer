@@ -3273,6 +3273,19 @@ HAUTHZ-F3 CLOSED PROVISIONAL (ErrReportNotFound -> 404, identical to GET; FU2-M1
 - **HAUTHZ-F3R-m2 (minor, test-instrumentation):** nothing pins that the foreign-owner path carries no owner detail into error text/logs (R6 survives); service-level test asserting err == ErrReportNotFound for foreign and missing.
 - **HAUTHZ-F3R-n1 (nit, pre-existing):** GET routes still map every service error incl. DB failure to 404; PUT now 500; asymmetric (not an oracle).
 
+## HAUTHZ-F2 per-user media favorite (CAT-HAUTHZ-F2, PROVISIONAL)
+
+HAUTHZ-F2 fixed: PUT /media/:id/favorite and GET /media/:id use the new `user_favorites` table (migration v30), caller-scoped. RED/GREEN x3 on the real binary, three mutants killed (`docs/qa/horizontal-authz-2026-11-16/f2_*`). Not independently reviewed yet.
+- **F2-d1 (decision recorded):** legacy `media_items.is_favorite = 1` flags are NOT migrated (the column never recorded who set it; attributing it would invent preferences or re-create the leak). Such favorites show as not-favorite until re-toggled. Operator may insert rows by hand or request a one-off import for a named user.
+- **F2-fu1:** `media_items.is_favorite` is still read by `internal/services/media_player_service.go` (`GetMediaItem`) and `video_player_service.go` (non-routed/legacy flat schema); they return the legacy global flag. Confirm they have no route, or move them to `user_favorites`; then drop the column in a later migration (needs operator approval, destructive DDL).
+- **F2-fu2 (corrected, review 2026-11-16):** clients DO call PUT /media/:id/favorite, with bodies the contract rejects: Android `SyncManager.kt:261` sends `{"isFavorite": ...}` (server answers 400 "Favorite field is required"; the response is ignored, so offline favorite sync silently no-ops); `catalogizer-api-client/src/services/MediaService.ts:142` sends PUT with no body (400); `catalogizer-desktop/src/services/apiService.ts:164` uses POST (no such route); the web client uses `/favorites`. Not fixed here; filed as F2-fu2-a/b/c below. The existing /favorites table (entity_type/entity_id) is still a second per-user favorite store with no link to `user_favorites`; unify or document.
+- **F2-fu2-a (Bug):** Android SyncManager.kt:261 sends `isFavorite` instead of `favorite`; offline favorite sync silently does nothing (400 ignored). Fix client body, surface the error.
+- **F2-fu2-b (Bug):** catalogizer-api-client MediaService.ts:142 PUTs /media/:id/favorite with no body (always 400). Send `{favorite: boolean}`.
+- **F2-fu2-c (Bug):** desktop apiService.ts:164 uses POST for the favorite route (route is PUT); also check its body field name.
+- **F2-fu5 (test, closed in review round):** TestFavoriteIsPerItem (R7), TestFavoriteRowsRemovedWithMediaItem (R3b), upgrade-from-populated-v29 test, anonymous-401-before-body test added; R7 and R3b mutants observed RED then restored.
+- **F2-fu3:** PostgreSQL branch of migration v30 and the `INSERT OR IGNORE` rewrite were not executed against a live PostgreSQL (UNCONFIRMED); schema is asserted in `expectedPostgresSchema`.
+- **F2-fu4:** the `challenges/` favorites workflow and HelixQA banks still check `is_favorite` through /favorites/check, not this route; add a bank step for PUT /media/:id/favorite as two users.
+
 ## GATE-CHECKLIST Rev 4 review follow-ups (Opus, 2026-11-16, PROVISIONAL)
 - GATECHK4-m1: G12 "316 vs 315 UNCONFIRMED" resolved: commit 8d367fd58 has an inline `Roadmap-Item:`; anchored vs unanchored match.
 - GATECHK4-m3: reword "No rc exemption is recorded" to apply to v2.5.0 only (rc.1 relaxation is recorded).
