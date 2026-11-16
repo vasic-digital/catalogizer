@@ -310,7 +310,7 @@ func TestNFS3ValidateRootRequiredKeys(t *testing.T) {
 	}
 }
 
-// NFS3-WIRE-1-f5: mount_port / portmap_port are optional and each defaults to port; one `port` still sets mount and NFS.
+// NFS3-WIRE-1-f5: mount_port / portmap_port are optional; mount_port defaults to port, portmap_port defaults to 0 (the client default, 111); one `port` still sets mount and NFS.
 func TestNFS3ConfigSplitPorts(t *testing.T) {
 	base := func(extra map[string]interface{}) map[string]interface{} {
 		m := map[string]interface{}{"host": "nas.example", "path": "/e"}
@@ -376,5 +376,29 @@ func TestNFS3EffectiveIdentityReadback(t *testing.T) {
 	}
 	if cfg := read(map[string]interface{}{"uid": 1000, "gid": 1001}); cfg.UID != 1000 || cfg.GID != 1001 {
 		t.Fatalf("explicit ids kept: %+v", cfg)
+	}
+}
+
+// NFS3W-FU-m1: the contract is 0-65535 for every port key (0 = default / absent); anything outside is refused, `port` included, and the error says so.
+func TestNFS3ConfigPortRangeContract(t *testing.T) {
+	base := func(k string, v int) map[string]interface{} {
+		return map[string]interface{}{"host": "nas.example", "path": "/e", k: v}
+	}
+	for _, k := range []string{KeyPort, KeyMountPort, KeyPortmapPort} {
+		for _, v := range []int{-1, 65536, 70000} {
+			_, err := nfs3ConfigFromSettings(base(k, v))
+			if err == nil {
+				t.Errorf("%s=%d must be refused", k, v)
+				continue
+			}
+			if !strings.Contains(err.Error(), k) || !strings.Contains(err.Error(), "0-65535 (0 = default)") {
+				t.Errorf("%s=%d: error %q must name the key and the 0-65535 (0 = default) contract", k, v, err)
+			}
+		}
+		for _, v := range []int{0, 1, 65535} {
+			if _, err := nfs3ConfigFromSettings(base(k, v)); err != nil {
+				t.Errorf("%s=%d must be accepted: %v", k, v, err)
+			}
+		}
 	}
 }

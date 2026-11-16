@@ -60,9 +60,14 @@ func nfs3ConfigFromSettings(settings map[string]interface{}) (nfs3.Config, error
 	port := IntSetting(settings, KeyPort, 0)
 	mountPort := IntSetting(settings, KeyMountPort, port)
 	portmapPort := IntSetting(settings, KeyPortmapPort, 0)
-	for name, v := range map[string]int{KeyMountPort: mountPort, KeyPortmapPort: portmapPort} {
-		if v < 0 || v > 65535 {
-			return nfs3.Config{}, fmt.Errorf("nfs3: %s must be 1-65535", name)
+	// Contract (NFS3W-FU-m1): every port key is 0-65535 and 0 means "default" (port: ask the portmapper; mount_port: follows port; portmap_port: 111).
+	// `port` is checked first and by name, so an out-of-range port is reported as port, not as the mount_port it would be copied into.
+	for _, p := range []struct {
+		name string
+		v    int
+	}{{KeyPort, port}, {KeyMountPort, mountPort}, {KeyPortmapPort, portmapPort}} {
+		if p.v < 0 || p.v > 65535 {
+			return nfs3.Config{}, fmt.Errorf("nfs3: %s must be 0-65535 (0 = default)", p.name)
 		}
 	}
 	return nfs3.Config{
