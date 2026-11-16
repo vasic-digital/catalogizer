@@ -218,9 +218,9 @@ describe('CatalogizerClient', () => {
         const mockResponse = { data: { is_favorite: true } };
         mockAxiosInstance.put.mockResolvedValueOnce(mockResponse);
 
-        const result = await client.media.toggleFavorite(1);
+        const result = await client.media.toggleFavorite(1, false);
 
-        expect(mockAxiosInstance.put).toHaveBeenCalledWith('/media/1/favorite', undefined, undefined);
+        expect(mockAxiosInstance.put).toHaveBeenCalledWith('/media/1/favorite', { favorite: false }, undefined);
         expect(result).toEqual(mockResponse.data);
       });
     });

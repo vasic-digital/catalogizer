@@ -160,9 +160,11 @@ class ApiService {
     }
   }
 
-  async toggleFavorite(mediaId: number): Promise<void> {
+  // Server contract: PUT /api/v1/media/:id/favorite with {"favorite": boolean} (per-user, idempotent).
+  async toggleFavorite(mediaId: number, favorite: boolean): Promise<void> {
     return this.makeRequest<void>(`/media/${mediaId}/favorite`, {
-      method: 'POST',
+      method: 'PUT',
+      body: { favorite },
     });
   }
 

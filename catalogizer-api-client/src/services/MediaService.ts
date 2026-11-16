@@ -135,11 +135,12 @@ export class MediaService {
   }
 
   /**
-   * Toggle favorite status for a media item
-   * Backend: PUT /api/v1/media/:id/favorite
+   * Set the calling user's favorite flag for a media item (per-user, idempotent)
+   * Backend: PUT /api/v1/media/:id/favorite with body {"favorite": boolean}
+   * (the field is required; the server answers 400 without it)
    */
-  public async toggleFavorite(mediaId: number): Promise<{ is_favorite: boolean }> {
-    return this.http.put<{ is_favorite: boolean }>(`/media/${mediaId}/favorite`);
+  public async toggleFavorite(mediaId: number, favorite: boolean): Promise<{ is_favorite: boolean }> {
+    return this.http.put<{ is_favorite: boolean }>(`/media/${mediaId}/favorite`, { favorite });
   }
 
   /**

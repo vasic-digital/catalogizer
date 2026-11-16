@@ -141,6 +141,43 @@ class SyncManagerTest {
         }
     }
 
+    private fun favoriteOp(favorite: Boolean) = SyncOperation(
+        id = 7L,
+        type = SyncOperationType.TOGGLE_FAVORITE,
+        mediaId = 1L,
+        data = """{"mediaId":1,"isFavorite":$favorite}""",
+        timestamp = 1L
+    )
+
+    @Test
+    fun `favorite sync sends the favorite field the server requires`() = runTest {
+        coEvery { mockAuthRepository.isTokenValid() } returns true
+        coEvery { mockSyncOperationDao.getPendingOperations() } returns listOf(favoriteOp(true))
+        coEvery { mockApi.setFavoriteStatus(any(), any()) } returns Response.success(Unit)
+        coEvery { mockApi.getUpdatedMedia(any()) } returns Response.success(emptyList())
+        coEvery { mockApi.getUserPreferences() } returns Response.success(emptyMap())
+
+        syncManager.performManualSync()
+
+        coVerify { mockApi.setFavoriteStatus(1L, mapOf("favorite" to true)) }
+        coVerify { mockSyncOperationDao.deleteOperation(7L) }
+    }
+
+    @Test
+    fun `favorite sync keeps the operation queued when the server answers non-2xx`() = runTest {
+        coEvery { mockAuthRepository.isTokenValid() } returns true
+        coEvery { mockSyncOperationDao.getPendingOperations() } returns listOf(favoriteOp(false))
+        coEvery { mockApi.setFavoriteStatus(any(), any()) } returns
+            Response.error(400, okhttp3.ResponseBody.create(null, ""))
+        coEvery { mockApi.getUpdatedMedia(any()) } returns Response.success(emptyList())
+        coEvery { mockApi.getUserPreferences() } returns Response.success(emptyMap())
+
+        syncManager.performManualSync()
+
+        coVerify(exactly = 0) { mockSyncOperationDao.deleteOperation(7L) }
+        coVerify { mockSyncOperationDao.updateRetryCount(7L, 1) }
+    }
+
     @Test
     fun `queueRatingUpdate should insert operation and update count`() = runTest {
         coEvery { mockSyncOperationDao.insertOperation(any()) } returns 1L
