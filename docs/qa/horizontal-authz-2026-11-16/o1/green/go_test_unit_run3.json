@@ -1,0 +1,32 @@
+{"Time":"2026-11-16T23:25:47.339604129+01:00","Action":"start","Package":"catalogizer/handlers"}
+{"Time":"2026-11-16T23:25:47.33989699+01:00","Action":"start","Package":"catalogizer/internal/handlers"}
+{"Time":"2026-11-16T23:25:47.887353436+01:00","Action":"run","Package":"catalogizer/internal/handlers","Test":"TestMediaHandler_UserMetadata_CallerScoped"}
+{"Time":"2026-11-16T23:25:47.887432576+01:00","Action":"output","Package":"catalogizer/internal/handlers","Test":"TestMediaHandler_UserMetadata_CallerScoped","Output":"=== RUN   TestMediaHandler_UserMetadata_CallerScoped\n"}
+{"Time":"2026-11-16T23:25:48.082495378+01:00","Action":"run","Package":"catalogizer/handlers","Test":"TestHorizontalAuthzUnit_UserMetadataOwnerFromTokenNotBody"}
+{"Time":"2026-11-16T23:25:48.082544328+01:00","Action":"output","Package":"catalogizer/handlers","Test":"TestHorizontalAuthzUnit_UserMetadataOwnerFromTokenNotBody","Output":"=== RUN   TestHorizontalAuthzUnit_UserMetadataOwnerFromTokenNotBody\n"}
+{"Time":"2026-11-16T23:25:48.272764014+01:00","Action":"output","Package":"catalogizer/handlers","Test":"TestHorizontalAuthzUnit_UserMetadataOwnerFromTokenNotBody","Output":"--- PASS: TestHorizontalAuthzUnit_UserMetadataOwnerFromTokenNotBody (0.20s)\n"}
+{"Time":"2026-11-16T23:25:48.272813444+01:00","Action":"pass","Package":"catalogizer/handlers","Test":"TestHorizontalAuthzUnit_UserMetadataOwnerFromTokenNotBody","Elapsed":0.2}
+{"Time":"2026-11-16T23:25:48.272826594+01:00","Action":"run","Package":"catalogizer/handlers","Test":"TestHorizontalAuthzUnit_UserMetadataReadCallerScoped"}
+{"Time":"2026-11-16T23:25:48.272831304+01:00","Action":"output","Package":"catalogizer/handlers","Test":"TestHorizontalAuthzUnit_UserMetadataReadCallerScoped","Output":"=== RUN   TestHorizontalAuthzUnit_UserMetadataReadCallerScoped\n"}
+{"Time":"2026-11-16T23:25:48.535452238+01:00","Action":"output","Package":"catalogizer/internal/handlers","Test":"TestMediaHandler_UserMetadata_CallerScoped","Output":"--- PASS: TestMediaHandler_UserMetadata_CallerScoped (0.64s)\n"}
+{"Time":"2026-11-16T23:25:48.535499468+01:00","Action":"pass","Package":"catalogizer/internal/handlers","Test":"TestMediaHandler_UserMetadata_CallerScoped","Elapsed":0.64}
+{"Time":"2026-11-16T23:25:48.535509378+01:00","Action":"output","Package":"catalogizer/internal/handlers","Output":"PASS\n"}
+{"Time":"2026-11-16T23:25:48.600578882+01:00","Action":"output","Package":"catalogizer/internal/handlers","Output":"ok  \tcatalogizer/internal/handlers\t1.260s\n"}
+{"Time":"2026-11-16T23:25:48.600645932+01:00","Action":"pass","Package":"catalogizer/internal/handlers","Elapsed":1.2610000000000001}
+{"Time":"2026-11-16T23:25:48.714553935+01:00","Action":"output","Package":"catalogizer/handlers","Test":"TestHorizontalAuthzUnit_UserMetadataReadCallerScoped","Output":"--- PASS: TestHorizontalAuthzUnit_UserMetadataReadCallerScoped (0.44s)\n"}
+{"Time":"2026-11-16T23:25:48.714593165+01:00","Action":"pass","Package":"catalogizer/handlers","Test":"TestHorizontalAuthzUnit_UserMetadataReadCallerScoped","Elapsed":0.44}
+{"Time":"2026-11-16T23:25:48.714602945+01:00","Action":"run","Package":"catalogizer/handlers","Test":"TestCAT001_UpdateUserMetadata_WritesForTheAuthenticatedUser"}
+{"Time":"2026-11-16T23:25:48.714607785+01:00","Action":"output","Package":"catalogizer/handlers","Test":"TestCAT001_UpdateUserMetadata_WritesForTheAuthenticatedUser","Output":"=== RUN   TestCAT001_UpdateUserMetadata_WritesForTheAuthenticatedUser\n"}
+{"Time":"2026-11-16T23:25:51.390426861+01:00","Action":"output","Package":"catalogizer/handlers","Test":"TestCAT001_UpdateUserMetadata_WritesForTheAuthenticatedUser","Output":"--- PASS: TestCAT001_UpdateUserMetadata_WritesForTheAuthenticatedUser (2.68s)\n"}
+{"Time":"2026-11-16T23:25:51.390469661+01:00","Action":"pass","Package":"catalogizer/handlers","Test":"TestCAT001_UpdateUserMetadata_WritesForTheAuthenticatedUser","Elapsed":2.68}
+{"Time":"2026-11-16T23:25:51.390479641+01:00","Action":"run","Package":"catalogizer/handlers","Test":"TestCAT001_UpdateUserMetadata_UnauthenticatedIs401NotUserOne"}
+{"Time":"2026-11-16T23:25:51.390483971+01:00","Action":"output","Package":"catalogizer/handlers","Test":"TestCAT001_UpdateUserMetadata_UnauthenticatedIs401NotUserOne","Output":"=== RUN   TestCAT001_UpdateUserMetadata_UnauthenticatedIs401NotUserOne\n"}
+{"Time":"2026-11-16T23:25:53.992416242+01:00","Action":"output","Package":"catalogizer/handlers","Test":"TestCAT001_UpdateUserMetadata_UnauthenticatedIs401NotUserOne","Output":"--- PASS: TestCAT001_UpdateUserMetadata_UnauthenticatedIs401NotUserOne (2.54s)\n"}
+{"Time":"2026-11-16T23:25:53.992456792+01:00","Action":"pass","Package":"catalogizer/handlers","Test":"TestCAT001_UpdateUserMetadata_UnauthenticatedIs401NotUserOne","Elapsed":2.54}
+{"Time":"2026-11-16T23:25:53.992465852+01:00","Action":"run","Package":"catalogizer/handlers","Test":"TestCAT001_F8_UpdateUserMetadata_ThroughRealJWTRouter"}
+{"Time":"2026-11-16T23:25:53.992470132+01:00","Action":"output","Package":"catalogizer/handlers","Test":"TestCAT001_F8_UpdateUserMetadata_ThroughRealJWTRouter","Output":"=== RUN   TestCAT001_F8_UpdateUserMetadata_ThroughRealJWTRouter\n"}
+{"Time":"2026-11-16T23:25:56.669718203+01:00","Action":"output","Package":"catalogizer/handlers","Test":"TestCAT001_F8_UpdateUserMetadata_ThroughRealJWTRouter","Output":"--- PASS: TestCAT001_F8_UpdateUserMetadata_ThroughRealJWTRouter (2.74s)\n"}
+{"Time":"2026-11-16T23:25:56.669847133+01:00","Action":"pass","Package":"catalogizer/handlers","Test":"TestCAT001_F8_UpdateUserMetadata_ThroughRealJWTRouter","Elapsed":2.74}
+{"Time":"2026-11-16T23:25:56.670010674+01:00","Action":"output","Package":"catalogizer/handlers","Output":"PASS\n"}
+{"Time":"2026-11-16T23:25:56.712280949+01:00","Action":"output","Package":"catalogizer/handlers","Output":"ok  \tcatalogizer/handlers\t9.372s\n"}
+{"Time":"2026-11-16T23:25:56.71232817+01:00","Action":"pass","Package":"catalogizer/handlers","Elapsed":9.373}

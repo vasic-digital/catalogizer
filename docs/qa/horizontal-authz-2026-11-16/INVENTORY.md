@@ -30,8 +30,9 @@ Sweep test: `catalog-api/horizontal_authz_binary_test.go` (`TestHorizontalAuthz_
 | 18 | PUT /api/v1/media/:id/favorite | main.go:1063 | per-item GLOBAL flag | **FINDING HAUTHZ-F2** (gated test) |
 | 19 | PUT /api/v1/media/:id/progress | main.go:1062 | validated no-op, nothing persisted (handlers/media_handler.go UpdateWatchProgress) | not exercisable: no state to leak |
 | 20 | GET /api/v1/media/:id | main.go:1061 | shared catalogue, but returns the global `is_favorite` | via F2 |
-| 21 | PUT /api/v1/entities/:id/user-metadata | main.go:1309 | SELF write (user id from token, handlers/media_entity_handler.go:1192) | NOT exercised by the binary sweep (no read route returns user metadata: `GET /entities/:id` and `/metadata` never carry it, so the old `usermeta` cases could not fail). Covered at store level by `handlers/horizontal_authz_unit_test.go` `TestHorizontalAuthzUnit_UserMetadataOwnerFromTokenNotBody` (real handler, real SQLite, read back through `UserMetadataRepository`); the binary sweep keeps only the owner-write positive controls |
+| 21 | PUT /api/v1/entities/:id/user-metadata | main.go:1309 | SELF write (user id from token, handlers/media_entity_handler.go:1192) | Write path only; the read path is row 22a (HAUTHZ-O1 added the first read route, so the binary sweep now has a discriminating leg). Covered at store level by `handlers/horizontal_authz_unit_test.go` `TestHorizontalAuthzUnit_UserMetadataOwnerFromTokenNotBody` (real handler, real SQLite, read back through `UserMetadataRepository`); the binary sweep keeps only the owner-write positive controls |
 | 22 | POST /api/v1/entities/:id/user-metadata | main.go:1310 | SELF write | same handler as 21 (same store-level test) |
+| 22a | GET /api/v1/entities/:id/user-metadata | main.go (added by HAUTHZ-O1) | SELF read (row looked up by entity id AND token user id; no row for the caller, foreign or missing entity => one 404) | usermeta read B own, usermeta read A own, usermeta read foreign (A reads B's m1); unit `TestHorizontalAuthzUnit_UserMetadataReadCallerScoped`. Note: the row count/total in this inventory was NOT renumbered; 22a is an addition (PROVISIONAL) |
 | 23 | GET /api/v1/entities/:id/progress | main.go:1316 | SELF | playback progress |
 | 24 | GET /api/v1/entities/:id/history | main.go:1317 | SELF | playback history |
 | 25 | POST /api/v1/playback/sessions/start | main.go:1323 | SELF create | (setup) |
@@ -106,3 +107,8 @@ Still not swept horizontally: `GET /errors/health` and `admin/errors|health` (sy
 - 2 rows (52, 53) act on the caller only and revoke the token under test: not exercised.
 - 3 rows (54-56) NOT COVERED (reason in the table).
 - 4 rows (57-59, 61) are capability or installation-wide routes covered by other tests; row 60 is the shared subtitle list used as a state check.
+
+
+## HAUTHZ-O1 (2026-11-16)
+
+Legacy `internal/handlers/media.go` `getUserMetadata` (from 16843b133) was unrouted and read `user_metadata` by `media_item_id` alone. Fixed: it now takes the caller id and filters `user_id`, and a new routed `GET /api/v1/entities/:id/user-metadata` (live `MediaEntityHandler.GetUserMetadata`, auth group, no admin marker) is caller-scoped. Evidence: `o1/` (red, green x3, mutants.txt, SHA256SUMS). PROVISIONAL.

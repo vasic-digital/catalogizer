@@ -36,6 +36,7 @@ func hzUnitRouter(e *rtEnv) *gin.Engine {
 	r.POST("/pb/end", ph.EndSession)
 	mh := NewMediaEntityHandler(nil, nil, nil, repository.NewUserMetadataRepository(e.db), e.db)
 	r.PUT("/entities/:id/user-metadata", mh.UpdateUserMetadata)
+	r.GET("/entities/:id/user-metadata", mh.GetUserMetadata)
 	return r
 }
 
@@ -142,4 +143,30 @@ func hzJSONField(t *testing.T, raw []byte, key string) string {
 	v, ok := m[key].(float64)
 	require.True(t, ok, "%s in %s", key, raw)
 	return fmt.Sprintf("%d", int64(v))
+}
+
+// HAUTHZ-O1: GET /entities/:id/user-metadata is caller-scoped. B's row is never returned to A, and A (who has no row of its
+// own) gets exactly the 404 a nonexistent item gets: no oracle for foreign rows. The owner reads its own row.
+func TestHorizontalAuthzUnit_UserMetadataReadCallerScoped(t *testing.T) {
+	e := newRTEnv(t)
+	r := hzUnitRouter(e)
+
+	w := hzUnitDo(r, "2", "PUT", "/entities/7/user-metadata", `{"personal_notes":"hzmark-b-note","user_rating":9}`)
+	require.Equal(t, 200, w.Code, w.Body.String())
+
+	own := hzUnitDo(r, "2", "GET", "/entities/7/user-metadata", "")
+	require.Equal(t, 200, own.Code, own.Body.String())
+	assert.Contains(t, own.Body.String(), "hzmark-b-note", "owner reads its own row")
+
+	foreign := hzUnitDo(r, "1", "GET", "/entities/7/user-metadata", "")
+	assert.Equal(t, 404, foreign.Code, "A has no row on item 7: must be 404, got: "+foreign.Body.String())
+	assert.NotContains(t, foreign.Body.String(), "hzmark-b-note", "B's note must never reach A")
+
+	missing := hzUnitDo(r, "1", "GET", "/entities/987654/user-metadata", "")
+	assert.Equal(t, 404, missing.Code)
+	assert.Equal(t, missing.Body.String(), foreign.Body.String(), "foreign and missing bodies must be identical")
+
+	anon := hzUnitDo(r, "", "GET", "/entities/7/user-metadata", "")
+	assert.Equal(t, 401, anon.Code, anon.Body.String())
+	assert.NotContains(t, anon.Body.String(), "hzmark-b-note")
 }

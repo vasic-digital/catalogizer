@@ -247,13 +247,19 @@ func TestHorizontalAuthz_RealBinary(t *testing.T) {
 	})
 
 	// ---- entity user-metadata: write path only ---------------------------------------------------------------------------------
-	// No API route returns user metadata (GET /entities/:id and /metadata never carry it), so a binary-level read cannot
-	// discriminate an owner leak here. The cross-user property (owner from the token, never the body) is pinned at store
+	// HAUTHZ-O1 added GET /entities/:id/user-metadata (caller-scoped), so the read leg below now discriminates an owner leak.
+	// Historically no API route returned user metadata, so a binary-level read could not discriminate here. The cross-user property (owner from the token, never the body) is pinned at store
 	// level in handlers/horizontal_authz_unit_test.go (TestHorizontalAuthzUnit_UserMetadataOwnerFromTokenNotBody). This
 	// block only checks that both users can write their own row through the real binary.
 	t.Run("user_metadata", func(t *testing.T) {
 		e.ok("usermeta A writes own (body names B)", "PUT", fmt.Sprintf("/api/v1/entities/%d/user-metadata", m0), e.a, map[string]interface{}{"user_id": e.bid, "personal_notes": "hzmark-a-note", "user_rating": 1.0})
 		e.ok("usermeta B writes own", "PUT", fmt.Sprintf("/api/v1/entities/%d/user-metadata", m0), e.b, map[string]interface{}{"personal_notes": "hzmark-b-note"})
+		// HAUTHZ-O1: GET /entities/:id/user-metadata is caller-scoped. B writes on m1 only; A reads m1 (no row of its own) and
+		// must get 404 without B's note, the same status a nonexistent entity gets. Own reads return the caller's own note.
+		e.ok("usermeta B writes own on m1", "PUT", fmt.Sprintf("/api/v1/entities/%d/user-metadata", m1), e.b, map[string]interface{}{"personal_notes": "hzmark-b-m1-note"})
+		e.ok("usermeta read B own", "GET", fmt.Sprintf("/api/v1/entities/%d/user-metadata", m1), e.b, nil, "hzmark-b-m1-note")
+		e.ok("usermeta read A own", "GET", fmt.Sprintf("/api/v1/entities/%d/user-metadata", m0), e.a, nil, "hzmark-a-note")
+		e.denied("usermeta read foreign (A reads B's m1)", "GET", fmt.Sprintf("/api/v1/entities/%d/user-metadata", m1), e.a, nil, "hzmark-b-m1-note", "hzmark-b-note")
 	})
 
 	// ---- playback sessions / progress / history ----------------------------------------------------------------------------
