@@ -1,0 +1,5 @@
+hermetic seam tests x3 + vet (unit/gate-logic class); mutants A-H each killed (A noclean, B staleCtx, C noEOFctx, D ignoreSrcClose, E noRO, F tmpPath, G ignoreTmpClose, H noRemoveOnErr)
+ok  	catalogizer/filesystem	0.121s
+ok  	catalogizer/filesystem	0.124s
+ok  	catalogizer/filesystem	0.127s
+vet-ok

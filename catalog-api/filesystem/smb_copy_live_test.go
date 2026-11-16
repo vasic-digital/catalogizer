@@ -135,3 +135,24 @@ func TestLiveSMBCopy_CancelMidTransferKeepsDestinationNoTemp(t *testing.T) {
 		require.False(t, strings.HasSuffix(e.Name, ".tmp"), "temp file left behind: %s", e.Name)
 	}
 }
+
+// SMBCOPYR-m2: a differently spelled path to the same file is the same file.
+func TestLiveSMBCopy_SamePathUncleanedSpellingRefused(t *testing.T) {
+	c, ctx := smbCopyClient(t)
+	smbPut(t, c, "copy1_clean.txt", "clean source bytes")
+	err := c.CopyFile(ctx, "copy1_clean.txt", "./copy1_clean.txt")
+	require.True(t, errors.Is(err, ErrCopySameFile), "got %v", err)
+	require.Equal(t, "clean source bytes", smbGet(t, c, "copy1_clean.txt"))
+}
+
+// SMBCOPYR-m1: a read-only destination is refused and keeps its bytes (go-smb2 Remove would clear the attribute and delete it).
+func TestLiveSMBCopy_ReadOnlyDestinationRefused(t *testing.T) {
+	c, ctx := smbCopyClient(t)
+	smbPut(t, c, "copy1_ro_src.txt", "new")
+	smbPut(t, c, "copy1_ro_dst.txt", "protected")
+	require.NoError(t, c.share.Chmod(c.resolvePath("copy1_ro_dst.txt"), 0o444))
+	t.Cleanup(func() { _ = c.share.Chmod(c.resolvePath("copy1_ro_dst.txt"), 0o644) })
+	err := c.CopyFile(ctx, "copy1_ro_src.txt", "copy1_ro_dst.txt")
+	require.True(t, errors.Is(err, ErrCopyDestReadOnly), "got %v", err)
+	require.Equal(t, "protected", smbGet(t, c, "copy1_ro_dst.txt"))
+}

@@ -3281,9 +3281,9 @@ HAUTHZ-F3 CLOSED PROVISIONAL (ErrReportNotFound -> 404, identical to GET; FU2-M1
 - GATECHK4-NEXT: next revision adds HAUTHZ-F3/FU2-M1..M3 (8e717b477), CPN1-M1..M3 (8a4fcdf6a), SSEFU2-F3 (af4ab5216), G10 parity bd86adcad, updated G12 counts; G2 wording to six products and protocol-level host legs (Synology generalisation, branch syng).
 
 ## CAT-SMB-COPY-1 review follow-ups (Opus, 2026-11-16, PROVISIONAL)
-- SMBCOPYR-m1: read-only destination is now overwritten (go-smb2 Share.Remove chmod-retries); destination identity (ACL, times, file id, hard links) not preserved. Decide + document.
-- SMBCOPYR-m2: same-path guard compares raw strings; `./x` vs `x` returns nil not ErrCopySameFile. Fix: path.Clean both.
-- SMBCOPYR-m3: temp cleanup runs on expired deadline context and can leak the temp file.
-- SMBCOPYR-m4: leftover `.copy-*.tmp` visible to scans; path in error text.
-- SMBCOPYR-m5: REPORT.md cites b91ecc76d for LOGSHARE-TOK-1-F1 but that commit introduced the collision; renumber landed via aed566da5/3a33fb054. Correct citation.
-- SMBCOPYR-M5/R2-R7: surviving mutants (final ctx check, srcFile.Close, temp location, stat-error, deadline, chunk write error, temp Close error); need an injectable writer seam. Chunk-cancel test adopted (smb_copy_chunk_cancel_test.go, kills M7).
+- SMBCOPYR-m1 [DONE, PROVISIONAL]: refused with ErrCopyDestReadOnly (hermetic + live); was: read-only destination is now overwritten (go-smb2 Share.Remove chmod-retries); destination identity (ACL, times, file id, hard links) not preserved. Decide + document.
+- SMBCOPYR-m2 [DONE, PROVISIONAL]: path.Clean both (hermetic + live); was: same-path guard compares raw strings; `./x` vs `x` returns nil not ErrCopySameFile. Fix: path.Clean both.
+- SMBCOPYR-m3 [DONE, PROVISIONAL]: cleanup on fresh bounded ctx (seam test); was: temp cleanup runs on expired deadline context and can leak the temp file.
+- SMBCOPYR-m4 [DONE, PROVISIONAL]: name documented in CopyFile comment, error shows base name only; was: leftover `.copy-*.tmp` visible to scans; path in error text.
+- SMBCOPYR-m5 [DONE]: REPORT.md corrected; was: REPORT.md cites b91ecc76d for LOGSHARE-TOK-1-F1 but that commit introduced the collision; renumber landed via aed566da5/3a33fb054. Correct citation.
+- SMBCOPYR-M5/R2-R7 [PARTLY DONE, PROVISIONAL]: copyFS/copyFile seam + smb_copy_seam_test.go kill R4/R6/R7/M5 and the m1-m4 mutants (evidence docs/qa/unconfirmed-items-2026-11-16/smb_copy_review_followups_*.txt); R2/R3/R5 (temp location, stat-error, deadline) not separately mutated, UNCONFIRMED; was: surviving mutants (final ctx check, srcFile.Close, temp location, stat-error, deadline, chunk write error, temp Close error); need an injectable writer seam. Chunk-cancel test adopted (smb_copy_chunk_cancel_test.go, kills M7).
