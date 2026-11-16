@@ -29,26 +29,19 @@ var (
 	negatedVerbBefore = regexp.MustCompile(`(?i)(?:\b(?:never|not|no\s+longer|neither|nor|without)|n't|\bcannot)\s+(?:(?:be|been|being|longer|ever|also|normally|ordinarily|to)\s+)*` + quoteVerbs + `(?:\s+with)?\s*$`)
 	// predicate negation right after the quotation, only when a quote verb follows it: `body {...} is never sent`, `... isn't returned`.
 	// "not the generic error", "cannot be retried", "don't retry" are affirmative continuations and do not negate the quotation.
-	// an affirmative quote verb (optionally "with") ending the text before the quotation: "callers get body {...}", "refused with body {...}"
-	affirmativeVerbBefore = regexp.MustCompile(`(?i)\b` + quoteVerbs + `(?:\s+with)?\s*$`)
-	negatedAfter          = regexp.MustCompile(`(?i)^\s*(?:(?:is|are|was|were|be|been|being|do|does|did|will|would|has|have|had)\s+(?:never|not|no\s+longer)|\w+n't|cannot)\s+(?:(?:be|been|being|longer|ever|also|normally|ordinarily|to)\s+)*` + quoteVerbs + `\b`)
 )
 
-// adminBodyDocumented reports whether desc quotes the admin body in at least one clause where the quotation is not negated.
-// Scope rule (pinned by the generated matrix in api_contract_gate_unit_test.go): only a negation that directly governs the verb
-// introducing the quotation, or a predicate negation directly after it (auxiliary + never/not/no longer, a contraction, or
-// "cannot", then a quote verb), negates it. A bare "never sent" after the quotation (no auxiliary) is ambiguous and is read
-// AFFIRMATIVE, as is a negation separated from its verb by a comma interjection ("does not, for owners, return body {...}");
-// both are the conservative direction (the non-admin 403 keeps being asserted). No clause splitting is needed: negatedVerbBefore is
-// anchored at the end of the text before the quotation and negatedAfter at its start, so a negation in any other clause or position
-// cannot match (the former dot/clause-boundary computation was behaviour-equivalent and was removed, history: git log -S clauseBoundary).
+// adminBodyDocumented reports whether desc quotes the admin body (`body {...}`) in at least one place that is not negated.
+// STRUCTURAL RULE (round 5): only a negation directly BEFORE the verb that introduces the quotation ("never returns body {...}",
+// "does not return body {...}", "without returning body {...}") marks it not-gated. A negation AFTER the quotation is never
+// applied: such text ("body {...} is not returned to owners only, every non-administrator session gets it") cannot be told apart
+// from an affirmative description by a regex, so ambiguity resolves to GATED (a false positive fails loudly in the live sweep; a
+// false negative would silently stop asserting the non-admin 403). Known limits, pinned in the tests: a scope-restricted pre-quote
+// negation ("not for owners, gets body {...}"), "never not get body {...}" and a bare JSON body without the `body ` marker.
 func adminBodyDocumented(desc string) bool {
 	desc = strings.NewReplacer("\u2019", "'", "\u2018", "'", "\u02bc", "'").Replace(desc)
 	for _, loc := range adminBodyQuote.FindAllStringIndex(desc, -1) {
-		before := desc[:loc[0]]
-		// ambiguity resolves to gated: when an affirmative quote verb stands directly before the quotation ("callers get body {...} is
-		// not sent") "get" may be a passive auxiliary, so a negation after the quotation is not applied to it
-		if negatedVerbBefore.MatchString(before) || (!affirmativeVerbBefore.MatchString(before) && negatedAfter.MatchString(desc[loc[1]:])) {
+		if negatedVerbBefore.MatchString(desc[:loc[0]]) {
 			continue
 		}
 		return true
@@ -61,6 +54,6 @@ func admin403Gated(desc string) bool {
 		return true
 	}
 	// the quotation's own "Admin role required" must not feed the keyword fallback once its clause was judged negated
-	rest := strings.ReplaceAll(desc, adminRoleBody, "")
+	rest := adminBodyQuote.ReplaceAllString(desc, "")
 	return adminGate403.MatchString(rest) && !nonGate403.MatchString(rest)
 }

@@ -126,8 +126,8 @@ func TestADMD1RRRRRRRRRRR_Admin403ClassifierNegationScope(t *testing.T) {
 	require.False(t, admin403Gated(`Forbidden; this route doesn't return body `+q), "doesn't")
 	require.False(t, admin403Gated(`Forbidden; this route isn't refused with body `+q+` for owners`), "isn't")
 	require.False(t, admin403Gated(`Forbidden; callers cannot get body `+q), "cannot")
-	require.False(t, admin403Gated(`Forbidden; body `+q+` is never sent for the session owner`), "negation after the quotation")
-	require.False(t, admin403Gated(`Forbidden; body `+q+` isn't sent here (owner session only)`), "contraction after the quotation")
+	require.True(t, admin403Gated(`Forbidden; body `+q+` is never sent for the session owner`), "negation after the quotation")
+	require.True(t, admin403Gated(`Forbidden; body `+q+` isn't sent here (owner session only)`), "contraction after the quotation")
 	require.False(t, admin403Gated(`Forbidden; this route does not return body `+q+` and owner session only`), "plain not before verb")
 }
 
@@ -149,13 +149,13 @@ func TestADMD1RRRRRRRRRRR_Admin403AfterQuoteNegationNeedsQuoteVerb(t *testing.T)
 		require.True(t, admin403Gated("Forbidden; "+tail), tail)
 	}
 	// still negated: a quote verb follows the negation
-	require.False(t, admin403Gated(`Forbidden; body `+q+` is never sent for the session owner`))
-	require.False(t, admin403Gated(`Forbidden; body `+q+` isn't returned here`))
-	require.False(t, admin403Gated(`Forbidden; body `+q+` is not to be sent to owners`))
-	require.False(t, admin403Gated(`Forbidden; body `+q+` is no longer returned`))
+	require.True(t, admin403Gated(`Forbidden; body `+q+` is never sent for the session owner`))
+	require.True(t, admin403Gated(`Forbidden; body `+q+` isn't returned here`))
+	require.True(t, admin403Gated(`Forbidden; body `+q+` is not to be sent to owners`))
+	require.True(t, admin403Gated(`Forbidden; body `+q+` is no longer returned`))
 	// curly apostrophe is normalised
 	require.False(t, admin403Gated("Forbidden; this route doesn’t return body "+q))
-	require.False(t, admin403Gated("Forbidden; body "+q+" isn’t sent here"))
+	require.True(t, admin403Gated("Forbidden; body "+q+" isn’t sent here"))
 }
 
 // Known limit (documented, not fixed): a negation separated from its verb by a comma-delimited interjection is read as affirmative,
@@ -168,16 +168,11 @@ func TestADMD1RRRRRRRRRRR_Admin403CommaInterjectionKnownLimit(t *testing.T) {
 // ADMD1RRRRRRRRRRR round 3/4 (structural): the negation-scope class enumerated as a GENERATED matrix. The expectation of every cell
 // comes from how the cell was BUILT (an independent plain-language oracle), never from the classifier's regexes:
 //
-//	RULE  a quotation `body {...}` is negated only when a negation directly governs it:
-//	      (before-adjacent) the negation sits immediately before the verb that introduces the quotation ("never returns body {...}",
-//	                        "does not return body {...}", "no longer", "neither/nor", "without returning body {...}");
-//	      (after-adjacent)  the quotation is the SUBJECT of a predicate negation: no affirmative quote verb stands directly before
-//	                        it, and it is followed immediately by auxiliary + never/not/no longer + verb, or a contraction
-//	                        (isn't, doesn't), or "cannot", + verb ("Forbidden; body {...} is never sent").
-//	      AMBIGUITY RESOLVES TO GATED: when an affirmative quote verb directly precedes the quotation ("callers get body {...} is
-//	      not sent") "get" may be a passive auxiliary, so the sentence is read affirmative; a bare "never sent" with no auxiliary
-//	      is likewise read affirmative; "without" negates only before-adjacent.
-//	      A negation anywhere else (non-adjacent before/after, another clause) never negates the quotation.
+//	RULE  a quotation `body {...}` is negated ONLY when a negation directly governs the verb that introduces it
+//	      (before-adjacent): "never returns body {...}", "does not return body {...}", "no longer", "neither/nor",
+//	      "without returning body {...}". EVERYTHING ELSE IS GATED: a negation after the quotation (subject form or not, with or
+//	      without an auxiliary, with or without an affirmative verb before the quotation), a non-adjacent negation, a negation in
+//	      another clause, a negated quotation followed by an affirmative one. Ambiguity resolves to gated.
 //	HARD RULE a false negative (oracle says gated, classifier says not gated) can NEVER be allow-listed. Only the conservative
 //	      direction (oracle says negated, classifier says gated) may appear in matrixAllowList, each with a reason.
 type matrixVerb struct{ base, third, ing, part string }
@@ -244,17 +239,17 @@ func TestADMD1RRRRRRRRRRR_Admin403NegationScopeMatrix(t *testing.T) {
 					if isDo(aux) {
 						form = v.base
 					}
-					add("after-subj/"+id+"/aux-"+aux, "body "+q+" "+aux+" "+n.text+" "+form, true)
+					add("after-subj/"+id+"/aux-"+aux, "body "+q+" "+aux+" "+n.text+" "+form, false)
 				}
 				add("after-subj/"+id+"/noaux", "body "+q+" "+n.text+" "+v.part+" to anyone else", false)
 				// an affirmative quote verb directly before the quotation: ambiguous ("get" may be passive), read affirmative
 				add("after-affverb/"+id, "callers "+v.third+" body "+q+" is "+n.text+" "+v.part, false)
 				add("after-affverb-with/"+id, "callers are refused with body "+q+" is "+n.text+" "+v.part, false)
 			case "contraction":
-				add("after-subj/"+id, "body "+q+" "+n.text+" "+v.base, true)
+				add("after-subj/"+id, "body "+q+" "+n.text+" "+v.base, false)
 				add("after-affverb/"+id, "callers "+v.third+" body "+q+" "+n.text+" "+v.base, false)
 			case "cannot":
-				add("after-subj/"+id, "body "+q+" cannot be "+v.part, true)
+				add("after-subj/"+id, "body "+q+" cannot be "+v.part, false)
 				add("after-affverb/"+id, "callers "+v.third+" body "+q+" cannot be "+v.part, false)
 			case "without", "nor":
 				add("after-subj/"+id, "body "+q+" "+n.text+" "+v.ing+" more", false)
@@ -301,8 +296,8 @@ func TestADMD1RRRRRRRRRRR_Admin403AmbiguousAfterQuoteResolvesGated(t *testing.T)
 	} {
 		require.True(t, admin403Gated("Forbidden; "+tail), tail)
 	}
-	require.False(t, admin403Gated("Forbidden; body "+q+" is not sent"))
-	require.False(t, admin403Gated("The body "+q+" is never returned"))
+	require.True(t, admin403Gated("Forbidden; body "+q+" is not sent"))
+	require.True(t, admin403Gated("The body "+q+" is never returned"))
 }
 
 // Known limits, documented and pinned at their CURRENT verdict (not-gated; these are the only false negatives and they require a
@@ -330,6 +325,32 @@ func TestADMD1RRRRRRRRRRR_Admin403ReviewerPhrasings(t *testing.T) {
 	} {
 		require.True(t, admin403Gated("Forbidden; "+tail), tail)
 	}
-	require.False(t, admin403Gated("Forbidden; body "+q+" is never sent for the session owner"))
+	require.True(t, admin403Gated("Forbidden; body "+q+" is never sent for the session owner"))
 	require.False(t, admin403Gated("Forbidden; this route doesnʼt return body "+q))
+}
+
+// ADMD1RRRRRRRRRRR round 5: after-quote negation is never applied, and the keyword fallback keeps a bare JSON body's "admin" word.
+func TestADMD1RRRRRRRRRRR_Admin403AfterQuoteNeverNegatesAndBareBodyKeepsKeyword(t *testing.T) {
+	const q = `{"success":false,"error":"Admin role required"}`
+	for _, d := range []string{
+		"Forbidden: body " + q + " does not get cached by the session layer",
+		"body " + q + " is never returned to administrators, only to non-admin sessions",
+		"body " + q + " is not returned to owners only, every non-administrator session gets it",
+		"body " + q + " is not shown differently to owners",
+		"body " + q + " isn't documented elsewhere; it is the session admin gate",
+		"body " + q + " is not returned with a 401 for the session owner",
+		"Forbidden; the response is `" + q + "`",
+		"Forbidden; returns `" + q + "` to non-gated callers",
+	} {
+		require.True(t, admin403Gated(d), d)
+	}
+}
+
+// Known limits (documented, pinned at the CURRENT verdict): a scope-restricted pre-quote negation reads as negated, as does a
+// double negative; and a bare JSON body (no `body ` marker) that is accompanied by owner/session words is not gated.
+func TestADMD1RRRRRRRRRRR_Admin403Round5KnownLimitsPinned(t *testing.T) {
+	const q = `{"success":false,"error":"Admin role required"}`
+	require.False(t, admin403Gated("Forbidden; callers never not get body "+q), "KNOWN LIMIT: never not get")
+	require.False(t, admin403Gated("Forbidden; owners do not get body "+q+" but other callers do"), "KNOWN LIMIT: scope-restricted pre-quote negation")
+	require.False(t, admin403Gated("Forbidden; the session owner is shown "+q), "KNOWN LIMIT: bare JSON with owner/session words and no body marker")
 }
