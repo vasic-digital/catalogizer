@@ -3279,3 +3279,11 @@ HAUTHZ-F3 CLOSED PROVISIONAL (ErrReportNotFound -> 404, identical to GET; FU2-M1
 - GATECHK4-m4: PKGC-FU4-F2 short id 2c799a9f resolves (merge fix/chpw-rl-3); drop "not re-resolved".
 - GATECHK4-n1: "all merges Opus GO" is 24 of 25 (one sync merge).
 - GATECHK4-NEXT: next revision adds HAUTHZ-F3/FU2-M1..M3 (8e717b477), CPN1-M1..M3 (8a4fcdf6a), SSEFU2-F3 (af4ab5216), G10 parity bd86adcad, updated G12 counts; G2 wording to six products and protocol-level host legs (Synology generalisation, branch syng).
+
+## CAT-SMB-COPY-1 review follow-ups (Opus, 2026-11-16, PROVISIONAL)
+- SMBCOPYR-m1: read-only destination is now overwritten (go-smb2 Share.Remove chmod-retries); destination identity (ACL, times, file id, hard links) not preserved. Decide + document.
+- SMBCOPYR-m2: same-path guard compares raw strings; `./x` vs `x` returns nil not ErrCopySameFile. Fix: path.Clean both.
+- SMBCOPYR-m3: temp cleanup runs on expired deadline context and can leak the temp file.
+- SMBCOPYR-m4: leftover `.copy-*.tmp` visible to scans; path in error text.
+- SMBCOPYR-m5: REPORT.md cites b91ecc76d for LOGSHARE-TOK-1-F1 but that commit introduced the collision; renumber landed via aed566da5/3a33fb054. Correct citation.
+- SMBCOPYR-M5/R2-R7: surviving mutants (final ctx check, srcFile.Close, temp location, stat-error, deadline, chunk write error, temp Close error); need an injectable writer seam. Chunk-cancel test adopted (smb_copy_chunk_cancel_test.go, kills M7).
