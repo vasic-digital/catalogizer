@@ -99,11 +99,38 @@ func (h *PlaybackHandler) StartSession(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"session_id": id})
 }
 
+// ownsSession reports whether the playback session belongs to the caller. A session of another user answers exactly like a
+// missing one (404), so the API is no oracle for foreign session ids (CAT-HAUTHZ-1).
+func (h *PlaybackHandler) ownsSession(c *gin.Context, sessionID int64) bool {
+	uid, ok := userIDFromContext(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthenticated"})
+		return false
+	}
+	sess, err := h.repo.Get(c.Request.Context(), sessionID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) || errors.Is(err, repository.ErrPlaybackSessionNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "playback session not found"})
+			return false
+		}
+		respondInternal(c, http.StatusInternalServerError, "internal error", err)
+		return false
+	}
+	if sess.UserID != uid {
+		c.JSON(http.StatusNotFound, gin.H{"error": "playback session not found"})
+		return false
+	}
+	return true
+}
+
 // ProgressSession handles POST /api/v1/playback/sessions/progress.
 func (h *PlaybackHandler) ProgressSession(c *gin.Context) {
 	var req progressPlaybackRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		respondBadBody(c, err)
+		return
+	}
+	if !h.ownsSession(c, req.SessionID) {
 		return
 	}
 	if err := h.repo.Progress(c.Request.Context(), repository.PlaybackProgress{
@@ -126,6 +153,9 @@ func (h *PlaybackHandler) EndSession(c *gin.Context) {
 	var req endPlaybackRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		respondBadBody(c, err)
+		return
+	}
+	if !h.ownsSession(c, req.SessionID) {
 		return
 	}
 	if err := h.repo.End(c.Request.Context(), repository.PlaybackEnd{

@@ -1,0 +1,66 @@
+[
+ [
+  "M1 playback ownership",
+  "KILLED",
+  [
+   "denied/playback_progress_foreign_session",
+   "denied/playback_end_foreign_session",
+   "state/B's_session_unchanged"
+  ]
+ ],
+ [
+  "M2 collection canRead",
+  "KILLED",
+  [
+   "denied/collection_read",
+   "denied/collection_items"
+  ]
+ ],
+ [
+  "M3 playlist owner",
+  "KILLED",
+  [
+   "denied/playlist_update",
+   "denied/playlist_add_item",
+   "denied/playlist_remove_item",
+   "denied/playlist_delete",
+   "control/playlist_list_B_sees_own",
+   "playlists"
+  ]
+ ],
+ [
+  "M4 conversion job owner",
+  "BUILD-FAIL",
+  []
+ ],
+ [
+  "M5 analytics body user_id",
+  "KILLED",
+  [
+   "denied/analytics_write_as_B_(access)",
+   "denied/analytics_write_as_B_(event)"
+  ]
+ ],
+ [
+  "M6 RequireSelfOrAdmin",
+  "BUILD-FAIL",
+  []
+ ],
+ [
+  "M7 subtitle uploader",
+  "KILLED",
+  [
+   "denied/subtitle_delete_by_A",
+   "state/subtitle_survives",
+   "control/subtitle_delete_by_owner_B"
+  ]
+ ],
+ [
+  "M8 collection canEdit",
+  "KILLED",
+  [
+   "denied/collection_public_update",
+   "denied/collection_public_delete"
+  ]
+ ]
+]

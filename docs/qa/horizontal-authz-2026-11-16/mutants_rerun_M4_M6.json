@@ -1,0 +1,22 @@
+[
+ [
+  "M4 conversion job owner",
+  "KILLED",
+  [
+   "denied/conversion_read",
+   "denied/conversion_cancel",
+   "denied/conversion_retry",
+   "denied/conversion_download",
+   "denied/conversion_delete",
+   "control/conversion_list_B_sees_own",
+   "control/conversion_job_survives"
+  ]
+ ],
+ [
+  "M6 RequireSelfOrAdmin",
+  "KILLED",
+  [
+   "denied/analytics_user/B"
+  ]
+ ]
+]
