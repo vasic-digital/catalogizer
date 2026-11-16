@@ -128,8 +128,11 @@ func (suite *SMBServiceTestSuite) TestSMBConnectionPooling() {
 	assert.True(suite.T(), initialState)
 
 	// Connect() now does a real TCP probe with a bounded 5s timeout.
-	// The test config points "test-server" at an unreachable RFC1918
-	// address, so Connect must fail with a wrapped network error.
+	// ENV-F1: the fixture's RFC1918 address 192.168.1.100 is a REAL SMB host on
+	// the developer LAN (Connect returned nil there), so reachability of the
+	// address cannot be assumed. Port 1 (tcpmux) never serves SMB, so the probe
+	// fails (refused or timed out) on any network, which is what this test needs.
+	suite.service.config.SMB.Hosts[0].Port = 1
 	err := suite.service.Connect("test-server")
 	assert.Error(suite.T(), err, "Connect to unreachable host must fail")
 	assert.Contains(suite.T(), err.Error(), "failed to connect to SMB host",
