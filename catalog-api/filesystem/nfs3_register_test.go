@@ -379,26 +379,65 @@ func TestNFS3EffectiveIdentityReadback(t *testing.T) {
 	}
 }
 
-// NFS3W-FU-m1: the contract is 0-65535 for every port key (0 = default / absent); anything outside is refused, `port` included, and the error says so.
+// NFS3W-FU-m1 (direct layer): nfs3ConfigFromSettings range-checks every port key as 0-65535 (0 = default; at THIS layer port 0 = ask the portmapper).
+// This is defence in depth for direct callers; at the factory `port` is stricter (1-65535), see TestNFS3FactoryPortContract. The refusal must be named
+// by its own key: the message must START with "nfs3: <key> must", so "mount_port" can never stand in for "port".
 func TestNFS3ConfigPortRangeContract(t *testing.T) {
-	base := func(k string, v int) map[string]interface{} {
-		return map[string]interface{}{"host": "nas.example", "path": "/e", k: v}
+	mk := func(extra map[string]interface{}) map[string]interface{} {
+		m := map[string]interface{}{"host": "nas.example", "path": "/e"}
+		for k, v := range extra {
+			m[k] = v
+		}
+		return m
 	}
 	for _, k := range []string{KeyPort, KeyMountPort, KeyPortmapPort} {
 		for _, v := range []int{-1, 65536, 70000} {
-			_, err := nfs3ConfigFromSettings(base(k, v))
-			if err == nil {
-				t.Errorf("%s=%d must be refused", k, v)
-				continue
-			}
-			if !strings.Contains(err.Error(), k) || !strings.Contains(err.Error(), "0-65535 (0 = default)") {
-				t.Errorf("%s=%d: error %q must name the key and the 0-65535 (0 = default) contract", k, v, err)
+			// each bad value with every combination of the OTHER keys set to valid values or absent: the error must still name k
+			for _, others := range []map[string]interface{}{
+				{}, {"port": 2049}, {"mount_port": 2049}, {"portmap_port": 111}, {"port": 2049, "mount_port": 2049, "portmap_port": 111},
+			} {
+				in := map[string]interface{}{}
+				for ok, ov := range others {
+					in[ok] = ov
+				}
+				in[k] = v
+				_, err := nfs3ConfigFromSettings(mk(in))
+				want := "nfs3: " + k + " must be 0-65535 (0 = default)"
+				if err == nil {
+					t.Errorf("%s=%d with %v must be refused", k, v, others)
+				} else if err.Error() != want {
+					t.Errorf("%s=%d with %v: error %q, want exactly %q", k, v, others, err, want)
+				}
 			}
 		}
 		for _, v := range []int{0, 1, 65535} {
-			if _, err := nfs3ConfigFromSettings(base(k, v)); err != nil {
-				t.Errorf("%s=%d must be accepted: %v", k, v, err)
+			if _, err := nfs3ConfigFromSettings(mk(map[string]interface{}{k: v})); err != nil {
+				t.Errorf("%s=%d must be accepted at the direct layer: %v", k, v, err)
 			}
+		}
+	}
+}
+
+// NFS3W-FU-m1 (factory layer, the only production entry): `port` is 1-65535 (ValidateSettings refuses 0, negatives and > 65535 with "port 1-65535");
+// mount_port / portmap_port are 0-65535 with 0 = default and are accepted at 0.
+func TestNFS3FactoryPortContract(t *testing.T) {
+	if err := RegisterNFS3Protocol(); err != nil {
+		t.Fatal(err)
+	}
+	defer UnregisterProtocol("nfs3")
+	f := NewDefaultClientFactory()
+	for _, v := range []int{0, -1, 65536, 70000} {
+		_, err := f.CreateClient(nfs3Cfg(map[string]interface{}{"host": "127.0.0.1", "path": "/export", "port": v}))
+		if err == nil || !strings.Contains(err.Error(), "port (want a port 1-65535)") {
+			t.Errorf("factory port=%d: %v, want the \"port 1-65535\" refusal", v, err)
+		}
+	}
+	for _, k := range []string{KeyMountPort, KeyPortmapPort} {
+		c, err := f.CreateClient(nfs3Cfg(map[string]interface{}{"host": "127.0.0.1", "path": "/export", "port": 12049, k: 0}))
+		if err != nil {
+			t.Errorf("factory %s=0 (default) must be accepted: %v", k, err)
+		} else if c == nil {
+			t.Errorf("factory %s=0: nil client", k)
 		}
 	}
 }

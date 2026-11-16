@@ -60,7 +60,9 @@ func nfs3ConfigFromSettings(settings map[string]interface{}) (nfs3.Config, error
 	port := IntSetting(settings, KeyPort, 0)
 	mountPort := IntSetting(settings, KeyMountPort, port)
 	portmapPort := IntSetting(settings, KeyPortmapPort, 0)
-	// Contract (NFS3W-FU-m1): every port key is 0-65535 and 0 means "default" (port: ask the portmapper; mount_port: follows port; portmap_port: 111).
+	// Contract (NFS3W-FU-m1). At the factory (DefaultClientFactory.CreateClient -> ValidateSettings) `port` is 1-65535; mount_port / portmap_port are 0-65535
+	// with 0 = default (mount_port follows port, portmap_port is 111). THIS check is defence in depth for direct callers: every key is 0-65535 here and 0 means
+	// "default" (for port: ask the portmapper).
 	// `port` is checked first and by name, so an out-of-range port is reported as port, not as the mount_port it would be copied into.
 	for _, p := range []struct {
 		name string
