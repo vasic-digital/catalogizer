@@ -29,7 +29,9 @@ var (
 	negatedVerbBefore = regexp.MustCompile(`(?i)(?:\b(?:never|not|no\s+longer|neither|nor|without)|n't|\bcannot)\s+(?:(?:be|been|being|longer|ever|also|normally|ordinarily|to)\s+)*` + quoteVerbs + `(?:\s+with)?\s*$`)
 	// predicate negation right after the quotation, only when a quote verb follows it: `body {...} is never sent`, `... isn't returned`.
 	// "not the generic error", "cannot be retried", "don't retry" are affirmative continuations and do not negate the quotation.
-	negatedAfter = regexp.MustCompile(`(?i)^\s*(?:(?:is|are|was|were|be|been|being|do|does|did|will|would|has|have|had)\s+(?:never|not|no\s+longer)|\w+n't|cannot)\s+(?:(?:be|been|being|longer|ever|also|normally|ordinarily|to)\s+)*` + quoteVerbs + `\b`)
+	// an affirmative quote verb (optionally "with") ending the text before the quotation: "callers get body {...}", "refused with body {...}"
+	affirmativeVerbBefore = regexp.MustCompile(`(?i)\b` + quoteVerbs + `(?:\s+with)?\s*$`)
+	negatedAfter          = regexp.MustCompile(`(?i)^\s*(?:(?:is|are|was|were|be|been|being|do|does|did|will|would|has|have|had)\s+(?:never|not|no\s+longer)|\w+n't|cannot)\s+(?:(?:be|been|being|longer|ever|also|normally|ordinarily|to)\s+)*` + quoteVerbs + `\b`)
 )
 
 // adminBodyDocumented reports whether desc quotes the admin body in at least one clause where the quotation is not negated.
@@ -43,7 +45,10 @@ var (
 func adminBodyDocumented(desc string) bool {
 	desc = strings.NewReplacer("\u2019", "'", "\u2018", "'", "\u02bc", "'").Replace(desc)
 	for _, loc := range adminBodyQuote.FindAllStringIndex(desc, -1) {
-		if negatedVerbBefore.MatchString(desc[:loc[0]]) || negatedAfter.MatchString(desc[loc[1]:]) {
+		before := desc[:loc[0]]
+		// ambiguity resolves to gated: when an affirmative quote verb stands directly before the quotation ("callers get body {...} is
+		// not sent") "get" may be a passive auxiliary, so a negation after the quotation is not applied to it
+		if negatedVerbBefore.MatchString(before) || (!affirmativeVerbBefore.MatchString(before) && negatedAfter.MatchString(desc[loc[1]:])) {
 			continue
 		}
 		return true

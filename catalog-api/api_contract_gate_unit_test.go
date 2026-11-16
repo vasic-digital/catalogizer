@@ -52,13 +52,16 @@ func TestADMD1RRRRRRRRRR_AdminBodyQuoteInNegativeSentenceIsNotGated(t *testing.T
 // legacyAdmin403Gated is a verbatim copy of the classifier as merged before ADMD1RRRRRRRRRRR-F1..F3, kept only to prove the census of the
 // real spec did not move.
 var (
+	legacyAdminBodyQuote   = regexp.MustCompile(`body ` + regexp.QuoteMeta(`{"success":false,"error":"Admin role required"}`))
+	legacyAdminGate403     = regexp.MustCompile(`(?i)admin|lacks|system\.configure|user\.manage|report\.`)
+	legacyNonGate403       = regexp.MustCompile(`(?i)registration|pending|owner|not the caller|neither|visible but|share|job|domain not allowed|another user|session`)
 	legacyClauseBoundary   = regexp.MustCompile(`(?i)[;,.()]|\b(or|but|and)\b`)
 	legacyNegationInClause = regexp.MustCompile(`(?i)\b(never|not|no|neither|nor|without)\b`)
 )
 
 func legacyAdmin403Gated(desc string) bool {
 	doc := false
-	for _, loc := range adminBodyQuote.FindAllStringIndex(desc, -1) {
+	for _, loc := range legacyAdminBodyQuote.FindAllStringIndex(desc, -1) {
 		before := desc[:loc[0]]
 		if cuts := legacyClauseBoundary.FindAllStringIndex(before, -1); len(cuts) > 0 {
 			before = before[cuts[len(cuts)-1][1]:]
@@ -70,7 +73,7 @@ func legacyAdmin403Gated(desc string) bool {
 	if doc {
 		return true
 	}
-	return adminGate403.MatchString(desc) && !nonGate403.MatchString(desc)
+	return legacyAdminGate403.MatchString(desc) && !legacyNonGate403.MatchString(desc)
 }
 
 // ADMD1RRRRRRRRRRR-F1: every described 403 of the real spec classifies exactly as under the pre-change classifier.
@@ -162,38 +165,46 @@ func TestADMD1RRRRRRRRRRR_Admin403CommaInterjectionKnownLimit(t *testing.T) {
 	require.True(t, admin403Gated(`Forbidden; this route does not, for owners, return body `+q))
 }
 
-// ADMD1RRRRRRRRRRR round 3 (structural): the negation-scope class enumerated as a GENERATED matrix. The expectation of every cell
+// ADMD1RRRRRRRRRRR round 3/4 (structural): the negation-scope class enumerated as a GENERATED matrix. The expectation of every cell
 // comes from how the cell was BUILT (an independent plain-language oracle), never from the classifier's regexes:
 //
-//	RULE  a quotation `body {...}` is negated only when a negation directly governs the verb that introduces it:
-//	      (before-adjacent) the negation sits immediately before that verb, any auxiliary/adverb allowed in between;
-//	      (after-adjacent)  the negation follows the quotation immediately AND is a predicate negation: an auxiliary
-//	                        (is/are/was/were/does/did/will) + never/not/no longer + verb, or a contraction (isn't, doesn't),
-//	                        or "cannot", + verb. A bare "never sent" with no auxiliary is ambiguous and is read AFFIRMATIVE.
-//	      "without" negates only before-adjacent ("without returning body {...}").
+//	RULE  a quotation `body {...}` is negated only when a negation directly governs it:
+//	      (before-adjacent) the negation sits immediately before the verb that introduces the quotation ("never returns body {...}",
+//	                        "does not return body {...}", "no longer", "neither/nor", "without returning body {...}");
+//	      (after-adjacent)  the quotation is the SUBJECT of a predicate negation: no affirmative quote verb stands directly before
+//	                        it, and it is followed immediately by auxiliary + never/not/no longer + verb, or a contraction
+//	                        (isn't, doesn't), or "cannot", + verb ("Forbidden; body {...} is never sent").
+//	      AMBIGUITY RESOLVES TO GATED: when an affirmative quote verb directly precedes the quotation ("callers get body {...} is
+//	      not sent") "get" may be a passive auxiliary, so the sentence is read affirmative; a bare "never sent" with no auxiliary
+//	      is likewise read affirmative; "without" negates only before-adjacent.
 //	      A negation anywhere else (non-adjacent before/after, another clause) never negates the quotation.
 //	HARD RULE a false negative (oracle says gated, classifier says not gated) can NEVER be allow-listed. Only the conservative
 //	      direction (oracle says negated, classifier says gated) may appear in matrixAllowList, each with a reason.
 type matrixVerb struct{ base, third, ing, part string }
 
+// every verb the classifier's verb list contains, so dropping any of them is detected
 var matrixVerbs = []matrixVerb{
-	{"return", "returns", "returning", "returned"},
-	{"send", "sends", "sending", "sent"},
-	{"get", "gets", "getting", "got"},
-	{"refuse", "refuses", "refusing", "refused"},
-	{"show", "shows", "showing", "shown"},
+	{"return", "returns", "returning", "returned"}, {"send", "sends", "sending", "sent"}, {"get", "gets", "getting", "got"},
+	{"refuse", "refuses", "refusing", "refused"}, {"reject", "rejects", "rejecting", "rejected"}, {"serve", "serves", "serving", "served"},
+	{"emit", "emits", "emitting", "emitted"}, {"produce", "produces", "producing", "produced"}, {"respond", "responds", "responding", "responded"},
+	{"answer", "answers", "answering", "answered"}, {"yield", "yields", "yielding", "yielded"}, {"show", "shows", "showing", "shown"},
+	{"include", "includes", "including", "included"}, {"carry", "carries", "carrying", "carried"}, {"quote", "quotes", "quoting", "quoted"},
+	{"document", "documents", "documenting", "documented"}, {"receive", "receives", "receiving", "received"},
 }
 
 type matrixNeg struct {
-	kind string // word | contraction | cannot | without
+	kind string // word | contraction | cannot | without | nor
 	text string // as written before a base verb
 }
 
 var matrixNegs = []matrixNeg{
-	{"word", "never"}, {"word", "not"}, {"word", "no longer"},
+	{"word", "never"}, {"word", "not"}, {"word", "no longer"}, {"nor", "neither"}, {"nor", "nor"},
 	{"contraction", "doesn't"}, {"contraction", "don't"}, {"contraction", "won't"}, {"contraction", "isn't"}, {"contraction", "wasn't"},
 	{"cannot", "cannot"}, {"without", "without"},
 }
+
+// every auxiliary the classifier accepts after the quotation; do-forms take the base verb, the rest the participle
+var matrixAux = []string{"is", "are", "was", "were", "be", "been", "being", "do", "does", "did", "will", "would", "has", "have", "had"}
 
 var matrixAllowList = map[string]string{}
 
@@ -207,6 +218,7 @@ func TestADMD1RRRRRRRRRRR_Admin403NegationScopeMatrix(t *testing.T) {
 	add := func(name, desc string, negated bool) {
 		cells = append(cells, cell{name, "Forbidden; " + desc, negated})
 	}
+	isDo := func(a string) bool { return a == "do" || a == "does" || a == "did" || a == "will" || a == "would" }
 	for _, n := range matrixNegs {
 		for _, v := range matrixVerbs {
 			id := n.text + "/" + v.base
@@ -217,34 +229,45 @@ func TestADMD1RRRRRRRRRRR_Admin403NegationScopeMatrix(t *testing.T) {
 			case "word":
 				add("before-adj/"+id+"/aux", "this route does "+strings.Replace(n.text, "no longer", "not", 1)+" "+v.base+" body "+q, true)
 				add("before-adj/"+id+"/noaux", "this route "+n.text+" "+v.third+" body "+q, true)
+			case "nor":
+				add("before-adj/"+id, "this route "+n.text+" "+v.third+" body "+q, true)
 			default:
 				add("before-adj/"+id, "this route "+n.text+" "+v.base+" body "+q, true)
 			}
 			// before-non-adjacent: the negation governs a different verb; the introducing verb is the affirmative "gets"
 			add("before-nonadj/"+id, "a caller who "+n.text+" "+v.base+" the role gets body "+q+" for the session", false)
-			// after-adjacent
+			// after-adjacent, quotation as subject (no affirmative verb before it)
 			switch n.kind {
 			case "word":
-				for _, aux := range []string{"is", "was", "does", "will"} {
+				for _, aux := range matrixAux {
 					form := v.part
-					if aux == "does" || aux == "will" {
+					if isDo(aux) {
 						form = v.base
 					}
-					add("after-adj/"+id+"/aux-"+aux, "callers get body "+q+" "+aux+" "+n.text+" "+form, true)
+					add("after-subj/"+id+"/aux-"+aux, "body "+q+" "+aux+" "+n.text+" "+form, true)
 				}
-				add("after-adj/"+id+"/noaux", "callers get body "+q+" "+n.text+" "+v.part+" to anyone else", false)
-			case "contraction", "cannot":
-				add("after-adj/"+id, "callers get body "+q+" "+n.text+" "+v.base, n.kind == "cannot" || n.text == "doesn't" || n.text == "don't" || n.text == "won't" || n.text == "isn't" || n.text == "wasn't")
-			case "without":
-				add("after-adj/"+id, "callers get body "+q+" without "+v.ing+" more", false)
+				add("after-subj/"+id+"/noaux", "body "+q+" "+n.text+" "+v.part+" to anyone else", false)
+				// an affirmative quote verb directly before the quotation: ambiguous ("get" may be passive), read affirmative
+				add("after-affverb/"+id, "callers "+v.third+" body "+q+" is "+n.text+" "+v.part, false)
+				add("after-affverb-with/"+id, "callers are refused with body "+q+" is "+n.text+" "+v.part, false)
+			case "contraction":
+				add("after-subj/"+id, "body "+q+" "+n.text+" "+v.base, true)
+				add("after-affverb/"+id, "callers "+v.third+" body "+q+" "+n.text+" "+v.base, false)
+			case "cannot":
+				add("after-subj/"+id, "body "+q+" cannot be "+v.part, true)
+				add("after-affverb/"+id, "callers "+v.third+" body "+q+" cannot be "+v.part, false)
+			case "without", "nor":
+				add("after-subj/"+id, "body "+q+" "+n.text+" "+v.ing+" more", false)
 			}
 			// after-non-adjacent and other-clause
 			add("after-nonadj/"+id, "callers get body "+q+" for everyone "+n.text+" "+v.part, false)
 			add("after-otherclause/"+id, "callers get body "+q+" and owners "+n.text+" "+v.base+" it", false)
 			add("before-otherclause/"+id, "owners "+n.text+" "+v.base+" it; callers get body "+q, false)
+			// a negated quotation followed by an affirmative one: the affirmative one decides (gated)
+			add("neg-then-aff/"+id, "owners "+n.text+" "+v.base+" body "+q+"; other callers get body "+q, false)
 		}
 	}
-	require.Greater(t, len(cells), 300)
+	require.Greater(t, len(cells), 1000)
 	for _, c := range cells {
 		got := admin403Gated(c.desc)
 		wantGated := !c.negated
@@ -262,6 +285,34 @@ func TestADMD1RRRRRRRRRRR_Admin403NegationScopeMatrix(t *testing.T) {
 			require.NotEmpty(t, reason)
 		}
 	}
+}
+
+// ADMD1RRRRRRRRRRR round 4: the reviewer's ambiguous after-quote sentences (an affirmative verb stands before the quotation) are gated,
+// the subject forms stay negated, and a negated quotation followed by an affirmative one is gated.
+func TestADMD1RRRRRRRRRRR_Admin403AmbiguousAfterQuoteResolvesGated(t *testing.T) {
+	const q = `{"success":false,"error":"Admin role required"}`
+	for _, tail := range []string{
+		"callers get body " + q + " is not sent",
+		"callers get body " + q + " does not get retried",
+		"callers get body " + q + " won't get retried by the session layer",
+		"callers get body " + q + " isn't shown as the owner error",
+		"callers get body " + q + " are not returned to the owner",
+		"owners never receive body " + q + "; other callers get body " + q,
+	} {
+		require.True(t, admin403Gated("Forbidden; "+tail), tail)
+	}
+	require.False(t, admin403Gated("Forbidden; body "+q+" is not sent"))
+	require.False(t, admin403Gated("The body "+q+" is never returned"))
+}
+
+// Known limits, documented and pinned at their CURRENT verdict (not-gated; these are the only false negatives and they require a
+// double negative or a negation inside an "or"/"without" construction that the classifier does not parse). Changing this verdict is
+// deliberate work: handle them, then flip these assertions.
+func TestADMD1RRRRRRRRRRR_Admin403KnownLimitsPinned(t *testing.T) {
+	const q = `{"success":false,"error":"Admin role required"}`
+	require.False(t, admin403Gated("Forbidden; callers either get it or not get body "+q), "KNOWN LIMIT: 'or not get body'")
+	require.False(t, admin403Gated("Forbidden; callers are never anonymous, never without getting body "+q), "KNOWN LIMIT: 'without getting body'")
+	require.False(t, admin403Gated("Forbidden; callers are never not refused with body "+q), "KNOWN LIMIT: double negative")
 }
 
 // ADMD1RRRRRRRRRRR round 3: the reviewer's concrete descriptions, pinned verbatim next to the generated matrix.
