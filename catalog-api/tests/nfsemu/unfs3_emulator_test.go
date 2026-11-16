@@ -116,18 +116,47 @@ func TestUnfs3ListStatReadMatchServerManifest(t *testing.T) {
 	}
 }
 
-// TestUnfs3ListDirectoryIsKnownGap characterises a REAL finding of this emulator leg: unfs3 0.11.0 does not implement READDIRPLUS
-// (RFC 1813 3.3.17) and answers NFS3ERR_NOTSUPP, and pkg/nfs3 lists directories ONLY with READDIRPLUS (docs/NFS3_CLIENT.md: READDIR is not used).
-// So listing against an unfs3-style server fails today. Whether the client should gain a READDIR fallback is a product decision (UNCONFIRMED, not
-// invented here). This test pins the observed behaviour; when the client gains the fallback it FAILS and must be replaced by a listing-vs-manifest test.
-func TestUnfs3ListDirectoryIsKnownGap(t *testing.T) {
-	c, _ := connect(t)
-	_, err := c.ListDirectory(context.Background(), "/")
-	if err == nil {
-		t.Fatal("ListDirectory succeeded against unfs3: the known READDIRPLUS gap is closed, replace this test with a manifest comparison")
+// TestUnfs3ListDirectoryMatchesServerManifest: unfs3 0.11.0 does not implement READDIRPLUS (RFC 1813 3.3.17) and answers
+// NFS3ERR_NOTSUPP; pkg/nfs3 falls back to plain READDIR (3.3.16) and fills attributes via LOOKUP. This replaces the former
+// known-gap pin (CAT-NFS-EMU-2 finding, operator decision 2026-11-16, Roadmap-Item NFS3-READDIR). Every directory of the
+// server-side manifest must list exactly the manifest's children with matching type and size.
+func TestUnfs3ListDirectoryMatchesServerManifest(t *testing.T) {
+	c, man := connect(t)
+	ctx := context.Background()
+	want := map[string]map[string]entry{"/": {}}
+	for _, m := range man {
+		if m.Dir {
+			want[m.Path] = map[string]entry{}
+		}
 	}
-	if !strings.Contains(err.Error(), "NFS3ERR_NOTSUPP") {
-		t.Fatalf("unexpected listing error (not the documented NOTSUPP gap): %v", err)
+	for _, m := range man {
+		parent := m.Path[:strings.LastIndex(m.Path, "/")]
+		if parent == "" {
+			parent = "/"
+		}
+		want[parent][m.Path[strings.LastIndex(m.Path, "/")+1:]] = m
+	}
+	for dir, kids := range want {
+		l, err := c.ListDirectory(ctx, dir)
+		if err != nil {
+			t.Fatalf("ListDirectory(%s) against unfs3: %v", dir, err)
+		}
+		if len(l) != len(kids) {
+			t.Errorf("%s: %d entries, manifest has %d", dir, len(l), len(kids))
+		}
+		for _, f := range l {
+			m, ok := kids[f.Name]
+			if !ok {
+				t.Errorf("%s: unexpected entry %q", dir, f.Name)
+				continue
+			}
+			if f.IsDir != m.Dir || (!m.Dir && f.Size != m.Size) {
+				t.Errorf("%s/%s: IsDir=%v size=%d, manifest dir=%v size=%d", dir, f.Name, f.IsDir, f.Size, m.Dir, m.Size)
+			}
+		}
+	}
+	if _, ok := want["/"]["readme.txt"]; !ok {
+		t.Fatal("control needle: seeded readme.txt missing from the manifest, test would be vacuous")
 	}
 }
 
