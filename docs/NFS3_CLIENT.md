@@ -22,8 +22,8 @@ leaves stale mounts after a crash).
 | XDR | RFC 4506 | yes (strict bool/enum, bounded variable-length items) |
 | Port mapper v2 | RFC 1833 section 3, `PMAPPROC_GETPORT` | yes (TCP only) |
 | MOUNT v3 | RFC 1813 appendix I | `NULL` (server-side only in tests), `MNT`, `UMNT`, `EXPORT` |
-| NFS v3 | RFC 1813 section 3 | `NULL`, `GETATTR`, `LOOKUP`, `ACCESS`, `READ`, `READDIRPLUS`, `FSINFO` |
-| NFS v3 write and other read procedures | RFC 1813 | **not present**: `SETATTR`, `WRITE`, `CREATE`, `MKDIR`, `SYMLINK`, `MKNOD`, `REMOVE`, `RMDIR`, `RENAME`, `LINK`, `COMMIT` have no encoder and no procedure constant; `READLINK`, `READDIR`, `FSSTAT`, `PATHCONF` are not used |
+| NFS v3 | RFC 1813 section 3 | `NULL`, `GETATTR`, `LOOKUP`, `ACCESS`, `READ`, `READDIR` (fallback only), `READDIRPLUS`, `FSINFO` |
+| NFS v3 write and other read procedures | RFC 1813 | **not present**: `SETATTR`, `WRITE`, `CREATE`, `MKDIR`, `SYMLINK`, `MKNOD`, `REMOVE`, `RMDIR`, `RENAME`, `LINK`, `COMMIT` have no encoder and no procedure constant; `READLINK`, `FSSTAT`, `PATHCONF` are not used |
 | NFSv4, Kerberos (`RPCSEC_GSS`), NLM locking, NFS over UDP | | no |
 
 Read-only is enforced three ways: (1) at run time, `rpcConn.call`, the single place where a request is written, only sends
@@ -51,7 +51,9 @@ if err != nil { ... }
 if err := c.Connect(ctx); err != nil { ... }   // portmapper -> MNT -> FSINFO -> GETATTR(root)
 defer c.Disconnect(ctx)                        // best-effort UMNT
 
-entries, _ := c.ListDirectory(ctx, "/")        // READDIRPLUS, paged with cookie + cookieverf; no per-entry GETATTR
+entries, _ := c.ListDirectory(ctx, "/")        // READDIRPLUS, paged with cookie + cookieverf; no per-entry GETATTR. A server that answers READDIRPLUS with
+                                               // NFS3ERR_NOTSUPP (or RPC PROC_UNAVAIL; e.g. unfs3) is listed with plain READDIR instead (same paging); READDIR has
+                                               // no attributes, so each entry then costs one LOOKUP (+GETATTR if needed). No other error triggers this.
 r, _ := c.ReadFile(ctx, "/a/b.mkv")            // adaptive read-ahead (below); io.Seeker too (OpenSeekable)
 part, _ := c.ReadRange(ctx, "/a/b.mkv", off, n) // never reads past off+n
 ```
