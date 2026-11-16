@@ -71,7 +71,7 @@ type ApprovedClassAssignment struct {
 //
 // Multi-share behaviour (CPN1R-m4, decided): the ingest is per share, not all-or-nothing. On an error the returned IngestionResult is
 // NON-NIL and counts what was committed before the failure (earlier shares keep their binding and their correctly approved root; the
-// failing share's root is removed). Callers must report that partial state alongside the error.
+// failing share's root is removed, but its binding stays committed, so BoundShares can exceed NewRoots). Callers must report that partial state alongside the error.
 func (bi *BindingIngester) IngestProbeResultWithClass(ctx context.Context, result *SMBProbeResult, a ApprovedClassAssignment) (*IngestionResult, error) {
 	return bi.ingest(ctx, result, &a)
 }

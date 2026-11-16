@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"time"
 
@@ -38,8 +39,6 @@ type ProbeAndIngestResponse struct {
 	BoundShares   int    `json:"bound_shares,omitempty"`
 	NewRoots      int    `json:"new_roots,omitempty"`
 	Message       string `json:"message,omitempty"`
-	// Partial is set on a persistence error when some shares were already committed (CPN1R-m4); BoundShares/NewRoots then count them.
-	Partial bool `json:"partial,omitempty"`
 }
 
 // ProbeAndIngestHandler handles SMB probe-and-ingest API requests.
@@ -138,6 +137,12 @@ func (h *ProbeAndIngestHandler) ProbeAndIngest(c *gin.Context) {
 
 	result, err := h.discoveryService.ProbeVettedIPsWithIdentities(c.Request.Context(), req.Host, ips, identities)
 	if err != nil {
+		if errors.Is(err, services.ErrInvalidSMBInput) {
+			// CPN1R2-c: a blocked or unresolvable address is a client input error, not a server failure.
+			h.logger.Warn("Blocked probe to disallowed host", zap.String("host", req.Host))
+			c.JSON(http.StatusBadRequest, gin.H{"error": hostAllowedErr})
+			return
+		}
 		h.logger.Error("SMB probe failed",
 			zap.String("host", req.Host),
 			zap.Error(err))

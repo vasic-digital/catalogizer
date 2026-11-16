@@ -250,6 +250,12 @@ func TestProbeVettedIPsWithIdentities_RefusesBlockedIPsWithoutDialling(t *testin
 		require.ErrorIs(t, err, ErrInvalidSMBInput, bad)
 		require.False(t, res.Authenticated, bad)
 	}
+	// CPN1R2-b: the blocked address FIRST (kills a loop that skips the first element).
+	for _, bad := range []string{"127.0.0.1", "169.254.169.254"} {
+		res, err := s.ProbeVettedIPsWithIdentities(context.Background(), "x.test", []net.IP{net.ParseIP(bad), net.ParseIP("8.8.8.8")}, nil)
+		require.ErrorIs(t, err, ErrInvalidSMBInput, "first "+bad)
+		require.False(t, res.Authenticated, bad)
+	}
 	require.Zero(t, dialled)
 	// control: a private LAN address and a public one are still accepted.
 	res, err := s.ProbeVettedIPsWithIdentities(context.Background(), "x.test", []net.IP{net.ParseIP("192.168.1.5"), net.ParseIP("8.8.8.8")}, nil)

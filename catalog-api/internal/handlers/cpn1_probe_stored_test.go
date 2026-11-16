@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -107,6 +108,8 @@ func TestCPN1Stored_ConfirmedPrivateIsPrivateOperator(t *testing.T) {
 	code, out := s.post(map[string]interface{}{"host": "192.168.77.50", "confirm_private_network": true})
 	require.Equal(t, http.StatusOK, code, out)
 	require.Equal(t, [][3]string{{"private", "operator", "192.168.77.50"}}, s.stored())
+	_, hasPartial := out["partial"]
+	require.False(t, hasPartial, "partial must be absent on success")
 }
 
 // M1 + M3: a public host is stored public, source auto, with no confirmation asked.
@@ -229,4 +232,19 @@ func TestCPN1Stored_PartialMultiShareIsReported(t *testing.T) {
 	require.EqualValues(t, 2, out["bound_shares"])
 	require.EqualValues(t, 1, out["new_roots"])
 	require.Equal(t, [][3]string{{"public", "auto", "8.8.8.8"}}, s.stored(), "only the share whose approval was stored remains")
+}
+
+// CPN1R2-c: an ErrInvalidSMBInput coming back from the vetted-IP probe is a client input error: 400 with the host-not-allowed text, not 500.
+func TestCPN1Stored_ProbeInvalidInputIs400(t *testing.T) {
+	s := newCPN1Stored(t)
+	disc := services.NewSMBDiscoveryService(zap.NewNop()).WithProbeSeam(func(context.Context, string, []net.IP, services.SMBIdentity) ([]services.SMBShareInfo, error) {
+		return nil, fmt.Errorf("%w: port not allowed", services.ErrInvalidSMBInput)
+	})
+	h := NewProbeAndIngestHandler(disc, services.NewBindingIngester(s.db, zap.NewNop()), zap.NewNop())
+	s.r = gin.New()
+	s.r.POST("/api/v1/smb/probe-and-ingest", h.ProbeAndIngest)
+	code, out := s.post(map[string]interface{}{"host": "8.8.8.8"})
+	require.Equal(t, http.StatusBadRequest, code, out)
+	require.Equal(t, hostAllowedErr, out["error"])
+	require.Empty(t, s.stored())
 }
