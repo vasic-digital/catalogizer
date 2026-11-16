@@ -2,8 +2,10 @@ package services
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -17,6 +19,10 @@ import (
 	"catalogizer/models"
 	"catalogizer/repository"
 )
+
+// ErrReportNotFound is returned when a report does not exist OR belongs to another user. Both cases are one error on
+// purpose so that no caller can tell them apart (no id-existence oracle).
+var ErrReportNotFound = errors.New("report not found")
 
 type ErrorReportingService struct {
 	errorRepo        *repository.ErrorReportingRepository
@@ -210,11 +216,14 @@ func (s *ErrorReportingService) GetCrashReport(id int, userID int) (*models.Cras
 func (s *ErrorReportingService) UpdateErrorStatus(id int, userID int, status string) error {
 	report, err := s.errorRepo.GetErrorReport(id)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrReportNotFound
+		}
 		return fmt.Errorf("failed to get error report: %w", err)
 	}
 
 	if report.UserID != userID {
-		return fmt.Errorf("access denied")
+		return ErrReportNotFound
 	}
 
 	report.Status = status
@@ -229,11 +238,14 @@ func (s *ErrorReportingService) UpdateErrorStatus(id int, userID int, status str
 func (s *ErrorReportingService) UpdateCrashStatus(id int, userID int, status string) error {
 	report, err := s.crashRepo.GetCrashReport(id)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrReportNotFound
+		}
 		return fmt.Errorf("failed to get crash report: %w", err)
 	}
 
 	if report.UserID != userID {
-		return fmt.Errorf("access denied")
+		return ErrReportNotFound
 	}
 
 	report.Status = status

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -270,6 +271,10 @@ func (h *ErrorReportingHandler) UpdateErrorStatus(w http.ResponseWriter, r *http
 
 	err = h.errorReportingService.UpdateErrorStatus(reportID, userID, request.Status)
 	if err != nil {
+		if errors.Is(err, services.ErrReportNotFound) {
+			stdError(w, http.StatusNotFound, err)
+			return
+		}
 		stdError(w, http.StatusInternalServerError, err)
 		return
 	}
@@ -307,6 +312,10 @@ func (h *ErrorReportingHandler) UpdateCrashStatus(w http.ResponseWriter, r *http
 
 	err = h.errorReportingService.UpdateCrashStatus(reportID, userID, request.Status)
 	if err != nil {
+		if errors.Is(err, services.ErrReportNotFound) {
+			stdError(w, http.StatusNotFound, err)
+			return
+		}
 		stdError(w, http.StatusInternalServerError, err)
 		return
 	}

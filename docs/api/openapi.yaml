@@ -5797,8 +5797,10 @@ paths:
           description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
         '403':
           description: "Caller lacks `report.create` (or the permission check failed)."
+        '404':
+          description: "No such error report, or it belongs to another user: both answer the same 404 with the same body (no id-existence oracle; identical to the GET route)."
         '500':
-          description: "Service error while updating."
+          description: "Internal service error while updating (not returned for a missing or foreign id)."
   /api/v1/errors/crashes:
     get:
       tags: [errors]
@@ -5857,8 +5859,10 @@ paths:
           description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
         '403':
           description: "Caller lacks `report.create` (or the permission check failed)."
+        '404':
+          description: "No such crash report, or it belongs to another user: both answer the same 404 with the same body (no id-existence oracle; identical to the GET route)."
         '500':
-          description: "Service error while updating."
+          description: "Internal service error while updating (not returned for a missing or foreign id)."
   /api/v1/errors/statistics:
     get:
       tags: [errors]
