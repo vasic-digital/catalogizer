@@ -2,6 +2,23 @@
 
 Behaviour changes an operator must know about when upgrading. Newest first.
 
+## Upgrading from 2.4.3 to 2.5.0 (pre-release candidate rc.1, NOT production-ready)
+
+Full list with labels: `docs/CHANGELOG.md` section `[2.5.0]`. Nothing in 2.5.0 is verified; every item is PROVISIONAL. What an operator must do or expect:
+
+- **Back up the database first; there is no downgrade.** On start the server runs one new schema migration, **v30** (`create_user_favorites`: table `user_favorites(user_id, media_id)` with foreign keys on `users` and `media_items`, deleted with either row). The runner has only `Up` steps, so going back means restoring the backup. Whether a 2.4.3 binary tolerates the new table is UNCONFIRMED.
+- **Favorites are per user now.** Before, `PUT /api/v1/media/:id/favorite` wrote one global flag on the media item, so one user's favorite was visible to and overwritable by everyone. Now each user has their own row. The old global flags are **not migrated** (they never recorded an owner) and are ignored, so after the upgrade every user starts with no favorites. The request body field is `favorite`.
+- **New route:** `GET /api/v1/entities/:id/user-metadata` returns the caller's own user metadata only; a missing or foreign row is one 404.
+- **Contract changes (HTTP status):**
+  - Creating or updating a **sync destination** on a private network without confirmation answers **400** (was **409**). The error code `private_network_confirmation_required` is unchanged. Clients that branched on 409 must branch on the code or on 400. This matches storage roots.
+  - The `/sync/*` GET routes are **403** admin-required for non-admins; non-admin callers that could read them before now get 403. Missing and foreign sync ids stay 403 for non-admins (a 404 change was reverted by decision).
+  - A duplicate email or name on admin user update, registration and storage-root create answers **409** on SQLite and PostgreSQL (was 500 in some paths).
+  - A rate-limited response (**429**) carries `Retry-After`.
+- **SMB:** `CopyFile` writes a temporary file and renames it; the destination is never truncated before the source is read.
+- **Installation wizard, web, desktop, Android and Android TV** are at 2.5.0 (Android `versionCode` 10, Android TV 12).
+
+---
+
 ## Upgrading from 2.4.2 to 2.4.3 (pre-release, NOT production-ready)
 
 Full list with labels and verification jobs: [`release/RELEASE_NOTES_v2.4.3.md`](release/RELEASE_NOTES_v2.4.3.md) and `docs/CHANGELOG.md` section `[2.4.3]`. What an operator must do or expect:
