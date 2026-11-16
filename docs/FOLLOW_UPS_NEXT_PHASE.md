@@ -3101,3 +3101,7 @@ Evidence: RED 3 of 48 on parent source with the new tests, GREEN 48/48; full :ap
 - ADMD1RRRR-m4: storage-root race test is SQLite only; add a live PG leg (InsertReturningID + 23505).
 - ADMD1RRRR-n1: racing storage-root 409 body lacks existing_id that the sequential 409 has.
 - ADMD1RRRR-n2 (pre-existing): 409 hint points at nonexistent PUT /api/v1/storage/roots/{id}.
+- ADMD1RRRRR-m1 (test-instrumentation): TestADMD1RRRRfu_RacingStorageRootConflictBody_SQLite does not prove any loser reached the isUniqueViolation branch; mutant "drop existing_id in insert branch" survived 2/10 runs (409 came from the sequential pre-check). Make one loser deterministically miss the pre-check or require evidence a 409 came from the insert path (PG leg covers it only with CAT_TEST_PG_DSN).
+- ADMD1RRRRR-n1: openapi says 409 carries existing_id but the racing path omits it when lookup fails; Error schema does not declare name/existing_id/hint.
+- ADMD1RRRRR-n2: storageRootConflictHint refers to existing_id which is absent when the winner lookup fails.
+- ADMD1RRRRR-n3: PUT /admin/users/{id} 409 description starts "Role change refused:" but also covers duplicate email/username.
