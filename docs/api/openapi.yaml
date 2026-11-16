@@ -110,7 +110,7 @@ components:
           description: "Present (false) on errors written by the shared error helper, for example the 503 'Could not verify admin role'; absent on the bare {error: ...} envelope"
         error:
           type: string
-          description: "Human-readable message. Always present; errors written by the shared error helper also carry success=false, the bare envelope is only {error: ...}"
+          description: "Human-readable message. Present in every JSON error body the handlers write (the shared error helper and the bare {error: ...} envelope both always set it); absent only on bodyless errors, for example the empty-body 500 written by the panic-recovery middleware"
         details:
           type: string
         code:
@@ -3169,7 +3169,7 @@ paths:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '501':
           description: Not implemented. Copying to a storage root is not wired to any copy engine; nothing is copied. Use POST /api/v1/copy/local or /api/v1/copy/upload.
 
@@ -3187,7 +3187,7 @@ paths:
               type: object
       responses:
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '200':
@@ -3207,7 +3207,7 @@ paths:
               type: object
       responses:
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '200':
@@ -3788,7 +3788,7 @@ paths:
         '403':
           description: The path user_id is not the caller (and the caller is not an admin)
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '501':
           description: Not implemented. The server has no recommendation engine; no recommendations are fabricated.
 
@@ -3988,7 +3988,7 @@ paths:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '200':
           description: Storage path listing
           content:
@@ -4055,7 +4055,7 @@ paths:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
     post:
       tags: [storage]
       summary: Create storage root
@@ -4084,7 +4084,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '201':
@@ -4220,7 +4220,7 @@ paths:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
 
   /api/v1/storage-roots/{id}/status:
     get:
@@ -4466,7 +4466,7 @@ paths:
               type: object
       responses:
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '200':
@@ -4480,7 +4480,7 @@ paths:
         - BearerAuth: []
       responses:
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '410':
@@ -4499,7 +4499,7 @@ paths:
               type: object
       responses:
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '200':
@@ -4513,7 +4513,7 @@ paths:
         - BearerAuth: []
       responses:
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '410':
@@ -4532,7 +4532,7 @@ paths:
               type: object
       responses:
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '200':
@@ -5540,7 +5540,7 @@ paths:
         '403':
           description: Caller lacks the system.configure permission (system.admin also passes; decided from the database on every request)
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify permissions (the live permission check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify permissions"}'
         '200':
           description: "Validation result, for example `{\"is_valid\":true}`."
         '400':
@@ -5566,7 +5566,7 @@ paths:
         '403':
           description: Caller lacks the system.configure permission (system.admin also passes; decided from the database on every request)
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify permissions (the live permission check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify permissions"}'
         '200':
           description: "`{\"message\":\"Progress saved successfully\"}`."
         '400':
@@ -5595,7 +5595,7 @@ paths:
         '403':
           description: Caller lacks the system.configure permission (system.admin also passes; decided from the database on every request)
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify permissions (the live permission check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify permissions"}'
         '200':
           description: Wizard completed
 
@@ -7162,7 +7162,7 @@ paths:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '201':
           description: Sync endpoint created
           content:
@@ -7330,7 +7330,7 @@ paths:
               $ref: '#/components/schemas/UpdateSyncEndpointRequest'
       responses:
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '409':
           description: Private-network confirmation required for the new URL (code private_network_confirmation_required)
           content:
@@ -7410,7 +7410,7 @@ paths:
             type: integer
       responses:
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '200':
           description: Sync endpoint deleted
           content:
@@ -7468,7 +7468,7 @@ paths:
             type: integer
       responses:
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '200':
           description: Sync started
           content:
@@ -7646,7 +7646,7 @@ paths:
               $ref: '#/components/schemas/ScheduleSyncRequest'
       responses:
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '201':
           description: Sync schedule created
           content:
@@ -7760,7 +7760,7 @@ paths:
         '403':
           description: Administrator role required (decided from the database on every request)
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '200':
           description: Cleanup completed
           content:
@@ -8136,7 +8136,7 @@ paths:
         '403':
           description: Caller is neither the requested user nor an administrator
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '200':
           description: User analytics
           content:
@@ -8186,7 +8186,7 @@ paths:
         '403':
           description: Administrator role required (decided from the database on every request)
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '200':
           description: System analytics
           content:
@@ -10234,7 +10234,7 @@ paths:
         '403':
           description: Administrator role required (decided from the database on every request)
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '200':
           description: Report
           content:
@@ -10284,7 +10284,7 @@ paths:
         '403':
           description: Administrator role required (decided from the database on every request)
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '200':
           description: Report
           content:
@@ -10319,7 +10319,7 @@ paths:
       - BearerAuth: []
       responses:
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '200':
@@ -10352,7 +10352,7 @@ paths:
               $ref: '#/components/schemas/SMBProbeRequest'
       responses:
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '200':
@@ -10395,7 +10395,7 @@ paths:
               $ref: '#/components/schemas/SMBProbeRequest'
       responses:
         '503':
-          description: Could not verify the caller's permissions (lookup failed); the request is refused (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '200':
