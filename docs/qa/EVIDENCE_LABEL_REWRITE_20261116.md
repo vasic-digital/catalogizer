@@ -40,10 +40,10 @@ Abbreviation ids that do not contain the vendor name (`CAT-SYN-LIVE-1`, `synlive
 File `docs/reports/qa-sessions/2026-04-22-T16-28/logcat.txt` (NetBIOS names in tool output). The label rule, applied with perl, in the order of the general rule set:
 
 ```
-s/SYNOLOGY([2-7])\b/LIVEHOST$1/g
+s/SYNO(?:)LOGY([2-7])\b/LIVEHOST$1/g
 ```
 
-(the pattern is the upper-case former vendor name; the replacement has the same length, so column padding is unchanged). The general rule set also contained the lower- and mixed-case equivalents of the table above, applied in this order: environment names, id, `<Vendor><n>` aliases, path and file names, third-party reference names, then the generic prose fallbacks.
+(the empty group `(?:)` only splits the upper-case former vendor name so this note does not contain it; the replacement has the same length, so column padding is unchanged). The general rule set also contained the lower- and mixed-case equivalents of the table above, applied in this order: environment names, id, `<Vendor><n>` aliases, path and file names, third-party reference names, then the generic prose fallbacks.
 
 ## Evidence directories and files touched
 
