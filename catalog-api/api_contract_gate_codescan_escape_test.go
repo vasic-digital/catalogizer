@@ -71,7 +71,7 @@ func TestADMD1F1S1R3_RealNamesStillResolve(t *testing.T) {
 	require.Empty(t, s.unresolved)
 	require.Equal(t, []string{"GET /op gated"}, routeKeys(s))
 	// serving the finished engine (Handler: router in a *.Server literal) registers nothing and is not an escape
-	s = scanSrc(t, escImp+"func Run() { r := gin.New(); s := ext.Server{Handler: r}; _ = s }\n")
+	s = scanSrc(t, "package x\nimport (\"github.com/gin-gonic/gin\"; \"net/http\")\nfunc Run() { r := gin.New(); s := http.Server{Handler: r}; _ = s }\n")
 	require.Empty(t, s.unresolved)
 	// an engine constructor returning its engine is not an escape
 	s = scanSrc(t, fcHeader+"func newEngine() *gin.Engine { r := gin.New(); r.GET(\"/x\", h); return r }\nfunc Run() { e := newEngine(); e.GET(\"/y\", h) }\n")

@@ -80,10 +80,48 @@ func exprStr(e ast.Expr) string {
 	return b.String()
 }
 
-func isGroupType(e ast.Expr) bool {
-	s := exprStr(e)
-	return strings.Contains(s, "RouterGroup") || strings.Contains(s, "IRoutes") || strings.Contains(s, "IRouter") || strings.HasSuffix(s, "gin.Engine")
+const ginImportPath = "github.com/gin-gonic/gin"
+
+// Round 4 (I2/m3): parameter/result types are classified from the REAL type expression, never by substring. A type is a group type when
+// it resolves (through type aliases and named types declared in the scanned set, parens, pointers and embedded interface elements) to
+// gin.RouterGroup / IRoutes / IRouter / Engine imported from github.com/gin-gonic/gin; a gate type resolves to gin.HandlerFunc.
+// Containers (slice, map, chan, func types) are NOT group types: a function whose only "group" is inside a container is an ordinary
+// function and is walked like one (its element receivers do not resolve, so every registration through them is reported).
+var (
+	groupTypeNames  = map[string]bool{"RouterGroup": true, "IRoutes": true, "IRouter": true, "Engine": true}
+	engineTypeNames = map[string]bool{"Engine": true}
+	gateTypeNames   = map[string]bool{"HandlerFunc": true}
+)
+
+// staticRoutes (round 4, I1): gin.RouterGroup methods that register GET+HEAD routes without being named GET/HEAD. `wild` = the
+// registered pattern is relativePath + "/*filepath" (Static, StaticFS); the File variants register relativePath itself.
+var staticRoutes = map[string]struct {
+	nargs int
+	wild  bool
+}{"Static": {2, true}, "StaticFS": {2, true}, "StaticFile": {2, false}, "StaticFileFS": {3, false}}
+
+// inertGroupMethods: methods of gin.Engine / RouterGroup that are known NOT to register a route (pinned by
+// TestADMD1F1S1R4_InertMethodListPinned). NoRoute and NoMethod install the 404/405 handler chains: they are not routes of the table
+// and are deliberately not reported (documented non-route, round 4 nit). ANY other method called on a resolved group/engine receiver
+// that is neither modelled (routeMethods, Use, Group, staticRoutes) nor listed here is reported (class-wide rule).
+var inertGroupMethods = map[string]bool{
+	"NoRoute": true, "NoMethod": true, "Run": true, "RunTLS": true, "RunUnix": true, "RunFd": true, "RunListener": true,
+	"ServeHTTP": true, "Routes": true, "Handler": true, "BasePath": true, "SetTrustedProxies": true, "SetHTMLTemplate": true,
+	"LoadHTMLGlob": true, "LoadHTMLFiles": true, "LoadHTMLFS": true, "Delims": true, "SetFuncMap": true, "HandleContext": true,
 }
+
+func inertGroupMethodNames() []string {
+	var out []string
+	for k := range inertGroupMethods {
+		out = append(out, k)
+	}
+	sort.Strings(out)
+	return out
+}
+
+// serverImportPaths: composite literals of these packages' Server type serve a finished engine (Handler: <engine>) and register no
+// route (m1: matched by the resolved import path, never by the spelling of the type).
+var serverImportPaths = map[string]bool{"net/http": true, "github.com/quic-go/quic-go/http3": true}
 
 // allowedGroupSinkNames: callees that legitimately receive an engine/group value without registering routes on it (round 3, I1: any
 // OTHER callee that is handed a group value and is not a scanned function with a group parameter is reported unresolved).
@@ -103,22 +141,14 @@ func allowedGroupSinkNames() []string {
 	return out
 }
 
-func isGateType(e ast.Expr) bool { return exprStr(e) == "gin.HandlerFunc" }
-
 type fnInfo struct {
 	decl *ast.FuncDecl
 	file string
 	id   string
+	gp   bool // has a group-typed parameter or receiver (resolved by typeIs)
 }
 
-func (f fnInfo) hasGroupParam() bool {
-	for _, fl := range f.decl.Type.Params.List {
-		if isGroupType(fl.Type) {
-			return true
-		}
-	}
-	return false
-}
+func (f fnInfo) hasGroupParam() bool { return f.gp }
 
 func discoverGoSources(root string) ([]string, error) {
 	var out []string
@@ -161,19 +191,24 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 	fset := token.NewFileSet()
 	var all []fnInfo
 	byName := map[string][]fnInfo{}
-	imports := map[string]map[string]bool{} // file -> local package names: `zap.Any(...)` is a package function, never a gin route method
+	imports := map[string]map[string]string{} // file -> local package name -> import path: `zap.Any(...)` is a package function, never a gin route method
+	type typeDecl struct {
+		expr ast.Expr
+		file string
+	}
+	typeDecls := map[string][]typeDecl{}
 	globals := map[string]string{}
 	badGlobal := map[string]bool{}
 	for _, f := range files {
 		af, err := parser.ParseFile(fset, f, nil, 0)
 		require.NoError(t, err, f)
-		imps := map[string]bool{}
+		imps := map[string]string{}
 		for _, im := range af.Imports {
 			ip, _ := strconv.Unquote(im.Path.Value)
 			if im.Name != nil {
-				imps[im.Name.Name] = true
+				imps[im.Name.Name] = ip
 			} else {
-				imps[path.Base(ip)] = true
+				imps[path.Base(ip)] = ip
 			}
 		}
 		imports[filepath.ToSlash(f)] = imps
@@ -181,12 +216,15 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 			switch dd := d.(type) {
 			case *ast.FuncDecl:
 				if dd.Body != nil {
-					fi := fnInfo{dd, filepath.ToSlash(f), filepath.ToSlash(f) + "#" + strconv.Itoa(int(dd.Pos()))}
+					fi := fnInfo{dd, filepath.ToSlash(f), filepath.ToSlash(f) + "#" + strconv.Itoa(int(dd.Pos())), false}
 					all = append(all, fi)
 					byName[dd.Name.Name] = append(byName[dd.Name.Name], fi)
 				}
 			case *ast.GenDecl:
 				for _, sp := range dd.Specs {
+					if ts, ok := sp.(*ast.TypeSpec); ok {
+						typeDecls[ts.Name.Name] = append(typeDecls[ts.Name.Name], typeDecl{ts.Type, filepath.ToSlash(f)})
+					}
 					if vs, ok := sp.(*ast.ValueSpec); ok && len(vs.Names) == len(vs.Values) {
 						for i, nm := range vs.Names {
 							if bl, ok := vs.Values[i].(*ast.BasicLit); ok && bl.Kind == token.STRING {
@@ -205,6 +243,55 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 	for n := range badGlobal {
 		delete(globals, n)
 	}
+	var typeIs func(file string, e ast.Expr, names map[string]bool, depth int) bool
+	typeIs = func(file string, e ast.Expr, names map[string]bool, depth int) bool {
+		if depth > 8 {
+			return false
+		}
+		switch x := e.(type) {
+		case *ast.StarExpr:
+			return typeIs(file, x.X, names, depth)
+		case *ast.ParenExpr:
+			return typeIs(file, x.X, names, depth)
+		case *ast.SelectorExpr:
+			id, ok := x.X.(*ast.Ident)
+			return ok && imports[file][id.Name] == ginImportPath && names[x.Sel.Name]
+		case *ast.Ident:
+			for _, d := range typeDecls[x.Name] {
+				if typeIs(d.file, d.expr, names, depth+1) {
+					return true
+				}
+			}
+		case *ast.InterfaceType:
+			for _, m := range x.Methods.List {
+				if len(m.Names) == 0 && typeIs(file, m.Type, names, depth+1) {
+					return true
+				}
+			}
+		}
+		return false
+	}
+	isGroupType := func(file string, e ast.Expr) bool { return typeIs(file, e, groupTypeNames, 0) }
+	isGateType := func(file string, e ast.Expr) bool { return typeIs(file, e, gateTypeNames, 0) }
+	for i := range all {
+		fi := &all[i]
+		for _, fl := range fi.decl.Type.Params.List {
+			if isGroupType(fi.file, fl.Type) {
+				fi.gp = true
+			}
+		}
+		if fi.decl.Recv != nil {
+			for _, fl := range fi.decl.Recv.List {
+				if isGroupType(fi.file, fl.Type) {
+					fi.gp = true
+				}
+			}
+		}
+	}
+	byName = map[string][]fnInfo{} // rebuilt now that fnInfo.gp is known
+	for _, fi := range all {
+		byName[fi.decl.Name.Name] = append(byName[fi.decl.Name.Name], fi)
+	}
 	// gate wrappers: methods that return a handler chain built from a *Gate field (AliasHandler.syncHandlers)
 	wrappers := map[string]bool{}
 	engineFuncs := map[string]bool{}
@@ -213,7 +300,7 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 			continue
 		}
 		for _, r := range fi.decl.Type.Results.List {
-			if strings.HasSuffix(exprStr(r.Type), "gin.Engine") {
+			if typeIs(fi.file, r.Type, engineTypeNames, 0) {
 				engineFuncs[fi.decl.Name.Name] = true
 			}
 		}
@@ -249,7 +336,7 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 		for _, fl := range fd.Type.Params.List {
 			for _, nm := range fl.Names {
 				switch {
-				case isGroupType(fl.Type):
+				case isGroupType(j.fi.file, fl.Type):
 					if j.seed != nil {
 						if e, ok := j.seed.groups[nm.Name]; ok {
 							groups[nm.Name] = e
@@ -257,13 +344,22 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 						}
 					}
 					groups[nm.Name] = scanEnv{unknown: true}
-				case isGateType(fl.Type):
+				case isGateType(j.fi.file, fl.Type):
 					gates[nm.Name] = j.seed != nil && j.seed.gates[nm.Name]
 				case exprStr(fl.Type) == "string":
 					if j.seed != nil {
 						if v, ok := j.seed.strs[nm.Name]; ok {
 							strs[nm.Name] = v
 						}
+					}
+				}
+			}
+		}
+		if fd.Recv != nil { // a method whose receiver is itself a group/engine type: unknown unless a caller binds it (not modelled: unknown)
+			for _, fl := range fd.Recv.List {
+				if isGroupType(j.fi.file, fl.Type) {
+					for _, nm := range fl.Names {
+						groups[nm.Name] = scanEnv{unknown: true}
 					}
 				}
 			}
@@ -363,7 +459,7 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 						}
 					}
 					return b, true
-				case (s.Sel.Name == "New" || s.Sel.Name == "Default") && exprStr(s.X) == "gin", engineFuncs[s.Sel.Name]:
+				case (s.Sel.Name == "New" || s.Sel.Name == "Default") && imports[j.fi.file][exprStr(s.X)] == ginImportPath, engineFuncs[s.Sel.Name]:
 					return scanEnv{prefix: "/"}, true
 				}
 			}
@@ -430,7 +526,12 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 		ast.Inspect(fd.Body, func(n ast.Node) bool {
 			switch x := n.(type) {
 			case *ast.CompositeLit:
-				isSrv := strings.HasSuffix(exprStr(x.Type), ".Server") // http.Server, http3.Server: Handler: <engine> serves, registers nothing
+				isSrv := false // m1: <pkg>.Server where <pkg> resolves to net/http or quic-go http3: Handler: <engine> serves, registers nothing
+				if st, ok := x.Type.(*ast.SelectorExpr); ok && st.Sel.Name == "Server" {
+					if id, ok := st.X.(*ast.Ident); ok && serverImportPaths[imports[j.fi.file][id.Name]] {
+						isSrv = true
+					}
+				}
 				for _, el := range x.Elts {
 					if kv, ok := el.(*ast.KeyValueExpr); ok {
 						if k, isID := kv.Key.(*ast.Ident); isSrv && isID && k.Name == "Handler" {
@@ -449,7 +550,7 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 			case *ast.SendStmt:
 				escape(x.Value, "channel send")
 			case *ast.SelectorExpr:
-				if !calledSel[x] && (routeMethods[x.Sel.Name] || x.Sel.Name == "Use" || x.Sel.Name == "Group") {
+				if _, isStatic := staticRoutes[x.Sel.Name]; !calledSel[x] && (routeMethods[x.Sel.Name] || isStatic || x.Sel.Name == "Use" || x.Sel.Name == "Group") {
 					if _, ok := recv(x.X); ok {
 						report(j.fi.file, fname, "route/group method value is not called directly (calls through it are not modelled): "+exprStr(x))
 					}
@@ -457,7 +558,7 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 			case *ast.FuncLit:
 				for _, fl := range x.Type.Params.List {
 					for _, nm := range fl.Names {
-						if isGroupType(fl.Type) {
+						if isGroupType(j.fi.file, fl.Type) {
 							groups[nm.Name] = scanEnv{unknown: true}
 						}
 					}
@@ -494,9 +595,48 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 						}
 					}
 				}
-				if id, isID := x.Fun.(*ast.SelectorExpr); isID && imports[j.fi.file][exprStr(id.X)] {
+				if id, isID := x.Fun.(*ast.SelectorExpr); isID && imports[j.fi.file][exprStr(id.X)] != "" {
 					if _, isGrp := recv(id.X); !isGrp { // a local group may shadow an import name (round 3, N11)
 						isSel = false // package-qualified function (zap.Any), not a method on a router value
+					}
+				}
+				if isSel {
+					if _, modelled := staticRoutes[s.Sel.Name]; !modelled && !routeMethods[s.Sel.Name] && s.Sel.Name != "Use" && s.Sel.Name != "Group" && !inertGroupMethods[s.Sel.Name] {
+						// I1 (round 4, class-wide): any method on a resolved group/engine that the scanner neither models nor pins as inert
+						if _, ok := recv(s.X); ok {
+							report(j.fi.file, fname, "unmodelled method "+s.Sel.Name+" called on a resolved group/engine receiver: "+exprStr(x.Fun))
+						}
+					}
+				}
+				var sr struct {
+					nargs int
+					wild  bool
+				}
+				isStatic := false
+				if isSel {
+					sr, isStatic = staticRoutes[s.Sel.Name]
+				}
+				if isStatic && len(x.Args) >= sr.nargs {
+					call := exprStr(s.X) + "." + s.Sel.Name + "(" + exprStr(x.Args[0]) + ")"
+					base, has := recv(s.X)
+					switch {
+					case !has:
+						report(j.fi.file, fname, call+" receiver does not resolve to a known group")
+					case base.unknown:
+						report(j.fi.file, fname, call+" full path is unresolved (group prefix unknown)")
+					default:
+						lit, okp := evalStr(x.Args[0])
+						if !okp {
+							report(j.fi.file, fname, call+" path is not a constant after call-site binding")
+						} else {
+							res.files[j.fi.file] = true
+							if sr.wild {
+								lit = path.Join(lit, "/*filepath")
+							}
+							for _, m := range []string{"GET", "HEAD"} {
+								res.routes = append(res.routes, scanRoute{m, joinRoute(base.prefix, lit), j.fi.file, base.gated})
+							}
+						}
 					}
 				}
 				if isSel && routeMethods[s.Sel.Name] {
@@ -568,11 +708,11 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 					sd := scanSeed{groups: map[string]scanEnv{}, gates: map[string]bool{}, strs: map[string]string{}}
 					for i, a := range x.Args {
 						switch {
-						case isGroupType(ptypes[i]):
+						case isGroupType(ci.file, ptypes[i]):
 							if e, ok := recv(a); ok {
 								sd.groups[pnames[i]] = e
 							}
-						case isGateType(ptypes[i]):
+						case isGateType(ci.file, ptypes[i]):
 							if isGate(a) {
 								sd.gates[pnames[i]] = true
 							}
@@ -602,7 +742,7 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 						r = ce.Fun
 					}
 					for i := range x.Args {
-						if isGroupType(ptypes[i]) {
+						if isGroupType(ci.file, ptypes[i]) {
 							bound[i] = true
 						}
 					}
@@ -618,11 +758,17 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 				// package, interface method, func value, arity/type mismatch) leaves the scanner's model: reported unless allow-listed.
 				ownMethod := false
 				if isSel {
-					if _, ok := recv(s.X); ok && (routeMethods[s.Sel.Name] || s.Sel.Name == "Use" || s.Sel.Name == "Group") {
-						ownMethod = true
+					if _, ok := recv(s.X); ok {
+						_, st := staticRoutes[s.Sel.Name]
+						ownMethod = routeMethods[s.Sel.Name] || st || inertGroupMethods[s.Sel.Name] || s.Sel.Name == "Use" || s.Sel.Name == "Group"
 					}
 				}
-				if !ownMethod && !allowedGroupSink[cname] {
+				// m2: the allow-list applies only to an UNQUALIFIED call of a function declared in the scanned set (ext.verifyAuthRouteTable(g) is a foreign function)
+				allowedSink := false
+				if id, isID := x.Fun.(*ast.Ident); isID && allowedGroupSink[id.Name] && len(byName[id.Name]) > 0 {
+					allowedSink = true
+				}
+				if !ownMethod && !allowedSink {
 					for i, a := range x.Args {
 						if !bound[i] {
 							escape(a, "passed to "+exprStr(x.Fun)+", which is not a scanned function with a group parameter at this position")
@@ -633,22 +779,23 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 			return true
 		})
 	}
-	for i := 0; i < len(queue); i++ {
-		walk(queue[i])
-	}
-	// group-parameter functions that register routes but no call site binds: fail closed
-	for _, fi := range all {
-		if !fi.hasGroupParam() || seeded[fi.id] {
-			continue
+	// I2 (round 4): EVERY function is walked. A function with a group parameter that no call site binds is walked with all its group
+	// parameters unknown, so each registration through them reports "full path is unresolved" and each escape reports.
+	for done := 0; ; {
+		for ; done < len(queue); done++ {
+			walk(queue[done])
 		}
-		ast.Inspect(fi.decl.Body, func(nd ast.Node) bool {
-			if c, ok := nd.(*ast.CallExpr); ok {
-				if s, ok := c.Fun.(*ast.SelectorExpr); ok && routeMethods[s.Sel.Name] && len(c.Args) >= routePathIdx(s.Sel.Name)+2 {
-					report(fi.file, fi.decl.Name.Name, "registers routes but no call site binds its group parameter")
-				}
+		grew := false // queue drained: walk the never-seeded group-parameter functions (walking one can seed further callees)
+		for _, fi := range all {
+			if fi.hasGroupParam() && !seeded[fi.id] && !queued[fi.id+"#unseeded"] {
+				queued[fi.id+"#unseeded"] = true
+				queue = append(queue, job{fi, nil})
+				grew = true
 			}
-			return true
-		})
+		}
+		if !grew {
+			break
+		}
 	}
 	sort.Strings(res.unresolved)
 	var uniq []string

@@ -1,0 +1,25 @@
+M1 static modelling off: KILLED first: --- FAIL: TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead (0.00s)
+M2 class-wide unmodelled report off: KILLED first: --- FAIL: TestADMD1F1S1R4_UnmodelledMethodOnGroupIsReported (0.00s)
+M3 wild suffix dropped: KILLED first: --- FAIL: TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead (0.00s)
+M4 HEAD dropped: KILLED first: --- FAIL: TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead (0.01s)
+M5 unseeded walk off: KILLED first: --- FAIL: TestADMD1F1S1R1_FailClosedProbes (0.01s)
+M6 alias resolution off: KILLED first: --- FAIL: TestADMD1F1S1R4_EveryFunctionIsWalked (0.00s)
+M7 gin import path unchecked: KILLED (build break) first: 
+M8 any .Server exempt: KILLED (build break) first: 
+M9 route unknown-prefix case off: KILLED first: --- FAIL: TestADMD1F1S1R1_FailClosedProbes (0.06s)
+M10 static unknown-prefix case off: KILLED first: --- FAIL: TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead (0.01s)
+M11 allow-list needs no scanned decl: KILLED first: --- FAIL: TestADMD1F1S1R4_AllowListIsUnqualifiedAndScannedOnly (0.00s)
+M12 allow-list by bare name (qualified ok): KILLED first: --- FAIL: TestADMD1F1S1R4_AllowListIsUnqualifiedAndScannedOnly (0.00s)
+M13 receiver group param not unknown: SURVIVED first: 
+M14 inert list gains a name: KILLED first: --- FAIL: TestADMD1F1S1R4_InertMethodListPinned (0.00s)
+M15 static method value unchecked: KILLED first: --- FAIL: TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead (0.01s)
+M16 gin.New by spelling: KILLED first: --- FAIL: TestADMD1F1S1R4_EveryFunctionIsWalked (0.01s)
+M17 Handler exemption without Server type check: SURVIVED first: 
+M18 container types count as group (slice): SURVIVED first: 
+M19 Static min args ignored: KILLED first: --- FAIL: TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead (0.00s)
+M7' gin import path unchecked (compiling): KILLED first: --- FAIL: TestADMD1F1S1R4_EveryFunctionIsWalked (0.00s)
+M13 receiver-group-unknown: SURVIVED = equivalent (a receiver not in groups already reports 'receiver does not resolve'; the rule is defence in depth)
+M18 slice counts as group: SURVIVED = equivalent in outcome (both routes fail closed; classification differs only in message)
+M7/M8 first run were build breaks; re-run as compiling mutants M7'/M8' above (M7' first SURVIVED, test Q4 strengthened with g.Frobnicate(), then KILLED)
+M8' any .Server exempt (compiling): KILLED first: --- FAIL: TestADMD1F1S1R4_ServerExemptionByImportPath
+M17 Handler exemption without Server type check: KILLED first: --- FAIL: TestADMD1F1S1R4_ServerExemptionByImportPath
