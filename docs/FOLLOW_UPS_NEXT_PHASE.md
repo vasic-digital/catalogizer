@@ -3255,3 +3255,13 @@ Explicit `x-catalogizer-admin-gated: true` marker (85 ops) + census golden + rou
 All SSEFU-F1..F5 / SSEFU2-F1..F5 items verified satisfied on main (tests + docs). 
 - **SSEFU2R-m1 (minor, test-instrumentation):** the RequireAdmin checker `(false, err)` -> 503 path (auth_test.go:492-496) asserts status only, not the body; add the same JSONEq or table both error cases.
 - **SSEFU2R-m2 (minor, test-instrumentation):** `TestSSEFU2_F3_SyncRoutesDBFailureBodyIsPinned` has no in-test positive control (open DB -> 200) (same as HYGF4-F4).
+
+## CAT-CPN-1 M1/M2/M3 commit review follow-ups (Opus GO-with-follow-ups, 2026-11-16; PROVISIONAL)
+
+CPN1-M1 (stored class/source), M2 (vetted IPs classified+dialled once) and M3 (stored-row tests) closed PROVISIONAL (b24a3759e). No live SMB ingest (probe seam replaces the session; UNCONFIRMED).
+- **CPN1R-m1 (minor, test-instrumentation):** re-ingesting an existing root must leave its approved class untouched; mutant D (overwrite) survives. Create public root, re-ingest with confirm_private_network while host resolves private, assert still public/auto.
+- **CPN1R-m2 (minor, test-instrumentation):** nothing tests the row delete when SetApprovedClass fails; mutant C survives. Needs failure injection; also log the swallowed delete error.
+- **CPN1R-m3 (minor, defence in depth):** `ProbeVettedIPsWithIdentities` is exported and dials any given IPs; "must come from VetSMBHostIPs" is a comment. Re-run smbIPBlocked per IP or take an opaque vetted-IP type.
+- **CPN1R-m4 (minor):** multi-share ingest with a class-store failure on a later share leaves earlier roots approved while the response is an error; partial success unreported.
+- **CPN1R-n1 (nit):** `WithProbeSeam` is exported API; make test-only mechanical (build tag/lint).
+- Out of scope noted: stored root keeps the host name and later scans re-resolve; depends on dial-time approved-class enforcement (netguard.Class.Permits), not reviewed here.
