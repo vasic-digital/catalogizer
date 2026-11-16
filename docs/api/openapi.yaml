@@ -108,6 +108,8 @@ components:
         - $ref: '#/components/schemas/Error'
         - type: object
           required: [error, name, hint]
+          not:
+            required: [code]
           properties:
             name:
               type: string
@@ -126,6 +128,9 @@ components:
         - type: object
           required: [error, code, hint]
           properties:
+            code:
+              type: string
+              enum: [private_network_confirmation_required]
             hint:
               type: string
               description: Repeat the request with confirm_private_network=true if the destination is meant to be on your LAN
