@@ -6,6 +6,7 @@ package handlers
 
 import (
 	"errors"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -15,19 +16,32 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// withinDeadlockGuard runs fn and fails the test after d instead of waiting for the go test timeout. The test
-// environment uses a single-connection SQLite pool, so a refusal read taken through the pool while the lock
-// transaction holds that connection blocks forever (PGLAST-F6). On timeout the stuck goroutine is leaked (the
-// process exits when the test binary ends); only the failure is made fast.
-func withinDeadlockGuard(t *testing.T, d time.Duration, what string, fn func()) {
-	t.Helper()
-	done := make(chan struct{})
-	go func() { defer close(done); fn() }()
+// runWithin runs fn in a goroutine and returns its result, or ok=false after d. The result travels over a buffered
+// channel, so a goroutine abandoned after a timeout finishes without blocking and without writing into any variable
+// the caller still reads (TH3-n4); callers must therefore return values from fn instead of assigning captured ones.
+func runWithin[T any](d time.Duration, fn func() T) (T, bool) {
+	ch := make(chan T, 1)
+	go func() { ch <- fn() }()
 	select {
-	case <-done:
+	case v := <-ch:
+		return v, true
 	case <-time.After(d):
+		var zero T
+		return zero, false
+	}
+}
+
+// withinDeadlockGuard fails the test after d instead of waiting for the go test timeout. The test environment uses a
+// single-connection SQLite pool, so a refusal read taken through the pool while the lock transaction holds that
+// connection blocks forever (PGLAST-F6). On timeout the stuck goroutine is leaked (the process exits when the test
+// binary ends); only the failure is made fast.
+func withinDeadlockGuard[T any](t *testing.T, d time.Duration, what string, fn func() T) T {
+	t.Helper()
+	v, ok := runWithin(d, fn)
+	if !ok {
 		t.Fatalf("deadlock guard: %s did not finish within %s on a single-connection pool", what, d)
 	}
+	return v
 }
 
 const lockGuardTimeout = 15 * time.Second
@@ -36,7 +50,7 @@ func TestLockAccount_LastAdminRefused_ThenAllowedWithSecondAdmin(t *testing.T) {
 	e := newD9Env(t)
 	adm, err := e.repo.GetByUsername("rtadmin")
 	require.NoError(t, err)
-	withinDeadlockGuard(t, lockGuardTimeout, "refused LockAccount", func() { err = e.repo.LockAccount(adm.ID, time.Now().Add(time.Hour)) })
+	err = withinDeadlockGuard(t, lockGuardTimeout, "refused LockAccount", func() error { return e.repo.LockAccount(adm.ID, time.Now().Add(time.Hour)) })
 	require.True(t, errors.Is(err, repository.ErrLastAdmin), "sole admin lock must be refused, got %v", err)
 	u, _ := e.repo.GetByID(adm.ID)
 	require.False(t, u.IsLocked, "refused lock must leave the account unlocked")
@@ -45,11 +59,11 @@ func TestLockAccount_LastAdminRefused_ThenAllowedWithSecondAdmin(t *testing.T) {
 	require.NoError(t, herr)
 	_, cerr := e.repo.Create(&models.User{Username: "second_admin", Email: "sa@example.test", PasswordHash: hash, Salt: salt, RoleID: 1, IsActive: true})
 	require.NoError(t, cerr)
-	withinDeadlockGuard(t, lockGuardTimeout, "allowed LockAccount", func() { err = e.repo.LockAccount(adm.ID, time.Now().Add(time.Hour)) })
+	err = withinDeadlockGuard(t, lockGuardTimeout, "allowed LockAccount", func() error { return e.repo.LockAccount(adm.ID, time.Now().Add(time.Hour)) })
 	require.NoError(t, err, "lock allowed while another active admin exists")
 	// ...and the new sole effective admin can no longer be locked.
 	sa, _ := e.repo.GetByUsername("second_admin")
-	withinDeadlockGuard(t, lockGuardTimeout, "second refused LockAccount", func() { err = e.repo.LockAccount(sa.ID, time.Now().Add(time.Hour)) })
+	err = withinDeadlockGuard(t, lockGuardTimeout, "second refused LockAccount", func() error { return e.repo.LockAccount(sa.ID, time.Now().Add(time.Hour)) })
 	require.True(t, errors.Is(err, repository.ErrLastAdmin))
 }
 
@@ -96,8 +110,8 @@ func TestLockAccountHTTP_LastAdminIs409_OthersUnchanged(t *testing.T) {
 	require.Equal(t, 200, w.Code, w.Body.String())
 
 	// The race: the target became the last effective administrator -> 409, not 500, and it stays unlocked.
-	withinDeadlockGuard(t, lockGuardTimeout, "HTTP lock of the last administrator", func() {
-		w = e.do(e.adminTok, "POST", "/lkrace/users/"+rtItoa(ad2ID)+"/lock", body)
+	w = withinDeadlockGuard(t, lockGuardTimeout, "HTTP lock of the last administrator", func() *httptest.ResponseRecorder {
+		return e.do(e.adminTok, "POST", "/lkrace/users/"+rtItoa(ad2ID)+"/lock", body)
 	})
 	require.Equal(t, 409, w.Code, w.Body.String())
 	require.Contains(t, w.Body.String(), "last administrator")
