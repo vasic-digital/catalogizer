@@ -7354,7 +7354,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: 'Forbidden; either the caller is not an administrator (decided from the database on every request, every /sync route is admin-gated; body {"success":false,"error":"Admin role required"}) or the caller is an administrator who is not the endpoint owner and lacks the view-shares permission (share.view; body {"success":false,"error":"Failed to get sync endpoint","details":"not permitted"})'
+          description: 'Forbidden; either the caller is not an administrator (decided from the database on every request, every /sync route is admin-gated; body {"success":false,"error":"Admin role required"}) or the caller is an administrator who is not the endpoint owner and lacks the view-shares permission or whose permission lookup fails (share.view; body {"success":false,"error":"Failed to get sync endpoint","details":"not permitted"})'
           content:
             application/json:
               schema:
@@ -7673,7 +7673,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: 'Forbidden; either the caller is not an administrator (decided from the database on every request, every /sync route is admin-gated; body {"success":false,"error":"Admin role required"}) or the caller is an administrator who is not the session owner and lacks the view-shares permission (share.view; body {"success":false,"error":"Failed to get sync session","details":"not permitted"})'
+          description: 'Forbidden; either the caller is not an administrator (decided from the database on every request, every /sync route is admin-gated; body {"success":false,"error":"Admin role required"}) or the caller is an administrator who is not the session owner and lacks the view-shares permission or whose permission lookup fails (share.view; body {"success":false,"error":"Failed to get sync session","details":"not permitted"})'
           content:
             application/json:
               schema:
