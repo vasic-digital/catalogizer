@@ -10,6 +10,7 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -203,4 +204,49 @@ func TestADMD1RRRRfu_SequentialStorageRootConflictBody_SQLite(t *testing.T) {
 		"name": "seqroot", "protocol": "local", "path": base, "confirm_private_network": true})
 	require.Equal(t, http.StatusConflict, code, "%v", dup)
 	checkRootConflictBody(t, "sequential", int64(first["id"].(float64)), []map[string]interface{}{dup})
+}
+
+// ADMD1RRRRR-m1: deterministic insert-path 409. The test seam inserts the winner row AFTER the duplicate-name pre-check
+// and BEFORE the handler's insert, so the request provably misses the pre-check and the 409 can only come from the
+// insert-time unique-violation branch (the hook counter proves the pre-check was passed first).
+func TestADMD1RRRRRfu_InsertPathConflictBodyDeterministic_SQLite(t *testing.T) {
+	base := t.TempDir()
+	a := newAccessHarness(t, base)
+	admin := cat001Token(t, 1, "1")
+	var winnerID int64
+	calls := 0
+	storageRootBeforeInsertHook = func(ctx context.Context, name string) {
+		calls++
+		id, err := a.h.db.InsertReturningID(ctx,
+			`INSERT INTO storage_roots (name, protocol, path, enabled, max_depth) VALUES (?, 'local', ?, ?, 10)`, name, base, true)
+		require.NoError(t, err)
+		winnerID = id
+	}
+	t.Cleanup(func() { storageRootBeforeInsertHook = nil })
+	code, body := a.do(admin, "POST", "/storage/roots", map[string]interface{}{
+		"name": "seamroot", "protocol": "local", "path": base, "confirm_private_network": true})
+	require.Equal(t, http.StatusConflict, code, "%v", body)
+	require.Equal(t, 1, calls, "the request must have passed the pre-check and reached the insert")
+	require.NotZero(t, winnerID)
+	checkRootConflictBody(t, "insert path", winnerID, []map[string]interface{}{body})
+	assert.Equal(t, "seamroot", body["name"])
+	assert.Equal(t, storageRootConflictHint, body["hint"])
+	// control needle: a normal create (no competing winner) with the hook disabled still yields 201
+	storageRootBeforeInsertHook = nil
+	code, body = a.do(admin, "POST", "/storage/roots", map[string]interface{}{
+		"name": "freeroot", "protocol": "local", "path": base, "confirm_private_network": true})
+	assert.Equal(t, http.StatusCreated, code, "%v", body)
+}
+
+// ADMD1RRRRR-n2: without existing_id (winner lookup failed) the body omits it and the hint no longer refers to it.
+func TestADMD1RRRRRfu_ConflictBodyWithoutExistingIDHint(t *testing.T) {
+	b := storageRootConflictBody("x", nil)
+	_, has := b["existing_id"]
+	assert.False(t, has)
+	assert.NotContains(t, b["hint"], "existing_id", "hint must not refer to an absent field: %v", b)
+	assert.NotEmpty(t, b["hint"])
+	id := int64(7)
+	w := storageRootConflictBody("x", &id)
+	assert.Equal(t, int64(7), w["existing_id"])
+	assert.Contains(t, w["hint"], "existing_id")
 }
