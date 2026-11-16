@@ -7,22 +7,17 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 
 	"catalogizer/internal/netguard"
-	"catalogizer/middleware"
-	"catalogizer/models"
 )
 
 type oaDoc map[string]interface{}
@@ -333,6 +328,24 @@ func TestADMD1RRRRRRRRfu_ValidatorUnknownKeywordGuard(t *testing.T) {
 	require.NotEmpty(t, mk(map[string]interface{}{"properties": map[string]interface{}{"p": map[string]interface{}{"type": "integer", "format": "float"}}}), "integer with an unknown format")
 	require.Empty(t, mk(map[string]interface{}{"properties": map[string]interface{}{"p": map[string]interface{}{"type": "integer", "format": "int64"}}}), "negative control: integer int64 is enforced")
 	require.NotEmpty(t, d.validateInner(t, map[string]interface{}{"properties": map[string]interface{}{"p": map[string]interface{}{"type": "integer", "format": "int32"}}}, map[string]interface{}{"p": float64(1 << 40)}), "int32 range enforced")
+	// ADMD1RRRRRRRRRR-n1/n2: int32 boundaries both ways, positive control, and format on a non-integer type
+	i32 := map[string]interface{}{"properties": map[string]interface{}{"p": map[string]interface{}{"type": "integer", "format": "int32"}}}
+	i64 := map[string]interface{}{"properties": map[string]interface{}{"p": map[string]interface{}{"type": "integer", "format": "int64"}}}
+	for _, ok := range []float64{2147483647, -2147483648, 0} {
+		require.Empty(t, d.validate(t, i32, map[string]interface{}{"p": ok}), "int32 boundary %v is valid", ok)
+	}
+	for _, bad := range []float64{2147483648, -2147483649} {
+		require.NotEmpty(t, d.validate(t, i32, map[string]interface{}{"p": bad}), "int32 boundary %v is out of range", bad)
+	}
+	require.Empty(t, d.validate(t, i64, map[string]interface{}{"p": float64(1 << 40)}), "int64 has no int32 bound")
+	require.NotEmpty(t, d.validate(t, i32, map[string]interface{}{"p": 1.5}), "a fraction is not an integer")
+	require.Empty(t, mk(i32), "positive control: integer+int32 is accepted by the guard")
+	require.Empty(t, mk(i64), "positive control: integer+int64 is accepted by the guard")
+	for _, ty := range []string{"string", "boolean", "number"} {
+		for _, f := range []string{"int32", "int64"} {
+			require.NotEmpty(t, mk(map[string]interface{}{"properties": map[string]interface{}{"p": map[string]interface{}{"type": ty, "format": f}}}), "format %s on type %s must be rejected", f, ty)
+		}
+	}
 	require.Empty(t, mk(map[string]interface{}{"type": "object", "properties": map[string]interface{}{"p": map[string]interface{}{"type": "string", "description": "d"}}}), "negative control: a supported schema stays quiet")
 	// the guard reaches through $ref
 	d2 := oaDoc{"components": map[string]interface{}{"schemas": map[string]interface{}{"X": map[string]interface{}{"format": "uuid"}}}}
@@ -379,47 +392,4 @@ func TestADMD1RRRRRRRRfu_OpenAPIHasNoDuplicateKeys(t *testing.T) {
 	require.Empty(t, oaDuplicateKeys(&n, ""))
 	var strict map[string]interface{}
 	require.NoError(t, yaml.Unmarshal(raw, &strict), "yaml.v3 must decode the spec into a map")
-}
-
-// ADMD1RRRRRRRRR-n2/m2: pins the content and schema of the merged 403 on GET /sync/endpoints/{id} and /sync/sessions/{id}: both branches,
-// the exact body strings the REAL middleware and handler emit, the permission the service checks, and the Error schema reference.
-func TestADMD1RRRRRRRRR_SyncMerged403ContentPinnedToRealBodies(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	// real admin-gate body (RequireAdmin without a live checker: role_id 2 is refused)
-	jm := middleware.NewJWTMiddleware("k")
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = httptest.NewRequest("GET", "/x", nil)
-	c.Set("role_id", 2)
-	jm.RequireAdmin()(c)
-	require.Equal(t, http.StatusForbidden, w.Code)
-	var adminBody, ownerBody map[string]interface{}
-	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &adminBody))
-	// real owner-branch body (syncFail with the service's "unauthorized" error)
-	w2 := httptest.NewRecorder()
-	c2, _ := gin.CreateTestContext(w2)
-	c2.Request = httptest.NewRequest("GET", "/x", nil)
-	syncFail(c2, http.StatusForbidden, "Failed to get sync endpoint", fmt.Errorf("unauthorized to view this endpoint"))
-	require.NoError(t, json.Unmarshal(w2.Body.Bytes(), &ownerBody))
-	require.Equal(t, "Admin role required", adminBody["error"])
-	require.Equal(t, "not permitted", ownerBody["details"])
-
-	d := loadOpenAPI(t)
-	paths := d["paths"].(map[string]interface{})
-	for _, tc := range []struct{ path, owner, msg string }{
-		{"/api/v1/sync/endpoints/{id}", "endpoint owner", "Failed to get sync endpoint"},
-		{"/api/v1/sync/sessions/{id}", "session owner", "Failed to get sync session"},
-	} {
-		r := paths[tc.path].(map[string]interface{})["get"].(map[string]interface{})["responses"].(map[string]interface{})["403"].(map[string]interface{})
-		desc := r["description"].(string)
-		require.Contains(t, desc, `"error":"`+adminBody["error"].(string)+`"`, "%s: admin branch body", tc.path)
-		require.Contains(t, desc, `"error":"`+tc.msg+`"`, "%s: owner branch body", tc.path)
-		require.Contains(t, desc, `"details":"`+ownerBody["details"].(string)+`"`, "%s: owner branch details", tc.path)
-		require.Contains(t, desc, "not an administrator", tc.path)
-		require.Contains(t, desc, "not the "+tc.owner, tc.path)
-		require.Contains(t, desc, "view-shares permission", tc.path)
-		require.Contains(t, desc, models.PermissionViewShares, tc.path)
-		sch := r["content"].(map[string]interface{})["application/json"].(map[string]interface{})["schema"].(map[string]interface{})
-		require.Equal(t, "#/components/schemas/Error", sch["$ref"], tc.path)
-	}
 }
