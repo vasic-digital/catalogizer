@@ -133,7 +133,7 @@ Catalogizer is a comprehensive media collection management system that automatic
     - Analytics dashboard
     - User management interface
 
-3. **Other first-party components** (`catalogizer-desktop`, `installer-wizard`, `catalogizer-android` and `catalogizer-androidtv` are at version 2.4.3; `catalogizer-api-client` and `Website` are at 1.0.0 in their `package.json`): `catalogizer-desktop` (Tauri 2 + React desktop app), `installer-wizard` (Tauri installation wizard), `catalogizer-android` (Jetpack Compose, Room, Media3 ExoPlayer), `catalogizer-androidtv` (Android TV, Leanback), `catalogizer-api-client` (TypeScript API client), `Website`, plus `monitoring/` (Prometheus, Alertmanager, Grafana, OpenTelemetry configs), `deployment/` and `docker/` (compose and scripts), `challenges/` and `tests/` (QA suites), `sonarqube/` (on-demand SonarQube QA service) and `specs/` (Spec Kit specifications).
+3. **Other first-party components** (`catalogizer-desktop`, `installer-wizard`, `catalogizer-android` and `catalogizer-androidtv` are at version 2.5.0; `catalogizer-api-client` and `Website` are at 1.0.0 in their `package.json`): `catalogizer-desktop` (Tauri 2 + React desktop app), `installer-wizard` (Tauri installation wizard), `catalogizer-android` (Jetpack Compose, Room, Media3 ExoPlayer), `catalogizer-androidtv` (Android TV, Leanback), `catalogizer-api-client` (TypeScript API client), `Website`, plus `monitoring/` (Prometheus, Alertmanager, Grafana, OpenTelemetry configs), `deployment/` and `docker/` (compose and scripts), `challenges/` and `tests/` (QA suites), `sonarqube/` (on-demand SonarQube QA service) and `specs/` (Spec Kit specifications).
 
 4. **Database Layer**: SQLCipher encrypted SQLite
     - Media metadata storage

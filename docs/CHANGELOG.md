@@ -9,23 +9,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.5.0] - 2026-11-17 (pre-release 2.5.0-rc.1 candidate, not production-ready)
 
-Release class: **pre-release** (provisional-eligible, constitution 11.4.290(G)). Prepared on branch `rc1ver` from `main` `824099fac` (469 commits since the `v2.4.3` tag, `git log v2.4.3..HEAD`). Not tagged, not published. The intended tag is `v2.5.0-rc.1`. Version files carry `2.5.0` (not `2.5.0-rc.1`) because `scripts/release/check_release_consistency.sh` compares every field with one `X.Y.Z` taken from `versions.json` global (major.minor.patch integers, which cannot hold a pre-release suffix); the pre-release identity is carried by the tag and by this heading. Bumped to 2.5.0: `versions.json` (via `bump_version minor` of `Build/lib/version.sh`), `docs/api/openapi.yaml`, `catalog-web`, `catalogizer-desktop` and `installer-wizard` (package.json, package-lock.json, tauri.conf.json, Cargo.toml), Android `versionCode` 10 (was 9), Android TV `versionCode` 12 (was 11), both `versionName` 2.5.0. Not touched: `Cargo.lock` files, the `CLAUDE.md` version lines, README and guide mentions of 2.4.3, `build_number` in `versions.json` (still 25).
+Release class: **pre-release** (provisional-eligible, constitution 11.4.290(G)). Prepared on branch `rc1ver` from `main` `630520890` (487 commits since the `v2.4.3` tag, 49 of them without a `Roadmap-Item` line; `git rev-list --count v2.4.3..630520890`; the 2.5.0 prep commit and the merge of main sit on top of that range). Not tagged, not published. The intended tag is `v2.5.0-rc.1`, but see the gate section: no tag may be cut yet. Version files carry `2.5.0` (not `2.5.0-rc.1`) because `scripts/release/check_release_consistency.sh` compares every field with one `X.Y.Z` taken from `versions.json` global (major.minor.patch integers, which cannot hold a pre-release suffix); the pre-release identity is carried by the tag and by this heading. Bumped to 2.5.0: `versions.json` (via `bump_version minor` of `Build/lib/version.sh`), `docs/api/openapi.yaml`, `catalog-web`, `catalogizer-desktop` and `installer-wizard` (package.json, package-lock.json, tauri.conf.json, Cargo.toml), Android `versionCode` 10 (was 9), Android TV `versionCode` 12 (was 11), both `versionName` 2.5.0, the two Android `CLAUDE.md` version lines, the installer-wizard AppImage file name in `challenges/scripts/desktop_appimage_launch_challenge.sh`, and the version mentions in `README.md` (components line), `docs/CONTRIBUTING.md` and `docs/DEPLOYMENT_GUIDE.md`. Not touched: `Cargo.lock` files, `build_number` in `versions.json` (still 25), the README release-status banner (it describes the published 2.4.3).
+
+### What changed for users (summary)
+- **Per-user favorites.** A favorite is now yours alone: `PUT /api/v1/media/:id/favorite` stores a per-user row (new table `user_favorites`, schema migration v30) instead of a global flag that every user could see and overwrite. Old global flags are not migrated (they never recorded an owner) and are ignored; users re-mark their favorites. The request body field is `favorite`.
+- **New read route.** `GET /api/v1/entities/:id/user-metadata` returns only the caller's own user metadata (a missing or foreign row is one 404).
+- **Sync destinations.** Creating or updating a sync destination on a private network without confirmation now answers **400** (was 409; the error code `private_network_confirmation_required` is unchanged), the same as storage roots. The `/sync/*` GET routes stay **403 admin-required** for non-admins (decision: keep 403, the earlier 404 change stays reverted).
+- **Security and correctness:** authentication, WebSocket, egress, error-leak and redaction hardening carried from 2.4.3 onward, last-admin protection on SQLite and PostgreSQL, duplicate email/name answers 409 instead of 500, Retry-After on 429, SMB `CopyFile` never truncates the destination before the source is read, NFS READDIR fallback. Details in the lists below.
+- **Upgrade:** back up the database first; there is no downgrade. See `docs/UPGRADE_NOTES.md`, section "Upgrading from 2.4.3 to 2.5.0".
 
 ### Release gate (constitution 11.4.298, stated first)
-- **Gate state: `BLOCKED-NO-BASELINE`.** No 11.4.298 live run of the whole suite on connected target hardware has been done for this candidate and no 11.4.293 comparison exists. The 11.4.40 full-suite retest of the candidate, the 11.4.185 manual QA and the live UI QA have NOT been run. This is a labelled pre-release and must not be deployed to users or called production-ready.
+Gate state per product, each **`BLOCKED-NO-HARDWARE`** (11.4.298(D): a product without a live-run record is `BLOCKED-NO-HARDWARE`):
+- `api`: `BLOCKED-NO-HARDWARE`
+- `web`: `BLOCKED-NO-HARDWARE` (the v2.4.2 baseline in `docs/qa/baseline-v2.4.2-20261114/` does not change this: there is no rc.1 live run to compare against it, so no 11.4.293 comparison exists)
+- `desktop`: `BLOCKED-NO-HARDWARE`
+- `wizard`: `BLOCKED-NO-HARDWARE`
+- `Android`: `BLOCKED-NO-HARDWARE`
+- `Android TV`: `BLOCKED-NO-HARDWARE`
+
+**Under 11.4.298(E) no tag of any class, `v2.5.0-rc.1` included, may be cut until a live run exists for every product the tag covers.** Nothing here may be deployed. The 11.4.40 full-suite retest of the candidate, the 11.4.185 manual QA and the live UI QA have NOT been run. This is a labelled pre-release candidate and must not be called production-ready.
 
 ### State summary by label (11.4.290(G))
-V = 1 evidence set whose hashes verify (the behaviour it backs stays PROVISIONAL). P = 233 distinct `Roadmap-Item` ids (derived from the `Roadmap-Item:` trailer lines of `git log v2.4.3..HEAD`, split on commas, `sort -u`; 469 commits, 36 carry no `Roadmap-Item` line). R = 0 reopened items identified in this range (UNCONFIRMED: not cross-checked against the tracker database). O = 0 new overdue jobs identified (UNCONFIRMED, same reason). Nothing below is claimed fixed or verified beyond what the VERIFIED section states.
+V = 0 items verified in this candidate. P = 240 distinct `Roadmap-Item` ids, derived from the `Roadmap-Item:` trailer lines of `git log v2.4.3..630520890` (`%B` bodies, `grep '^Roadmap-Item:'`, parentheticals dropped, split on commas and whitespace, `..` ranges expanded, `sort -u`; 487 commits, 49 carry no `Roadmap-Item` line), minus `CAT-SYNC-404-1` (decided, see below). V counts verified items and P counts items. R = 0 reopened items identified in this range (UNCONFIRMED: not cross-checked against the tracker database). O = 2 overdue verification jobs, named below. Nothing below is claimed fixed or verified.
 
-### VERIFIED (committed machine evidence)
-"VERIFIED" here means the evidence set exists and its hashes verify, not that behaviour is verified.
-- `docs/qa/img-slim/` (CAT-IMG-SLIM-1 minimal-ffmpeg image evidence, carried from 2.4.3; `SHA256SUMS.txt` checked with `sha256sum -c`). Container class; not re-run for this candidate.
+### VERIFIED
+- None. The `docs/qa/img-slim/` evidence set (CAT-IMG-SLIM-1 minimal-ffmpeg image) is carried evidence: its `SHA256SUMS.txt` hashes verify with `sha256sum -c`, it was not re-run on this candidate, and it verifies no behaviour of this candidate.
 
 ### REOPENED
 - None identified in this range (UNCONFIRMED, see above).
 
 ### OVERDUE
-- Verification jobs carried from `[2.4.3]` remain overdue; none new was identified here (UNCONFIRMED).
+- `VJ243-21` (documentation tooling and README reachability; `docs/PROVISIONAL_VERIFICATION_PLAN.md` section 6) was due 2026-11-13 and has not been run: **verification OVERDUE**.
+- `VJ243-22` (research and records review; same plan) was due 2026-11-13 and has not been run: **verification OVERDUE**.
+- Other `[2.4.3]` jobs carried from earlier sections remain open; see `[2.4.3]` below.
+
+### DECIDED (not provisional)
+- `CAT-SYNC-404-1`: operator decision, the `/sync/*` routes keep **403** for non-admins; the earlier 404 change stays reverted. Closed as a documented contract (docs only; `docs/api/SYNC_API.md`, `docs/api/openapi.yaml`).
+
+### Follow-ups noted for this section
+- The `[2.4.3]` section below still carries the gate label `BLOCKED-NO-BASELINE`, which does not match the per-product `BLOCKED-NO-HARDWARE` state of 11.4.298(D); left as published and to be corrected separately.
+
+### Landed since the first prep draft (all PROVISIONAL, from `main` `630520890`)
+- `CAT-HAUTHZ-F2`: per-user favorites (`user_favorites`, migration v30; `PUT /api/v1/media/:id/favorite`, `GET /media/:id` returns the caller's state only; review follow-ups: per-item, cascade and populated-v29 upgrade tests, 401 before body parse, openapi 400/401).
+- `CAT-HAUTHZ-O1`: caller-scoped user-metadata read, new route `GET /api/v1/entities/:id/user-metadata`; the legacy unrouted handler now filters by `user_id`.
+- `CAT-CPN1-F2` (commit message id `CAT-CPN1-F2-SYNC-400`): sync private-network confirmation answers 400, client-visible change from 409.
+- `SMBCOPYR` follow-ups F1-F7 (cleanup context, temp location, remove-failure cleanup, backslash same-path, live temp cleanup) on `CAT-SMB-COPY-1`.
+- `CPN1R2` follow-ups (openapi partial-500 fields, blocked-IP-first test, `ErrInvalidSMBInput` to 400, dead field dropped, doc fix) on `CAT-CPN-1`.
+- Sync stays 403 admin-required (`CAT-SYNC-404-1`, above).
 
 ### PROVISIONAL (every item below; commits since v2.4.3 grouped by `Roadmap-Item`, latest commit subject shown; PROVISIONAL means implemented and wired, verification pending)
 - `ADMD1-F1` (2 commits; latest 68396c78c): Merge admd1f1-fu: structural admin-403 classifier (no after-quote negation; ambiguity resolves to gated) (ADMD1-F1; Opus GO-with-follow-ups round 5; PROVISIONAL)
@@ -61,9 +91,11 @@ V = 1 evidence set whose hashes verify (the behaviour it backs stays PROVISIONAL
 - `CAT-CONSTITUTION-BUMP-4` (1 commit; latest 1569638d2): chore: bump constitution cc51c320 -> 93465196 (PR #13: constitution-cmd mutation test sharded)
 - `CAT-CONSTITUTION-BUMP-5` (1 commit; latest 82d05777d): chore: bump constitution 93465196 -> cb7008c4 (CON-425 history-scan replace-ref fix, CON-435..442 follow-ups)
 - `CAT-CONSTITUTION-BUMP-6` (1 commit; latest 5a2be8541): chore: bump constitution cb7008c4 -> 1dfbb4d1 (CON-435 gitleaks fix, drift-seam landing, CON-443..478 follow-ups)
-- `CAT-CPN-1` (5 commits; latest b24a3759e): CAT-CPN-1 follow-ups: probe-and-ingest stores the approved class (M1), classifies and dials one vetted resolution (M2), stored-row tests (M3)
+- `CAT-CPN-1` (6 commits; latest a807a7b30): fix+test: CPN-1 review follow-ups m1-m4, n1 (PROVISIONAL)
 - `CAT-GENERIC-HOSTS-1` (7 commits; latest 9b4651f58): docs: keep disclosure note free of the vendor name (PROVISIONAL)
 - `CAT-HAUTHZ-1` (10 commits; latest 45a1adc6e): CAT-HAUTHZ-1 follow-ups 3: evidence (RED/GREEN x3, mutants M3-M8), SHA256SUMS regenerated (PROVISIONAL)
+- `CAT-HAUTHZ-F2` (2 commits; latest 3b1bae3c1): CAT-HAUTHZ-F2 review follow-ups: per-item, cascade and populated-v29 upgrade tests, 401 before body parse, openapi 400/401, docs corrections (PROVISIONAL)
+- `CAT-HAUTHZ-O1` (1 commit; latest 7d0271c66): CAT-HAUTHZ-O1: caller-scoped user-metadata read, routed (PROVISIONAL)
 - `CAT-KEYROT-WAIVER-1` (2 commits; latest 632c3d0b3): Merge CAT-KEYROT-WAIVER-1 permanent-risk waiver kind (Opus GO-with-follow-ups; PROVISIONAL)
 - `CAT-MW-TIERTEST-1` (3 commits; latest 6546bc75e): Merge cat-mw-tiertest-1-rlw-fu2 (tier test, Retry-After on RateLimiter and pprof 429; Opus round 1 GO-with-follow-ups; PROVISIONAL)
 - `CAT-NFS-EMU-2` (3 commits; latest b96303dbb): Merge CAT-NFS-EMU-2: live unfs3 emulator leg for pkg/nfs3 (Opus GO-with-follow-ups; PROVISIONAL, EMULATOR)
@@ -75,8 +107,7 @@ V = 1 evidence set whose hashes verify (the behaviour it backs stays PROVISIONAL
 - `CAT-SECQ1-C` (5 commits; latest 9343681d9): Merge CAT-SECQ1-C W4 step-up limiter + approved class on live WebDAV path (Opus GO-with-follow-ups; PROVISIONAL)
 - `CAT-SMB-COPY-1` (6 commits; latest 2c3c117d8): fix(smb): CAT-SMB-COPY-1 review follow-ups m1-m5 (clean same-path guard, fresh-ctx temp cleanup, refuse read-only dest, copyFS seam + mutant-killing tests) PROVISIONAL
 - `CAT-SSE-FU2R` (1 commit; latest 8d0440abf): test: pin RequireAdmin (false,err) 503 body + positive control (SSEFU2R-m1/m2)
-- `CAT-SYN-LIVE-1` (1 commit; latest 2846f4bef): docs(qa): SYNOLOGY-LIVE-1 real-NAS live evidence 2026-11-15 (PROVISIONAL)
-- `CAT-SYNC-404-1` (4 commits; latest 368f610e8): docs(qa): CAT-SYNC-404-1 is NEEDS-DECISION (conflicts with the pinned ADMD1 403 contract), PROVISIONAL
+- `CAT-SYN-LIVE-1` (1 commit; latest 2846f4bef): docs(qa): live real-NAS evidence 2026-11-15 (PROVISIONAL)
 - `CHPW-RL-1-F1` (1 commit; latest 19fdf45ef): test(auth): drive real limiter tiers through the real router; extract newAuthRateTiers (PKGC-FU4-F1, CHPW-RL-1-F1/F2)
 - `CHPW-RL-1-F2` (1 commit; latest 19fdf45ef): test(auth): drive real limiter tiers through the real router; extract newAuthRateTiers (PKGC-FU4-F1, CHPW-RL-1-F1/F2)
 - `ELFU-m1` (4 commits; latest fa2e7b058): Merge ELFU-m1: errleak pins exact services path, closes bare-ScrubErrorFor bypass (Opus round-2 GO; PROVISIONAL)
@@ -88,23 +119,26 @@ V = 1 evidence set whose hashes verify (the behaviour it backs stays PROVISIONAL
 - `ENVR-n3` (1 commit; latest 97504de96): docs: register ENV-F1 review follow-ups
 - `ERRLEAK-FU-A` (3 commits; latest a3ea474e3): Merge ERRLEAK-FU: narrowed GetStorageRootStatus pin, TestConnection redaction test, S6 fixture (Opus GO-with-follow-ups; PROVISIONAL)
 - `ERRLEAK-FU-B` (2 commits; latest a3ea474e3): Merge ERRLEAK-FU: narrowed GetStorageRootStatus pin, TestConnection redaction test, S6 fixture (Opus GO-with-follow-ups; PROVISIONAL)
-- `ERRLEAK-FU-C` (2 commits; latest 2ab31e583): Merge ERRLEAK-FU-C/D: errleak checker callee identity (Opus GO-with-follow-ups; PROVISIONAL)
-- `ERRLEAK-FU-C ERRLEAK-FU-D` (1 commit; latest 989b99de5): errleak: resolve callee identity (shadowing, receiver, package) for mappers and wrappers
-- `ERRLEAK-FU-D` (2 commits; latest 2ab31e583): Merge ERRLEAK-FU-C/D: errleak checker callee identity (Opus GO-with-follow-ups; PROVISIONAL)
+- `ERRLEAK-FU-C` (3 commits; latest 2ab31e583): Merge ERRLEAK-FU-C/D: errleak checker callee identity (Opus GO-with-follow-ups; PROVISIONAL)
+- `ERRLEAK-FU-D` (3 commits; latest 2ab31e583): Merge ERRLEAK-FU-C/D: errleak checker callee identity (Opus GO-with-follow-ups; PROVISIONAL)
 - `ERRLEAK-FU-E` (2 commits; latest a3ea474e3): Merge ERRLEAK-FU: narrowed GetStorageRootStatus pin, TestConnection redaction test, S6 fixture (Opus GO-with-follow-ups; PROVISIONAL)
 - `EXAMPLES-F7-FALLOUT-1` (3 commits; latest 7acba1140): Merge EXAMPLES-F7-FALLOUT-1: example sqlmock for tx-wrapped Delete (Opus GO; PROVISIONAL)
 - `F2F3-m1` (3 commits; latest 44ec831b6): Merge F2F3-m1..m3: fail-closed conversion gates + nav/route tie test (Opus GO-with-follow-ups; PROVISIONAL)
 - `FU-TESTS-A` (3 commits; latest ea4a53757): Merge FU-TESTS-A test strengthening (Opus GO-with-follow-ups; PROVISIONAL)
 - `FU-TESTS-B` (2 commits; latest 2c93ed933): Merge FU-TESTS-B CORS case, nearNow time pin, web state waits (Opus GO; PROVISIONAL)
+- `FU10` (1 commit; latest 54b600ed3): docs(qa): PX-F18 enumeration corrections PXF18-FU1..FU5, FU7..FU11 (FU6 not touched); html/pdf twins regenerated
+- `FU11` (1 commit; latest 54b600ed3): docs(qa): PX-F18 enumeration corrections PXF18-FU1..FU5, FU7..FU11 (FU6 not touched); html/pdf twins regenerated
 - `FU2-1` (2 commits; latest 4b9350efb): qa: correct PW-F4 conclusion (plugin-react adds dedupe), commit variant reproducer, tighten FU2-1 controls
-- `FU7..FU11 (CAT-PREEXIST-3)` (1 commit; latest 54b600ed3): docs(qa): PX-F18 enumeration corrections PXF18-FU1..FU5, FU7..FU11 (FU6 not touched); html/pdf twins regenerated
+- `FU7` (1 commit; latest 54b600ed3): docs(qa): PX-F18 enumeration corrections PXF18-FU1..FU5, FU7..FU11 (FU6 not touched); html/pdf twins regenerated
+- `FU8` (1 commit; latest 54b600ed3): docs(qa): PX-F18 enumeration corrections PXF18-FU1..FU5, FU7..FU11 (FU6 not touched); html/pdf twins regenerated
+- `FU9` (1 commit; latest 54b600ed3): docs(qa): PX-F18 enumeration corrections PXF18-FU1..FU5, FU7..FU11 (FU6 not touched); html/pdf twins regenerated
 - `FUTB-F1` (3 commits; latest 11c25039b): Merge FUTB-FU: tighter nearNow bound, state-based web wait (Opus GO; PROVISIONAL)
 - `FUTB-F2` (2 commits; latest 11c25039b): Merge FUTB-FU: tighter nearNow bound, state-based web wait (Opus GO; PROVISIONAL)
 - `FUTB-N3` (1 commit; latest d218a55b4): test: WEB-TEST-BUNDLE-1 route-gate golden cases, header wording, FUTB-N3 timer advance
+- `GATECHK5` (1 commit; latest e6e89cf18): docs(release): gate checklist Rev 5 + rc.1 audit Rev 2 (11.4.298 live-run precondition, re-measured at b0066508a; review I-1, m-1..m-5, n-1..n-5; PROVISIONAL)
 - `HANDLERS-RED-1-F3` (1 commit; latest aeaea77f6): logredact: route-param secrets in any path segment and decoded %2F tokens no longer reach the path log field
 - `HYG-F3` (3 commits; latest 934fa382a): Merge hyg-f3-f8 (access-log route-param redaction HYG-F3, error-text HYG-F8; Opus round 3 GO-with-follow-ups; PROVISIONAL)
-- `HYG-F4` (3 commits; latest 628268d49): docs: register HYG-F4/SSEFU2 review follow-ups
-- `HYG-F4 SSEFU2-F1 SSEFU2-F2 SSEFU2-F3` (1 commit; latest 290c73189): Merge HYG-F4 + SSEFU2 tests (Opus GO-with-follow-ups; PROVISIONAL)
+- `HYG-F4` (4 commits; latest 290c73189): Merge HYG-F4 + SSEFU2 tests (Opus GO-with-follow-ups; PROVISIONAL)
 - `HYG-F6` (1 commit; latest 638f49d8d): fix(logredact): ReplaceKnown also removes the %q-quoted form of a secret (HYG-F6)
 - `HYG-F8` (1 commit; latest 4de55eb77): test(handlers): PXF17R1 redaction tests exercise the production ErrorTextKnown path (HYG-F8)
 - `HYG-R1-F1` (1 commit; latest dbc97863b): fix(middleware): canonical per-segment path for all log sinks; sink and buildRouter tests (HYG-R1-F1, F2, F3)
@@ -165,8 +199,11 @@ V = 1 evidence set whose hashes verify (the behaviour it backs stays PROVISIONAL
 - `PKGB-FU2` (1 commit; latest f5a4ea82e): main: access-log formatter removes the request's known secrets from error text
 - `PKGC-FU4-F1` (3 commits; latest e3b2d4a2d): Merge test/rl-wiring (real-limiter wiring tests for auth routes; Opus round 1 GO-with-follow-ups; PROVISIONAL)
 - `PW-F4` (4 commits; latest 46c834e50): Merge PW-F4 + FU2-1 web verification evidence (Opus round 2 GO; PROVISIONAL)
-- `PXF18-FU1` (2 commits; latest 5a199fe36): Merge docs/pxf18-fu (PXF18-FU1..5,7..11 corrections, PXF23-F2 sweep; Opus round 1 GO-with-follow-ups; PROVISIONAL)
-- `PXF18-FU1..FU5` (1 commit; latest 54b600ed3): docs(qa): PX-F18 enumeration corrections PXF18-FU1..FU5, FU7..FU11 (FU6 not touched); html/pdf twins regenerated
+- `PXF18-FU1` (3 commits; latest 5a199fe36): Merge docs/pxf18-fu (PXF18-FU1..5,7..11 corrections, PXF23-F2 sweep; Opus round 1 GO-with-follow-ups; PROVISIONAL)
+- `PXF18-FU2` (1 commit; latest 54b600ed3): docs(qa): PX-F18 enumeration corrections PXF18-FU1..FU5, FU7..FU11 (FU6 not touched); html/pdf twins regenerated
+- `PXF18-FU3` (1 commit; latest 54b600ed3): docs(qa): PX-F18 enumeration corrections PXF18-FU1..FU5, FU7..FU11 (FU6 not touched); html/pdf twins regenerated
+- `PXF18-FU4` (1 commit; latest 54b600ed3): docs(qa): PX-F18 enumeration corrections PXF18-FU1..FU5, FU7..FU11 (FU6 not touched); html/pdf twins regenerated
+- `PXF18-FU5` (1 commit; latest 54b600ed3): docs(qa): PX-F18 enumeration corrections PXF18-FU1..FU5, FU7..FU11 (FU6 not touched); html/pdf twins regenerated
 - `PXF18-FU6` (4 commits; latest 4903ed47b): Merge fix/pxf18-fu6-challenge-results-admin (challenges routes admin-only; Opus round 1 GO-with-follow-ups; PROVISIONAL)
 - `PXF18-FU6-F1` (1 commit; latest 7f07f3c61): docs(api): add 403 admin-required to GET challenges routes (PXF18-FU6-F1)
 - `PXF18-FU6-F2` (1 commit; latest aca660155): docs(api): whole challenges group is admin-only (PXF18-FU6-F2)
@@ -203,14 +240,14 @@ V = 1 evidence set whose hashes verify (the behaviour it backs stays PROVISIONAL
 - `SSEF4R-FD-m1-FU1` (1 commit; latest d218a55b4): test: WEB-TEST-BUNDLE-1 route-gate golden cases, header wording, FUTB-N3 timer advance
 - `SSEF4R-FD-m1-FU3` (1 commit; latest d218a55b4): test: WEB-TEST-BUNDLE-1 route-gate golden cases, header wording, FUTB-N3 timer advance
 - `SSEF4R-FU` (5 commits; latest 855ee46d0): Merge SSEF4R-FU UI isAdmin from /auth/status permissions (Opus GO-with-follow-ups; PROVISIONAL)
-- `SSEFU-F1` (2 commits; latest 004eb302c): docs(api): SSEFU-F4/F5 consistent 503 wording on sync GETs, $ref Error for sync 500s, success on Error schema (PROVISIONAL)
-- `SSEFU-F1..F5` (2 commits; latest 5504f20b8): Merge SSEFU-F1..F5 (Opus GO-with-follow-ups; PROVISIONAL)
-- `SSEFU-F2` (2 commits; latest 004eb302c): docs(api): SSEFU-F4/F5 consistent 503 wording on sync GETs, $ref Error for sync 500s, success on Error schema (PROVISIONAL)
-- `SSEFU-F3` (2 commits; latest 004eb302c): docs(api): SSEFU-F4/F5 consistent 503 wording on sync GETs, $ref Error for sync 500s, success on Error schema (PROVISIONAL)
-- `SSEFU-F4` (3 commits; latest 05460c33e): Merge SSEFU-F4/F5: consistent sync-GET 503 wording, Error schema refs (Opus GO-with-follow-ups; PROVISIONAL)
-- `SSEFU-F5` (3 commits; latest 05460c33e): Merge SSEFU-F4/F5: consistent sync-GET 503 wording, Error schema refs (Opus GO-with-follow-ups; PROVISIONAL)
-- `SSEFU2-F1 SSEFU2-F2 SSEFU2-F3` (1 commit; latest 909edffa6): test(handlers,middleware): kill SSEFU2 survivors (uid pass-through, (true,err) deny, pinned DB-failure bodies)
-- `SSEFU2-F3` (1 commit; latest 4d936f547): SSEFU2-F3: pin exact 503 body of RequireAdmin check failure (JSONEq)
+- `SSEFU-F1` (4 commits; latest 004eb302c): docs(api): SSEFU-F4/F5 consistent 503 wording on sync GETs, $ref Error for sync 500s, success on Error schema (PROVISIONAL)
+- `SSEFU-F2` (4 commits; latest 004eb302c): docs(api): SSEFU-F4/F5 consistent 503 wording on sync GETs, $ref Error for sync 500s, success on Error schema (PROVISIONAL)
+- `SSEFU-F3` (4 commits; latest 004eb302c): docs(api): SSEFU-F4/F5 consistent 503 wording on sync GETs, $ref Error for sync 500s, success on Error schema (PROVISIONAL)
+- `SSEFU-F4` (5 commits; latest 05460c33e): Merge SSEFU-F4/F5: consistent sync-GET 503 wording, Error schema refs (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEFU-F5` (5 commits; latest 05460c33e): Merge SSEFU-F4/F5: consistent sync-GET 503 wording, Error schema refs (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEFU2-F1` (2 commits; latest 290c73189): Merge HYG-F4 + SSEFU2 tests (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEFU2-F2` (2 commits; latest 290c73189): Merge HYG-F4 + SSEFU2 tests (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEFU2-F3` (3 commits; latest 4d936f547): SSEFU2-F3: pin exact 503 body of RequireAdmin check failure (JSONEq)
 - `SSEFUR-i5` (1 commit; latest 9d73a17d5): docs: register SSEFU-F4/F5 review follow-ups
 - `SSEFUR-m1` (3 commits; latest a22d9fa0b): Merge SSEFUR-m1/m2/n3/n4: sync docs 503/403 alignment, admin-only Auth lines, 500 example (Opus GO-with-follow-ups; PROVISIONAL)
 - `SSEFUR-m2` (3 commits; latest a22d9fa0b): Merge SSEFUR-m1/m2/n3/n4: sync docs 503/403 alignment, admin-only Auth lines, 500 example (Opus GO-with-follow-ups; PROVISIONAL)
@@ -225,7 +262,7 @@ V = 1 evidence set whose hashes verify (the behaviour it backs stays PROVISIONAL
 - `SSEFURRRR` (1 commit; latest 6af5ce16f): docs: register SSEFURRRR review follow-ups
 - `STATS-SCANS-ERR-1` (1 commit; latest cada4debc): fix(catalog-api): admin-only /sync/* GETs; fixed error text for non-admin /stats/scans
 - `SYNC-ADMIN-1` (3 commits; latest 0ed6495e0): Merge fix/stats-scans-err-sync-admin (STATS-SCANS-ERR-1, SYNC-ADMIN-1; Opus round 1 GO-with-follow-ups; PROVISIONAL)
-- `SYNOLOGY-LIVE-1` (2 commits; latest 2635b3e2e): Merge SYNOLOGY-LIVE-1: live Synology evidence 2026-11-15 (Opus GO-with-follow-ups; PROVISIONAL)
+- `NAS-LIVE-1` (2 commits; latest 2635b3e2e): Merge live NAS evidence 2026-11-15 (Opus GO-with-follow-ups; PROVISIONAL; roadmap id recorded in history under the vendor-specific label)
 - `TEST-HYGIENE-BUNDLE-2` (3 commits; latest aff954c69): Merge TEST-HYGIENE-BUNDLE-2: PG test gating, single-connection F7 test, Delete rollback pin (Opus GO-with-follow-ups; PROVISIONAL)
 - `TEST-HYGIENE-BUNDLE-3` (3 commits; latest 7fed296bd): Merge TEST-HYGIENE-BUNDLE-3: deadlock guards and tightened SQL pins (Opus GO-with-follow-ups; PROVISIONAL)
 - `TH2-MINOR-1` (3 commits; latest 9827ba2a2): Merge TH2-MINOR-1: sole-admin LockAccount single-connection test (Opus GO-with-follow-ups; PROVISIONAL)
