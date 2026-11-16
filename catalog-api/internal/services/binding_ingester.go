@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"catalogizer/database"
+	"catalogizer/internal/netguard"
 	"catalogizer/models"
 	"catalogizer/repository"
 
@@ -55,6 +56,23 @@ type IngestionResult struct {
 // unauthenticated result has no valid identity binding to persist and will be
 // rejected.
 func (bi *BindingIngester) IngestProbeResult(ctx context.Context, result *SMBProbeResult) (*IngestionResult, error) {
+	return bi.ingest(ctx, result, nil)
+}
+
+// ApprovedClassAssignment is the network class (and who decided it) stored on a storage root this ingester creates.
+type ApprovedClassAssignment struct {
+	Class  netguard.Class
+	Source string // database.ApprovedSource*
+}
+
+// IngestProbeResultWithClass is IngestProbeResult that also stores the approved network class on every storage root it CREATES (CPN1-M1).
+// A root that already exists is left untouched: re-ingesting must neither widen nor narrow an existing approval. If the class cannot be
+// stored the new row is removed again and the error returned, so no root is left behind with an approval nobody made.
+func (bi *BindingIngester) IngestProbeResultWithClass(ctx context.Context, result *SMBProbeResult, a ApprovedClassAssignment) (*IngestionResult, error) {
+	return bi.ingest(ctx, result, &a)
+}
+
+func (bi *BindingIngester) ingest(ctx context.Context, result *SMBProbeResult, assign *ApprovedClassAssignment) (*IngestionResult, error) {
 	if result == nil {
 		return nil, fmt.Errorf("ingester: nil probe result")
 	}
@@ -94,7 +112,7 @@ func (bi *BindingIngester) IngestProbeResult(ctx context.Context, result *SMBPro
 		// path can accidentally read a credential from the database.
 		rootName := rootNameFor(result.Host, share.ShareName)
 
-		created, err := bi.insertStorageRootOnce(ctx, rootName, result.Host, share.ShareName, result.IdentityIndex)
+		created, err := bi.insertStorageRootOnce(ctx, rootName, result.Host, share.ShareName, result.IdentityIndex, assign)
 		if err != nil {
 			return nil, err
 		}
@@ -110,7 +128,7 @@ func (bi *BindingIngester) IngestProbeResult(ctx context.Context, result *SMBPro
 // Returns created=true when a new row was inserted, created=false when the row
 // already exists (idempotent). The row stores identity_index in the Options JSON
 // column and leaves Username/Password NULL (§11.4.10).
-func (bi *BindingIngester) insertStorageRootOnce(ctx context.Context, name, host, sharePath string, identityIdx int) (bool, error) {
+func (bi *BindingIngester) insertStorageRootOnce(ctx context.Context, name, host, sharePath string, identityIdx int, assign *ApprovedClassAssignment) (bool, error) {
 	// Check existence first (reliable idempotency: InsertReturningID uses
 	// LastInsertId which does NOT return 0 for INSERT OR IGNORE no-ops).
 	var existing int64
@@ -127,7 +145,7 @@ func (bi *BindingIngester) insertStorageRootOnce(ctx context.Context, name, host
 	optionsStr := string(identityMeta)
 	now := time.Now().UTC()
 
-	_, insertErr := bi.db.InsertReturningID(ctx,
+	newID, insertErr := bi.db.InsertReturningID(ctx,
 		`INSERT INTO storage_roots
 			(name, protocol, host, path, domain, options, enabled, max_depth, created_at, updated_at)
 		 VALUES (?, ?, ?, ?, ?, ?, ?, 10, ?, ?)`,
@@ -136,6 +154,14 @@ func (bi *BindingIngester) insertStorageRootOnce(ctx context.Context, name, host
 	)
 	if insertErr != nil {
 		return false, fmt.Errorf("ingester: insert storage_root %s: %w", name, insertErr)
+	}
+	if assign != nil {
+		if err := bi.db.SetApprovedClass(ctx, database.TableStorageRoots, newID, assign.Class, assign.Source); err != nil {
+			cctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+			defer cancel()
+			_, _ = bi.db.ExecContext(cctx, `DELETE FROM storage_roots WHERE id = ?`, newID)
+			return false, fmt.Errorf("ingester: store approved class for %s: %w", name, err)
+		}
 	}
 
 	bi.logger.Info("Storage root created from probe result",
