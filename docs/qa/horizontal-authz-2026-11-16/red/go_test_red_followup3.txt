@@ -1,0 +1,360 @@
+=== RUN   TestHorizontalAuthz_RealBinary
+=== RUN   TestHorizontalAuthz_RealBinary/collections
+=== RUN   TestHorizontalAuthz_RealBinary/control/collection_B_reads_own
+    horizontal_authz_binary_test.go:75: HZ|collection B reads own|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/control/collection_admin_reads
+    horizontal_authz_binary_test.go:75: HZ|collection admin reads|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/denied/collection_read
+    horizontal_authz_binary_test.go:50: HZ|collection read|404|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/collection_items
+    horizontal_authz_binary_test.go:50: HZ|collection items|404|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/collection_update
+    horizontal_authz_binary_test.go:50: HZ|collection update|404|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/collection_delete
+    horizontal_authz_binary_test.go:50: HZ|collection delete|404|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/noleak/collection_list
+    horizontal_authz_binary_test.go:63: HZ|collection list|200|BODY-CHECKED
+=== RUN   TestHorizontalAuthz_RealBinary/control/collection_list_B_sees_own
+    horizontal_authz_binary_test.go:75: HZ|collection list B sees own|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/control/collection_public_readable_by_A_(design)
+    horizontal_authz_binary_test.go:75: HZ|collection public readable by A (design)|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/denied/collection_public_update
+    horizontal_authz_binary_test.go:50: HZ|collection public update|403|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/collection_public_delete
+    horizontal_authz_binary_test.go:50: HZ|collection public delete|403|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/control/collection_survives_A's_attempts
+    horizontal_authz_binary_test.go:75: HZ|collection survives A's attempts|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/playlists
+=== RUN   TestHorizontalAuthz_RealBinary/control/playlist_B_reads_own
+    horizontal_authz_binary_test.go:75: HZ|playlist B reads own|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/denied/playlist_read
+    horizontal_authz_binary_test.go:50: HZ|playlist read|404|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/playlist_update
+    horizontal_authz_binary_test.go:50: HZ|playlist update|404|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/playlist_add_item
+    horizontal_authz_binary_test.go:50: HZ|playlist add item|404|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/playlist_remove_item
+    horizontal_authz_binary_test.go:50: HZ|playlist remove item|404|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/playlist_delete
+    horizontal_authz_binary_test.go:50: HZ|playlist delete|404|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/noleak/playlist_list
+    horizontal_authz_binary_test.go:63: HZ|playlist list|200|BODY-CHECKED
+=== RUN   TestHorizontalAuthz_RealBinary/control/playlist_list_B_sees_own
+    horizontal_authz_binary_test.go:75: HZ|playlist list B sees own|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/favorites
+=== RUN   TestHorizontalAuthz_RealBinary/control/favorite_B_adds
+    horizontal_authz_binary_test.go:75: HZ|favorite B adds|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/noleak/favorite_list_A_is_empty
+    horizontal_authz_binary_test.go:232: HZ|favorite list|200|BODY-CHECKED
+=== RUN   TestHorizontalAuthz_RealBinary/noleak/favorite_check_A_is_false
+    horizontal_authz_binary_test.go:238: HZ|favorite check|200|BODY-CHECKED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/favorite_A_removes_B's
+    horizontal_authz_binary_test.go:242: HZ|favorite remove|404|CHECKED
+=== RUN   TestHorizontalAuthz_RealBinary/control/favorite_B_still_has_it
+    horizontal_authz_binary_test.go:75: HZ|favorite B still has it|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/user_metadata
+=== RUN   TestHorizontalAuthz_RealBinary/control/usermeta_A_writes_own_(body_names_B)
+    horizontal_authz_binary_test.go:75: HZ|usermeta A writes own (body names B)|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/control/usermeta_B_writes_own
+    horizontal_authz_binary_test.go:75: HZ|usermeta B writes own|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/playback
+=== RUN   TestHorizontalAuthz_RealBinary/control/playback_B_progress_own
+    horizontal_authz_binary_test.go:75: HZ|playback B progress own|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/control/playback_B_history_own
+    horizontal_authz_binary_test.go:75: HZ|playback B history own|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/noleak/history_A
+    horizontal_authz_binary_test.go:272: HZ|playback history|200|BODY-CHECKED
+=== RUN   TestHorizontalAuthz_RealBinary/noleak/progress_A
+    horizontal_authz_binary_test.go:278: HZ|playback progress|200|BODY-CHECKED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/playback_progress_foreign_session
+    horizontal_authz_binary_test.go:50: HZ|playback progress foreign session|404|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/playback_end_foreign_session
+    horizontal_authz_binary_test.go:50: HZ|playback end foreign session|404|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/foreign_session_is_indistinguishable_from_a_missing_one
+    horizontal_authz_binary_test.go:288: HZ|playback no-oracle /api/v1/playback/sessions/progress|404/404|CHECKED
+    horizontal_authz_binary_test.go:288: HZ|playback no-oracle /api/v1/playback/sessions/end|404/404|CHECKED
+=== RUN   TestHorizontalAuthz_RealBinary/state/B's_session_unchanged
+=== RUN   TestHorizontalAuthz_RealBinary/analytics
+=== RUN   TestHorizontalAuthz_RealBinary/denied/analytics_user/B
+    horizontal_authz_binary_test.go:50: HZ|analytics user/B|403|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/control/analytics_B_reads_own
+    horizontal_authz_binary_test.go:75: HZ|analytics B reads own|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/control/analytics_admin_reads_B
+    horizontal_authz_binary_test.go:75: HZ|analytics admin reads B|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/denied/analytics_write_as_B_(access)
+    horizontal_authz_binary_test.go:50: HZ|analytics write as B (access)|403|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/analytics_write_as_B_(event)
+    horizontal_authz_binary_test.go:50: HZ|analytics write as B (event)|403|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/control/analytics_A_writes_as_self
+    horizontal_authz_binary_test.go:75: HZ|analytics A writes as self|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/denied/recommendations_personalized/B
+    horizontal_authz_binary_test.go:50: HZ|recommendations personalized/B|403|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/control/recommendations_B_reaches_own
+    horizontal_authz_binary_test.go:315: HZ|recommendations B own|501|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/subtitles
+=== RUN   TestHorizontalAuthz_RealBinary/denied/subtitle_delete_by_A
+    horizontal_authz_binary_test.go:50: HZ|subtitle delete by A|404|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/state/subtitle_survives
+=== RUN   TestHorizontalAuthz_RealBinary/control/subtitle_delete_by_owner_B
+    horizontal_authz_binary_test.go:75: HZ|subtitle delete by owner B|204|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/conversion
+=== RUN   TestHorizontalAuthz_RealBinary/control/conversion_B_reads_own
+    horizontal_authz_binary_test.go:75: HZ|conversion B reads own|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/control/conversion_admin_reads
+    horizontal_authz_binary_test.go:75: HZ|conversion admin reads|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/denied/conversion_read
+    horizontal_authz_binary_test.go:50: HZ|conversion read|404|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/conversion_cancel
+    horizontal_authz_binary_test.go:50: HZ|conversion cancel|404|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/conversion_retry
+    horizontal_authz_binary_test.go:50: HZ|conversion retry|404|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/conversion_download
+    horizontal_authz_binary_test.go:50: HZ|conversion download|404|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/conversion_delete
+    horizontal_authz_binary_test.go:50: HZ|conversion delete|404|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/noleak/conversion_list
+    horizontal_authz_binary_test.go:63: HZ|conversion list|200|BODY-CHECKED
+=== RUN   TestHorizontalAuthz_RealBinary/control/conversion_list_B_sees_own
+    horizontal_authz_binary_test.go:75: HZ|conversion list B sees own|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/control/conversion_job_survives
+    horizontal_authz_binary_test.go:75: HZ|conversion job survives|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/error_reports
+=== RUN   TestHorizontalAuthz_RealBinary/control/error_report_B_reads_own
+    horizontal_authz_binary_test.go:75: HZ|error report B reads own|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/control/error_report_admin-less_B_list
+    horizontal_authz_binary_test.go:75: HZ|error report admin-less B list|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/control/crash_report_B_reads_own
+    horizontal_authz_binary_test.go:75: HZ|crash report B reads own|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/control/crash_report_B_list
+    horizontal_authz_binary_test.go:75: HZ|crash report B list|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/control/error_statistics_B_sees_own
+    horizontal_authz_binary_test.go:75: HZ|error statistics B sees own|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/control/crash_statistics_B_sees_own
+    horizontal_authz_binary_test.go:75: HZ|crash statistics B sees own|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/denied/error_report_read
+    horizontal_authz_binary_test.go:50: HZ|error report read|404|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/crash_report_read
+    horizontal_authz_binary_test.go:50: HZ|crash report read|404|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied-write/reports_status_by_A
+    horizontal_authz_binary_test.go:419: HZ|reports status foreign|500|REFUSED-404
+    horizontal_authz_binary_test.go:420: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/hf3.EQfAxV/repo/catalog-api/horizontal_authz_binary_test.go:420
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 500
+        	Test:       	TestHorizontalAuthz_RealBinary/denied-write/reports_status_by_A
+        	Messages:   	A's status update on B's report must be 404: Internal Server Error
+    horizontal_authz_binary_test.go:421: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/hf3.EQfAxV/repo/catalog-api/horizontal_authz_binary_test.go:421
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 500
+        	Test:       	TestHorizontalAuthz_RealBinary/denied-write/reports_status_by_A
+        	Messages:   	a missing id must be the same 404: Internal Server Error
+    horizontal_authz_binary_test.go:424: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/hf3.EQfAxV/repo/catalog-api/horizontal_authz_binary_test.go:424
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 500
+        	Test:       	TestHorizontalAuthz_RealBinary/denied-write/reports_status_by_A
+        	Messages:   	PUT refusal matches the GET refusal code
+    horizontal_authz_binary_test.go:425: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/hf3.EQfAxV/repo/catalog-api/horizontal_authz_binary_test.go:425
+        	Error:      	Not equal: 
+        	            	expected: "Not Found\n"
+        	            	actual  : "Internal Server Error\n"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1,2 +1,2 @@
+        	            	-Not Found
+        	            	+Internal Server Error
+        	            	 
+        	Test:       	TestHorizontalAuthz_RealBinary/denied-write/reports_status_by_A
+        	Messages:   	PUT refusal body matches the GET refusal body
+=== RUN   TestHorizontalAuthz_RealBinary/denied-write/crashes_status_by_A
+    horizontal_authz_binary_test.go:419: HZ|crashes status foreign|500|REFUSED-404
+    horizontal_authz_binary_test.go:420: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/hf3.EQfAxV/repo/catalog-api/horizontal_authz_binary_test.go:420
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 500
+        	Test:       	TestHorizontalAuthz_RealBinary/denied-write/crashes_status_by_A
+        	Messages:   	A's status update on B's report must be 404: Internal Server Error
+    horizontal_authz_binary_test.go:421: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/hf3.EQfAxV/repo/catalog-api/horizontal_authz_binary_test.go:421
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 500
+        	Test:       	TestHorizontalAuthz_RealBinary/denied-write/crashes_status_by_A
+        	Messages:   	a missing id must be the same 404: Internal Server Error
+    horizontal_authz_binary_test.go:424: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/hf3.EQfAxV/repo/catalog-api/horizontal_authz_binary_test.go:424
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 500
+        	Test:       	TestHorizontalAuthz_RealBinary/denied-write/crashes_status_by_A
+        	Messages:   	PUT refusal matches the GET refusal code
+    horizontal_authz_binary_test.go:425: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/hf3.EQfAxV/repo/catalog-api/horizontal_authz_binary_test.go:425
+        	Error:      	Not equal: 
+        	            	expected: "Not Found\n"
+        	            	actual  : "Internal Server Error\n"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1,2 +1,2 @@
+        	            	-Not Found
+        	            	+Internal Server Error
+        	            	 
+        	Test:       	TestHorizontalAuthz_RealBinary/denied-write/crashes_status_by_A
+        	Messages:   	PUT refusal body matches the GET refusal body
+=== RUN   TestHorizontalAuthz_RealBinary/control/error_report_A_list_sees_own
+    horizontal_authz_binary_test.go:75: HZ|error report A list sees own|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/control/crash_report_A_list_sees_own
+    horizontal_authz_binary_test.go:75: HZ|crash report A list sees own|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/control/error_statistics_A_sees_own
+    horizontal_authz_binary_test.go:75: HZ|error statistics A sees own|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/control/crash_statistics_A_sees_own
+    horizontal_authz_binary_test.go:75: HZ|crash statistics A sees own|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/noleak/error_report_list
+    horizontal_authz_binary_test.go:63: HZ|error report list|200|BODY-CHECKED
+=== RUN   TestHorizontalAuthz_RealBinary/noleak/crash_report_list
+    horizontal_authz_binary_test.go:63: HZ|crash report list|200|BODY-CHECKED
+=== RUN   TestHorizontalAuthz_RealBinary/noleak/error_statistics
+    horizontal_authz_binary_test.go:63: HZ|error statistics|200|BODY-CHECKED
+=== RUN   TestHorizontalAuthz_RealBinary/noleak/crash_statistics
+    horizontal_authz_binary_test.go:63: HZ|crash statistics|200|BODY-CHECKED
+=== RUN   TestHorizontalAuthz_RealBinary/noleak/statistics_numeric_aggregates
+=== RUN   TestHorizontalAuthz_RealBinary/state/B_reports_intact
+=== RUN   TestHorizontalAuthz_RealBinary/users
+=== RUN   TestHorizontalAuthz_RealBinary/denied/user_read
+    horizontal_authz_binary_test.go:50: HZ|user read|403|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/user_update
+    horizontal_authz_binary_test.go:50: HZ|user update|403|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/user_delete
+    horizontal_authz_binary_test.go:50: HZ|user delete|403|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/user_reset-password
+    horizontal_authz_binary_test.go:50: HZ|user reset-password|403|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/user_lock
+    horizontal_authz_binary_test.go:50: HZ|user lock|403|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/user_unlock
+    horizontal_authz_binary_test.go:50: HZ|user unlock|403|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/denied/admin_user_update
+    horizontal_authz_binary_test.go:50: HZ|admin user update|403|REFUSED
+=== RUN   TestHorizontalAuthz_RealBinary/noleak/self_view_/api/v1/users/me
+    horizontal_authz_binary_test.go:63: HZ|self view /api/v1/users/me|200|BODY-CHECKED
+=== RUN   TestHorizontalAuthz_RealBinary/noleak/self_view_/api/v1/auth/me
+    horizontal_authz_binary_test.go:63: HZ|self view /api/v1/auth/me|200|BODY-CHECKED
+=== RUN   TestHorizontalAuthz_RealBinary/noleak/self_view_/api/v1/auth/profile
+    horizontal_authz_binary_test.go:63: HZ|self view /api/v1/auth/profile|200|BODY-CHECKED
+=== RUN   TestHorizontalAuthz_RealBinary/noleak/self_view_/api/v1/auth/permissions
+    horizontal_authz_binary_test.go:63: HZ|self view /api/v1/auth/permissions|200|BODY-CHECKED
+=== RUN   TestHorizontalAuthz_RealBinary/control/user_B_reads_self
+    horizontal_authz_binary_test.go:75: HZ|user B reads self|200|POSITIVE-CONTROL
+=== RUN   TestHorizontalAuthz_RealBinary/state/B_intact
+--- FAIL: TestHorizontalAuthz_RealBinary (25.60s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/collection_B_reads_own (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/collection_admin_reads (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/collection_read (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/collection_items (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/collection_update (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/collection_delete (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/noleak/collection_list (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/collection_list_B_sees_own (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/collection_public_readable_by_A_(design) (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/collection_public_update (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/collection_public_delete (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/collection_survives_A's_attempts (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/collections (0.03s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/playlist_B_reads_own (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/playlist_read (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/playlist_update (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/playlist_add_item (0.02s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/playlist_remove_item (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/playlist_delete (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/noleak/playlist_list (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/playlist_list_B_sees_own (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/playlists (0.06s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/favorite_B_adds (0.02s)
+    --- PASS: TestHorizontalAuthz_RealBinary/noleak/favorite_list_A_is_empty (0.02s)
+    --- PASS: TestHorizontalAuthz_RealBinary/noleak/favorite_check_A_is_false (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/favorite_A_removes_B's (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/favorite_B_still_has_it (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/favorites (0.05s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/usermeta_A_writes_own_(body_names_B) (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/usermeta_B_writes_own (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/user_metadata (0.03s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/playback_B_progress_own (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/playback_B_history_own (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/noleak/history_A (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/noleak/progress_A (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/playback_progress_foreign_session (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/playback_end_foreign_session (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/foreign_session_is_indistinguishable_from_a_missing_one (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/state/B's_session_unchanged (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/playback (0.04s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/analytics_user/B (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/analytics_B_reads_own (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/analytics_admin_reads_B (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/analytics_write_as_B_(access) (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/analytics_write_as_B_(event) (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/analytics_A_writes_as_self (0.04s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/recommendations_personalized/B (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/recommendations_B_reaches_own (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/analytics (0.07s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/subtitle_delete_by_A (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/state/subtitle_survives (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/subtitle_delete_by_owner_B (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/subtitles (0.04s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/conversion_B_reads_own (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/conversion_admin_reads (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/conversion_read (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/conversion_cancel (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/conversion_retry (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/conversion_download (0.02s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/conversion_delete (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/noleak/conversion_list (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/conversion_list_B_sees_own (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/conversion_job_survives (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/conversion (0.12s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/error_report_B_reads_own (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/error_report_admin-less_B_list (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/crash_report_B_reads_own (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/crash_report_B_list (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/error_statistics_B_sees_own (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/crash_statistics_B_sees_own (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/error_report_read (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/crash_report_read (0.00s)
+    --- FAIL: TestHorizontalAuthz_RealBinary/denied-write/reports_status_by_A (0.01s)
+    --- FAIL: TestHorizontalAuthz_RealBinary/denied-write/crashes_status_by_A (0.02s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/error_report_A_list_sees_own (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/crash_report_A_list_sees_own (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/error_statistics_A_sees_own (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/crash_statistics_A_sees_own (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/noleak/error_report_list (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/noleak/crash_report_list (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/noleak/error_statistics (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/noleak/crash_statistics (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/noleak/statistics_numeric_aggregates (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/state/B_reports_intact (0.03s)
+    --- PASS: TestHorizontalAuthz_RealBinary/error_reports (0.15s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/user_read (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/user_update (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/user_delete (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/user_reset-password (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/user_lock (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/user_unlock (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/denied/admin_user_update (0.00s)
+    --- PASS: TestHorizontalAuthz_RealBinary/noleak/self_view_/api/v1/users/me (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/noleak/self_view_/api/v1/auth/me (0.02s)
+    --- PASS: TestHorizontalAuthz_RealBinary/noleak/self_view_/api/v1/auth/profile (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/noleak/self_view_/api/v1/auth/permissions (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/control/user_B_reads_self (0.01s)
+    --- PASS: TestHorizontalAuthz_RealBinary/state/B_intact (0.18s)
+    --- PASS: TestHorizontalAuthz_RealBinary/users (0.30s)
+FAIL
+FAIL	catalogizer	25.849s
+FAIL

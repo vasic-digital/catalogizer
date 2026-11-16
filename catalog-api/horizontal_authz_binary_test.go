@@ -396,6 +396,7 @@ func TestHorizontalAuthz_RealBinary(t *testing.T) {
 		eid := c.id("POST", "/api/v1/errors/report", e.rb, map[string]interface{}{"level": "error", "message": "hzmark-b-error", "component": compB}, 200)
 		cid := c.id("POST", "/api/v1/errors/crash", e.rb, map[string]interface{}{"signal": sigB, "message": "hzmark-b-crash"}, 200)
 		c.id("POST", "/api/v1/errors/report", e.ra, map[string]interface{}{"level": "error", "message": "hzmark-a-error", "component": "hzmark-a-component"}, 200)
+		c.id("POST", "/api/v1/errors/crash", e.ra, map[string]interface{}{"signal": "HZSIGA", "message": "hzmark-a-crash"}, 200)
 		ep := fmt.Sprintf("/api/v1/errors/reports/%d", eid)
 		cp := fmt.Sprintf("/api/v1/errors/crashes/%d", cid)
 		e.ok("error report B reads own", "GET", ep, e.rb, nil, "hzmark-b-error")
@@ -406,9 +407,7 @@ func TestHorizontalAuthz_RealBinary(t *testing.T) {
 		e.ok("crash statistics B sees own", "GET", "/api/v1/errors/crash-statistics", e.rb, nil, sigB)
 		e.denied("error report read", "GET", ep, e.ra, nil, "hzmark-b-error")
 		e.denied("crash report read", "GET", cp, e.ra, nil, "hzmark-b-crash")
-		// OPEN FINDING HAUTHZ-F3 (status code only): a foreign status update is refused (nothing is written, see the state check
-		// below) but answers 500 (the service returns "access denied" and the handler maps every error to 500) instead of 403/404.
-		// A missing id answers the same 500, so there is no ownership oracle. The write refusal is what is pinned here.
+		// HAUTHZ-F3 (fixed): a foreign and a missing id answer the SAME 404 with the SAME body as the GET routes (no oracle).
 		for _, kind := range []string{"reports", "crashes"} {
 			e.t.Run("denied-write/"+kind+" status by A", func(t *testing.T) {
 				id := eid
@@ -416,16 +415,39 @@ func TestHorizontalAuthz_RealBinary(t *testing.T) {
 					id = cid
 				}
 				foreign, fraw := c.do("PUT", fmt.Sprintf("/api/v1/errors/%s/%d/status", kind, id), e.ra, map[string]interface{}{"status": "resolved"})
-				missing, _ := c.do("PUT", fmt.Sprintf("/api/v1/errors/%s/987654321/status", kind), e.ra, map[string]interface{}{"status": "resolved"})
-				t.Logf("HZ|%s status foreign|%d|WRITE-REFUSED-CODE-IS-OPEN-FINDING-F3", kind, foreign)
-				assert.NotContains(t, []int{200, 204}, foreign, "A's status update on B's report must not succeed: %s", fraw)
-				assert.Equal(t, missing, foreign, "foreign and missing ids answer alike (no oracle)")
+				missing, mraw := c.do("PUT", fmt.Sprintf("/api/v1/errors/%s/987654321/status", kind), e.ra, map[string]interface{}{"status": "resolved"})
+				t.Logf("HZ|%s status foreign|%d|REFUSED-404", kind, foreign)
+				assert.Equal(t, 404, foreign, "A's status update on B's report must be 404: %s", fraw)
+				assert.Equal(t, 404, missing, "a missing id must be the same 404: %s", mraw)
+				assert.Equal(t, string(mraw), string(fraw), "foreign and missing bodies identical (no oracle)")
+				getCode, getRaw := c.do("GET", fmt.Sprintf("/api/v1/errors/%s/%d", kind, id), e.ra, nil)
+				assert.Equal(t, getCode, foreign, "PUT refusal matches the GET refusal code")
+				assert.Equal(t, string(getRaw), string(fraw), "PUT refusal body matches the GET refusal body")
 			})
 		}
+		// positive controls (HAUTHZ-FU2-M2): holder A sees its OWN report in list and statistics, so the no-leak checks below are not vacuous
+		e.ok("error report A list sees own", "GET", "/api/v1/errors/reports", e.ra, nil, "hzmark-a-error")
+		e.ok("crash report A list sees own", "GET", "/api/v1/errors/crashes", e.ra, nil, "hzmark-a-crash")
+		e.ok("error statistics A sees own", "GET", "/api/v1/errors/statistics", e.ra, nil, "hzmark-a-component")
+		e.ok("crash statistics A sees own", "GET", "/api/v1/errors/crash-statistics", e.ra, nil, "HZSIGA")
 		e.noLeak("error report list", "GET", "/api/v1/errors/reports", e.ra, "hzmark-b-error")
 		e.noLeak("crash report list", "GET", "/api/v1/errors/crashes", e.ra, "hzmark-b-crash")
 		e.noLeak("error statistics", "GET", "/api/v1/errors/statistics", e.ra, compB)
 		e.noLeak("crash statistics", "GET", "/api/v1/errors/crash-statistics", e.ra, sigB)
+		// HAUTHZ-FU2-M1: numeric aggregates of A equal A's OWN filings (1 error at level error, 1 crash); B's rows are not counted
+		e.t.Run("noleak/statistics numeric aggregates", func(t *testing.T) {
+			code, raw := e.c.do("GET", "/api/v1/errors/statistics", e.ra, nil)
+			require.Equal(t, 200, code, "%s", raw)
+			m := hzJSON(t, raw)
+			assert.EqualValues(t, 1, m["total_errors"], "A's total_errors counts only A's filing: %s", raw)
+			lv, _ := m["errors_by_level"].(map[string]interface{})
+			assert.EqualValues(t, 1, lv["error"], "A's by-level counts only A's filing: %s", raw)
+			assert.Len(t, lv, 1, "by-level has only A's level: %s", raw)
+			code, raw = e.c.do("GET", "/api/v1/errors/crash-statistics", e.ra, nil)
+			require.Equal(t, 200, code, "%s", raw)
+			m = hzJSON(t, raw)
+			assert.EqualValues(t, 1, m["total_crashes"], "A's total_crashes counts only A's filing: %s", raw)
+		})
 		e.t.Run("state/B reports intact", func(t *testing.T) {
 			_, raw := c.do("GET", ep, e.rb, nil)
 			assert.NotContains(t, string(raw), `"status":"resolved"`, "A's status attempt did not change B's error report: %s", raw)
@@ -437,6 +459,11 @@ func TestHorizontalAuthz_RealBinary(t *testing.T) {
 			require.Less(t, code, 300)
 			_, raw = c.do("GET", ep, e.rb, nil)
 			assert.Contains(t, string(raw), `"status":"resolved"`, "owner B resolves its own report: %s", raw)
+			// HAUTHZ-FU2-M3: the owner resolves its own CRASH too
+			code, _ = c.do("PUT", cp+"/status", e.rb, map[string]interface{}{"status": "resolved"})
+			require.Less(t, code, 300)
+			_, raw = c.do("GET", cp, e.rb, nil)
+			assert.Contains(t, string(raw), `"status":"resolved"`, "owner B resolves its own crash: %s", raw)
 		})
 	})
 

@@ -1,0 +1,10 @@
+{"item":"CAT-HAUTHZ-1 follow-ups 3 (HAUTHZ-F3, FU2-M1/M2/M3)","label":"PROVISIONAL",
+ "control":"G0 unmutated fixed tree: ok (sweep green)",
+ "mutants":[
+  {"id":"M3","change":"error_reporting_repository.go GetErrorStatistics total: WHERE user_id = ? OR 1=1","killed_by":"sweep noleak/statistics_numeric_aggregates (previously survived text-marker no-leak legs)"},
+  {"id":"M4","change":"error_reporting_service.go UpdateErrorStatus: foreign owner returns untyped 'access denied' instead of ErrReportNotFound (404 fix undone)","killed_by":"sweep denied-write/reports_status_by_A"},
+  {"id":"M5","change":"error_reporting_handler.go UpdateErrorStatus: ErrReportNotFound branch disabled (every service error -> 500)","killed_by":"sweep denied-write/reports_status_by_A"},
+  {"id":"M6","change":"error_reporting_service.go UpdateCrashStatus: sql.ErrNoRows no longer mapped to ErrReportNotFound (missing id -> 500)","killed_by":"sweep denied-write/crashes_status_by_A"},
+  {"id":"M7","change":"crash_reporting_repository.go GetCrashStatistics total: WHERE user_id = ? OR 1=1","killed_by":"sweep noleak/statistics_numeric_aggregates"},
+  {"id":"M8","change":"error_reporting_service.go UpdateCrashStatus: userID forced to -1 (owner can no longer resolve own crash)","killed_by":"sweep state/B_reports_intact (owner-resolves-own-crash control, FU2-M3)","note":"first attempt aborted in sweep setup (scan catalogue flake under host load 40, unrelated); rerun killed"}],
+ "not_covered":"no mutant for 'real internal error stays 500': no fault-injection path through the real binary reaches the service error branch; mapping is by errors.Is on the typed sentinel"}
