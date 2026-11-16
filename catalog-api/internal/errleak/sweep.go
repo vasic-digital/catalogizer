@@ -98,11 +98,16 @@ func isSafeWrapperCall(v *ast.CallExpr) bool {
 func isSentinel(e ast.Expr) bool {
 	switch v := e.(type) {
 	case *ast.Ident:
-		return strings.HasPrefix(v.Name, "Err")
+		return sentinelName(v.Name)
 	case *ast.SelectorExpr:
-		return strings.HasPrefix(v.Sel.Name, "Err")
+		return sentinelName(v.Sel.Name)
 	}
 	return false
+}
+
+// sentinelName: an exported sentinel is spelled ErrXxx; a bare field named Err (e.g. e.Err) is an error value.
+func sentinelName(n string) bool {
+	return len(n) > 3 && strings.HasPrefix(n, "Err") && n[3] >= 'A' && n[3] <= 'Z'
 }
 
 func errName(n string) bool {
@@ -115,8 +120,11 @@ func errName(n string) bool {
 
 // isStdStream reports whether e names a process stream (CLI output, not an HTTP response).
 func isStdStream(e ast.Expr) bool {
-	r := strings.ToLower(recv(e))
-	return strings.Contains(r, "stderr") || strings.Contains(r, "stdout") || r == "out" || r == "errout"
+	switch strings.ToLower(recv(e)) {
+	case "os.stdout", "os.stderr", "stdout", "stderr", "out", "errout":
+		return true
+	}
+	return false
 }
 
 // usesErr reports whether n carries an error value or the text of one; tainted holds local variables that were
