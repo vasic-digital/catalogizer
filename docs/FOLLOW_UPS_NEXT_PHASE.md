@@ -2984,3 +2984,9 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 - ADMD1R-n4 (nit): bullet header "measured on SQLite" but livePermissions status ordering and CheckPermission sentences are code-read only; label them.
 - ADMD1R-n5 (nit): wording "only ACTIVE, UNLOCKED members get the error". ADMD1R-n6 (nit): note PUT /users/{id}/settings is unaffected (UpdateSettings reads no roles, user_handler.go:819-820).
 - ADMD1R-i7 (info): no offline OpenAPI linter available (spec schema validity UNCONFIRMED; yaml parses, 227 paths); no HTTP or PostgreSQL run; SQLite probe confirmed plain UpdateGuarded fails under a corrupt role, non-admin UpdateRole succeeds, unlock works.
+
+### PGR3-m1/m2 review follow-ups (Opus GO-with-follow-ups, 2026-11-16, PROVISIONAL)
+- PGR3R-m1 (minor, test-instrumentation): no fixture uses an escaped interpreted literal such as `import "\x43"`, so a hand-rolled trim mutant (strings.Trim(Value, "\"`")=="C") survives; add an escaped-literal fixture.
+- PGR3R-m2 (minor, test-instrumentation): raw fixture testdata/zr3/raw/z.go is not gofmt-stable; a repo-wide gofmt -w would turn it into `"C"` and silently drop raw-string coverage while the test still passes. Add an assertion that the file still contains the raw `import `C`` or exclude testdata from gofmt.
+- PGR3R-n3 (nit, source): an Unquote error counts as "not cgo"; unreachable today (ParseFile rejects it first, scan.go:190-192); treating it as unreliable would be stricter defence in depth.
+- PGR3R-i4 (info): scripts/local-ci.sh:68 `test -z "$(gofmt -l .)"` already fails on base (44 listed files, head 45); go_fmt is deferred in scripts/repo/validate_checks.tsv. Root `go test -short .` passes (86.7 s) when submodules are initialised in the scratch clone.
