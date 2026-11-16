@@ -506,7 +506,9 @@ curl -X POST http://localhost:8080/api/v1/users/{user_id}/lock \
 
 # Unlock an account
 curl -X POST http://localhost:8080/api/v1/users/{user_id}/unlock \
-  -H "Authorization: Bearer $ADMIN_TOKEN"
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{}'
 ```
 
 The last effective administrator (an active, unlocked account whose role carries
@@ -575,6 +577,11 @@ curl -X PUT http://localhost:8080/api/v1/roles/{role_id} \
   }'
 ```
 
+`PUT` overwrites the role: the handler builds the role from the request body
+alone (`role_handler.go:179-184`), so a request that omits `description` or
+`permissions` writes them empty (read from code, not exercised over HTTP). Send
+the complete `permissions` list (and description) every time.
+
 A write that removes `system.admin` from the only role that gives an active,
 unlocked account administrator rights is refused with HTTP 409 `The last
 administrator role cannot lose administrator permission`.
@@ -588,24 +595,33 @@ SQLite with the real repository code, each statement with its code location):
 
 - Reading that role (`GET /roles/{id}`) or listing roles fails
   (`user_repository.go` `GetRole` / `ListRoles`, "failed to unmarshal permissions").
-- Every account whose role is the corrupt one fails the permission check
-  (`livePermissions`, `user_repository.go:432`; `AuthService.CheckPermission`,
-  `auth_service.go:508`), so permission checks for a member of the corrupt role return an error
-  (callers fail closed) instead of a clean yes/no, and if you are signed in
+- Permission checks for members of the corrupt role return an error (callers
+  fail closed) instead of a clean yes/no. The database-backed checks
+  (`livePermissions`, `user_repository.go:432`, used by `IsAdmin` and
+  `HasPermission`) return (false, nil) for an inactive, suspended or locked member
+  before the permissions are parsed (`:451-453`), so only every ACTIVE, UNLOCKED
+  member gets the error; `AuthService.CheckPermission` (`auth_service.go:508`)
+  reads the role without that status test and errors for every member of the
+  corrupt role. If you are signed in
   through the corrupt role you cannot call the repair yourself: sign in with
   another administrator.
 - While ANY role is corrupt, these writes fail because they read all roles first
   (`adminRoleIDs` / `adminRoleIDsTx`, `user_repository.go:312,347`): a lock with
   any `lock_until` (`LockAccount`), a suspension (`SetSuspended(true)`), deleting
-  a user (`Delete`), and a user update that changes role or active state
-  (`UpdateGuarded`). Unlocking (`UnlockAccount`) and lifting a suspension still
+  a user (`Delete`), and every user update written through `UpdateGuarded`,
+  including a plain profile edit that changes neither role nor active state
+  (`UpdateGuarded` reads the roles on both of its paths, `user_repository.go:253,269`;
+  callers `user_handler.go:389`, `admin_handler.go:387`). Unlocking (`UnlockAccount`) and lifting a suspension still
   work (they read no roles).
 - `UpdateRole` (`user_repository.go:1026`) on the corrupt role with permissions
   that do NOT include `system.admin` fails ("failed to parse current role
   permissions", HTTP 500 by `role_handler.go:200`, not exercised over HTTP), because it must first read the current value to run the
-  last-administrator guard. On PostgreSQL every write that removes `system.admin`
-  from any role also fails while a corrupt role exists; on SQLite only a role that
-  currently carries `system.admin` is affected.
+  last-administrator guard. UNCONFIRMED (read from code, not run on PostgreSQL):
+  on PostgreSQL every `UpdateRole` whose new permissions lack `system.admin` reads
+  all roles (`adminRoleIDsTx`, `user_repository.go:1112-1116`), so it fails while
+  any role is corrupt, whether or not the role being updated had `system.admin`;
+  on SQLite that read happens only when the role being updated currently carries
+  `system.admin` (`:1121-1126`).
 - `UpdateRole` on the corrupt role with a new permissions list that INCLUDES
   `system.admin` skips the guard and the read, and succeeds. This is the only
   repair path through the API.

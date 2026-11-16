@@ -5307,10 +5307,10 @@ paths:
           required: true
           schema:
             type: integer
-      description: "Locks an account until the RFC 3339 time in the JSON body `{\"lock_until\": \"...\"}`. Needs `user.manage` (checked first, also for your own id). Only a caller with `system.admin` may act on an account whose role carries `system.admin`; for any other caller such a target answers 403 (also when the target's role cannot be resolved). Locking your own account is refused with 400."
+      description: "Locks an account until the RFC 3339 time in the JSON body `{\"lock_until\": \"...\"}`. Needs `user.manage` (checked first, also for your own id). Only a caller with `system.admin` may act on an account whose role carries `system.admin`; for any other caller such a target answers 403 (also when the target's role cannot be resolved). Locking your own account is refused with 400. A lock that is written also revokes every session of the account (`user_repository.go:602-607`)."
       responses:
         '200':
-          description: "`{\"message\":\"Account locked successfully\"}`."
+          description: "`{\"message\":\"Account locked successfully\"}`. Every session of the account is revoked."
         '400':
           description: "Non-integer id, the caller's own id (`Cannot lock your own account`), invalid JSON body, or `lock_until` not RFC 3339."
         '401':
@@ -5429,9 +5429,9 @@ paths:
         '404':
           description: "No such role, or a system role."
         '409':
-          description: "Role name already exists."
+          description: "Either `The last administrator role cannot lose administrator permission` (the write would remove `system.admin` from the only role that gives an active, unlocked account administrator rights; `role_handler.go:188-190`) or `Role name already exists`."
         '500':
-          description: "Repository or permission-check error."
+          description: "Repository or permission-check error. While any stored role's permissions are corrupt, an update whose new permissions lack `system.admin` can fail here (see the Administrator Guide)."
     delete:
       tags: [roles]
       summary: Delete role
