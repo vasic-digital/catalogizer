@@ -110,7 +110,7 @@ components:
           description: "Present (false) on errors written by the shared error helper, for example the 503 'Could not verify admin role'; absent on the bare {error: ...} envelope"
         error:
           type: string
-          description: "Human-readable message. Present in every JSON error body the handlers write (the shared error helper and the bare {error: ...} envelope both always set it); absent only on bodyless errors, for example the empty-body 500 written by the panic-recovery middleware"
+          description: "Human-readable message. Present in every JSON error body the handlers write (the shared error helper and the bare {error: ...} envelope both always set it); absent on bodyless errors, for example the empty-body 500 written by the panic-recovery middleware, and on the text/plain errors written by the wrapped net/http handlers (users, roles, configuration, errors and logs operations and the /admin config, errors, health and logs aliases), which answer http.Error(w, text, status) with a plain-text line and no JSON body (catalog-api/handlers/user_handler.go:59, handlers/gin_adapter.go:16)"
         details:
           type: string
         code:
@@ -3812,6 +3812,8 @@ paths:
           description: Missing or invalid token
         '501':
           description: Not implemented. No subtitle provider client exists, so a search cannot be answered (code NOT_IMPLEMENTED).
+        '503':
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
 
   /api/v1/subtitles/download:
     post:
@@ -3827,6 +3829,8 @@ paths:
       responses:
         '200':
           description: Subtitle downloaded
+        '503':
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
 
   /api/v1/subtitles/media/{media_id}:
     get:
@@ -3897,7 +3901,7 @@ paths:
         '404':
           description: Unknown subtitle (`SUBTITLE_NOT_FOUND`)
         '503':
-          description: No translation provider is configured (`TRANSLATION_UNAVAILABLE`)
+          description: 'Either the admin gate could not verify the caller (Could not verify admin role; catalog-api/middleware/auth.go:257; body {"success":false,"error":"Could not verify admin role"}) or no translation provider is configured (catalog-api/handlers/subtitle_handler.go:516; body {"success":false,"error":"No translation provider is configured on this server","code":"TRANSLATION_UNAVAILABLE"})'
 
   /api/v1/subtitles/upload:
     post:
@@ -4197,6 +4201,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '503':
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
 
   /api/v1/storage-roots:
     get:
@@ -4576,7 +4582,7 @@ paths:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '503':
-          description: Scanner unavailable
+          description: 'Either the admin gate could not verify the caller (Could not verify admin role; catalog-api/middleware/auth.go:257; body {"success":false,"error":"Could not verify admin role"}) or the scan job could not be queued (catalog-api/handlers/scan_handler.go:545; body {"error":"failed to queue scan"})'
     get:
       tags: [scans]
       summary: List active scans
@@ -4871,7 +4877,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '503':
-          description: The caller's admin status could not be determined (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
 
   /api/v1/admin/users:
     get:
@@ -4906,7 +4912,7 @@ paths:
         '403':
           description: Forbidden (admin role required)
         '503':
-          description: The caller's admin status could not be determined (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
 
   /api/v1/admin/users/{id}:
     put:
@@ -4972,7 +4978,7 @@ paths:
         '404':
           description: User not found
         '503':
-          description: The caller's admin status could not be determined (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
 
   /api/v1/admin/storage:
     get:
@@ -4999,7 +5005,7 @@ paths:
         '500':
           description: The storage roots could not be read from the database (never a 200 with an empty list)
         '503':
-          description: The caller's admin status could not be determined (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
 
   /api/v1/admin/storage/scan:
     post:
@@ -5041,7 +5047,7 @@ paths:
         '403':
           description: Forbidden (admin role required)
         '503':
-          description: The caller's admin status could not be determined (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
 
   /api/v1/admin/backups:
     get:
@@ -5066,7 +5072,7 @@ paths:
         '403':
           description: Forbidden (admin role required)
         '503':
-          description: The caller's admin status could not be determined (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
     post:
       tags: [admin]
       summary: Create database backup
@@ -5094,7 +5100,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '503':
-          description: The caller's admin status could not be determined (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
 
   /api/v1/admin/backups/{id}/restore:
     post:
@@ -5135,7 +5141,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '503':
-          description: The caller's admin status could not be determined (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
 
   /api/v1/users:
     post:
@@ -6265,6 +6271,8 @@ paths:
                     type: string
                   status:
                     type: string
+        '503':
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
 
   /api/v1/assets/by-entity/{type}/{id}:
     get:
@@ -6638,6 +6646,8 @@ paths:
           description: No directory found for the entity; nothing queued
         '202':
           description: Refresh queued
+        '503':
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
 
   /api/v1/entities/{id}/user-metadata:
     put:
@@ -6707,6 +6717,8 @@ paths:
                       $ref: '#/components/schemas/ChallengeSummary'
                   count:
                     type: integer
+        '503':
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
 
   /api/v1/challenges/{id}:
     get:
@@ -6727,6 +6739,8 @@ paths:
           description: Challenge details
         '404':
           description: Challenge not found
+        '503':
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
 
   /api/v1/challenges/{id}/run:
     post:
@@ -6754,6 +6768,8 @@ paths:
                     type: boolean
                   data:
                     $ref: '#/components/schemas/ChallengeResult'
+        '503':
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
 
   /api/v1/challenges/run:
     post:
@@ -6791,6 +6807,8 @@ paths:
                         type: integer
                       failed:
                         type: integer
+        '503':
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
 
   /api/v1/challenges/run/category/{category}:
     post:
@@ -6809,6 +6827,8 @@ paths:
           description: Administrator role required (system.admin)
         '200':
           description: Category challenge results
+        '503':
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
 
   /api/v1/challenges/results:
     get:
@@ -6834,6 +6854,8 @@ paths:
                       $ref: '#/components/schemas/ChallengeResult'
                   count:
                     type: integer
+        '503':
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
 
   # ── Browse endpoints ──────────────────────────────────────────────────
 
@@ -7821,7 +7843,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '503':
-          description: The caller's admin status could not be determined (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
   /api/v1/admin/errors:
     get:
       tags:
@@ -7851,7 +7873,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '503':
-          description: The caller's admin status could not be determined (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
   /api/v1/admin/health:
     get:
       tags:
@@ -7881,7 +7903,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '503':
-          description: The caller's admin status could not be determined (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
   /api/v1/admin/logs:
     get:
       tags:
@@ -7911,7 +7933,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '503':
-          description: The caller's admin status could not be determined (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
   /api/v1/admin/covers/generate-thumbnails:
     post:
       tags:
@@ -7959,7 +7981,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '503':
-          description: The caller's admin status could not be determined (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
   /api/v1/admin/image-quality/revalidate:
     post:
       tags:
@@ -8021,7 +8043,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '503':
-          description: The caller's admin status could not be determined (fail closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
   /api/v1/analytics/access:
     post:
       tags:
@@ -8264,6 +8286,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '503':
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
   /api/v1/analytics/reports:
     post:
       tags:
@@ -8303,6 +8327,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '503':
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
   /api/v1/analytics/stats:
     get:
       tags:
@@ -8918,6 +8944,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '503':
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
   /api/v1/entities/{id}/history:
     get:
       tags:
