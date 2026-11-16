@@ -1,0 +1,17 @@
+--- FAIL: TestHorizontalAuthzUnit_UserMetadataReadCallerScoped (0.33s)
+    horizontal_authz_unit_test.go:162: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/umeta2.MGAO/c/catalog-api/handlers/horizontal_authz_unit_test.go:162
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 200
+        	Test:       	TestHorizontalAuthzUnit_UserMetadataReadCallerScoped
+        	Messages:   	A has no row on item 7: must be 404, got: {}
+    horizontal_authz_unit_test.go:166: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/umeta2.MGAO/c/catalog-api/handlers/horizontal_authz_unit_test.go:166
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 200
+        	Test:       	TestHorizontalAuthzUnit_UserMetadataReadCallerScoped
+FAIL
+FAIL	catalogizer/handlers	0.572s
+FAIL

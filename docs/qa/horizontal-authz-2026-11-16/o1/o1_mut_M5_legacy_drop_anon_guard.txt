@@ -1,0 +1,8 @@
+--- FAIL: TestMediaHandler_UserMetadata_CallerScoped (0.34s)
+    media_usermeta_authz_test.go:43: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/umeta2.MGAO/c/catalog-api/internal/handlers/media_usermeta_authz_test.go:43
+        	Error:      	Expected nil, but got: &models.UserMetadata{ID:2, MediaItemID:1, UserID:0, UserRating:(*float64)(nil), WatchedStatus:(*string)(nil), WatchedDate:<nil>, PersonalNotes:(*string)(0x129698b85770), Tags:[]string{}, Favorite:false, CreatedAt:time.Date(2026, time.November, 16, 23, 19, 33, 0, time.UTC), UpdatedAt:time.Date(2026, time.November, 16, 23, 19, 33, 0, time.UTC)}
+        	Test:       	TestMediaHandler_UserMetadata_CallerScoped
+FAIL
+FAIL	catalogizer/internal/handlers	0.636s
+FAIL

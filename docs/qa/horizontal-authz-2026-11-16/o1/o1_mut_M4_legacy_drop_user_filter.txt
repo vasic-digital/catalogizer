@@ -1,0 +1,9 @@
+--- FAIL: TestMediaHandler_UserMetadata_CallerScoped (0.81s)
+    media_usermeta_authz_test.go:32: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/umeta2.MGAO/c/catalog-api/internal/handlers/media_usermeta_authz_test.go:32
+        	Error:      	Received unexpected error:
+        	            	not enough args to execute query: want 3 got 2
+        	Test:       	TestMediaHandler_UserMetadata_CallerScoped
+FAIL
+FAIL	catalogizer/internal/handlers	1.509s
+FAIL
