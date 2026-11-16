@@ -67,7 +67,7 @@ func TestSECQ1C_CreatePrivateRootNeedsConfirmation(t *testing.T) {
 	t.Setenv(netguard.AllowCIDRsEnv, "")
 	h := secq1cHarness(t)
 	code, body := h.do("POST", "/storage/roots", map[string]interface{}{"name": "lan", "protocol": "webdav", "url": "http://192.168.1.20:5005/", "path": "/"})
-	require.Equal(t, http.StatusConflict, code, "%v", body)
+	require.Equal(t, http.StatusBadRequest, code, "%v", body)
 	require.Equal(t, secq1cNoConfirm, body["code"])
 	require.Equal(t, 0, rootCount(t, h.db), "an unconfirmed private root is not stored")
 
@@ -84,7 +84,7 @@ func TestSECQ1C_CreateSMBRootNeedsConfirmation(t *testing.T) {
 	h := secq1cHarness(t)
 	req := map[string]interface{}{"name": "nas", "protocol": "smb", "host": "192.168.1.30", "path": "media", "username": "u", "password": "p"}
 	code, body := h.do("POST", "/storage/roots", req)
-	require.Equal(t, http.StatusConflict, code, "%v", body)
+	require.Equal(t, http.StatusBadRequest, code, "%v", body)
 	req["confirm_private_network"] = true
 	code, body = h.do("POST", "/storage/roots", req)
 	require.Equal(t, http.StatusCreated, code, "%v", body)

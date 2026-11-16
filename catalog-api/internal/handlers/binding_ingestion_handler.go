@@ -1,8 +1,12 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
+	"time"
 
+	root_handlers "catalogizer/handlers"
+	"catalogizer/internal/netguard"
 	"catalogizer/internal/services"
 
 	"github.com/gin-gonic/gin"
@@ -16,6 +20,9 @@ const hostAllowedErr = "Host not allowed"
 // (CATALOGIZER_IDENTITY_*) so no credentials ever travel over the wire (§11.4.10).
 type ProbeAndIngestRequest struct {
 	Host string `json:"host" binding:"required"`
+	// ConfirmPrivateNetwork is the operator's confirmation that a host on a private network (or one that cannot be resolved now) is meant to be
+	// reached and stored as a storage root; without it such a host is refused with 400 before anything is probed or stored (CAT-CPN-1).
+	ConfirmPrivateNetwork bool `json:"confirm_private_network"`
 }
 
 // ProbeAndIngestResponse is the JSON response shape returned to the caller.
@@ -64,7 +71,7 @@ func NewProbeAndIngestHandler(
 // indicate which identity authenticated, but NEVER a password or other secret.
 //
 //	POST /api/v1/smb/probe-and-ingest
-//	{"host": "nas.example.com"}
+//	{"host": "nas.example.com", "confirm_private_network": true}
 //
 // @Summary Probe host and ingest bindings
 // @Description Probes an SMB host with all configured identities and persists the first working (host, identity, shares) binding
@@ -73,7 +80,7 @@ func NewProbeAndIngestHandler(
 // @Produce json
 // @Param request body ProbeAndIngestRequest true "Probe request (host only — identities loaded from server env)"
 // @Success 200 {object} ProbeAndIngestResponse
-// @Failure 400 {object} map[string]interface{}
+// @Failure 400 {object} map[string]interface{} "invalid request, disallowed host, or a private-network host without confirm_private_network"
 // @Failure 500 {object} map[string]interface{}
 // @Router /api/v1/smb/probe-and-ingest [post]
 func (h *ProbeAndIngestHandler) ProbeAndIngest(c *gin.Context) {
@@ -87,6 +94,19 @@ func (h *ProbeAndIngestHandler) ProbeAndIngest(c *gin.Context) {
 	if !isHostAllowed(req.Host) {
 		h.logger.Warn("Blocked probe to disallowed host", zap.String("host", req.Host))
 		c.JSON(http.StatusBadRequest, gin.H{"error": hostAllowedErr})
+		return
+	}
+
+	// CAT-CPN-1: this route stores storage roots, so it applies the same private-LAN rule as POST /storage/roots, before any probe.
+	cctx, ccancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
+	class, refused := root_handlers.ClassifyStorageDestination(cctx, req.Host, "")
+	ccancel()
+	if refused {
+		c.JSON(http.StatusBadRequest, gin.H{"error": hostAllowedErr})
+		return
+	}
+	if class != netguard.ClassPublic && !req.ConfirmPrivateNetwork {
+		root_handlers.RespondPrivateConfirmationRequired(c)
 		return
 	}
 

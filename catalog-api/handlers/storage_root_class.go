@@ -117,13 +117,24 @@ func (h *ScanHandler) deleteRootRow(ctx context.Context, id int64) {
 	_, _ = h.db.ExecContext(cctx, `DELETE FROM storage_roots WHERE id = ?`, id)
 }
 
+// CAT-CPN-1 (operator decision 2026-11-16): an unconfirmed private-LAN storage root is a malformed request (400), not a state conflict. The body
+// is a fixed class text; it never names the destination.
 func respondPrivateConfirmationRequired(c *gin.Context) {
-	c.JSON(http.StatusConflict, gin.H{
+	c.JSON(http.StatusBadRequest, gin.H{
 		"error": "this storage destination is on a private network (or cannot be resolved now); confirm it to approve private-network access",
 		"code":  codePrivateConfirmationRequired,
 		"hint":  "repeat the request with confirm_private_network=true if the destination is meant to be on your LAN",
 	})
 }
+
+// ClassifyStorageDestination and RespondPrivateConfirmationRequired are the create path's classifier and fixed refusal body, exported so every
+// other route that stores a networked storage root (POST /smb/probe-and-ingest) applies the same rule (CAT-CPN-1 round 2, review F1).
+func ClassifyStorageDestination(ctx context.Context, host, rawURL string) (class netguard.Class, refused bool) {
+	return classifyForApproval(ctx, host, rawURL)
+}
+
+// RespondPrivateConfirmationRequired writes the 400 of an unconfirmed private-network destination (fixed class text, never the host).
+func RespondPrivateConfirmationRequired(c *gin.Context) { respondPrivateConfirmationRequired(c) }
 
 // contextUserID reads the authenticated user id the auth middleware stored under "user_id".
 func contextUserID(c *gin.Context) (int, bool) {

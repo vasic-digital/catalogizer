@@ -257,6 +257,15 @@ describe('mediaApi', () => {
       expect(result).toEqual(created)
     })
 
+    it('createStorageRoot sends confirm_private_network when the administrator confirmed a private destination', async () => {
+      const input = { name: 'NAS', protocol: 'smb', host: '192.168.1.30', enabled: true, max_depth: 5, enable_duplicate_detection: false, enable_metadata_extraction: true, confirm_private_network: true }
+      mockApi.post.mockResolvedValue({ data: { ...input, id: 4 } })
+
+      await mediaApi.createStorageRoot(input)
+
+      expect(mockApi.post).toHaveBeenCalledWith('/storage/roots', expect.objectContaining({ confirm_private_network: true, host: '192.168.1.30' }))
+    })
+
     it('updateStorageRoot calls PUT /storage/roots/:id', async () => {
       const updates = { name: 'Updated Root' }
       mockApi.put.mockResolvedValue({ data: { id: 1, ...updates } })

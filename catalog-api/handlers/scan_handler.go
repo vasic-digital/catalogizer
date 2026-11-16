@@ -130,7 +130,7 @@ type createStorageRootRequest struct {
 	// AllowEmpty marks a root that is expected to be empty: its scan may complete with 0 files instead of failing (default false).
 	AllowEmpty bool `json:"allow_empty"`
 	// ConfirmPrivateNetwork is the operator's confirmation that a destination on a private network (or one that cannot be resolved
-	// now) is meant (CAT-SECQ1-C). Without it such a root is refused with 409 private_network_confirmation_required.
+	// now) is meant (CAT-SECQ1-C). Without it such a root is refused with 400 private_network_confirmation_required.
 	ConfirmPrivateNetwork bool `json:"confirm_private_network"`
 }
 
