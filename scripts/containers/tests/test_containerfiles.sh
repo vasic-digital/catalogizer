@@ -38,7 +38,7 @@ required = sys.argv[5].split(",") if len(sys.argv) > 5 and sys.argv[5] else []
 ID = {"go": "IMG-GO", "gotools": "IMG-GOTOOLS", "node": "IMG-NODE", "playwright": "IMG-PW", "docs": "IMG-DOCS", "rust": "IMG-RUST",
       "android": "IMG-ANDROID", "mut": "IMG-MUT", "sigverify": "IMG-SIGVERIFY", "infra-client": "IMG-INFRA-CLIENT",
       "infra-postgres": "IMG-INFRA-POSTGRES", "infra-redis": "IMG-INFRA-REDIS", "infra-minio": "IMG-INFRA-MINIO", "infra-ftp": "IMG-INFRA-FTP",
-      "infra-smb": "IMG-INFRA-SMB", "infra-webdav": "IMG-INFRA-WEBDAV", "kcov": "IMG-KCOV", "testutil": "IMG-TESTUTIL"}
+      "infra-smb": "IMG-INFRA-SMB", "infra-webdav": "IMG-INFRA-WEBDAV", "infra-nfs": "IMG-INFRA-NFS", "kcov": "IMG-KCOV", "testutil": "IMG-TESTUTIL"}
 DEFERRED = {"rust", "android"}          # entries written by T143 and T144
 NO_CLASS_CHECK = {"kcov", "testutil", "go"}   # entries written before the class field existed (T006 and T005d; T121b backfills them)
 CLASSES = {"compile", "interpreter", "service", "runtime", "runtime-base"}

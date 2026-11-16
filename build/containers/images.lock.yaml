@@ -394,3 +394,15 @@ images:
   signature_status: UNKNOWN
   size_bytes: 171983326
   class: service
+- id: IMG-INFRA-NFS
+  reference: localhost/catalogizer-infra-nfs
+  tag_intent: 57392374e84d8212
+  digest: sha256:64c75fe9d3af407547037324a8d8f1af9a6fee43eb3f70a814793eec128c4e61
+  platform_digest: sha256:64c75fe9d3af407547037324a8d8f1af9a6fee43eb3f70a814793eec128c4e61
+  resolved_at: '2026-11-16T07:07:40Z'
+  resolved_on: anton
+  purpose: 'test infrastructure NFS: unfs3 0.11.0 plus rpcbind (built locally from
+    scripts/test-infra/nfs by nfs_build.sh)'
+  signature_status: UNKNOWN
+  size_bytes: 87840050
+  class: service
