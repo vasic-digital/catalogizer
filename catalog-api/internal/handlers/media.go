@@ -331,7 +331,16 @@ func (h *MediaHandler) GetMediaItem(c *gin.Context) {
 		return
 	}
 
-	mediaItem, err := h.getMediaItemWithDetails(id)
+	// The authenticated caller (set by the JWT middleware); 0 when absent, which yields no user metadata (HAUTHZ-O1).
+	var userID int64
+	switch v := c.Value("user_id").(type) {
+	case int64:
+		userID = v
+	case int:
+		userID = int64(v)
+	}
+
+	mediaItem, err := h.getMediaItemWithDetails(id, userID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Media item not found"})
@@ -435,7 +444,7 @@ func (h *MediaHandler) GetMediaStats(c *gin.Context) {
 
 // Helper methods
 
-func (h *MediaHandler) getMediaItemWithDetails(id int64) (*models.MediaItem, error) {
+func (h *MediaHandler) getMediaItemWithDetails(id, userID int64) (*models.MediaItem, error) {
 	// Get basic media item
 	query := `
 		SELECT mi.id, mi.media_type_id, mi.title, mi.original_title, mi.year, mi.description,
@@ -486,7 +495,7 @@ func (h *MediaHandler) getMediaItemWithDetails(id int64) (*models.MediaItem, err
 	}
 
 	// Get user metadata
-	if userMeta, err := h.getUserMetadata(id); err != nil {
+	if userMeta, err := h.getUserMetadata(id, userID); err != nil {
 		h.logger.Warn("Failed to get user metadata", zap.Int64("media_id", id), zap.Error(err))
 	} else {
 		item.UserMetadata = userMeta
@@ -567,17 +576,22 @@ func (h *MediaHandler) getMediaFiles(mediaItemID int64) ([]models.MediaFile, err
 	return files, nil
 }
 
-func (h *MediaHandler) getUserMetadata(mediaItemID int64) (*models.UserMetadata, error) {
+// getUserMetadata returns the CALLER's own metadata row for the item. It is filtered by user_id (HAUTHZ-O1): a row that
+// belongs to another user is never returned, and an unknown caller (userID <= 0) gets none.
+func (h *MediaHandler) getUserMetadata(mediaItemID, userID int64) (*models.UserMetadata, error) {
+	if userID <= 0 {
+		return nil, nil
+	}
 	query := `
 		SELECT id, media_item_id, user_rating, watched_status, watched_date, personal_notes, tags, favorite, created_at, updated_at
 		FROM user_metadata
-		WHERE media_item_id = ?
+		WHERE media_item_id = ? AND user_id = ?
 	`
 
 	var um models.UserMetadata
 	var tagsJSON string
 
-	err := h.mediaDB.GetDB().QueryRow(query, mediaItemID).Scan(
+	err := h.mediaDB.GetDB().QueryRow(query, mediaItemID, userID).Scan(
 		&um.ID, &um.MediaItemID, &um.UserRating, &um.WatchedStatus, &um.WatchedDate,
 		&um.PersonalNotes, &tagsJSON, &um.Favorite, &um.CreatedAt, &um.UpdatedAt,
 	)

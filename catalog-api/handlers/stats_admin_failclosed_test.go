@@ -160,8 +160,16 @@ func TestSSEFU2_F1_StatsAdmin_CheckerReceivesCallersOwnUID(t *testing.T) {
 // SSEFU2-F3: the database-failure bodies of the sync alias routes are pinned, and carry no driver text.
 func TestSSEFU2_F3_SyncRoutesDBFailureBodyIsPinned(t *testing.T) {
 	r, h := newAliasRouter(t)
-	require.NoError(t, h.db.Close()) // real handler, real (closed) database: every query fails
 	tok := cat001Token(t, 2, "5")
+	// Positive control (SSEFU2R-m2): same router, DB still OPEN -> 200, so the 500 below is caused by the closed DB.
+	for _, path := range []string{"/sync/status", "/sync/providers"} {
+		req := httptest.NewRequest("GET", "/api/v1"+path, nil)
+		req.Header.Set("Authorization", "Bearer "+tok)
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, req)
+		require.Equal(t, http.StatusOK, w.Code, "open-DB control "+path)
+	}
+	require.NoError(t, h.db.Close()) // real handler, real (closed) database: every query fails
 	for _, path := range []string{"/sync/status", "/sync/providers"} {
 		req := httptest.NewRequest("GET", "/api/v1"+path, nil)
 		req.Header.Set("Authorization", "Bearer "+tok)

@@ -327,21 +327,70 @@ func (c *SmbClient) DeleteFile(ctx context.Context, path string) error {
 	return nil
 }
 
+// copyFile is the file surface the copy path needs; *smb2.File satisfies it. copyFS is the share surface. They are the injectable seam that
+// lets hermetic tests drive the real copy logic with failing writers/closers (CAT-SMB-COPY-1 review: mutants R4/R6/R7/M5).
+type copyFile interface {
+	io.ReadWriteCloser
+	Stat() (fs.FileInfo, error)
+}
+
+type copyFS interface {
+	Open(name string) (copyFile, error)
+	Create(name string) (copyFile, error)
+	Stat(name string) (fs.FileInfo, error)
+	Remove(name string) error
+	Rename(oldpath, newpath string) error
+}
+
+type smbCopyShare struct{ s *smb2.Share }
+
+func (a smbCopyShare) Open(n string) (copyFile, error) {
+	f, err := a.s.Open(n)
+	if err != nil {
+		return nil, err
+	}
+	return f, nil
+}
+func (a smbCopyShare) Create(n string) (copyFile, error) {
+	f, err := a.s.Create(n)
+	if err != nil {
+		return nil, err
+	}
+	return f, nil
+}
+func (a smbCopyShare) Stat(n string) (fs.FileInfo, error) { return a.s.Stat(n) }
+func (a smbCopyShare) Remove(n string) error              { return a.s.Remove(n) }
+func (a smbCopyShare) Rename(o, n string) error           { return a.s.Rename(o, n) }
+
+// copyCleanupBudget bounds the temp-file cleanup, which runs on a fresh context so it still works after the caller's deadline expired.
+const copyCleanupBudget = 10 * time.Second
+
+// ErrCopyDestReadOnly is returned when the destination exists and is read-only. go-smb2's Share.Remove would clear the read-only attribute
+// and delete it, so a copy would silently overwrite a file the owner marked read-only; it is refused instead (SMBCOPYR-m1).
+var ErrCopyDestReadOnly = errors.New("copy destination is read-only")
+
 // CopyFile copies a file within the SMB share (CAT-SMB-COPY-1). The old code created the destination, which truncates it, before one byte of
-// the source was read: a copy onto the same file emptied the source and reported success. Now: the same resolved path is refused
-// (ErrCopySameFile); a source that is not a regular file and a destination that is a directory are refused with nothing written; the data is
-// written to a unique temp file beside the destination and only a complete copy replaces the destination, so a failed or cancelled copy
-// never truncates or deletes a pre-existing destination. Limits (SMB2 rename cannot replace, ReplaceIfExists is 0 in go-smb2): replacing an
-// existing destination is remove + rename, so a crash between the two leaves the finished copy under the temp name ".copy-*.tmp" and no
-// destination. A different spelling of the same file (case alias on a case-folding server) is not detected by name; the temp-first order keeps
+// the source was read: a copy onto the same file emptied the source and reported success. Now: the same cleaned resolved path is refused
+// (ErrCopySameFile); a source that is not a regular file, a destination that is a directory and a read-only destination are refused with nothing
+// written; the data is written to a unique temp file beside the destination and only a complete copy replaces the destination, so a failed or
+// cancelled copy never truncates or deletes a pre-existing destination. Limits (SMB2 rename cannot replace, ReplaceIfExists is 0 in go-smb2):
+// replacing an existing destination is remove + rename, so a crash between the two leaves the finished copy under the temp name and no
+// destination. Temp files are named ".copy-<16 hex>.tmp" beside the destination: they are visible to a directory scan while a copy runs (or
+// after a crash) and scans may skip that pattern. Destination identity (ACL, times, file id, hard links) is not preserved: the destination is a
+// new file. A different spelling of the same file (case alias on a case-folding server) is not detected by name; the temp-first order keeps
 // its bytes (the alias is replaced by the full copy of itself).
 func (c *SmbClient) CopyFile(ctx context.Context, srcPath, dstPath string) error {
 	if _, err := c.opShare(ctx); err != nil {
 		return err
 	}
+	return copyFileOn(ctx, func(cx context.Context) copyFS { return smbCopyShare{c.share.WithContext(cx)} },
+		srcPath, dstPath, c.resolvePath(srcPath), c.resolvePath(dstPath))
+}
+
+func copyFileOn(ctx context.Context, newFS func(context.Context) copyFS, srcPath, dstPath, srcR, dstR string) error {
 	// The data transfer runs on a share bound to a context that does NOT end with the caller's cancel: a request cut off in flight leaves
 	// the temp's handle open on the server, and the temp could then be neither closed nor removed. The caller's cancel and deadline are
-	// honoured between chunks instead (copyChunk), so a cancelled copy stops, closes its handles and removes the temp (live test, mid-transfer).
+	// honoured between chunks instead (copyChunked), so a cancelled copy stops, closes its handles and removes the temp (live test, mid-transfer).
 	tctx, tcancel := context.WithCancel(context.WithoutCancel(ctx))
 	defer tcancel()
 	if dl, ok := ctx.Deadline(); ok {
@@ -349,9 +398,15 @@ func (c *SmbClient) CopyFile(ctx context.Context, srcPath, dstPath string) error
 		tctx, dcancel = context.WithTimeout(context.WithoutCancel(ctx), time.Until(dl)+15*time.Second)
 		defer dcancel()
 	}
-	share := c.share.WithContext(tctx)
-	srcR, dstR := c.resolvePath(srcPath), c.resolvePath(dstPath)
-	if srcR == dstR {
+	share := newFS(tctx)
+	// cleanup runs on a fresh bounded context: the transfer context may be past its deadline exactly when cleanup is needed (SMBCOPYR-m3).
+	removeTemp := func(name string) {
+		cctx, ccancel := context.WithTimeout(context.WithoutCancel(ctx), copyCleanupBudget)
+		defer ccancel()
+		_ = newFS(cctx).Remove(name)
+	}
+	norm := func(p string) string { return path.Clean(strings.ReplaceAll(p, `\`, "/")) }
+	if norm(srcR) == norm(dstR) {
 		return fmt.Errorf("%w: %s and %s", ErrCopySameFile, srcPath, dstPath)
 	}
 	srcFile, err := share.Open(srcR)
@@ -371,6 +426,9 @@ func (c *SmbClient) CopyFile(ctx context.Context, srcPath, dstPath string) error
 	if dstExists && dstInfo.IsDir() {
 		return fmt.Errorf("%w: %s", ErrCopyDestIsDirectory, dstPath)
 	}
+	if dstExists && dstInfo.Mode().Perm()&0o222 == 0 {
+		return fmt.Errorf("%w: %s", ErrCopyDestReadOnly, dstPath)
+	}
 	if dstErr != nil && !isNotExistError(dstErr) {
 		return fmt.Errorf("failed to stat destination %s: %w", dstPath, dstErr)
 	}
@@ -388,28 +446,28 @@ func (c *SmbClient) CopyFile(ctx context.Context, srcPath, dstPath string) error
 	if cerr := tmp.Close(); err == nil {
 		err = cerr
 	}
-	if err == nil {
-		err = ctx.Err() // a cancel that arrives after the last chunk still fails the copy before anything is replaced
-	}
 	if err != nil {
-		_ = share.Remove(tmpR)
+		removeTemp(tmpR)
 		return fmt.Errorf("failed to copy file from %s to %s: %w", srcPath, dstPath, err)
 	}
-	_ = srcFile.Close() // a case-folded alias of the source may be the destination: release the handle before it is replaced
+	if cerr := srcFile.Close(); cerr != nil { // a case-folded alias of the source may be the destination: release the handle before it is replaced
+		removeTemp(tmpR)
+		return fmt.Errorf("failed to close source file %s: %w", srcPath, cerr)
+	}
 	if dstExists {
 		if err := share.Remove(dstR); err != nil {
-			_ = share.Remove(tmpR)
+			removeTemp(tmpR)
 			return fmt.Errorf("failed to replace destination %s: %w", dstPath, err)
 		}
 	}
 	if err := share.Rename(tmpR, dstR); err != nil {
-		return fmt.Errorf("failed to move the finished copy into place for %s (the copy is kept as %s): %w", dstPath, tmpR, err)
+		return fmt.Errorf("failed to move the finished copy into place for %s (the copy is kept as %s beside it): %w", dstPath, path.Base(tmpR), err)
 	}
 	return nil
 }
 
-// copyChunked copies src to dst in copyChunk steps and checks ctx before every step, so a cancel or deadline stops the transfer between two
-// requests without cutting a request off in flight.
+// copyChunked copies src to dst in copyChunk steps and checks ctx before every step and once more after EOF, so a cancel or deadline stops the
+// transfer between two requests without cutting a request off in flight, and a cancel that arrives with the last chunk still fails the copy.
 func copyChunked(ctx context.Context, dst io.Writer, src io.Reader) error {
 	buf := make([]byte, copyChunk)
 	for {
@@ -423,7 +481,7 @@ func copyChunked(ctx context.Context, dst io.Writer, src io.Reader) error {
 			}
 		}
 		if rerr == io.EOF {
-			return nil
+			return ctx.Err()
 		}
 		if rerr != nil {
 			return rerr

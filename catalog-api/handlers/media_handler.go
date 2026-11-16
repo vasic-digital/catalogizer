@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -64,11 +65,16 @@ func (h *AndroidTVMediaHandler) GetMediaByID(c *gin.Context) {
 	query := `
 		SELECT
 			mi.id, mt.name, mi.title, mi.year, mi.description, mi.rating,
-			mi.duration, mi.first_detected, mi.updated_at, mi.is_favorite
+			mi.duration, mi.first_detected, mi.updated_at,
+			EXISTS(SELECT 1 FROM user_favorites uf WHERE uf.media_id = mi.id AND uf.user_id = ?)
 		FROM media_items mi
 		JOIN media_types mt ON mi.media_type_id = mt.id
 		WHERE mi.id = ?
 	`
+	// CAT-HAUTHZ-F2: is_favorite is the CALLER's own state (user_favorites row for the authenticated user), never the
+	// legacy global media_items.is_favorite flag. No authenticated user (should not happen behind the auth middleware)
+	// means user 0, which owns no rows, so the flag is false.
+	callerID, _ := callerUserID(c)
 
 	var mediaItem models.MediaCatalogItem
 	// duration and updated_at are nullable in the real schema
@@ -76,7 +82,7 @@ func (h *AndroidTVMediaHandler) GetMediaByID(c *gin.Context) {
 	// non-video types), so scan through sql.Null* and convert.
 	var duration sql.NullInt64
 	var updatedAt sql.NullString
-	err = h.db.QueryRowContext(ctx, query, id).Scan(
+	err = h.db.QueryRowContext(ctx, query, callerID, id).Scan(
 		&mediaItem.ID, &mediaItem.MediaType, &mediaItem.Title,
 		&mediaItem.Year, &mediaItem.Description, &mediaItem.Rating,
 		&duration, &mediaItem.CreatedAt, &updatedAt, &mediaItem.IsFavorite,
@@ -225,11 +231,19 @@ func (h *AndroidTVMediaHandler) UpdateWatchProgress(c *gin.Context) {
 // @Param body body map[string]bool true "Favorite status"
 // @Success 200 {object} utils.SuccessResponse
 // @Failure 400 {object} utils.SendErrorResponse
+// @Failure 401 {object} utils.SendErrorResponse
 // @Failure 404 {object} utils.SendErrorResponse
 // @Failure 500 {object} utils.SendErrorResponse
 // @Router /api/v1/media/{id}/favorite [put]
 func (h *AndroidTVMediaHandler) UpdateFavoriteStatus(c *gin.Context) {
 	ctx := c.Request.Context()
+
+	// Authentication is checked first, before any input is parsed (an anonymous caller gets 401, never 400).
+	callerID, _ := callerUserID(c)
+	if callerID == 0 {
+		utils.SendErrorResponse(c, http.StatusUnauthorized, "Authentication required", nil)
+		return
+	}
 
 	// Parse media ID from path
 	idStr := c.Param("id")
@@ -252,31 +266,27 @@ func (h *AndroidTVMediaHandler) UpdateFavoriteStatus(c *gin.Context) {
 		return
 	}
 
-	// FIX-QA-2026-04-21-001: production migrations never declared
-	// `is_favorite` or `updated_at` on media_items, so every call
-	// returned 500. Migration v18 adds both columns so this handler
-	// matches the test-schema expectations it was written against.
-	query := `
-		UPDATE media_items
-		SET is_favorite = ?, updated_at = CURRENT_TIMESTAMP
-		WHERE id = ?
-	`
-
-	result, err := h.db.ExecContext(ctx, query, isFavorite, id)
+	// CAT-HAUTHZ-F2: the favorite flag is per user. It used to UPDATE media_items.is_favorite (one flag per item shared by
+	// every account); now it adds or removes the caller's own user_favorites row, so it can neither show nor change what
+	// another user favorited. The item must exist (404 otherwise, as before); both toggles are idempotent.
+	var one int
+	if err := h.db.QueryRowContext(ctx, `SELECT 1 FROM media_items WHERE id = ?`, id).Scan(&one); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			utils.SendErrorResponse(c, http.StatusNotFound, "Media not found", nil)
+		} else {
+			utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to update favorite status", err)
+		}
+		return
+	}
+	if isFavorite {
+		_, err = h.db.ExecContext(ctx,
+			`INSERT OR IGNORE INTO user_favorites (user_id, media_id) VALUES (?, ?)`,
+			callerID, id)
+	} else {
+		_, err = h.db.ExecContext(ctx, `DELETE FROM user_favorites WHERE user_id = ? AND media_id = ?`, callerID, id)
+	}
 	if err != nil {
 		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to update favorite status", err)
-		return
-	}
-
-	// Check if media item exists
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to check update result", err)
-		return
-	}
-
-	if rowsAffected == 0 {
-		utils.SendErrorResponse(c, http.StatusNotFound, "Media not found", nil)
 		return
 	}
 

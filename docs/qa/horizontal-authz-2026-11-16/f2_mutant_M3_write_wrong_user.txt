@@ -1,0 +1,22 @@
+--- FAIL: TestHorizontalAuthz_MediaFavoriteFlag (25.20s)
+    --- FAIL: TestHorizontalAuthz_MediaFavoriteFlag/noleak/media_favorite_flag_is_per_user (0.01s)
+        horizontal_authz_binary_test.go:507: HZ|media favorite flag|200|BODY-CHECKED
+        horizontal_authz_binary_test.go:510: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/favs.8KjWYO/repo/catalog-api/horizontal_authz_binary_test.go:510
+            	Error:      	Not equal: 
+            	            	expected: true
+            	            	actual  : false
+            	Test:       	TestHorizontalAuthz_MediaFavoriteFlag/noleak/media_favorite_flag_is_per_user
+            	Messages:   	B must still see its own favorite: {"id":2,"title":"hzclip-bravo","media_type":"movie","year":null,"description":null,"cover_image":null,"rating":null,"quality":null,"file_size":null,"duration":0,"directory_path":"","smb_path":null,"created_at":"2026-11-16T23:33:10.505863575+01:00","updated_at":"2026-11-16T23:33:10.505863575+01:00","external_metadata":[],"versions":[],"is_favorite":false,"watch_progress":0,"last_watched":null,"is_downloaded":false}
+    --- FAIL: TestHorizontalAuthz_MediaFavoriteFlag/noleak/media_favorite_A_toggle-off_keeps_B's (0.00s)
+        horizontal_authz_binary_test.go:516: HZ|media favorite A toggle|200|BODY-CHECKED
+        horizontal_authz_binary_test.go:517: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/favs.8KjWYO/repo/catalog-api/horizontal_authz_binary_test.go:517
+            	Error:      	Not equal: 
+            	            	expected: true
+            	            	actual  : false
+            	Test:       	TestHorizontalAuthz_MediaFavoriteFlag/noleak/media_favorite_A_toggle-off_keeps_B's
+            	Messages:   	A's toggle must not clear B's favorite: {"id":2,"title":"hzclip-bravo","media_type":"movie","year":null,"description":null,"cover_image":null,"rating":null,"quality":null,"file_size":null,"duration":0,"directory_path":"","smb_path":null,"created_at":"2026-11-16T23:33:10.505863575+01:00","updated_at":"2026-11-16T23:33:10.505863575+01:00","external_metadata":[],"versions":[],"is_favorite":false,"watch_progress":0,"last_watched":null,"is_downloaded":false}
+FAIL
+FAIL	catalogizer	25.615s
+FAIL

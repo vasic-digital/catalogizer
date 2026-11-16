@@ -1,0 +1,8 @@
+M1_live_drop_user_filter rc=1 KILLED
+M2_live_drop_404_mapping rc=1 KILLED
+M3_unroute rc=1 KILLED
+M4_legacy_drop_user_filter rc=1 KILLED
+M5_legacy_drop_anon_guard rc=0 SURVIVED
+M6_live_drop_auth_401 rc=1 KILLED
+ALLDONE
+M5b_legacy_drop_anon_guard (strengthened test) rc=1 KILLED (log m5b.log)

@@ -1,0 +1,10 @@
+=== RUN   TestHorizontalAuthz_MediaFavoriteFlag
+=== RUN   TestHorizontalAuthz_MediaFavoriteFlag/noleak/media_favorite_flag_is_per_user
+    horizontal_authz_binary_test.go:507: HZ|media favorite flag|200|BODY-CHECKED
+=== RUN   TestHorizontalAuthz_MediaFavoriteFlag/noleak/media_favorite_A_toggle-off_keeps_B's
+    horizontal_authz_binary_test.go:516: HZ|media favorite A toggle|200|BODY-CHECKED
+--- PASS: TestHorizontalAuthz_MediaFavoriteFlag (21.92s)
+    --- PASS: TestHorizontalAuthz_MediaFavoriteFlag/noleak/media_favorite_flag_is_per_user (0.01s)
+    --- PASS: TestHorizontalAuthz_MediaFavoriteFlag/noleak/media_favorite_A_toggle-off_keeps_B's (0.01s)
+PASS
+ok  	catalogizer	22.321s

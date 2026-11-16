@@ -1,0 +1,4 @@
+# catalogizer/handlers [catalogizer/handlers.test]
+handlers/horizontal_authz_unit_test.go:39:42: mh.GetUserMetadata undefined (type *MediaEntityHandler has no field or method GetUserMetadata)
+FAIL	catalogizer/handlers [build failed]
+FAIL

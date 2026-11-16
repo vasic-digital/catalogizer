@@ -1,0 +1,20 @@
+=== RUN   TestSSEFU2_F1_StatsAdmin_CheckerReceivesCallersOwnUID
+--- PASS: TestSSEFU2_F1_StatsAdmin_CheckerReceivesCallersOwnUID (6.90s)
+=== RUN   TestSSEFU2_F3_SyncRoutesDBFailureBodyIsPinned
+2026/11/16 23:56:36 alias route GET /api/v1/sync/status: database error: sql: database is closed
+2026/11/16 23:56:36 alias route GET /api/v1/sync/providers: database error: sql: database is closed
+--- PASS: TestSSEFU2_F3_SyncRoutesDBFailureBodyIsPinned (1.67s)
+=== RUN   TestSSEFU2_F1_StatsAdmin_CheckerReceivesCallersOwnUID
+--- PASS: TestSSEFU2_F1_StatsAdmin_CheckerReceivesCallersOwnUID (6.75s)
+=== RUN   TestSSEFU2_F3_SyncRoutesDBFailureBodyIsPinned
+2026/11/16 23:56:45 alias route GET /api/v1/sync/status: database error: sql: database is closed
+2026/11/16 23:56:45 alias route GET /api/v1/sync/providers: database error: sql: database is closed
+--- PASS: TestSSEFU2_F3_SyncRoutesDBFailureBodyIsPinned (2.26s)
+=== RUN   TestSSEFU2_F1_StatsAdmin_CheckerReceivesCallersOwnUID
+--- PASS: TestSSEFU2_F1_StatsAdmin_CheckerReceivesCallersOwnUID (7.91s)
+=== RUN   TestSSEFU2_F3_SyncRoutesDBFailureBodyIsPinned
+2026/11/16 23:56:55 alias route GET /api/v1/sync/status: database error: sql: database is closed
+2026/11/16 23:56:55 alias route GET /api/v1/sync/providers: database error: sql: database is closed
+--- PASS: TestSSEFU2_F3_SyncRoutesDBFailureBodyIsPinned (2.22s)
+PASS
+ok  	catalogizer/handlers	28.062s

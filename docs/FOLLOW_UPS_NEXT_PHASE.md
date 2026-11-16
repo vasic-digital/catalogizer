@@ -3214,7 +3214,7 @@ Round 1 NO-GO fixed: POST /smb/probe-and-ingest now requires `confirm_private_ne
 - **CPN1-M3 (minor, test-instrumentation):** no test of the stored row for confirmed/public ingest (needs SMB stub/emulator); tied to M1.
 - **CPN1-N1 (nit):** the new `refused` branch is unreachable (isHostAllowed refuses first); defence in depth, mutant survives.
 - **CPN1-N2 (nit, doc):** other /smb routes that dial (/smb/discover, /test, /browse, /probe) store nothing and need no confirmation; record.
-- **CPN1-F2 (minor, operator decision):** sync endpoints still answer 409 `private_network_confirmation_required` while storage roots answer 400; align?
+- **CPN1-F2 (minor, operator decision):** sync endpoints answered 409 `private_network_confirmation_required` while storage roots answer 400; ALIGNED to 400 (operator decision 2026-11-16, CAT-CPN1-F2-SYNC-400; PROVISIONAL)
 - **CPN1-F5/F6 (nit):** rebinding refusal hints repeat-with-flag even when flag was true; web `mediaApi` calls update/delete/test storage-root routes the server does not register (dead client calls); no web create form exists.
 
 ## CAT-HAUTHZ-1 follow-up-commit review follow-ups (Opus GO-with-follow-ups, 2026-11-16; PROVISIONAL)
@@ -3237,9 +3237,9 @@ Explicit `x-catalogizer-admin-gated: true` marker (85 ops) + census golden + rou
 
 ## NFS3W-FU2 test-gap commit review follow-ups (Opus GO-with-follow-ups, 2026-11-16; PROVISIONAL)
 
-- **NFS3FU2-M1 (minor, test-instrumentation):** factory leg of `TestNFS3FloatPortsFromJSONSettings` sends only float64 `port`; a factory-only mishandling of float64 `mount_port`/`portmap_port` survives (mutant G6). Send all three through `CreateClient`, assert NFSPort/MountPort/PortmapPort.
-- **NFS3FU2-M2 (minor, test-instrumentation):** `nfs_emulator_check.sh` CR-terminated PASS line is refused with GNU grep but accepted via the harness's ugrep wrapper function (inherited by `bash script.sh`); mutant S3 survives. Use `command grep` and add a CRLF fixture + `type grep` assertion.
-- **NFS3FU2-N1/N2 (nit):** no fixture pins the fractional-digit requirement (`(0.s)`, mutant S6) or a column-0 `TestX/sub` PASS line (S7).
+- **NFS3FU2-M1 (minor, test-instrumentation):** factory leg of `TestNFS3FloatPortsFromJSONSettings` sends only float64 `port`; a factory-only mishandling of float64 `mount_port`/`portmap_port` survives (mutant G6). Send all three through `CreateClient`, assert NFSPort/MountPort/PortmapPort. **Status: PROVISIONAL-DONE (CAT-NFS3-FU2, branch ssefr; own mutants killed, GREEN x3).**
+- **NFS3FU2-M2 (minor, test-instrumentation):** `nfs_emulator_check.sh` CR-terminated PASS line is refused with GNU grep but accepted via the harness's ugrep wrapper function (inherited by `bash script.sh`); mutant S3 survives. Use `command grep` and add a CRLF fixture + `type grep` assertion. **Status: PROVISIONAL-DONE (CAT-NFS3-FU2, branch ssefr; own mutants killed, GREEN x3).**
+- **NFS3FU2-N1/N2 (nit):** no fixture pins the fractional-digit requirement (`(0.s)`, mutant S6) or a column-0 `TestX/sub` PASS line (S7). **Status: PROVISIONAL-DONE (CAT-NFS3-FU2, branch ssefr; own mutants killed, GREEN x3).**
 
 ## CAT-HAUTHZ-1 follow-ups 2 review follow-ups (Opus GO-with-follow-ups, 2026-11-16; PROVISIONAL)
 
@@ -3253,8 +3253,8 @@ Explicit `x-catalogizer-admin-gated: true` marker (85 ops) + census golden + rou
 ## SSEFU2-F3 body-pin review follow-ups (Opus GO-with-follow-ups, 2026-11-16; PROVISIONAL)
 
 All SSEFU-F1..F5 / SSEFU2-F1..F5 items verified satisfied on main (tests + docs). 
-- **SSEFU2R-m1 (minor, test-instrumentation):** the RequireAdmin checker `(false, err)` -> 503 path (auth_test.go:492-496) asserts status only, not the body; add the same JSONEq or table both error cases.
-- **SSEFU2R-m2 (minor, test-instrumentation):** `TestSSEFU2_F3_SyncRoutesDBFailureBodyIsPinned` has no in-test positive control (open DB -> 200) (same as HYGF4-F4).
+- **SSEFU2R-m1 (minor, test-instrumentation):** the RequireAdmin checker `(false, err)` -> 503 path (auth_test.go:492-496) asserts status only, not the body; add the same JSONEq or table both error cases. **Status: PROVISIONAL-DONE (CAT-SSE-FU2R, branch ssefr).** Own-mutant/GREEN claims for the other ssefr items (m1, NFS3FU2-M1/M2/N1/N2) have no saved evidence file yet: UNCONFIRMED until re-run. **Verification:** provisional — job: re-run `go test ./handlers -run TestSSEFU2 -count=3` on main after landing — due: next iteration cycle; Note: the NFS3FU2 M2 'type grep' assertion was replaced by a CR-tolerant `command grep` stand-in.
+- **SSEFU2R-m2 (minor, test-instrumentation):** `TestSSEFU2_F3_SyncRoutesDBFailureBodyIsPinned` has no in-test positive control (open DB -> 200) (same as HYGF4-F4). **Status: PROVISIONAL-DONE (CAT-SSE-FU2R, branch ssefr).** Open-DB control added (200 on /sync/status and /sync/providers, same router, before the DB is closed); GREEN x3 in `m2_green_x3.txt`; own mutant (DB closed before the control) FAILs with 'open-DB control /sync/status' in `m2_mutant_closed_before_control.txt`. **Verification:** provisional — job: re-run `go test ./handlers -run TestSSEFU2 -count=3` on main after landing — due: next iteration cycle; evidence `docs/qa/ssefr-2026-11-16/` (sha256 in SHA256SUMS).
 
 ## CAT-CPN-1 M1/M2/M3 commit review follow-ups (Opus GO-with-follow-ups, 2026-11-16; PROVISIONAL)
 
@@ -3273,6 +3273,19 @@ HAUTHZ-F3 CLOSED PROVISIONAL (ErrReportNotFound -> 404, identical to GET; FU2-M1
 - **HAUTHZ-F3R-m2 (minor, test-instrumentation):** nothing pins that the foreign-owner path carries no owner detail into error text/logs (R6 survives); service-level test asserting err == ErrReportNotFound for foreign and missing.
 - **HAUTHZ-F3R-n1 (nit, pre-existing):** GET routes still map every service error incl. DB failure to 404; PUT now 500; asymmetric (not an oracle).
 
+## HAUTHZ-F2 per-user media favorite (CAT-HAUTHZ-F2, PROVISIONAL)
+
+HAUTHZ-F2 fixed: PUT /media/:id/favorite and GET /media/:id use the new `user_favorites` table (migration v30), caller-scoped. RED/GREEN x3 on the real binary, three mutants killed (`docs/qa/horizontal-authz-2026-11-16/f2_*`). Not independently reviewed yet.
+- **F2-d1 (decision recorded):** legacy `media_items.is_favorite = 1` flags are NOT migrated (the column never recorded who set it; attributing it would invent preferences or re-create the leak). Such favorites show as not-favorite until re-toggled. Operator may insert rows by hand or request a one-off import for a named user.
+- **F2-fu1:** `media_items.is_favorite` is still read by `internal/services/media_player_service.go` (`GetMediaItem`) and `video_player_service.go` (non-routed/legacy flat schema); they return the legacy global flag. Confirm they have no route, or move them to `user_favorites`; then drop the column in a later migration (needs operator approval, destructive DDL).
+- **F2-fu2 (corrected, review 2026-11-16):** clients DO call PUT /media/:id/favorite, with bodies the contract rejects: Android `SyncManager.kt:261` sends `{"isFavorite": ...}` (server answers 400 "Favorite field is required"; the response is ignored, so offline favorite sync silently no-ops); `catalogizer-api-client/src/services/MediaService.ts:142` sends PUT with no body (400); `catalogizer-desktop/src/services/apiService.ts:164` uses POST (no such route); the web client uses `/favorites`. Not fixed here; filed as F2-fu2-a/b/c below. The existing /favorites table (entity_type/entity_id) is still a second per-user favorite store with no link to `user_favorites`; unify or document.
+- **F2-fu2-a (Bug):** Android SyncManager.kt:261 sends `isFavorite` instead of `favorite`; offline favorite sync silently does nothing (400 ignored). Fix client body, surface the error.
+- **F2-fu2-b (Bug):** catalogizer-api-client MediaService.ts:142 PUTs /media/:id/favorite with no body (always 400). Send `{favorite: boolean}`.
+- **F2-fu2-c (Bug):** desktop apiService.ts:164 uses POST for the favorite route (route is PUT); also check its body field name.
+- **F2-fu5 (test, closed in review round):** TestFavoriteIsPerItem (R7), TestFavoriteRowsRemovedWithMediaItem (R3b), upgrade-from-populated-v29 test, anonymous-401-before-body test added; R7 and R3b mutants observed RED then restored.
+- **F2-fu3:** PostgreSQL branch of migration v30 and the `INSERT OR IGNORE` rewrite were not executed against a live PostgreSQL (UNCONFIRMED); schema is asserted in `expectedPostgresSchema`.
+- **F2-fu4:** the `challenges/` favorites workflow and HelixQA banks still check `is_favorite` through /favorites/check, not this route; add a bank step for PUT /media/:id/favorite as two users.
+
 ## GATE-CHECKLIST Rev 4 review follow-ups (Opus, 2026-11-16, PROVISIONAL)
 - GATECHK4-m1: G12 "316 vs 315 UNCONFIRMED" resolved: commit 8d367fd58 has an inline `Roadmap-Item:`; anchored vs unanchored match.
 - GATECHK4-m3: reword "No rc exemption is recorded" to apply to v2.5.0 only (rc.1 relaxation is recorded).
@@ -3287,6 +3300,8 @@ HAUTHZ-F3 CLOSED PROVISIONAL (ErrReportNotFound -> 404, identical to GET; FU2-M1
 - SMBCOPYR-m4: leftover `.copy-*.tmp` visible to scans; path in error text.
 - SMBCOPYR-m5: REPORT.md cites b91ecc76d for LOGSHARE-TOK-1-F1 but that commit introduced the collision; renumber landed via aed566da5/3a33fb054. Correct citation.
 - SMBCOPYR-M5/R2-R7: surviving mutants (final ctx check, srcFile.Close, temp location, stat-error, deadline, chunk write error, temp Close error); need an injectable writer seam. Chunk-cancel test adopted (smb_copy_chunk_cancel_test.go, kills M7).
+- SMBCOPYR-F2/F3/F5/F6 [DONE, PROVISIONAL]: temp location seam test (a/b/d, kills X3) + live sub-directory test (live part UNCONFIRMED, no share run); destination-Remove failure removes the temp (kills X8); live copy tests t.Cleanup-remove .copy-*.tmp; `\` mapped to `/` before path.Clean in the same-path check.
+- SMBCOPYR-F7 [OPEN, operator decision needed]: refusing a read-only destination (ErrCopyDestReadOnly) changes moveFile behaviour, which also uses copy; no operator decision recorded for that. ErrCopy* errors (same file, source not regular, dest is directory, dest read-only) have no HTTP status mapping. Ask the operator later.
 
 ### CAT-GENERIC-HOSTS-1 review follow-ups (round 2, PROVISIONAL)
 
@@ -3295,3 +3310,22 @@ HAUTHZ-F3 CLOSED PROVISIONAL (ErrReportNotFound -> 404, identical to GET; FU2-M1
 - GENHOST-ENV: operators must rename the local gitignored `.env` variables to `LIVE_HOST_*` (no alias is read); the code path SKIPs with `credentials_absent` until then.
 - GENHOST-RO-LEG-TEST: `tests/infra/test_nas_readonly_leg.sh` ends pass=40 fail=1 (`C: the leg's container mounts were never sampled`) in the scratch clone without containers; the same result as on the base (40/1), so not caused by the rewrite.
 - GENHOST-RO-LEG-SIDEFX: `tests/infra/test_nas_readonly_leg.sh` writes `nas-ro-*.json` files into the tracked `specs/001-full-project-audit-remediation/evidence/disk/` directory (§11.4.14 test cleanup); make it write to a temp dir or clean up.
+
+
+## Docs-only decisions 2026-11-16 (branch docs403, PROVISIONAL, docs only, no code changed)
+- **CAT-SYNC-404-1 (decision: keep 403):** operator decided /sync/* keeps 403 for non-admins; the earlier sync-404 fix stays reverted. `docs/api/openapi.yaml` (the 403 descriptions of `/sync/endpoints/{id}` and `/sync/sessions/{id}`) already say 403 admin-required, with no 404 claim for non-admins found by grep; `docs/api/SYNC_API.md` now states the admin gate and the 403 answer explicitly. Closed as a documented contract (docs only).
+- **CPN1-F2 (decision: invalid input is 400) — CODE CONTRADICTS, reported, NOT changed:** `catalog-api/handlers/sync_handler.go:428-430` answers `409` `private_network_confirmation_required` for sync endpoints (create and update), and `docs/api/openapi.yaml` lines 1315, 7349 and 7489 document 409 (accurate to the code). Storage roots answer 400 (openapi 461, 4133, 4180). The docs were NOT changed to 400 because that would misdescribe the running handler. RESOLVED 2026-11-17 (PROVISIONAL): operator approved; sync handler now answers 400 (code string kept), tests and openapi updated; no client relied on 409 (only a comment in catalog-web/src/types/media.ts, which already says nothing of the status).
+- **CAT-LEGACY-MEDIAHANDLER-1 (Task, Queued; remove only with operator approval):** `catalog-api/internal/handlers/media.go` (`MediaHandler`, `NewMediaHandler`, 662 lines, includes `getUserMetadata` with no user filter, see HAUTHZ-FU-O1) is unrouted. Findings (§11.4.124, `git log --follow`, `git log -S NewMediaHandler`, `git log -G` on main.go): the file was added in 16843b133 (2025-10-04 "Implementations"); at that commit `catalog-api/main.go` imports `catalog-api/internal/handlers` but constructs only `NewCatalogHandler`, `NewDownloadHandler`, `NewCopyHandler`; no commit in `git log -G"handlers\.NewMediaHandler|mediaHandler :?="` on `catalog-api/main.go` ever constructed it, so it appears never wired in main.go (UNCONFIRMED for wiring in other files outside main.go; nothing but its own tests, `media_test.go`, calls `NewMediaHandler` today). Later commits only touched it for fixes (24c9f129a, 851beda59, 4cfcac6b5 CAT-001 quality distribution). The live media routes use `AndroidTVMediaHandler` (`handlers/media_handler.go`) and other handlers. Removal needs: operator approval, deletion of `media_test.go` and `media_quality_cat001_test.go` consumers or their migration, and confirmation that no route or doc references it. Do not delete without approval.
+- SMBCOPYR-m1 [DONE, PROVISIONAL]: refused with ErrCopyDestReadOnly (hermetic + live); was: read-only destination is now overwritten (go-smb2 Share.Remove chmod-retries); destination identity (ACL, times, file id, hard links) not preserved. Decide + document.
+- SMBCOPYR-m2 [DONE, PROVISIONAL]: path.Clean both (hermetic + live); was: same-path guard compares raw strings; `./x` vs `x` returns nil not ErrCopySameFile. Fix: path.Clean both.
+- SMBCOPYR-m3 [DONE, PROVISIONAL]: cleanup on fresh bounded ctx; the first seam test could not kill mutant X7 (cleanup on the transfer ctx), so it now records the ctx given to Create vs Remove and asserts the Remove deadline differs and is ~10s from now (review F1; RED-proven against X7); the F4 deadline slack (transfer ctx = caller deadline + 15s) stays UNCONFIRMED/open; was: temp cleanup runs on expired deadline context and can leak the temp file.
+- SMBCOPYR-m4 [DONE, PROVISIONAL]: name documented in CopyFile comment, error shows base name only; was: leftover `.copy-*.tmp` visible to scans; path in error text.
+- SMBCOPYR-m5 [DONE]: REPORT.md corrected; was: REPORT.md cites b91ecc76d for LOGSHARE-TOK-1-F1 but that commit introduced the collision; renumber landed via aed566da5/3a33fb054. Correct citation.
+- SMBCOPYR-M5/R2-R7 [PARTLY DONE, PROVISIONAL]: copyFS/copyFile seam + smb_copy_seam_test.go kill R4/R6/R7/M5 and the m1-m4 mutants (evidence docs/qa/unconfirmed-items-2026-11-16/smb_copy_review_followups_*.txt); R2/R3/R5 (temp location, stat-error, deadline) not separately mutated, UNCONFIRMED; was: surviving mutants (final ctx check, srcFile.Close, temp location, stat-error, deadline, chunk write error, temp Close error); need an injectable writer seam. Chunk-cancel test adopted (smb_copy_chunk_cancel_test.go, kills M7).
+## CAT-HAUTHZ-O1 follow-ups (2026-11-16, PROVISIONAL)
+
+- **HAUTHZ-O1-FU1 (UNCONFIRMED, §11.4.6):** the legacy `internal/handlers` `MediaHandler` is still never constructed outside tests (`NewMediaHandler` has no production caller); it is now caller-scoped but not routed. Whether to route or remove the whole legacy handler is a separate operator decision.
+- **HAUTHZ-O1-FU2:** `internal/media/database/schema.sql` and the embedded fallback schema gained `user_metadata.user_id` (`CREATE TABLE IF NOT EXISTS`); an existing media database file created earlier has no such column or table, so no migration was written (the legacy handler is unrouted). Needs a migration if that handler is ever wired.
+- **HAUTHZ-O1-FU3:** `GET /entities/:id/user-metadata` answers 404 for a caller with no row of its own (also for the caller's own item with no metadata yet). A client wanting defaults must treat 404 as "none"; an alternative 200-with-defaults was not chosen (UNCONFIRMED client expectation).
+- **HAUTHZ-O1-FU4:** `docs/ROUTE_AUTHZ_TABLE.md` row added by hand, not regenerated by the live route probe.
+

@@ -149,3 +149,6 @@ Each: Status Queued unless stated. Acceptance always requires machine evidence f
 ## Part C — counts at Revision 1
 
 Registered in Part B: 29 new ids. Already present (Part A rows, each a pointer to one or more existing ids): 22 rows covering the ids named in the CONTINUATION queue. Duplicates created: 0.
+
+| CAT-LEGACY-MEDIAHANDLER-1 | Task | Queued; remove only with operator approval | FOLLOW_UPS "Docs-only decisions 2026-11-16" |
+| CAT-CPN1-F2-SYNC-400 | Task | Queued; awaits operator approval of a code change (sync 409 vs 400) | FOLLOW_UPS "Docs-only decisions 2026-11-16" |
