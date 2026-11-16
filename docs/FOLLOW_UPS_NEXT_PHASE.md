@@ -3054,3 +3054,11 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 - SSEFURRR-m1: `Error.error` description says "absent only on bodyless errors"; ~287 `http.Error(...)` calls in wrapped net/http handlers (user, role, configuration, log_management, error_reporting, auth, client_errors) send text/plain bodies with no `error` field. Reword to include text/plain errors.
 - SSEFURRR-m2: 27 gated operations still lack the precise 503 string or have no 503 (subtitles search/download/translate, storage approved-class, challenges/*, analytics media/reports, sync GETs/sessions, /admin/* and /sync/* alias ops keep generic "fail closed" wording).
 - SSEFURRR-m3: POST /scans and POST /subtitles/translate 503 text covers only handler meaning, not the gate's 503.
+
+## WSF2-B review follow-ups (Opus GO-with-follow-ups on f1c92fc5c, already on main; PROVISIONAL, host JVM unit tests only)
+- WSF2BR-m1: `catch (e: CancellationException) { throw e }` in WebSocketRepository also swallows a minter-raised `TimeoutCancellationException`: no Error published, no reconnect, socket silently dead (latent: production minter is a Retrofit suspend call). Candidate fix in unreviewed commit ca79a7d04 (`&& !isActive`), branch fix/wsf2b2-fu in /home/milosvasic/.cache/claude-tmp/wsf2b2fu.wRgsWZ/repo.
+- WSF2BR-m2: no `ensureActive()` after mint returns; a job cancelled by `connect()` after mint completed can still install its client over the newer attempt's. ca79a7d04 claims a fix (unreviewed).
+- WSF2BR-m3 (pre-existing flake, cause confirmed by bytecode/timing): `ApiWsTicketMinter sends the token as a Bearer header` first mockk use inside `runTest` (10 s default timeout in coroutines-test 1.7.3) takes 4-6.5 s cold, fails at 28 s under `--cpus=0.5`. Fix: create the mock outside runTest, or `runTest(timeout = 60.seconds)`, or coroutines-test >= 1.8.
+- WSF2BR-n4: `WsClient.onOpen` still calls `send(subscribe...)` after the stale listener closed it (harmless via onError filter; whether send() throws UNCONFIRMED).
+- WSF2BR-n5: `RecSocket.connects`/`made` are companion static mutable state; fragile under parallel test runs.
+- WSF2BR-n6: commit evidence said RED 3 of 44; reviewer reproduced 4 of 45 (P1, P2, both F1 onOpen tests).
