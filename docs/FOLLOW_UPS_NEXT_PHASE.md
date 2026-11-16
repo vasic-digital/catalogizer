@@ -3169,3 +3169,10 @@ Evidence: RED 3 of 48 on parent source with the new tests, GREEN 48/48; full :ap
 ## WSF2B2RRR reviews (Android WebSocketRepository, round 1 Opus GO-with-follow-ups, PROVISIONAL; host JVM only, on-device UNCONFIRMED)
 - WSF2B2RRR-f1 (minor, test-instrumentation): no committed test shows a superseding attempt still publishes its own Error after a stale failure (PR2 factory-failure probe passes; PR1 stale-401-then-live-401 cannot tell guard mutant M1 from the fix because the stale Error is overwritten). Add PR2 and a sequence-recording PR1 (reviewer probe file WebSocketRepositoryReviewerProbeTest.kt in the reviewer clone).
 - WSF2B2RRR-n1 (nit, test-instrumentation): guards M1/M2/M5 are each pinned by a single test; m1 test largely repeats WSF2B2R-m3 with disconnect() instead of connect().
+
+## NFS3-WIRE-1 follow-up reviews (round 1 Opus GO-with-follow-ups, 9/9 reviewer mutants killed, PROVISIONAL; live lifecycle UNCONFIRMED)
+- NFS3W-FU-m1 (minor, source-defect): nfs3_register.go accepts port 0 for mount_port/portmap_port (0 = portmapper/111, explicit mount_port 0 overrides `port`) while error text and docs/NFS3_CLIENT.md say "1-65535"; `port` itself is not range-checked in nfs3ConfigFromSettings (70000 accepted, mount_port 70000 refused). Fix message/doc to "0-65535 (0 = default)" or refuse 0, and range-check `port`.
+- NFS3W-FU-m2 (minor, test-instrumentation): nfs_emulator_live.sh first leg ./tests/nfsemu/ can SKIP or run no tests and exit 0; grep for the lifecycle PASS line is unanchored (a subtest PASS line would satisfy it while the parent SKIPs). Anchor `^--- PASS: TestNFS3FactoryLifecycleLive ` and require PASS lines for the nfsemu tests.
+- NFS3W-FU-n1 (nit, test-instrumentation): m1 test asserts only 400 + zero rows, not the "storage host is not allowed" message.
+- NFS3W-FU-n2 (nit, process-doc): TestNFS3ConfigSplitPorts header says each defaults to port; portmap_port defaults to 0 (111).
+- NFS3W-FU-n3 (nit, process-doc): docs/NFS3_CLIENT.md should say mount_port/portmap_port are factory-only (not from stored root or API).
