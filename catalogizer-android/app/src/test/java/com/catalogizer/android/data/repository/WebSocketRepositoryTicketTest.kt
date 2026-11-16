@@ -19,6 +19,7 @@ import org.junit.Test
 import retrofit2.Response
 import java.io.IOException
 import java.net.URI
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * SEC-WS-1 F2: the session token must never be in the /ws URL; a fresh single-use ticket is minted for every
@@ -134,26 +135,31 @@ class WebSocketRepositoryTicketTest {
 
     // --- ApiWsTicketMinter (Retrofit layer) ---
 
+    // WSF2BR-m3: the first mockk use inside runTest took 4-6.5 s cold (28 s under --cpus=0.5) against the 10 s
+    // default runTest timeout of coroutines-test 1.7.3. The mocks are therefore built outside runTest, and the
+    // runTest timeout is explicit, so mockk's one-off class instrumentation can no longer fail the test.
     @Test
-    fun `ApiWsTicketMinter sends the token as a Bearer header and returns the ticket`() = runTest {
+    fun `ApiWsTicketMinter sends the token as a Bearer header and returns the ticket`() {
         val api = mockk<CatalogizerApi>()
         coEvery { api.mintWsTicket("Bearer $jwt") } returns Response.success(WsTicketResponse("abc", null, 30))
-        assertEquals("abc", ApiWsTicketMinter(api).mint(jwt))
-        coVerify(exactly = 1) { api.mintWsTicket("Bearer $jwt") }
+        runTest(timeout = 60.seconds) {
+            assertEquals("abc", ApiWsTicketMinter(api).mint(jwt))
+            coVerify(exactly = 1) { api.mintWsTicket("Bearer $jwt") }
+        }
     }
 
     @Test(expected = WsTicketUnauthorizedException::class)
-    fun `ApiWsTicketMinter maps 401 to WsTicketUnauthorizedException`() = runTest {
+    fun `ApiWsTicketMinter maps 401 to WsTicketUnauthorizedException`() {
         val api = mockk<CatalogizerApi>()
         coEvery { api.mintWsTicket(any()) } returns Response.error(401, "".toResponseBody(null))
-        ApiWsTicketMinter(api).mint(jwt)
+        runTest(timeout = 60.seconds) { ApiWsTicketMinter(api).mint(jwt) }
     }
 
     @Test(expected = IOException::class)
-    fun `ApiWsTicketMinter rejects a response without a ticket`() = runTest {
+    fun `ApiWsTicketMinter rejects a response without a ticket`() {
         val api = mockk<CatalogizerApi>()
         coEvery { api.mintWsTicket(any()) } returns Response.success(WsTicketResponse("", null, 30))
-        ApiWsTicketMinter(api).mint(jwt)
+        runTest(timeout = 60.seconds) { ApiWsTicketMinter(api).mint(jwt) }
     }
 
     @Test

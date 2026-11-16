@@ -137,6 +137,10 @@ class WebSocketRepository(
                 // WSF2B2-F2: rethrow only when THIS attempt was cancelled (connect()/disconnect()); a
                 // CancellationException the minter raised itself (withTimeout) is an ordinary mint failure.
                 if (e is CancellationException && !isActive) throw e
+                // WSF2B2R-m3: an attempt superseded by connect()/disconnect() whose minter failed with an ordinary
+                // exception (an IOException racing the cancel) must neither publish Error nor schedule a reconnect:
+                // a newer attempt owns the connection and a reconnect would replace its job.
+                if (!isActive) return@launch
                 _events.value = WebSocketEvent.Error(e.message ?: "Ticket request failed")
                 scheduleReconnect()
                 return@launch
