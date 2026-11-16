@@ -34,9 +34,19 @@ func dupUserUpdateChecks(t *testing.T, e *rtEnv, nulRejected bool) {
 	}
 	mk("dupalice")
 	bob := mk("dupbob")
+
+	// ADMD1RRR-m1: duplicate user CREATE (username, then email) answers 409 on this dialect, live.
+	w := e.do(e.adminTok, "POST", "/api/v1/users",
+		`{"username":"dupalice","email":"other-dupalice@example.test","password":"Pw!Throwaway#9x","role_id":2}`)
+	assert.Equal(t, 409, w.Code, "create onto an existing username: %s", w.Body.String())
+	assert.Contains(t, w.Body.String(), "Username or email already exists")
+	w = e.do(e.adminTok, "POST", "/api/v1/users",
+		`{"username":"dupcarol","email":"dupalice@example.test","password":"Pw!Throwaway#9x","role_id":2}`)
+	assert.Equal(t, 409, w.Code, "create onto an existing email: %s", w.Body.String())
+	assert.Contains(t, w.Body.String(), "Username or email already exists")
 	url := "/api/v1/users/" + rtItoa(bob)
 
-	w := e.do(e.adminTok, "PUT", url, `{"username":"dupalice"}`)
+	w = e.do(e.adminTok, "PUT", url, `{"username":"dupalice"}`)
 	assert.Equal(t, 409, w.Code, "username onto an existing one: %s", w.Body.String())
 	assert.Contains(t, w.Body.String(), "Username or email already exists")
 	w = e.do(e.adminTok, "PUT", url, `{"email":"dupalice@example.test"}`)
@@ -68,6 +78,18 @@ func dupUserUpdateChecks(t *testing.T, e *rtEnv, nulRejected bool) {
 	assert.NotContains(t, w.Body.String(), "already exists")
 	if nulRejected {
 		assert.Equal(t, 500, w.Code, "PostgreSQL must reject the NUL byte as a plain write failure: %s", w.Body.String())
+	}
+	// ADMD1RRR-m2: the same non-unique failure through the PLAIN Update branch must not be classified 409 either
+	// (a mutant mapping any error to 409 there must die).
+	req := httptest.NewRequest(http.MethodPut, url, strings.NewReader(`{"first_name":"nul\u0000byte"}`))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+e.adminTok)
+	rec := httptest.NewRecorder()
+	plain.ServeHTTP(rec, req)
+	assert.NotEqual(t, 409, rec.Code, "plain branch: non-unique failure classified as a duplicate: %s", rec.Body.String())
+	assert.NotContains(t, rec.Body.String(), "already exists")
+	if nulRejected {
+		assert.Equal(t, 500, rec.Code, "plain branch: PostgreSQL NUL byte is a plain write failure: %s", rec.Body.String())
 	}
 }
 

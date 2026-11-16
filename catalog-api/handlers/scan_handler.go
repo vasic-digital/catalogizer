@@ -284,6 +284,16 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 		req.Username, req.Password, req.Domain, req.URL, req.MountPoint, req.Options, req.AllowEmpty, true, req.MaxDepth,
 	)
 	if insertErr != nil {
+		// ADMD1RRR-I1: the name check above is check-then-insert; the loser of a concurrent create hits the unique
+		// constraint on storage_roots.name and must see the same 409 as the sequential duplicate.
+		if isUniqueViolation(insertErr) {
+			c.JSON(http.StatusConflict, gin.H{
+				"error": "storage root with this name already exists",
+				"name":  req.Name,
+				"hint":  "use PUT /api/v1/storage/roots/{id} to update an existing root",
+			})
+			return
+		}
 		respondInternal(c, http.StatusInternalServerError, "failed to create storage root", insertErr)
 		return
 	}
