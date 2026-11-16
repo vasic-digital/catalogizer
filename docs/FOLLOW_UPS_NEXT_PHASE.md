@@ -3105,3 +3105,7 @@ Evidence: RED 3 of 48 on parent source with the new tests, GREEN 48/48; full :ap
 - ADMD1RRRRR-n1: openapi says 409 carries existing_id but the racing path omits it when lookup fails; Error schema does not declare name/existing_id/hint.
 - ADMD1RRRRR-n2: storageRootConflictHint refers to existing_id which is absent when the winner lookup fails.
 - ADMD1RRRRR-n3: PUT /admin/users/{id} 409 description starts "Role change refused:" but also covers duplicate email/username.
+- NFS3RD-m1 (minor): add unit test that READDIR-path entry types match READDIRPLUS incl. symlinks (reviewer mutant M9b survives author suite) and a concurrent ListDirectory test for the fallback flag under -race (M11 survives); reviewer probe template zz_reviewer_probe_test.go.
+- NFS3RD-n1: test that the READDIR fallback fills the directory-handle cache (M8).
+- NFS3RD-n2: in fallback mode each entry costs one LOOKUP (+GETATTR if none): up to 5M round trips per hostile listing; document or lower the per-listing cap for the fallback.
+- NFS3-WIRE-1 (phase 2, operator-approved 2026-11-16): wire pkg/nfs3 into factory.go: nfs3 case + Config mapping (export, UID/GID, ports), connect/disconnect lifecycle, NFS root-config API/UI, Synology-offline SKIP, scan/crawl integration tests, drop doc line saying not wired.
