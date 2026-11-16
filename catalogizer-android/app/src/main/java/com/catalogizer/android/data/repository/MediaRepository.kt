@@ -137,11 +137,8 @@ class MediaRepository(
             mediaDao.updateFavoriteStatus(mediaId, newFavoriteStatus)
 
             // Sync with server
-            val result = if (newFavoriteStatus) {
-                api.addToFavorites(mediaId).toApiResult()
-            } else {
-                api.removeFromFavorites(mediaId).toApiResult()
-            }
+            // Server contract: PUT /api/v1/media/:id/favorite {"favorite": bool}
+            val result = api.setFavoriteStatus(mediaId, mapOf("favorite" to newFavoriteStatus)).toApiResult()
 
             // Revert local state if server sync failed
             if (!result.isSuccess) {

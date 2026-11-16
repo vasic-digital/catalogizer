@@ -178,33 +178,33 @@ class MediaRepositoryTest {
     fun `toggleFavorite should add to favorites when not favorited`() = runTest {
         coEvery { mockMediaDao.getMediaById(1L) } returns testMediaItem.copy(isFavorite = false)
         coEvery { mockMediaDao.updateFavoriteStatus(any(), any()) } just Runs
-        coEvery { mockApi.addToFavorites(1L) } returns Response.success(Unit)
+        coEvery { mockApi.setFavoriteStatus(1L, mapOf("favorite" to true)) } returns Response.success(Unit)
 
         val result = repository.toggleFavorite(1L)
 
         assertTrue(result.isSuccess)
         coVerify { mockMediaDao.updateFavoriteStatus(1L, true) }
-        coVerify { mockApi.addToFavorites(1L) }
+        coVerify { mockApi.setFavoriteStatus(1L, mapOf("favorite" to true)) }
     }
 
     @Test
     fun `toggleFavorite should remove from favorites when favorited`() = runTest {
         coEvery { mockMediaDao.getMediaById(1L) } returns testMediaItem.copy(isFavorite = true)
         coEvery { mockMediaDao.updateFavoriteStatus(any(), any()) } just Runs
-        coEvery { mockApi.removeFromFavorites(1L) } returns Response.success(Unit)
+        coEvery { mockApi.setFavoriteStatus(1L, mapOf("favorite" to false)) } returns Response.success(Unit)
 
         val result = repository.toggleFavorite(1L)
 
         assertTrue(result.isSuccess)
         coVerify { mockMediaDao.updateFavoriteStatus(1L, false) }
-        coVerify { mockApi.removeFromFavorites(1L) }
+        coVerify { mockApi.setFavoriteStatus(1L, mapOf("favorite" to false)) }
     }
 
     @Test
     fun `toggleFavorite should revert local state on API failure`() = runTest {
         coEvery { mockMediaDao.getMediaById(1L) } returns testMediaItem.copy(isFavorite = false)
         coEvery { mockMediaDao.updateFavoriteStatus(any(), any()) } just Runs
-        coEvery { mockApi.addToFavorites(1L) } returns Response.error(
+        coEvery { mockApi.setFavoriteStatus(1L, mapOf("favorite" to true)) } returns Response.error(
             500,
             okhttp3.ResponseBody.create(null, "Server error")
         )

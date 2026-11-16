@@ -227,25 +227,6 @@ class CatalogizerApiTest {
     }
 
     @Test
-    fun `addToFavorites accepts mediaId`() = runTest {
-        coEvery { mockApi.addToFavorites(5L) } returns Response.success(Unit)
-
-        val result = mockApi.addToFavorites(5L)
-
-        assertTrue(result.isSuccessful)
-        coVerify { mockApi.addToFavorites(5L) }
-    }
-
-    @Test
-    fun `removeFromFavorites accepts mediaId`() = runTest {
-        coEvery { mockApi.removeFromFavorites(5L) } returns Response.success(Unit)
-
-        val result = mockApi.removeFromFavorites(5L)
-
-        assertTrue(result.isSuccessful)
-    }
-
-    @Test
     fun `getWatchlist returns paginated response`() = runTest {
         val response = MediaSearchResponse(items = emptyList(), total = 0, limit = 20, offset = 0)
         coEvery { mockApi.getWatchlist(any(), any()) } returns Response.success(response)
