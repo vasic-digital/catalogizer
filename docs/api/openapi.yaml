@@ -103,7 +103,7 @@ components:
 
   schemas:
     StorageRootConflict:
-      description: 409 body of POST /storage/roots for a duplicate name (the private-network confirmation 409 is StorageRootPrivateConfirmation); the code always sends error, name and hint
+      description: 409 body of POST /storage/roots for a duplicate name (the private-network confirmation answer is a 400, StorageRootPrivateConfirmation); the code always sends error, name and hint
       allOf:
         - $ref: '#/components/schemas/Error'
         - type: object
@@ -122,7 +122,7 @@ components:
               type: string
               description: Human-readable next step; refers to existing_id only when it is present
     StorageRootPrivateConfirmation:
-      description: 409 body of POST /storage/roots when private-network confirmation is required (storage_root_class.go respondPrivateConfirmationRequired); always carries error, code and hint
+      description: 400 body of POST /storage/roots when private-network confirmation is required (storage_root_class.go respondPrivateConfirmationRequired); always carries error, code and hint
       allOf:
         - $ref: '#/components/schemas/Error'
         - type: object
@@ -453,6 +453,12 @@ components:
           type: boolean
           default: false
           description: the share is expected to be empty; its scan may complete with 0 files
+        confirm_private_network:
+          type: boolean
+          default: false
+          description: |
+            Required (true) when the destination (host, or the host of url) is on a private network or cannot be resolved now, for
+            every networked protocol; without it the request is refused with 400 private_network_confirmation_required.
         max_depth:
           type: integer
           default: 10
@@ -4102,8 +4108,10 @@ paths:
         A root that is, contains or aliases the application database, its SQLite companions or the key file/directory is refused
         with 403, and the symlink-resolved path is what is stored.
         A WebDAV, S3, SMB, FTP or NFS root on a public address is approved for the public class automatically. A destination on a
-        private network, or one whose name cannot be resolved now, needs `confirm_private_network: true`, otherwise the request is
-        refused with 409 `private_network_confirmation_required` and nothing is stored. The response carries `approved_class`.
+        private network, or one whose name cannot be resolved now, needs `confirm_private_network: true` (every networked protocol),
+        otherwise the request is refused with 400 `private_network_confirmation_required` (a fixed class text that does not name
+        the destination) and nothing is stored. Loopback, link-local and cloud-metadata destinations are refused outright (400
+        `storage host is not allowed`), confirmation or not. The response carries `approved_class`.
       security:
         - BearerAuth: []
       requestBody:
@@ -4115,17 +4123,14 @@ paths:
       responses:
         '409':
           description: |
-            Nothing was stored. Either private-network confirmation is required (code private_network_confirmation_required),
-            or a root with this name already exists ("storage root with this name already exists"; the body carries `name`,
-            `existing_id` and a `hint`). The duplicate is refused both when the name is already stored and when two creates
+            Nothing was stored: a root with this name already exists ("storage root with this name already exists"; the body carries
+            `name`, `existing_id` and a `hint`). The duplicate is refused both when the name is already stored and when two creates
             race for it (the loser of the race also gets 409, never 500). `existing_id` is omitted when the lookup of
             the winning root fails after a race; the `hint` then does not refer to it.
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/StorageRootConflict'
-                  - $ref: '#/components/schemas/StorageRootPrivateConfirmation'
+                $ref: '#/components/schemas/StorageRootConflict'
         '503':
           description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '403':
@@ -4150,11 +4155,20 @@ paths:
                   message:
                     type: string
         '400':
-          description: Invalid request
+          description: |
+            Invalid request, or private-network confirmation required (code private_network_confirmation_required; send
+            `confirm_private_network: true`). Nothing was stored.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                private_network_confirmation_required:
+                  summary: Private destination without confirm_private_network (body shape StorageRootPrivateConfirmation)
+                  value:
+                    error: this storage destination is on a private network (or cannot be resolved now); confirm it to approve private-network access
+                    code: private_network_confirmation_required
+                    hint: repeat the request with confirm_private_network=true if the destination is meant to be on your LAN
 
   /api/v1/storage/roots/{id}/approved-class:
     put:

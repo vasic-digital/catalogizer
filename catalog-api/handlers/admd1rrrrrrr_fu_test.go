@@ -223,8 +223,8 @@ func (d oaDoc) validateInner(t *testing.T, schema map[string]interface{}, body m
 	return errs
 }
 
-// the 409 response schema of POST /storage/roots, found by path so a moved schema fails loudly.
-func (d oaDoc) createRoots409(t *testing.T) map[string]interface{} {
+// the response schema of POST /storage/roots for one status, found by path so a moved schema fails loudly.
+func (d oaDoc) createRootsStatus(t *testing.T, status string) map[string]interface{} {
 	t.Helper()
 	paths := d["paths"].(map[string]interface{})
 	post := paths["/api/v1/storage/roots"]
@@ -232,15 +232,19 @@ func (d oaDoc) createRoots409(t *testing.T) map[string]interface{} {
 		post = paths["/storage/roots"]
 	}
 	require.NotNil(t, post, "POST /storage/roots path missing in openapi.yaml")
-	r := post.(map[string]interface{})["post"].(map[string]interface{})["responses"].(map[string]interface{})["409"].(map[string]interface{})
+	r := post.(map[string]interface{})["post"].(map[string]interface{})["responses"].(map[string]interface{})[status].(map[string]interface{})
 	return r["content"].(map[string]interface{})["application/json"].(map[string]interface{})["schema"].(map[string]interface{})
 }
 
 func TestADMD1RRRRRRRfu_StorageRoot409BodiesMatchOpenAPIOneOf(t *testing.T) {
 	t.Setenv(netguard.AllowCIDRsEnv, "")
 	d := loadOpenAPI(t)
-	one := d.createRoots409(t)
-	require.NotNil(t, one["oneOf"], "the 409 schema must be a oneOf")
+	// CAT-CPN-1: the 409 of POST /storage/roots is the duplicate-name answer only; the private-network confirmation is a 400 (generic Error
+	// schema, its body shape StorageRootPrivateConfirmation).
+	one := d.createRootsStatus(t, "409")
+	require.Equal(t, "#/components/schemas/StorageRootConflict", one["$ref"], "the 409 schema is the duplicate-name schema")
+	bad := d.createRootsStatus(t, "400")
+	require.Equal(t, "#/components/schemas/Error", bad["$ref"])
 
 	h := secq1cHarness(t)
 	code, first := h.do("POST", "/storage/roots", map[string]interface{}{"name": "pub", "protocol": "webdav", "url": "https://" + secq1cPublicIP + "/dav", "path": "/"})
@@ -273,20 +277,21 @@ func TestADMD1RRRRRRRfu_StorageRoot409BodiesMatchOpenAPIOneOf(t *testing.T) {
 
 	// private-network confirmation
 	code, priv := h.do("POST", "/storage/roots", map[string]interface{}{"name": "lan", "protocol": "webdav", "url": "http://192.168.1.20:5005/", "path": "/"})
-	require.Equal(t, http.StatusConflict, code, "%v", priv)
+	require.Equal(t, http.StatusBadRequest, code, "%v", priv)
 	require.Equal(t, secq1cNoConfirm, priv["code"])
-	require.Empty(t, d.validate(t, one, priv), "private-network body %v", priv)
+	require.Empty(t, d.validate(t, bad, priv), "private-network body %v", priv)
+	require.Empty(t, d.validate(t, d.schema(t, "StorageRootPrivateConfirmation"), priv), "private-network body %v", priv)
 	require.NotEmpty(t, d.validate(t, d.schema(t, "StorageRootConflict"), priv), "private-network body must not match the duplicate branch")
 
 	// negative controls against the validator itself: a body that matches neither, and one that matches both
-	require.NotEmpty(t, d.validate(t, one, map[string]interface{}{"error": "x"}), "body with neither name nor code must fail")
+	require.NotEmpty(t, d.validate(t, d.schema(t, "StorageRootPrivateConfirmation"), map[string]interface{}{"error": "x"}), "body without code and hint must fail the private-network schema")
 	both := map[string]interface{}{"error": "x", "name": "n", "hint": "h", "code": secq1cNoConfirm}
 	require.NotEmpty(t, d.validate(t, d.schema(t, "StorageRootConflict"), both), "n1: a body carrying code must be excluded from the duplicate branch")
-	require.Empty(t, d.validate(t, one, both), "name+code+hint is a valid private-network body (exactly one branch)")
+	require.Empty(t, d.validate(t, d.schema(t, "StorageRootPrivateConfirmation"), both), "name+code+hint is a valid private-network body")
 	bothBadCode := map[string]interface{}{"error": "x", "name": "n", "hint": "h", "code": "other"}
-	require.NotEmpty(t, d.validate(t, one, bothBadCode), "a body with name and an unknown code matches neither branch")
+	require.NotEmpty(t, d.validate(t, d.schema(t, "StorageRootPrivateConfirmation"), bothBadCode), "a body with name and an unknown code is not a private-network body")
 	badCode := map[string]interface{}{"error": "x", "hint": "h", "code": "something_else"}
-	require.NotEmpty(t, d.validate(t, one, badCode), "an unknown code must fail the enum")
+	require.NotEmpty(t, d.validate(t, d.schema(t, "StorageRootPrivateConfirmation"), badCode), "an unknown code must fail the enum")
 }
 
 // ADMD1RRRRRRRR-m1: oneOf exclusivity is exercised by a synthetic overlapping schema, driving the real validator.

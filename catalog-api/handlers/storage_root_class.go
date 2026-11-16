@@ -117,8 +117,10 @@ func (h *ScanHandler) deleteRootRow(ctx context.Context, id int64) {
 	_, _ = h.db.ExecContext(cctx, `DELETE FROM storage_roots WHERE id = ?`, id)
 }
 
+// CAT-CPN-1 (operator decision 2026-11-16): an unconfirmed private-LAN storage root is a malformed request (400), not a state conflict. The body
+// is a fixed class text; it never names the destination.
 func respondPrivateConfirmationRequired(c *gin.Context) {
-	c.JSON(http.StatusConflict, gin.H{
+	c.JSON(http.StatusBadRequest, gin.H{
 		"error": "this storage destination is on a private network (or cannot be resolved now); confirm it to approve private-network access",
 		"code":  codePrivateConfirmationRequired,
 		"hint":  "repeat the request with confirm_private_network=true if the destination is meant to be on your LAN",

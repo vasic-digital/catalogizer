@@ -7,6 +7,7 @@ import type {
   ExternalMetadata,
   QualityInfo,
   StorageRoot,
+  CreateStorageRootInput,
   MediaEntity,
   MediaEntityDetail,
   MediaTypeInfo,
@@ -81,7 +82,7 @@ export const mediaApi = {
   getStorageRoot: (id: number): Promise<StorageRoot> =>
     api.get(`/storage/roots/${id}`).then((res) => res.data),
 
-  createStorageRoot: (data: Omit<StorageRoot, 'id' | 'created_at' | 'updated_at'>): Promise<StorageRoot> =>
+  createStorageRoot: (data: CreateStorageRootInput): Promise<StorageRoot> =>
     api.post('/storage/roots', data).then((res) => res.data),
 
   updateStorageRoot: (id: number, data: Partial<StorageRoot>): Promise<StorageRoot> =>

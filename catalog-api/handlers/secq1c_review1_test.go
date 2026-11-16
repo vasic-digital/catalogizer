@@ -62,7 +62,7 @@ func TestSECQ1C_R1_UnresolvableRootNeedsConfirmation(t *testing.T) {
 	h := secq1cHarness(t)
 	req := map[string]interface{}{"name": "nx", "protocol": "webdav", "url": "http://" + secq1cUnresolvable + "/dav", "path": "/"}
 	code, body := h.do("POST", "/storage/roots", req)
-	require.Equal(t, http.StatusConflict, code, "%v", body)
+	require.Equal(t, http.StatusBadRequest, code, "%v", body)
 	require.Equal(t, secq1cNoConfirm, body["code"])
 	require.Equal(t, 0, rootCount(t, h.db))
 
@@ -89,7 +89,7 @@ func TestSECQ1C_R1_RebindingBetweenClassificationsIsRefused(t *testing.T) {
 		return netguard.ClassPrivate, nil
 	}
 	code, body := h.do("POST", "/storage/roots", map[string]interface{}{"name": "rb", "protocol": "webdav", "url": "https://rebind.example/dav", "path": "/", "confirm_private_network": true})
-	require.Equal(t, http.StatusConflict, code, "%v", body)
+	require.Equal(t, http.StatusBadRequest, code, "%v", body)
 	require.Equal(t, secq1cNoConfirm, body["code"])
 	require.Equal(t, 0, rootCount(t, h.db), "the row is removed again")
 	require.GreaterOrEqual(t, calls, 2, "control: the destination was classified twice")

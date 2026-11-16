@@ -120,6 +120,25 @@ export interface StorageRoot {
   last_scan_at?: string
 }
 
+/**
+ * Body of POST /storage/roots. A destination on a private network (or one that cannot be resolved now) is refused with 400
+ * private_network_confirmation_required unless `confirm_private_network` is true (every networked protocol); a create form must
+ * send it only after the administrator ticked the confirmation.
+ */
+export type CreateStorageRootInput = Omit<StorageRoot, 'id' | 'created_at' | 'updated_at'> & {
+  host?: string
+  port?: number
+  path?: string
+  url?: string
+  username?: string
+  password?: string
+  domain?: string
+  mount_point?: string
+  options?: string
+  allow_empty?: boolean
+  confirm_private_network?: boolean
+}
+
 export const SUPPORTED_PROTOCOLS = [
   'smb',
   'ftp',
