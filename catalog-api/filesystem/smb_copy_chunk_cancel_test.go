@@ -7,9 +7,18 @@ import (
 	"testing"
 )
 
-type cancelReader struct{ cancel func(); reads int }
+type cancelReader struct {
+	cancel func()
+	reads  int
+}
 
-func (r *cancelReader) Read(p []byte) (int, error) { r.reads++; if r.reads == 1 { r.cancel() }; return len(p), nil }
+func (r *cancelReader) Read(p []byte) (int, error) {
+	r.reads++
+	if r.reads == 1 {
+		r.cancel()
+	}
+	return len(p), nil
+}
 
 func TestCopyChunkedStopsAfterCancel(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
