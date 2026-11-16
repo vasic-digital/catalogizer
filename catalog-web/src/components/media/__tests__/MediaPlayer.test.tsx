@@ -312,11 +312,17 @@ describe('MediaPlayer ticket lifecycle', () => {
     const g = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
     const prevAct = g.IS_REACT_ACT_ENVIRONMENT
     g.IS_REACT_ACT_ENVIRONMENT = false
+    // React derives the update lane from window.event, and jsdom leaves it pointing at the last dispatched event. A stale discrete
+    // event ('play', 'pause', 'click'...) makes the commit synchronous, which flushes passive effects inside the commit and closes
+    // the gap. A promise continuation in a browser has no current event, so model exactly that.
+    const evDesc = Object.getOwnPropertyDescriptor(window, 'event')
+    Object.defineProperty(window, 'event', { configurable: true, get: () => undefined })
     try {
       settle()
       await new Promise((r) => setTimeout(r, 100)) // real time: let React commit and flush its passive effects
     } finally {
       g.IS_REACT_ACT_ENVIRONMENT = prevAct
+      if (evDesc) Object.defineProperty(window, 'event', evDesc); else delete (window as { event?: unknown }).event
     }
     expect(injected).toBe(true)
     st.code = null
