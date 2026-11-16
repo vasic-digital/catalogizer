@@ -118,6 +118,18 @@ describe('route-gate extractor completeness (SSEF4R-FD-m1)', () => {
     expect(missed[0].text).toContain('// TODO')
     expect(() => assertAllGatesCaptured(src)).toThrow(/line 1/)
   })
+
+  // WTB1-m1: two uncaptured gates on lines 2 and 3 pin the per-occurrence text and the reported count
+  // (kills a mutant that takes the text from the first line, and one that reports only the first occurrence).
+  it('two bad gates on lines 2 and 3: both reported with their own text and the count is 2', () => {
+    const src = `${good('/a', 'media.view')}\n${bad('/b', 'media.edit')}\n${bad('/c', 'media.delete')}`
+    const missed = findUncapturedOccurrences(src)
+    expect(missed).toHaveLength(2)
+    expect(missed.map((m) => m.line)).toEqual([2, 3])
+    expect(missed[0].text).toContain("requiredPermission='media.edit'")
+    expect(missed[1].text).toContain("requiredPermission='media.delete'")
+    expect(() => assertAllGatesCaptured(src)).toThrow(/missed 2 requiredPermission/)
+  })
 })
 
 // F2F3-m3: the Header NAV_ITEMS gate must equal the App.tsx route gate, read from the real files.

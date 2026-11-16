@@ -117,7 +117,7 @@ describe('Settings with the real AuthProvider', () => {
       expect(queryClient.getQueryState(['permissions'])?.status).toBe('success')
     })
     await act(async () => {})
-    // Advance well past any debounce/refetch/timer window after everything settled.
+    // Advance a 10 s window (equal to the Sync statistics refetchInterval of 10000 ms) after everything settled; a flip later than that is not caught.
     await act(async () => {
       await vi.advanceTimersByTimeAsync(10_000)
     })
