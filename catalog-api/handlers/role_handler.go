@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
-	"github.com/lib/pq"
 	"net/http"
 	"strconv"
 	"strings"
@@ -365,13 +364,4 @@ func (h *RoleHandler) getCurrentUser(r *http.Request) (*models.User, error) {
 // isRoleNameConflict reports whether err is a unique-constraint violation of roles.name on either dialect:
 // SQLite ("UNIQUE constraint failed: ...") or PostgreSQL (SQLSTATE 23505, "duplicate key value violates unique
 // constraint ..."). ADMD1R-m1: the SQLite-only text match answered 500 on PostgreSQL.
-func isRoleNameConflict(err error) bool {
-	var pqErr *pq.Error
-	if errors.As(err, &pqErr) && pqErr.Code == "23505" {
-		return true
-	}
-	msg := err.Error()
-	return strings.Contains(msg, "UNIQUE constraint failed") ||
-		strings.Contains(msg, "duplicate key value") ||
-		strings.Contains(msg, "violates unique constraint")
-}
+func isRoleNameConflict(err error) bool { return isUniqueViolation(err) }
