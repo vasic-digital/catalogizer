@@ -3240,3 +3240,12 @@ Explicit `x-catalogizer-admin-gated: true` marker (85 ops) + census golden + rou
 - **NFS3FU2-M1 (minor, test-instrumentation):** factory leg of `TestNFS3FloatPortsFromJSONSettings` sends only float64 `port`; a factory-only mishandling of float64 `mount_port`/`portmap_port` survives (mutant G6). Send all three through `CreateClient`, assert NFSPort/MountPort/PortmapPort.
 - **NFS3FU2-M2 (minor, test-instrumentation):** `nfs_emulator_check.sh` CR-terminated PASS line is refused with GNU grep but accepted via the harness's ugrep wrapper function (inherited by `bash script.sh`); mutant S3 survives. Use `command grep` and add a CRLF fixture + `type grep` assertion.
 - **NFS3FU2-N1/N2 (nit):** no fixture pins the fractional-digit requirement (`(0.s)`, mutant S6) or a column-0 `TestX/sub` PASS line (S7).
+
+## CAT-HAUTHZ-1 follow-ups 2 review follow-ups (Opus GO-with-follow-ups, 2026-11-16; PROVISIONAL)
+
+- **HAUTHZ-F3 (minor, source/operator scheduling):** `PUT /api/v1/errors/{reports,crashes}/:id/status` answers 500 for a foreign AND a missing id (handler maps every service error to 500). Write is refused, no oracle, no bypass; return 404/403 consistently. Sweep currently pins "no 2xx, foreign == missing, state unchanged".
+- **HAUTHZ-FU2-M1 (minor, test-instrumentation):** statistics no-leak legs check only text markers; mutant M3 (`total_errors` COUNT OR 1=1) survives. Assert A's total_errors/total_crashes/by-level equal A's own filings.
+- **HAUTHZ-FU2-M2 (minor, test-instrumentation):** `noLeak` does not assert success for the report holder A; add positive control that A sees its own report in list and statistics.
+- **HAUTHZ-FU2-M3 (minor, test-instrumentation):** no owner positive control for the crash status route ("B resolves its own crash").
+- **HAUTHZ-FU2-N1 (nit, process-doc):** INVENTORY §2a: 11 `errors/*` routes (13 with admin ones), migrations_sqlite.go:284 not :285, also unrouted UpdateConfiguration/GetConfiguration/CleanupOldReports, §2 wording "NOT swept" contradicts §2a.
+- **HAUTHZ-O1-DECISION (operator):** `internal/handlers/media.go:570 getUserMetadata` (from 16843b133, 2025-10-04) was never routed (no commit unwired it; only a README snippet and media_test.go use it); reads `user_metadata` with no user filter, would leak across users if routed. Recommend fix (caller user_id) or remove dead handler+README snippet+tests; no removal done (§11.4.124).
