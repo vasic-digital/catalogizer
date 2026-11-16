@@ -137,8 +137,8 @@ settings and be ignored). A key that looks like a secret - compared case-insensi
 * The read-ahead trades memory and bytes beyond the reader's position (up to one read window, default 2 MiB per sequentially read open file) for pipelining; a consumer that opens many files and reads
   each one sequentially pays that per file. Set `MaxConcurrentRequests` / `MaxPacket` lower to shrink it.
 * Every end of a file costs one global-request round trip (the liveness question). On a link whose answer takes longer than `KeepAliveTimeout` the read is reported as a lost connection and the shared
-  connection is dropped; raise `KeepAliveTimeout` for such a link. Whether Synology DSM answers `keepalive@openssh.com` quickly under load is UNCONFIRMED (no NAS contacted).
-* Password login is attempted as `password` and `keyboard-interactive`. Whether Synology DSM needs `keyboard-interactive`, and its `MaxSessions` / `MaxStartups` / `@eaDir` behaviour, are UNCONFIRMED: no NAS was
+  connection is dropped; raise `KeepAliveTimeout` for such a link. Whether NAS DSM answers `keepalive@openssh.com` quickly under load is UNCONFIRMED (no NAS contacted).
+* Password login is attempted as `password` and `keyboard-interactive`. Whether NAS DSM needs `keyboard-interactive`, and its `MaxSessions` / `MaxStartups` / `@eaDir` behaviour, are UNCONFIRMED: no NAS was
   contacted. The only real peer is OpenSSH 8.4p1.
 * Behaviour against a server whose `REALPATH` and `OPEN` disagree (different symlink-depth limits, transient `REALPATH` errors) is tested only with a scripted server; with such a server this client refuses (fails
   closed) rather than reads.

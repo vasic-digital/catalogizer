@@ -40,7 +40,7 @@ THREAT BOUNDARY (fixed before this review loop's next round; not narrowed to rea
   data channel that stalls/lies/truncates); a MITM on a trusted_lan CLEAR-TEXT root (replies and listings are untrusted data); a hostile path or
   name (control characters, ".." escape, IAC, "/" and NUL in names); credential leakage through fmt/errors/logs; account lockout through retried
   PASS; leaking connections/goroutines; callers' ctx / Disconnect not being honoured.
-  Out of scope (stated, not claimed): correctness of the Synology FTP service's own behaviour (UNCONFIRMED, no NAS contact); confidentiality on a
+  Out of scope (stated, not claimed): correctness of the NAS FTP service's own behaviour (UNCONFIRMED, no NAS contact); confidentiality on a
   trusted_lan clear-text root (it is clear text by the owner's decision); Windows FTP servers that accept "\" as a separator (documented limit);
   certificate-authority trust (the pin is the only anchor by design); denial of service by a server that answers correctly but slowly within
   IOTimeout per reply and per read (bounded by ctx and the entry cap only).

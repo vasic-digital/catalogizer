@@ -1,0 +1,9 @@
+--- PASS: TestLiveSMBCopy_SamePathRefusedSourceIntact (0.09s)
+--- PASS: TestLiveSMBCopy_CaseAliasKeepsSourceBytes (0.03s)
+--- PASS: TestLiveSMBCopy_ReplacesExistingDestinationNoTempLeft (0.07s)
+--- PASS: TestLiveSMBCopy_MissingSourceLeavesDestinationAlone (0.03s)
+--- PASS: TestLiveSMBCopy_DestinationDirectoryRefused (0.02s)
+--- PASS: TestLiveSMBCopy_SourceDirectoryRefused (0.02s)
+--- PASS: TestLiveSMBCopy_CancelledContextLeavesDestination (0.06s)
+--- PASS: TestLiveSMBCopy_CancelMidTransferKeepsDestinationNoTemp (3.81s)
+ok  	catalogizer/filesystem	4.130s

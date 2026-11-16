@@ -1,0 +1,75 @@
+{
+  "schema": "wp12-nas-client/1",
+  "alias": "LiveHost1",
+  "protocol": "ftp",
+  "client_package": "pkg/ftp",
+  "chain": "Confined\u003eRetrying\u003eLimited\u003eReadOnly\u003etripwire\u003eclient",
+  "status": "refused",
+  "reason": "connection refused by the host (service not offered)",
+  "error": {
+    "type": "*fmt.wrapErrors",
+    "fabric_class": "transient",
+    "message": "fabric: retries exhausted after 3 attempts (Connect): dial tcp \u003chost\u003e:21: connect: connection refused"
+  },
+  "pin": {
+    "note": "clear-text FTP on the LAN is the task's explicit scope; the credential travels unencrypted",
+    "outcome": "not_applicable_cleartext_trusted_lan"
+  },
+  "negative_tests": [
+    {
+      "expected": "ftp.ErrClearTextRefused (before any network I/O)",
+      "fabric_class": "permanent",
+      "got": "*errors.errorString",
+      "message": "ftp: clear-text FTP is refused (set trusted_lan=true on the root to allow it on a trusted LAN)",
+      "name": "cleartext_without_trusted_lan_refused",
+      "ok": true
+    }
+  ],
+  "connect_ms": 2003.9,
+  "listing_latency_all": {
+    "n": 0,
+    "p50_ms": 0,
+    "p95_ms": 0,
+    "max_ms": 0,
+    "mean_ms": 0
+  },
+  "client_level_requests": 0,
+  "min_gap_between_client_requests_s": -1,
+  "host_budget": {
+    "Acquired": 8,
+    "Held": 0,
+    "InFlight": 0,
+    "LeaseExpired": 0,
+    "OldestHeld": 0,
+    "TotalRateWait": 5497898686,
+    "config": {
+      "max_concurrent": 1,
+      "max_req_per_sec": 1
+    }
+  },
+  "calls_reaching_the_protocol_client": {},
+  "read_only_proof": {
+    "all_probes_refused_by_ReadOnly": true,
+    "note": "a hit below ReadOnly would have been refused by the harness tripwire, never sent to the NAS",
+    "probe_results": {
+      "CopyFile": "refused_by_ReadOnly(ErrReadOnly)",
+      "CreateDirectory": "refused_by_ReadOnly(ErrReadOnly)",
+      "DeleteDirectory": "refused_by_ReadOnly(ErrReadOnly)",
+      "DeleteFile": "refused_by_ReadOnly(ErrReadOnly)",
+      "WriteFile": "refused_by_ReadOnly(ErrReadOnly)"
+    },
+    "tripwire_hit_methods": [],
+    "tripwire_hits_below_ReadOnly": 0
+  },
+  "measured_at": "2026-11-15T21:32:53Z",
+  "writes_performed": 0,
+  "names_recorded": false,
+  "content_stored": false,
+  "limits": {
+    "max_depth": 3,
+    "max_entries": 2000,
+    "max_listing_requests_per_share": 80,
+    "max_requests_per_second": 1,
+    "read_sample_bytes": 1048576
+  }
+}

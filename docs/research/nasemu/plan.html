@@ -271,7 +271,7 @@ generated 0600 creds; samba-container default
 address; default-cred login must FAIL.</li>
 <li>Credentials leakage -&gt; secrets by file ref only; redaction -&gt;
 test: control-needle scan of evidence/logs.</li>
-<li>Legal: DSM (Synology HW only, per vdsm FAQ), macOS (Apple HW only,
+<li>Legal: DSM (NAS HW only, per vdsm FAQ), macOS (Apple HW only,
 per dockur readme), Windows (licence) -&gt; VM tier off by default,
 attestation DATA required -&gt; test: no attestation =&gt; SKIP
 <code>legal_attestation_absent</code>.</li>
@@ -295,8 +295,8 @@ retired -&gt; test.</li>
 unmodified test infra only; dependency register entry (§11.4.270); MinIO
 upstream archived -&gt; excluded.</li>
 <li>Fidelity gap: rclone/Samba are not DSM -&gt; docs state it;
-Synology-specific behaviour verified only against vdsm; no open-source
-Synology API mock exists, so any API shim is our own code (decision
+NAS-specific behaviour verified only against vdsm; no open-source
+NAS API mock exists, so any API shim is our own code (decision
 D6).</li>
 <li>Unreviewed Containers branch (not upstream) -&gt; NE-1 lands it
 first.</li>
@@ -315,13 +315,13 @@ listings and hashes to the golden manifest, negative controls (wrong
 creds rejected, absent path error), schema-check the evidence JSON,
 disconnection mutation (stop container =&gt; test must FAIL). Mocks only
 in unit tests of config/admission logic (§11.4.289). VM tier: boot to
-protocol-ready, same manifest checks, plus Synology API login/list
+protocol-ready, same manifest checks, plus NAS API login/list
 (<code>SYNO.API.Auth</code>, FileStation) against vdsm.</p>
 <h2 id="5-work-items-s05d-m1-2d-l2d">5. Work items (S&lt;=0.5d, M~1-2d,
 L&gt;2d)</h2>
 <ul>
 <li><strong>NE-0b (S, now):</strong> residual verification spike: open
-Synology API PDFs; try rootless run of vdsm only after operator OK (D1);
+NAS API PDFs; try rootless run of vdsm only after operator OK (D1);
 confirm <code>sda1</code> mount/free; record. Evidence: dated
 notes.</li>
 <li><strong>NE-1 (M, now):</strong> review and land
@@ -348,8 +348,8 @@ ports.</li>
 <li><strong>NE-8 (L, NE-2, D1,D2,D4'):</strong> VM tier base: hostbudget
 gate, KVM probe, attestation gate, volume on chosen disk, vdsm
 profile.</li>
-<li><strong>NE-9 (M, NE-8):</strong> Synology API checks +
-Synology-specific connector behaviour against real vdsm.</li>
+<li><strong>NE-9 (M, NE-8):</strong> NAS API checks +
+NAS-specific connector behaviour against real vdsm.</li>
 <li><strong>NE-10 (L, NE-8, D2):</strong> Windows profile, then macOS
 (only if D2 allows).</li>
 <li><strong>NE-11 (M, ongoing):</strong> docs (guide, manual, FAQ,
@@ -368,7 +368,7 @@ decisions</h2>
 <li>D1 Approve VM tier at all given host (about 16 GiB available RAM, 57
 GiB free on <code>/</code>, load ~20) and choose the VM disk volume
 (candidate <code>sda1</code> 7.3T, mount state UNCONFIRMED).</li>
-<li>D2 Legal stance: DSM via vdsm (Synology EULA: Synology hardware
+<li>D2 Legal stance: DSM via vdsm (NAS EULA: NAS hardware
 only), Windows (licence source), macOS (Apple hardware only) — permit
 private testing or exclude each. XPEnology/Arc/redpill recommended
 excluded.</li>
@@ -379,7 +379,7 @@ relying on a per-user ACL is acceptable or add user to
 <code>kvm</code>.</li>
 <li>D5 ANSWERED above (new <code>pkg/nasemu</code> over existing
 packages; land hostbudget branch first) — operator may veto.</li>
-<li>D6 Synology fidelity: real vdsm only, or also own lightweight
+<li>D6 NAS fidelity: real vdsm only, or also own lightweight
 FileStation/Auth shim (no open-source mock exists).</li>
 <li>D7 S3 emulator: Garage (AGPL, no versioning, already chosen per
 memory) vs SeaweedFS (Apache-2.0); AGPL test-infra acceptable?</li>

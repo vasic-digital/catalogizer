@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# nas_smb_ro.sh - T132 real-NAS leg (inside IMG-INFRA-CLIENT): READ-ONLY SMB access to ONE real Synology host. Allowed requests, built only from the fixed templates below:
+# nas_smb_ro.sh - T132 real-NAS leg (inside IMG-INFRA-CLIENT): READ-ONLY SMB access to ONE real protocol live host. Allowed requests, built only from the fixed templates below:
 #   (1) the share list (`smbclient -L`), (2) one depth-1 listing `ls` of the root of one disk share, (3) one bounded read: `get` of the SMALLEST regular file of that listing
 #   (at most 65536 bytes, a plain safe name), to /tmp of the container. No put, del, mkdir, rmdir, rename, set* or any other write-class command exists in this script
 #   (tests/infra/test_nas_readonly_leg.sh scans for them). At most 2 requests per second (a sleep of 1 s separates the requests).

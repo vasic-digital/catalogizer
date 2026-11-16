@@ -236,9 +236,9 @@ npm run test:e2e       # Playwright
 {
   "endpoints": [
     {
-      "name": "Synology NAS",
+      "name": "NAS",
       "protocol": "smb",
-      "host": "synology.local",
+      "host": "nas.local",
       "directories": [
         { "path": "/music", "content_type": "music" },
         { "path": "/movies", "content_type": "movie" },

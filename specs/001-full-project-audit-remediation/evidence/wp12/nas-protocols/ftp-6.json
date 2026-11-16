@@ -1,6 +1,6 @@
 {
-  "alias": "Synology6",
-  "banner": "220 Synology6 FTP server ready.",
+  "alias": "LiveHost6",
+  "banner": "220 LiveHost6 FTP server ready.",
   "connect_ms": [
     5.0,
     5.1,

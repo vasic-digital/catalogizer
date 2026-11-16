@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # nas_clients_leg.sh - WP-12. READ-ONLY validation of the NEW Go protocol clients of submodules/filesystem (pkg/ftp FTP+FTPS with certificate pinning, pkg/sftp with host-key pinning, pkg/nfs3,
-# pkg/fabric Retrying/Limited/Confined, pkg/decorators ReadOnly) against the owner's seven real Synology hosts (docs/infrastructure/synology-hosts.md), one protocol at a time.
+# pkg/fabric Retrying/Limited/Confined, pkg/decorators ReadOnly) against the owner's seven real protocol live hosts (docs/infrastructure/protocol-live-hosts.md), one protocol at a time.
 # The harness is scripts/test-infra/nas_clients/ (a NEW nested Go module, build tag nasleg, no package code touched). Per host x protocol it connects through the chain
 # Confined > Retrying > Limited > ReadOnly > tripwire > client, lists the top-level shares, takes a bounded breadth-first sample (depth <= 3, <= 2000 entries, <= 80 listing requests per share),
 # reads at most 1 MiB of ONE small file per share (hashed, then discarded), measures listing p50/p95 and throughput, cross-checks counts against the earlier SMB survey (evidence/wp12/nas-survey)
 # and records shares that SMB denies but the protocol exposes as a security finding (listing sample only, no file read).
 # Trust: the certificate / host-key fingerprints recorded by the earlier survey (evidence/wp12/nas-protocols) are pinned through the clients' Pin APIs. That is a SIMULATED owner confirmation and the
 # evidence says so; a mismatch is reported as a refusal and never bypassed.
-# Credentials: ONLY from the gitignored env file (default <repo>/.env: SYNOLOGY_SMB_USER, SYNOLOGY_SMB_PASSWORD, SYNOLOGY_IP_<n>); parsed with dotenv_get.py, never sourced. They go into a 0600 env file in
+# Credentials: ONLY from the gitignored env file (default <repo>/.env: LIVE_HOST_SMB_USER, LIVE_HOST_SMB_PASSWORD, LIVE_HOST_IP_<n>); parsed with dotenv_get.py, never sourced. They go into a 0600 env file in
 # a 0700 directory under /dev/shm that podman reads with --env-file (names only on the command line), deleted on every exit path. Before the evidence is published it is scanned for the user name, the
-# password and every host address; the run is REFUSED if one is found. Evidence records host indexes (Synology<n>), share names, counts, sha256 of names, extension histograms, latencies only.
+# password and every host address; the run is REFUSED if one is found. Evidence records host indexes (LiveHost<n>), share names, counts, sha256 of names, extension histograms, latencies only.
 # Containers: rootless, scripts/containers/run_pinned.sh IMG-GO, ONE container at a time (protocols run sequentially; the hosts of one protocol run in parallel goroutines inside it, each host sequential at <= 1 request/second).
 # Usage:  nas_clients_leg.sh [--hosts 1,2,3,4,5,6,7] [--protocols ftps,ftp,sftp,nfs] [--ev-dir DIR] [--assemble-only]
 #   --assemble-only  run no container: scan and assemble the results already present under /tmp/catalogizer-nas-clients.<uid>/res (a protocol run refused for host memory can be repeated alone, then all are assembled)     Env: TI_ENV_FILE (default <repo>/.env)
@@ -29,10 +29,10 @@ if [ ! -r "$ENVF" ]; then echo "SKIP nas_clients reason=env_absent the gitignore
 ti_need jq sha256sum python3 podman git
 envval() { python3 -I "$HERE/dotenv_get.py" "$ENVF" "$1" 2>/dev/null; }
 missing=""
-[ -n "$(envval SYNOLOGY_SMB_USER)" ] || missing="$missing SYNOLOGY_SMB_USER"
-[ -n "$(envval SYNOLOGY_SMB_PASSWORD)" ] || missing="$missing SYNOLOGY_SMB_PASSWORD"
+[ -n "$(envval LIVE_HOST_SMB_USER)" ] || missing="$missing LIVE_HOST_SMB_USER"
+[ -n "$(envval LIVE_HOST_SMB_PASSWORD)" ] || missing="$missing LIVE_HOST_SMB_PASSWORD"
 IFS=, read -r -a IDX <<<"$HOSTS"
-for i in "${IDX[@]}"; do [ -n "$(envval "SYNOLOGY_IP_$i")" ] || missing="$missing SYNOLOGY_IP_$i"; done
+for i in "${IDX[@]}"; do [ -n "$(envval "LIVE_HOST_IP_$i")" ] || missing="$missing LIVE_HOST_IP_$i"; done
 if [ -n "$missing" ]; then echo "SKIP nas_clients reason=credentials_absent variables:$missing"; exit 0; fi
 SRC_EV="$TI_ROOT/specs/001-full-project-audit-remediation/evidence/wp12"
 [ -d "$SRC_EV/nas-protocols" ] && [ -d "$SRC_EV/nas-survey" ] || ti_die "the reference evidence nas-protocols/ and nas-survey/ is missing"
@@ -61,7 +61,7 @@ done
 OUT="$STABLE"; mkdir -p "$OUT/res" || ti_die "cannot create $OUT/res"
 # a run replaces only the results of the protocols it measures (so one refused protocol run can be repeated alone)
 if [ "$ASSEMBLE_ONLY" = 0 ]; then for p in ${PROTOS//,/ }; do for i in "${IDX[@]}"; do rm -f -- "${OUT:?}/res/$p-$i.json"; done; done; fi
-USER_V="$(envval SYNOLOGY_SMB_USER)"; PASS_V="$(envval SYNOLOGY_SMB_PASSWORD)"
+USER_V="$(envval LIVE_HOST_SMB_USER)"; PASS_V="$(envval LIVE_HOST_SMB_PASSWORD)"
 RUNRE=TestNASClients; [ "$DIAG" = 0 ] || RUNRE=TestDiagFTPUnparsed
 GOCMD='set -u; export CGO_CPPFLAGS=-DHAVE_USLEEP=1; NCL_RUNRE=__RUNRE__; W=/tmp/w; mkdir -p $W/scripts/test-infra $W/submodules && cp -a /src/submodules/filesystem $W/submodules/ && cp -a /src/scripts/test-infra/nas_clients $W/scripts/test-infra/ && cd $W/scripts/test-infra/nas_clients && env GOTOOLCHAIN=local GOFLAGS=-mod=mod HOME=/out GOCACHE=/out/gocache GOMODCACHE=/out/gomod GOMAXPROCS=2 CGO_ENABLED=1 go test -tags nasleg -count=1 -run "$NCL_RUNRE" -timeout 45m -v . ; rc=$?; cp go.sum /out/go.sum.generated 2>/dev/null; exit $rc'
 GOCMD="${GOCMD//__RUNRE__/$RUNRE}"
@@ -70,7 +70,7 @@ RC=0
 IFS=, read -r -a PL <<<"$PROTOS"
 for p in "${PL[@]}"; do
   [ "$ASSEMBLE_ONLY" = 0 ] || continue
-  ( umask 077; { printf 'NCL_USER=%s\nNCL_PW=%s\nNCL_PROTO=%s\nNCL_HOSTS=%s\nNCL_OUT=/out/res\nNCL_REF=/src/ref\n' "$USER_V" "$PASS_V" "$p" "$HOSTS"; [ "$DIAG" = 0 ] || printf 'NCL_DIAG=1\n'; for i in "${IDX[@]}"; do printf 'NCL_IP_%s=%s\n' "$i" "$(envval "SYNOLOGY_IP_$i")"; done; } >"$SECDIR/env" ) || ti_die "cannot write the env file"
+  ( umask 077; { printf 'NCL_USER=%s\nNCL_PW=%s\nNCL_PROTO=%s\nNCL_HOSTS=%s\nNCL_OUT=/out/res\nNCL_REF=/src/ref\n' "$USER_V" "$PASS_V" "$p" "$HOSTS"; [ "$DIAG" = 0 ] || printf 'NCL_DIAG=1\n'; for i in "${IDX[@]}"; do printf 'NCL_IP_%s=%s\n' "$i" "$(envval "LIVE_HOST_IP_$i")"; done; } >"$SECDIR/env" ) || ti_die "cannot write the env file"
   chmod 600 "$SECDIR/env"
   OPID="nasclients-$$-$p"
   ARGV=()
@@ -90,7 +90,7 @@ for p in "${PL[@]}"; do
   [ "$lrc" = 0 ] || RC=1
 done
 # ---- leak scan: the user name, the password and every address, as fixed strings from a 0600 pattern file (never argv) ----
-( umask 077; { printf '%s\n%s\n' "$USER_V" "$PASS_V"; for i in "${IDX[@]}"; do envval "SYNOLOGY_IP_$i"; done; } >"$SECDIR/pat" )
+( umask 077; { printf '%s\n%s\n' "$USER_V" "$PASS_V"; for i in "${IDX[@]}"; do envval "LIVE_HOST_IP_$i"; done; } >"$SECDIR/pat" )
 LEAK=0
 if grep -rIlF -f "$SECDIR/pat" "$OUT/res" "$OUT"/log-*.txt >/dev/null 2>&1; then LEAK=1; fi
 if grep -rIlE '(^|[^0-9.])[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}([^0-9.]|$)' "$OUT/res" "$OUT"/log-*.txt >/dev/null 2>&1; then LEAK=1; fi
@@ -134,7 +134,7 @@ for p in protos:
         R[(p, n)] = json.load(open(f)) if os.path.exists(f) else None
 matrix, meas, defects, findings = [], [], [], []
 for n in hosts:
-    row = {"host": f"Synology{n}"}
+    row = {"host": f"NAS{n}"}
     for p in protos:
         r = R[(p, n)]
         if r is None:

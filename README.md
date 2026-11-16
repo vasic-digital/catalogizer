@@ -10,7 +10,7 @@ Catalogizer is a comprehensive media collection management system that automatic
 
 ### Core Capabilities
 - **Automated Media Detection**: Detects and categorizes media types including (count not verified) movies, TV shows, music, games, software, documentaries, and more
-- **Multi-Protocol Support**: Works with SMB, FTP, NFS, WebDAV, S3 and local filesystem protocols (Synology SMB/FTP/NFS live tests are currently SKIPPED, drives powered off)
+- **Multi-Protocol Support**: Works with SMB, FTP, NFS, WebDAV, S3 and local filesystem protocols (NAS SMB/FTP/NFS live tests are currently SKIPPED, drives powered off)
 - **Real-time Monitoring**: Continuously monitors storage sources for changes and updates metadata automatically
 - **Protocol Resilience**: Handles temporary disconnections gracefully with automatic reconnection and offline caching
 - **Advanced Analytics**: Comprehensive statistics, growth trends, and quality analysis

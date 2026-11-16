@@ -156,7 +156,7 @@ func (s *SMBDiscoveryService) DiscoverShares(ctx context.Context, host string, u
 // §11.4.6 (no-guessing): the previous implementation iterated a hardcoded list
 // ("shared", "public", "media", "music", "data", ...) and reported only those
 // that happened to mount. That MISSED any share whose name was not in the guess
-// list. Verified FACT against a real Synology NAS (2026-06-26): the actual
+// list. Verified FACT against a real NAS (2026-06-26): the actual
 // exported shares are names like "Data", "DATA18", "DATA12", "DATA20", "WORK20",
 // "Projects" — none of which the guess list contained, so the old code returned
 // an empty/partial inventory while the shares plainly existed. ListSharenames

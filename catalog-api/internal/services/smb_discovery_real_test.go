@@ -20,7 +20,7 @@ import (
 // Anti-bluff design: it derives the ground-truth share set from a fresh, separate
 // SRVSVC enumeration of the SAME host, then asserts DiscoverShares returns EXACTLY
 // that set (minus IPC$) — every real share present (the old guessing list missed
-// names like "WORK20"/"DATA18"/"DATA20" — verified against a real Synology NAS
+// names like "WORK20"/"DATA18"/"DATA20" — verified against a real NAS
 // 2026-06-26), and no fabricated share absent from the server.
 //
 // SKIP-with-reason (§11.4.3) when no real SMB host/identity is provided via env, so

@@ -3,7 +3,7 @@ package nfsemu
 // CAT-NFS-EMU-2. Evidence class: EMULATOR. These tests drive the project's real user-space NFSv3 client
 // (digital.vasic.filesystem/pkg/nfs3, the same package the factory registers) against the unfs3 (unfsd 0.11.0)
 // container built by scripts/test-infra/nfs_build.sh. The server tree is seeded and its manifest (path, size, sha256)
-// is produced SERVER-SIDE by scripts/test-infra/nfs_emulator_live.sh; the client must reproduce it. A real Synology
+// is produced SERVER-SIDE by scripts/test-infra/nfs_emulator_live.sh; the client must reproduce it. A real NAS
 // NFS export is a separate leg (honest SKIP hardware_not_present). Without NFS_EMU_ADDR the tests SKIP (no stand-in).
 
 import (

@@ -1,6 +1,6 @@
 {
   "schema": "wp12-nas-client/1",
-  "alias": "Synology3",
+  "alias": "LiveHost3",
   "protocol": "nfs",
   "client_package": "pkg/nfs3",
   "chain": "Confined>Retrying>Limited>ReadOnly>tripwire>client",

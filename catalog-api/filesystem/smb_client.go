@@ -2,11 +2,14 @@ package filesystem
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
 	"io/fs"
 	"net"
+	"path"
 	"strings"
 	"time"
 
@@ -324,35 +327,108 @@ func (c *SmbClient) DeleteFile(ctx context.Context, path string) error {
 	return nil
 }
 
-// CopyFile copies a file within the SMB share
+// CopyFile copies a file within the SMB share (CAT-SMB-COPY-1). The old code created the destination, which truncates it, before one byte of
+// the source was read: a copy onto the same file emptied the source and reported success. Now: the same resolved path is refused
+// (ErrCopySameFile); a source that is not a regular file and a destination that is a directory are refused with nothing written; the data is
+// written to a unique temp file beside the destination and only a complete copy replaces the destination, so a failed or cancelled copy
+// never truncates or deletes a pre-existing destination. Limits (SMB2 rename cannot replace, ReplaceIfExists is 0 in go-smb2): replacing an
+// existing destination is remove + rename, so a crash between the two leaves the finished copy under the temp name ".copy-*.tmp" and no
+// destination. A different spelling of the same file (case alias on a case-folding server) is not detected by name; the temp-first order keeps
+// its bytes (the alias is replaced by the full copy of itself).
 func (c *SmbClient) CopyFile(ctx context.Context, srcPath, dstPath string) error {
-	if err := ctx.Err(); err != nil {
+	if _, err := c.opShare(ctx); err != nil {
 		return err
 	}
-	if !c.IsConnected() {
-		return fmt.Errorf("not connected")
+	// The data transfer runs on a share bound to a context that does NOT end with the caller's cancel: a request cut off in flight leaves
+	// the temp's handle open on the server, and the temp could then be neither closed nor removed. The caller's cancel and deadline are
+	// honoured between chunks instead (copyChunk), so a cancelled copy stops, closes its handles and removes the temp (live test, mid-transfer).
+	tctx, tcancel := context.WithCancel(context.WithoutCancel(ctx))
+	defer tcancel()
+	if dl, ok := ctx.Deadline(); ok {
+		var dcancel context.CancelFunc
+		tctx, dcancel = context.WithTimeout(context.WithoutCancel(ctx), time.Until(dl)+15*time.Second)
+		defer dcancel()
 	}
-	// Read source file
-	srcFile, err := c.share.Open(c.resolvePath(srcPath))
+	share := c.share.WithContext(tctx)
+	srcR, dstR := c.resolvePath(srcPath), c.resolvePath(dstPath)
+	if srcR == dstR {
+		return fmt.Errorf("%w: %s and %s", ErrCopySameFile, srcPath, dstPath)
+	}
+	srcFile, err := share.Open(srcR)
 	if err != nil {
 		return fmt.Errorf("failed to open source file %s: %w", srcPath, err)
 	}
 	defer srcFile.Close()
-
-	// Create destination file
-	dstFile, err := c.share.Create(c.resolvePath(dstPath))
+	srcInfo, err := srcFile.Stat()
 	if err != nil {
-		return fmt.Errorf("failed to create destination file %s: %w", dstPath, err)
+		return fmt.Errorf("failed to stat source file %s: %w", srcPath, err)
 	}
-	defer dstFile.Close()
+	if !srcInfo.Mode().IsRegular() {
+		return fmt.Errorf("%w: %s", ErrCopySourceNotRegular, srcPath)
+	}
+	dstInfo, dstErr := share.Stat(dstR)
+	dstExists := dstErr == nil
+	if dstExists && dstInfo.IsDir() {
+		return fmt.Errorf("%w: %s", ErrCopyDestIsDirectory, dstPath)
+	}
+	if dstErr != nil && !isNotExistError(dstErr) {
+		return fmt.Errorf("failed to stat destination %s: %w", dstPath, dstErr)
+	}
 
-	// Copy data
-	_, err = io.Copy(dstFile, srcFile)
+	var rnd [8]byte
+	if _, err := rand.Read(rnd[:]); err != nil {
+		return fmt.Errorf("failed to name the temp file: %w", err)
+	}
+	tmpR := path.Join(path.Dir(dstR), ".copy-"+hex.EncodeToString(rnd[:])+".tmp")
+	tmp, err := share.Create(tmpR)
 	if err != nil {
+		return fmt.Errorf("failed to create temp file for %s: %w", dstPath, err)
+	}
+	err = copyChunked(ctx, tmp, srcFile)
+	if cerr := tmp.Close(); err == nil {
+		err = cerr
+	}
+	if err == nil {
+		err = ctx.Err() // a cancel that arrives after the last chunk still fails the copy before anything is replaced
+	}
+	if err != nil {
+		_ = share.Remove(tmpR)
 		return fmt.Errorf("failed to copy file from %s to %s: %w", srcPath, dstPath, err)
 	}
-
+	_ = srcFile.Close() // a case-folded alias of the source may be the destination: release the handle before it is replaced
+	if dstExists {
+		if err := share.Remove(dstR); err != nil {
+			_ = share.Remove(tmpR)
+			return fmt.Errorf("failed to replace destination %s: %w", dstPath, err)
+		}
+	}
+	if err := share.Rename(tmpR, dstR); err != nil {
+		return fmt.Errorf("failed to move the finished copy into place for %s (the copy is kept as %s): %w", dstPath, tmpR, err)
+	}
 	return nil
+}
+
+// copyChunked copies src to dst in copyChunk steps and checks ctx before every step, so a cancel or deadline stops the transfer between two
+// requests without cutting a request off in flight.
+func copyChunked(ctx context.Context, dst io.Writer, src io.Reader) error {
+	buf := make([]byte, copyChunk)
+	for {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		n, rerr := src.Read(buf)
+		if n > 0 {
+			if _, werr := dst.Write(buf[:n]); werr != nil {
+				return werr
+			}
+		}
+		if rerr == io.EOF {
+			return nil
+		}
+		if rerr != nil {
+			return rerr
+		}
+	}
 }
 
 // GetProtocol returns the protocol name

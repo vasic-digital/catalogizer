@@ -27,7 +27,7 @@ No credential value appears in this document (§11.4.10).
 | D11 | Release train defaults | Operator decisions: trigger `per-ready-candidate`; `pre-release` and `dev` classes are provisional-eligible. Author default, awaiting operator confirmation: stall bound N=3 (§11.4.230(E.4)/(F)). Recorded as consumer DATA |
 | D12 | `llms_verifier` becomes a real own-org flat submodule | Operator decision: as stated. Author note, awaiting operator confirmation: the add itself is OWED and follows `docs/decisions/llms_verifier_reconciliation.md` |
 | D13 | Key rotation stays deferred, severity HIGH | Operator decision: deferred. Author note, awaiting operator confirmation: severity HIGH and the pointer to `SECURITY_KEY_ROTATION_REQUIRED.md`; remains an open item |
-| D14 | Synology write tests run only in `work20/Testing` | RECORDED; no test is allowed to write elsewhere on the Synology |
+| D14 | NAS write tests run only in `work20/Testing` | RECORDED; no test is allowed to write elsewhere on the NAS |
 
 ## D4 exception text (§11.4.173)
 

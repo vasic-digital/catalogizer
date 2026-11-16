@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# nfs_emulator_live.sh - CAT-NFS-EMU-2. Evidence class EMULATOR (never the real Synology NFS).
+# nfs_emulator_live.sh - CAT-NFS-EMU-2. Evidence class EMULATOR (never the real NAS NFS).
 # Runs the unfs3 image (scripts/test-infra/nfs_build.sh) as ONE uniquely named rootless container, seeds a deterministic tree, writes the manifest
 # (path, size, sha256) from INSIDE the server container, runs the project's real nfs3 client tests against it, and removes the container by exact name.
 # Usage: nfs_emulator_live.sh --image <image_ref> --out <dir>   (disk gate: scripts/containers/disk_headroom.sh is run by nfs_build.sh, not bypassed)

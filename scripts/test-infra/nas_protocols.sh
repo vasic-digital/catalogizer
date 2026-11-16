@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# nas_protocols.sh - WP-12. READ-ONLY protocol survey of the owner's seven Synology hosts (docs/infrastructure/synology-hosts.md): for each host NFS (portmap, versions, exports, MNT attempts and,
+# nas_protocols.sh - WP-12. READ-ONLY protocol survey of the owner's seven protocol live hosts (docs/infrastructure/protocol-live-hosts.md): for each host NFS (portmap, versions, exports, MNT attempts and,
 # where a path is mountable, a bounded walk + read sample), FTP, explicit FTPS and SFTP (bounded breadth-first listing, listing latency p50/p95, the first 1 MiB of ONE file per share read and discarded).
 # SMB is covered by nas_readonly_leg.sh and the earlier survey. Nothing is ever written, created, deleted, renamed or changed on a NAS; at most one request per second per host.
 # Clients run in rootless containers through scripts/containers/run_pinned.sh: IMG-GO (python3 stdlib + ssh for FTP/FTPS/SFTP/RPC: client/nas_proto.py) and IMG-INFRA-CLIENT (libnfs user-space nfs-ls/nfs-cat:
 # client/nas_proto_nfs.sh). No kernel mount, no sudo, no host client.
-# Credentials: ONLY from the gitignored env file (default <repo>/.env: SYNOLOGY_SMB_USER, SYNOLOGY_SMB_PASSWORD, SYNOLOGY_IP_<n>); parsed with dotenv_get.py, never sourced. They go to a 0600 file in a 0700 run directory on the
+# Credentials: ONLY from the gitignored env file (default <repo>/.env: LIVE_HOST_SMB_USER, LIVE_HOST_SMB_PASSWORD, LIVE_HOST_IP_<n>); parsed with dotenv_get.py, never sourced. They go to a 0600 file in a 0700 run directory on the
 # per-boot tmpfs (/tmp, mode 0700), read by the client, removed on every exit path; never argv, never the environment, never a log or an evidence file. Before the evidence is written it is scanned for the user name, the
-# password and every host address, and the run is REFUSED if one is found. Evidence records aliases (Synology<n>), share names, counts, sha256 of names, extension histograms, latencies and throughputs only.
+# password and every host address, and the run is REFUSED if one is found. Evidence records aliases (LiveHost<n>), share names, counts, sha256 of names, extension histograms, latencies and throughputs only.
 # Usage:  nas_protocols.sh [--hosts 1,2,3,4,5,6,7] [--protocols nfs,ftp,ftps,sftp] [--ev-dir DIR] [--jobs N]     Env: TI_ENV_FILE (default <repo>/.env)
 #   --ev-dir  default specs/001-full-project-audit-remediation/evidence/wp12/nas-protocols (per-host-per-protocol JSON, summary.json, SHA256SUMS)
 #   --jobs    hosts measured in parallel (default 4, max 7); a host is always measured sequentially, so the per-host rate stays <= 1 request/second
@@ -27,10 +27,10 @@ if [ ! -r "$ENVF" ]; then echo "SKIP nas_protocols reason=env_absent the gitigno
 ti_need jq sha256sum python3 podman
 envval() { python3 -I "$HERE/dotenv_get.py" "$ENVF" "$1" 2>/dev/null; }
 missing=""
-[ -n "$(envval SYNOLOGY_SMB_USER)" ] || missing="$missing SYNOLOGY_SMB_USER"
-[ -n "$(envval SYNOLOGY_SMB_PASSWORD)" ] || missing="$missing SYNOLOGY_SMB_PASSWORD"
+[ -n "$(envval LIVE_HOST_SMB_USER)" ] || missing="$missing LIVE_HOST_SMB_USER"
+[ -n "$(envval LIVE_HOST_SMB_PASSWORD)" ] || missing="$missing LIVE_HOST_SMB_PASSWORD"
 IFS=, read -r -a IDX <<<"$HOSTS"
-for i in "${IDX[@]}"; do [ -n "$(envval "SYNOLOGY_IP_$i")" ] || missing="$missing SYNOLOGY_IP_$i"; done
+for i in "${IDX[@]}"; do [ -n "$(envval "LIVE_HOST_IP_$i")" ] || missing="$missing LIVE_HOST_IP_$i"; done
 if [ -n "$missing" ]; then echo "SKIP nas_protocols reason=credentials_absent variables:$missing"; exit 0; fi
 # strictly below /tmp: the clients run from a scratch VIEW that is not the repository, and run_pinned (round 8, R-1) accepts such an --out only below /tmp or /var/tmp (mode 0700, removed on every exit path)
 RTD=/tmp; [ -d "$RTD" ] && [ -w "$RTD" ] || ti_refuse run_dir_unavailable "/tmp is not a writable directory; the credentials must not be written under the checkout" 1
@@ -40,13 +40,13 @@ ti_view_dir "$VIEW" scripts/test-infra/client || ti_die "cannot build the client
 cleanup() { case "$RUN" in "$RTD"/catalogizer-nas-proto.*) rm -rf -- "${RUN:?}";; esac; case "$VIEW" in "$TI_ROOT"/.audit/scratch/ti-view.*) rm -rf -- "$VIEW";; esac; }
 ti_exit_on_signals
 trap cleanup EXIT
-USER_V="$(envval SYNOLOGY_SMB_USER)"; PASS_V="$(envval SYNOLOGY_SMB_PASSWORD)"
+USER_V="$(envval LIVE_HOST_SMB_USER)"; PASS_V="$(envval LIVE_HOST_SMB_PASSWORD)"
 SURVEY="$TI_ROOT/specs/001-full-project-audit-remediation/evidence/wp12/nas-survey"
 want() { case ",$PROTOS," in *",$1,"*) return 0;; *) return 1;; esac; }
 # crun <host dir> <tag> <image> <command word>...: one container run from the scratch view, /out = the host's run directory
 crun() { local hd=$1 tag=$2 img=$3; shift 3; (cd "$VIEW" && ti_runpinned --out "$hd" --op-id "nasproto-$$-${hd##*/}-$tag" "$img" -- "$@") >"$hd/log-$tag.txt" 2>&1; }
 run_host() {
-  local n=$1 hd="$RUN/h$n" ip; ip="$(envval "SYNOLOGY_IP_$n")"; mkdir -m 700 "$hd"
+  local n=$1 hd="$RUN/h$n" ip; ip="$(envval "LIVE_HOST_IP_$n")"; mkdir -m 700 "$hd"
   ( umask 077; printf '%s\n%s\n' "$USER_V" "$PASS_V" >"$hd/cred" ); chmod 600 "$hd/cred"
   if [ -r "$SURVEY/survey-$n.json" ]; then jq -r '.shares[]? | select(.status=="listed") | .share' "$SURVEY/survey-$n.json" >"$hd/shares-$n.txt" 2>/dev/null; fi
   if want nfs; then
@@ -60,7 +60,7 @@ run_host() {
   want ftps && crun "$hd" ftps IMG-GO python3 -I /src/scripts/test-infra/client/nas_proto.py ftps "$n" "$ip" /out
   want sftp && crun "$hd" sftp IMG-GO python3 -I /src/scripts/test-infra/client/nas_proto.py sftp "$n" "$ip" /out
   rm -f -- "$hd/cred" "$hd/askpass" "$hd/ssh_config" "$hd/ssh_stderr"
-  echo "host Synology$n done"
+  echo "host LiveHost$n done"
 }
 echo "nas_protocols: hosts=$HOSTS protocols=$PROTOS jobs=$JOBS (read-only, <=1 request/s per host)"
 running=0
@@ -80,7 +80,7 @@ for n in "${IDX[@]}"; do
   for p in ftp ftps sftp; do
     want "$p" || continue
     if [ -s "$hd/$p-$n.json" ]; then jq --argjson id "$(ident)" '. + {identity:$id}' "$hd/$p-$n.json" >"$EVDIR/$p-$n.json"
-    else jq -n --argjson id "$(ident)" --arg a "Synology$n" --arg p "$p" '{alias:$a, protocol:$p, status:"no_result", reason:"the client container produced no result file (see the run log)", identity:$id}' >"$EVDIR/$p-$n.json"; fi
+    else jq -n --argjson id "$(ident)" --arg a "LiveHost$n" --arg p "$p" '{alias:$a, protocol:$p, status:"no_result", reason:"the client container produced no result file (see the run log)", identity:$id}' >"$EVDIR/$p-$n.json"; fi
   done
   if want nfs; then
     base="$hd/nfs-rpc-$n.json"; [ -s "$base" ] || echo '{"status":"no_result"}' >"$base"
@@ -101,7 +101,7 @@ done
 # leak scan: the evidence must hold no credential and no host address
 leak=0
 for pat in "$USER_V" "$PASS_V"; do [ -z "$pat" ] || ! grep -rqF -- "$pat" "$EVDIR"/*.json 2>/dev/null || { leak=1; echo "FAIL leak scan: a credential value occurs in the evidence"; }; done
-for n in "${IDX[@]}"; do ip="$(envval "SYNOLOGY_IP_$n")"; ! grep -rqF -- "$ip" "$EVDIR"/*.json 2>/dev/null || { leak=1; echo "FAIL leak scan: the address of host $n occurs in the evidence"; }; done
+for n in "${IDX[@]}"; do ip="$(envval "LIVE_HOST_IP_$n")"; ! grep -rqF -- "$ip" "$EVDIR"/*.json 2>/dev/null || { leak=1; echo "FAIL leak scan: the address of host $n occurs in the evidence"; }; done
 [ "$leak" = 0 ] || { rm -f -- "$EVDIR"/nfs-[1-7].json "$EVDIR"/ftp-[1-7].json "$EVDIR"/ftps-[1-7].json "$EVDIR"/sftp-[1-7].json; ti_die "leak scan failed: the evidence files were removed" 1; }
 # summary (only the evidence files of THIS run: a subset run does not read the files of an earlier full run)
 SUMFILES=(); for n in "${IDX[@]}"; do for p in nfs ftp ftps sftp; do want "$p" && SUMFILES+=("$EVDIR/$p-$n.json"); done; done

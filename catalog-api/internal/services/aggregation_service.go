@@ -1040,7 +1040,7 @@ func (s *AggregationService) processDirectory(ctx context.Context, dir directory
 // upserts a season + episode row for every distinct (season,
 // episode) pair. Uses ParseTVShow's existing SxxEyy / NxNN /
 // "Season N / Episode M" regexes so all three scan patterns we
-// see on our Synology NAS are handled.
+// see on our NAS are handled.
 func (s *AggregationService) buildTVHierarchyFromFiles(
 	ctx context.Context,
 	showID, showTypeID, storageRootID int64,

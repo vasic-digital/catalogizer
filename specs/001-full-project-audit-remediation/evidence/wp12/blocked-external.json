@@ -25,7 +25,7 @@
         "file": "wp10/nfs-fallback.json",
         "sha256": "96699f26a41e493515511f92ff276515d803244252177519ec1f3b74b40dbf03"
       },
-      "note": "the owner NFS host that ODG-08 names; NFS is closed from this host on all seven Synology hosts"
+      "note": "the owner NFS host that ODG-08 names; NFS is closed from this host on all seven protocol live hosts"
     }
   ]
 }

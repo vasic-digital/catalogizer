@@ -1,15 +1,15 @@
 //go:build live
 
-// LIVE read-only integration tests for the REAL SMB and FTP clients against real Synology shares
+// LIVE read-only integration tests for the REAL SMB and FTP clients against real NAS shares
 // (constitution §11.4.289: no mocks, stubs or fixture servers; the real clients talk to real hosts).
 //
-// Credentials and host addresses come ONLY from the environment (SYNOLOGY_SMB_USER, SYNOLOGY_SMB_PASSWORD,
-// SYNOLOGY_IP_1..7); they are never logged. When they are absent every test SKIPs with a reason (never passes).
+// Credentials and host addresses come ONLY from the environment (LIVE_HOST_SMB_USER, LIVE_HOST_SMB_PASSWORD,
+// LIVE_HOST_IP_1..7); they are never logged. When they are absent every test SKIPs with a reason (never passes).
 // Nothing here writes, deletes, renames or mounts anything on a share.
 //
 // Environment (names only; values live in the operator's private .env, see .env.example):
 //
-//	SYNOLOGY_SMB_USER, SYNOLOGY_SMB_PASSWORD, SYNOLOGY_IP_1..SYNOLOGY_IP_7   credentials and host addresses
+//	LIVE_HOST_SMB_USER, LIVE_HOST_SMB_PASSWORD, LIVE_HOST_IP_1..LIVE_HOST_IP_7   credentials and host addresses
 //	LIVE_SMB_SHARES            "SHARE:folder,SHARE:folder" SMB shares and the Cyrillic folder to start in (default: the survey set)
 //	LIVE_SMB_OPTIONAL_SHARES   shares that are exercised only when some host mounts them (default DATA22-2)
 //	LIVE_SMB_NEG_SHARE         one real SMB share for the SMB negative controls; unset = the first configured SMB target share
@@ -45,14 +45,14 @@ type liveEnv struct {
 
 func loadLiveEnv(t *testing.T) liveEnv {
 	t.Helper()
-	e := liveEnv{user: os.Getenv("SYNOLOGY_SMB_USER"), pass: os.Getenv("SYNOLOGY_SMB_PASSWORD")}
+	e := liveEnv{user: os.Getenv("LIVE_HOST_SMB_USER"), pass: os.Getenv("LIVE_HOST_SMB_PASSWORD")}
 	for i := 1; i <= 7; i++ {
-		if ip := os.Getenv(fmt.Sprintf("SYNOLOGY_IP_%d", i)); ip != "" {
+		if ip := os.Getenv(fmt.Sprintf("LIVE_HOST_IP_%d", i)); ip != "" {
 			e.ips = append(e.ips, ip)
 		}
 	}
 	if e.user == "" || e.pass == "" || len(e.ips) == 0 {
-		t.Skip("SKIP(credentials_absent): SYNOLOGY_SMB_USER / SYNOLOGY_SMB_PASSWORD / SYNOLOGY_IP_* not set; live NAS tests need the real Synology environment")
+		t.Skip("SKIP(credentials_absent): LIVE_HOST_SMB_USER / LIVE_HOST_SMB_PASSWORD / LIVE_HOST_IP_* not set; live NAS tests need the real NAS environment")
 	}
 	liveSecrets = append([]string{e.user, e.pass}, e.ips...)
 	if os.Getenv("LIVE_MUTATE") == "password" {
@@ -74,7 +74,7 @@ var (
 	smbHostMemo = map[string]string{}
 )
 
-// findSMBHost returns the host (of SYNOLOGY_IP_*) that serves the given share, found by really mounting it.
+// findSMBHost returns the host (of LIVE_HOST_IP_*) that serves the given share, found by really mounting it.
 func findSMBHost(t *testing.T, e liveEnv, share string) string {
 	t.Helper()
 	smbHostOnce.Lock()
@@ -90,7 +90,7 @@ func findSMBHost(t *testing.T, e liveEnv, share string) string {
 			return ip
 		}
 	}
-	t.Fatalf("no host among SYNOLOGY_IP_* (%d candidates) mounts SMB share %q", len(e.ips), mut(share))
+	t.Fatalf("no host among LIVE_HOST_IP_* (%d candidates) mounts SMB share %q", len(e.ips), mut(share))
 	return ""
 }
 
@@ -562,7 +562,7 @@ func TestLiveSMB_NegativeControls(t *testing.T) {
 // ---------------------------------------------------------------- FTP
 
 type ftpTarget struct {
-	share string // FTP root folder == Synology shared folder
+	share string // FTP root folder == NAS shared folder
 	rel   string // directory inside the share used as the configured base Path
 }
 
@@ -612,7 +612,7 @@ func findFTPHost(t *testing.T, e liveEnv, share string) ftpAddr {
 			}
 		}
 	}
-	t.Fatalf("no FTP host among SYNOLOGY_IP_* exposes root folder %q", share)
+	t.Fatalf("no FTP host among LIVE_HOST_IP_* exposes root folder %q", share)
 	return ftpAddr{}
 }
 
@@ -802,7 +802,7 @@ func TestLiveFTP_NegativeControls(t *testing.T) {
 // NFS: honest SKIP. The survey found rpcbind/nfsd open on the hosts but ZERO visible exports (showmount list empty),
 // so there is no real export to mount; building a fake NFS server would violate §11.4.289.
 func TestLiveNFS_NoExports(t *testing.T) {
-	t.Skip("SKIP(topology_unsupported): the real Synology hosts expose no NFS exports to the test account (rpcbind 111 / nfsd 2049 open, exports list empty per nas_survey.md); NFS live validation needs an export to be enabled by the operator, a stub NFS server would be a test double")
+	t.Skip("SKIP(topology_unsupported): the real protocol live hosts expose no NFS exports to the test account (rpcbind 111 / nfsd 2049 open, exports list empty per nas_survey.md); NFS live validation needs an export to be enabled by the operator, a stub NFS server would be a test double")
 }
 
 // Close semantics and lifecycle against the real FTP service.

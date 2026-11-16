@@ -1,6 +1,6 @@
 package services
 
-// WF22 review probe R16: an MLSD-capable FTP server (pure-ftpd, ProFTPD/Synology) returns the "." (cdir) and ".." (pdir) entries; jlaffaye/ftp
+// WF22 review probe R16: an MLSD-capable FTP server (pure-ftpd, ProFTPD/NAS) returns the "." (cdir) and ".." (pdir) entries; jlaffaye/ftp
 // passes them through, the catalog-api FTP client does not filter them, and the generic scanner counts each as an ERROR. A completely clean
 // scan therefore reports error_count = 2 x directories. Minimal in-process RFC 3659 server (review probe, scratch copy only).
 

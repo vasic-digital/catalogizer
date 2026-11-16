@@ -44,7 +44,7 @@ IMPORTANT for readers of the table above: the round-1 files (`green-run*.txt`, `
 
 Run method: `scripts/containers/run_pinned.sh --out <dir> IMG-GO -- sh -c 'cd /src/submodules/filesystem && env GOTOOLCHAIN=local GOFLAGS=-mod=mod HOME=/out GOCACHE=/out/gocache GOMODCACHE=/out/gomod GOMAXPROCS=2 CGO_ENABLED=1 go test -race -count=1 ./pkg/decorators/... ./pkg/fabric/'`, one container at a time; the mutation harness ran inside the same container (`python3 -I /out/fix-r2-mut.py /out/fix-r2-mutants.json /src/submodules/filesystem`) without `-race` for speed (N17 separately with `RACE=1`). Host load during the runs was 25 to 30 (other workers).
 
-Not claimed / UNCONFIRMED: an independent re-review of round 2; behaviour against a live SMB/SFTP/FTP/WebDAV server (none was contacted); the legacy `pkg/nfs` read-write mount (S7 SETATTR path, needs root); S6 for the raw `pkg/smb`, `pkg/webdav`, `pkg/local` clients - their own `GetConfig` still returns the live config (outside the two packages; the decorators now hand out only redacted copies, which is the exposure the review measured); an optional time-based circuit breaker for transient connect failures (review S3 "optionally"); the reviewer's `Synology-class auto-block` premise.
+Not claimed / UNCONFIRMED: an independent re-review of round 2; behaviour against a live SMB/SFTP/FTP/WebDAV server (none was contacted); the legacy `pkg/nfs` read-write mount (S7 SETATTR path, needs root); S6 for the raw `pkg/smb`, `pkg/webdav`, `pkg/local` clients - their own `GetConfig` still returns the live config (outside the two packages; the decorators now hand out only redacted copies, which is the exposure the review measured); an optional time-based circuit breaker for transient connect failures (review S3 "optionally"); the reviewer's `NAS-class auto-block` premise.
 
 Verify (from the repository root): `sha256sum -c specs/001-full-project-audit-remediation/evidence/wp12/fabric/SOURCES.sha256` and `cd specs/001-full-project-audit-remediation/evidence/wp12/fabric && sha256sum -c SHA256SUMS`.
 
@@ -93,7 +93,7 @@ Existing tests changed because they encoded a premise this round replaces (all l
 Not fixed / not done in round 3, with the reason:
 - `pkg/smb` and `pkg/webdav` themselves (return `fabric.MarkAuth` from `Connect`; `pkg/smb` `TestConnection` as `Stat(".")`): outside the allowed scope; the classifier now recognises their errors from the outside. Needed change, owed to the owners of those packages.
 - `go.mod` / `go.sum`: no change needed (go-smb2 v1.1.0 is already required); `pkg/fabric` now imports it.
-- The live behaviour against Samba, a Synology SMB/WebDAV/FTP server and the SMB share-root listing cost: UNCONFIRMED (no server was started or contacted, no NAS contacted).
+- The live behaviour against Samba, a NAS SMB/WebDAV/FTP server and the SMB share-root listing cost: UNCONFIRMED (no server was started or contacted, no NAS contacted).
 - The lease timer uses the real clock (observation in the review): documented, not changed.
 
 Run method: `bash scripts/containers/run_pinned.sh --out /dev/shm/fabric-r3 IMG-GO -- sh -c 'cd /src/submodules/filesystem && env GOTOOLCHAIN=local GOFLAGS=-mod=mod HOME=/out GOCACHE=/out/gocache GOMODCACHE=/out/gomod GOMAXPROCS=2 CGO_ENABLED=1 go test -race -count=1 ...'` (one container at a time; the launcher refused repeatedly for host memory while other workers ran and was retried). The mutation harness ran inside the same container (`RACE=1 python3 -I /out/fix-r3-mut.py /out/fix-r3-mutants.json /src/submodules/filesystem [ids]`).

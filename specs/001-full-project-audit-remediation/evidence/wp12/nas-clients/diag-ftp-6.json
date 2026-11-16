@@ -1,5 +1,5 @@
 {
-  "alias": "Synology6",
+  "alias": "LiveHost6",
   "error_message_redacted": "ftp: list <path>: ftp: directory listing has lines that could not be parsed: <q>",
   "failing_dir_depth": 2,
   "ftp_error_type": "*fmt.wrapError",

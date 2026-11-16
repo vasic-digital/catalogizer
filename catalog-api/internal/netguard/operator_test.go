@@ -43,7 +43,7 @@ func TestOperatorClassification(t *testing.T) {
 		{"198.18.0.1", true, "benchmarking reserved"},
 		{"240.0.0.1", true, "reserved 240/4"},
 		// legitimate LAN NAS and public hosts stay reachable by default
-		{"192.168.1.20", false, "Synology on RFC1918"},
+		{"192.168.1.20", false, "NAS on RFC1918"},
 		{"10.0.0.5", false, "RFC1918"},
 		{"172.16.3.4", false, "RFC1918"},
 		{"fd12:3456::1", false, "ULA"},

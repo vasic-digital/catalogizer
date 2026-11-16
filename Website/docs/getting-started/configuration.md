@@ -182,7 +182,7 @@ Container resource limits are mandatory:
 For NAS access, add the host mapping to the API container:
 
 ```bash
-podman run --add-host=synology.local:192.168.0.241 catalog-api
+podman run --add-host=nas.local:192.168.0.241 catalog-api
 ```
 
 ---

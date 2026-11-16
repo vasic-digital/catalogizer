@@ -58,7 +58,7 @@ echo "[api] Starting '${CONTAINER_NAME}' on port 8080..."
 podman run -d \
     --name "${CONTAINER_NAME}" \
     --network host \
-    --add-host synology.local:192.168.0.241 \
+    --add-host nas.local:192.168.0.241 \
     -e "JWT_SECRET=${JWT_SECRET}" \
     -e "ADMIN_USERNAME=${ADMIN_USERNAME}" \
     -e "ADMIN_PASSWORD=${ADMIN_PASSWORD}" \

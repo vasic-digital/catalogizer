@@ -20,7 +20,7 @@ List all configured storage roots. Used by the scan handler for root management.
       "id": 1,
       "name": "Media",
       "protocol": "smb",
-      "host": "synology.local",
+      "host": "nas.local",
       "port": 445,
       "path": "/media",
       "enabled": true,

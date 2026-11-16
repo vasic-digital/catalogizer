@@ -55,20 +55,20 @@ The unprivileged attempt: a user-space NFSv3 server (unfs3) in a rootless contai
 
 What a `pass` proves: an NFSv3 round trip between a user-space server and the libnfs user-space client, rootless. What it does NOT prove: the application's own NFS path. `submodules/filesystem/pkg/nfs`
 and `catalog-api/filesystem/nfs_client.go` mount through the KERNEL (`syscall.Mount`, `evidence/wp12/nfs-codepath.md`), which needs a privilege a rootless container does not have; that path stays
-UNCONFIRMED on this host. The real-host leg (T134a) is NOT closed by that pass: the `pass` covers the protocol, not the kernel mount path, so `nfs_fallback_state.sh` records the leg `blocked` (`odg08_unanswered`, owed to ODG-08 and T159) with the unconfirmed path named (`evidence/wp10/nfs-fallback.json`); it could be `not_needed` only for an attempt record that proves the kernel path. `blocked_external.sh` derives its `nfs_owner_host` leg from that record, so the two records cannot disagree. The owner's seven Synology hosts have NFS closed from this host
-(`docs/infrastructure/synology-hosts.md`). Owner decision owed (11.4.66): re-scope T134a to the application path or register the kernel-path confirmation as its own tracked item.
+UNCONFIRMED on this host. The real-host leg (T134a) is NOT closed by that pass: the `pass` covers the protocol, not the kernel mount path, so `nfs_fallback_state.sh` records the leg `blocked` (`odg08_unanswered`, owed to ODG-08 and T159) with the unconfirmed path named (`evidence/wp10/nfs-fallback.json`); it could be `not_needed` only for an attempt record that proves the kernel path. `blocked_external.sh` derives its `nfs_owner_host` leg from that record, so the two records cannot disagree. The owner's seven protocol live hosts have NFS closed from this host
+(`docs/infrastructure/protocol-live-hosts.md`). Owner decision owed (11.4.66): re-scope T134a to the application path or register the kernel-path confirmation as its own tracked item.
 
 ## Real NAS leg (read-only, separate)
 
 `scripts/test-infra/nas_readonly_leg.sh` lists one DATA share per host (depth 1) and reads at most one small file, at most 2 requests per second, from IMG-INFRA-CLIENT; it never writes. Credentials come only
-from the gitignored `.env` (`SYNOLOGY_SMB_USER`, `SYNOLOGY_SMB_PASSWORD`, `SYNOLOGY_IP_<n>`); the leg SKIPs (not fails) when the file is absent. It is not part of the deterministic suite.
+from the gitignored `.env` (`LIVE_HOST_SMB_USER`, `LIVE_HOST_SMB_PASSWORD`, `LIVE_HOST_IP_<n>`); the leg SKIPs (not fails) when the file is absent. It is not part of the deterministic suite.
 
 The run directory with the auth file is `/tmp/catalogizer-nas-ro.<pid>` (tmpfs, mode 0700; strictly below /tmp since run_pinned round 8 R-1 accepts the --out of a scratch-view client only there), never the checkout: a SIGKILL leaves it on the tmpfs only and `sweep_leaks.sh` removes it once the pid is proven gone; INT/TERM/HUP remove it. The secrecy test checks every execve of the leg's process tree (`strace -f -e execve`), not a 1 Hz sample.
 
 ## Legs that need an external credential or device (T135)
 
 `scripts/test-infra/blocked_external.sh` records, per leg, `available` or `blocked-unavailable` with the reason and the variable NAMES (never values), BLOCKED-ON ODG-01 for credentials: `nas_smb_readonly`
-(`SYNOLOGY_SMB_USER`, `SYNOLOGY_SMB_PASSWORD`, `SYNOLOGY_IP_3`, `SYNOLOGY_IP_4`), `minio` (`image_unavailable`), `nfs_owner_host` (ODG-08 unanswered). A blocked leg is never a pass. Record:
+(`LIVE_HOST_SMB_USER`, `LIVE_HOST_SMB_PASSWORD`, `LIVE_HOST_IP_3`, `LIVE_HOST_IP_4`), `minio` (`image_unavailable`), `nfs_owner_host` (ODG-08 unanswered). A blocked leg is never a pass. Record:
 `evidence/wp12/blocked-external.json`.
 
 ## Known limits (UNCONFIRMED unless stated)

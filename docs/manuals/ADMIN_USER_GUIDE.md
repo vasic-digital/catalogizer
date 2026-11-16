@@ -164,7 +164,7 @@ Configure the following fields:
 | **Name** | A human-readable label | "NAS Movies" |
 | **Protocol** | Connection protocol | SMB, FTP, NFS, WebDAV, Local |
 | **Path** | Root path to scan | `/volume1/media/movies` |
-| **Host** | Server hostname or IP (network protocols only) | `synology.local` |
+| **Host** | Server hostname or IP (network protocols only) | `nas.local` |
 | **Port** | Server port (network protocols only) | `445` (SMB default) |
 | **Username** | Authentication username (if required) | `media_user` |
 | **Password** | Authentication password (if required) | (stored encrypted) |

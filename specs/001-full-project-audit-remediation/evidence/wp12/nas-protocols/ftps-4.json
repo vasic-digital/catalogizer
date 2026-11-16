@@ -1,9 +1,9 @@
 {
-  "alias": "Synology4",
+  "alias": "LiveHost4",
   "auth_tls_ms": [
     25.7
   ],
-  "banner": "220 Synology4 FTP server ready.",
+  "banner": "220 LiveHost4 FTP server ready.",
   "connect_ms": [
     5.2
   ],

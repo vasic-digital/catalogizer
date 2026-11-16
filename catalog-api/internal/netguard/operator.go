@@ -17,7 +17,7 @@ import (
 // Operator-class policy (SECQ-1/W5).
 //
 // Some outbound destinations are chosen by the OPERATOR, not by third-party data: a WebDAV storage root is a
-// NAS on the LAN (Synology on 192.168.x.x) or a public service (webdav.yandex.ru). The strict policy of
+// NAS on the LAN (NAS on 192.168.x.x) or a public service (webdav.yandex.ru). The strict policy of
 // DialContext (private ranges refused unless CATALOGIZER_OUTBOUND_ALLOW_CIDRS lists them) would break the first
 // case, and no check at all (the state before this change) lets a storage root be aimed at the server itself,
 // at the cloud metadata service or at any link-local service.

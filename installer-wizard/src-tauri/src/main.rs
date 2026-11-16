@@ -257,7 +257,7 @@ mod tests {
                 "ip": "172.16.0.1",
                 "hostname": "nas",
                 "mac_address": null,
-                "vendor": "Synology",
+                "vendor": "ExampleNAS",
                 "open_ports": [80, 443, 5000],
                 "smb_shares": ["homes", "video"]
             }"#;
@@ -266,7 +266,7 @@ mod tests {
             assert_eq!(host.ip, "172.16.0.1");
             assert_eq!(host.hostname, Some("nas".to_string()));
             assert!(host.mac_address.is_none());
-            assert_eq!(host.vendor, Some("Synology".to_string()));
+            assert_eq!(host.vendor, Some("ExampleNAS".to_string()));
             assert_eq!(host.open_ports.len(), 3);
         }
 

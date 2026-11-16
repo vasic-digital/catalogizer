@@ -1634,7 +1634,7 @@ podman stats --no-stream
 5. **NAS access from containers**: The API container needs explicit host mapping for NAS devices:
 
 ```bash
-podman run --add-host=synology.local:192.168.0.241 catalogizer-api
+podman run --add-host=nas.local:192.168.0.241 catalogizer-api
 ```
 
 6. **GOTOOLCHAIN auto-download**: Inside containers, Go may try to download a newer toolchain, causing build failures. Set:

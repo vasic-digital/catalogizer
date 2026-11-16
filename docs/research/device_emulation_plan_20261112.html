@@ -559,7 +559,7 @@ Catalogizer device legs: what emulation can and cannot prove</h2>
 <p>Sources: <code>docs/CONTINUATION.md</code> Rev 20 (lines 16, 26-27,
 37, 67, 87-91, 98-100) and <code>docs/FOLLOW_UPS_NEXT_PHASE.md</code>
 (lines 1503-1520 Android/Tauri, 1425/1578/1614 second LAN host,
-605/1245/1384 Synology, 1617-1699 Tauri wizard).</p>
+605/1245/1384 NAS, 1617-1699 Tauri wizard).</p>
 <p>Rule applied. Under §11.4.289 an emulator running the REAL artifact
 (the real APK, the real Tauri binary) against the REAL API is LIVE-class
 evidence for claims scoped to the emulated target; it is not a test
@@ -668,7 +668,7 @@ second kernel</td>
 L2 link (not loopback, not the API's own netns), bare-IP addressing,
 port 445 vs non-445, cut-recovery by stopping the peer, N&gt;=3</td>
 <td>a physical NIC, switch, router, MTU/Wi-Fi loss, a Windows SMB
-server, Synology's Samba build</td>
+server, NAS's Samba build</td>
 <td>COVERABLE as "virtual LAN peer"; physical second-host claim stays
 SKIP</td>
 </tr>
@@ -693,13 +693,13 @@ run already states)</td>
 <td>PARTIAL, label precisely</td>
 </tr>
 <tr>
-<td>Synology SMB/FTP/NFS/WebDAV, idle-deadline, cut-recovery
+<td>NAS SMB/FTP/NFS/WebDAV, idle-deadline, cut-recovery
 (CAT-SYN-LIVE-1, ST-NFS, LV3-2)</td>
 <td>none</td>
-<td>none: generic Samba/FTP fixtures prove nothing about the Synology
+<td>none: generic Samba/FTP fixtures prove nothing about the NAS
 firmware; DSM emulation (XPEnology-class) is not pursued (DSM licence is
-tied to Synology hardware; operator to confirm)</td>
-<td>all Synology claims</td>
+tied to NAS hardware; operator to confirm)</td>
+<td>all NAS claims</td>
 <td>SKIP <code>hardware_not_present</code> (drives OFF since
 2026-11-05)</td>
 </tr>
@@ -1088,7 +1088,7 @@ review rounds.</p>
 pruning or a target for the ~300 MB- 1 GB of new image layers; (b)
 whether the in-device secret exposure of G6 is acceptable; (c) Windows
 image + licence (G10) or permanent SKIP; (d) confirm the macOS and
-Synology-DSM licence readings above.</p>
+Vendor-DSM licence readings above.</p>
 <h2 id="6-findings-outside-scope-and-unconfirmed-list">6. Findings
 outside scope and UNCONFIRMED list</h2>
 <p>Findings (not fixed here, for registration as follow-ups):</p>
@@ -1127,7 +1127,7 @@ bookworm-slim with only the listed libs (G3 assumption; needs the first
 RED/GREEN).</li>
 <li>Whether rootless netavark allows <code>--device /dev/net/tun</code>
 + tap inside a container for QEMU (G9).</li>
-<li>WebView2 behaviour under Wine; legal reading of macOS and Synology
+<li>WebView2 behaviour under Wine; legal reading of macOS and NAS
 DSM licences (operator).</li>
 <li>Whether a reusable lease engine exists in the constitution for
 G12.</li>

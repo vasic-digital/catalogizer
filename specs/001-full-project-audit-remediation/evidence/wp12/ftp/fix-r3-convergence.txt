@@ -44,7 +44,7 @@ ROOT-CAUSE CLASSES (not a list of 12 + 5 instances)
   K5  CLIENT STATE IS PUBLISHED UNCONDITIONALLY BY A CONCURRENT OPERATION (G6): connect() overwrote stateDown. Members: re-dial in ensure (implicit), explicit
       Connect racing a Disconnect. Fix: a generation counter bumped by Disconnect; connect() refuses to publish when it changed during the dial.
   K6  A NAME ACCEPTED FROM THE SERVER IS NOT CHECKED AGAINST WHAT THE CLIENT CAN ADDRESS (G9, G10, and the real-NAS defect).
-        K6.a  NAS defect (Synology6 DATA20-3, one name with LF -> the MLSD line splits -> 189 entries lost): unparseable FRAGMENT lines are SKIPPED AND COUNTED
+        K6.a  NAS defect (LiveHost6 DATA20-3, one name with LF -> the MLSD line splits -> 189 entries lost): unparseable FRAGMENT lines are SKIPPED AND COUNTED
               (typed ListingWarning + counters), the truncated entry in front of a fragment is dropped too, a listing whose FIRST line is unparseable (a
               desynchronised data channel) or whose fragment count exceeds 10 percent (and 8) still fails closed with ErrListingIncomplete.
         K6.b  a name with CR/LF/NUL cannot be addressed (confine refuses it): skipped and counted instead of listed as an unreadable phantom
