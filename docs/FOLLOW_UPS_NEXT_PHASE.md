@@ -3082,3 +3082,11 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 - GATECHK-R3-m5: G12 "Distance to release" overstates "VERIFIED count 0 measured"; per-item count is UNCONFIRMED; no tracked workable-items DB exists in the repo (a §11.4.95 gap); FOLLOW_UPS VERIFIED-DONE hits (L1381 D1..D6) are pre-tag.
 - GATECHK-R3-m7: checklist has no §11.4.65 twins (.html/.pdf) and no "Last modified" row (§11.4.44); several table rows lack the trailing `|`.
 - GATECHK-R3-i8: baseline-v2.4.2 and synology-live SHA256SUMS list gitignored files (*.out, *.log) a clone can never have; make the manifests list only committed files or un-ignore the evidence.
+
+## WSF2B2R review follow-ups (Opus GO-with-follow-ups on ca79a7d04, already on main; PROVISIONAL, host JVM unit class only)
+Evidence: RED 3 of 48 on parent source with the new tests, GREEN 48/48; full :app:testDebugUnitTest + assembleDebug 1064 tests 0 failures; minter-raised TimeoutCancellationException now publishes Error and schedules a reconnect (proven by test).
+- WSF2B2R-m1: new tests never advance virtual time after the cancelled-attempt path, so a mutant that schedules a reconnect after a cancelled mint survives (O2). Add advanceTimeBy(>backoff)+runCurrent and assert no extra mint/connect in the F1 and F2-install tests.
+- WSF2B2R-m2: the `|| !isActive` check inside the lock is untested (mutant A3 survives). Test via a factory hook that cancels the job, or record as defence in depth.
+- WSF2B2R-m3 (pre-existing): an attempt cancelled whose minter then throws a NON-cancellation exception (e.g. IOException racing the cancel) still publishes Error and calls scheduleReconnect, which can briefly replace a newer live client. Check cancellation first for every exception (`if (!isActive) return@launch`) before handling.
+- WSF2B2R-m4: WSF2BR-m3 (flaky Bearer-header test, first mockk use in runTest, 10 s default timeout) is NOT addressed by ca79a7d04; test unchanged at WebSocketRepositoryTicketTest.kt:138.
+- WSF2B2R-n5: the fixed minter-timeout path is unreachable with the shipped ApiWsTicketMinter (OkHttp timeouts arrive as IOException); hardening only.
