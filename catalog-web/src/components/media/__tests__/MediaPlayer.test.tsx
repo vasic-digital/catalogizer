@@ -282,28 +282,45 @@ describe('MediaPlayer ticket lifecycle', () => {
     expect(video.play).toHaveBeenCalledTimes(1)
   })
 
-  // WBF1-m3: the element starts loading the moment the src attribute changes, but the player only marked itself "reloading" in a
-  // passive effect that runs after paint. An error landing in that gap (a MutationObserver callback runs right after the commit,
-  // before any passive effect) overwrote the resume target with 0/paused. Deterministic, no timing dependence.
+  // WBF1-m3: the element starts loading the moment the src attribute changes, but the player used to mark itself "reloading" in a
+  // passive effect that runs after paint. An error landing in that gap overwrote the resume target with 0/paused.
+  // Deterministic construction: React's scheduler runs the render task and the passive-effect task back to back inside one 5 ms
+  // slice, so no microtask (the error) can land between them unless the slice is used up. The src setter therefore spins past the
+  // slice (a slow commit, as under CPU load) and queues the error as a microtask; the scheduler then yields before the passive effect.
+  // The mint is a deferred promise settled outside act/waitFor so React commits on its own scheduler.
   it('WBF1-m3: an error that lands between the src commit and the reload effect does not lose the resume position', async () => {
-    const { container, video, st } = await setup()
+    const { video, st } = await setup()
     playing(video, st); st.time = 30
     st.paused = true; st.code = 2
+    let settle!: () => void
+    postMock.mockImplementationOnce(() => new Promise((res) => { settle = () => res({ data: { ticket: 'v1.t2.m' } }) }))
+    fireEvent.error(video) // starts the (deferred) mint
     let injected = false
-    const mo = new MutationObserver(() => {
-      if (injected || !(video.getAttribute('src') ?? '').includes('t2.')) return
-      injected = true
-      st.time = 0 // what load() does to the element
-      fireEvent.error(video) // lands before the passive effect that used to set reloadingRef
-    })
-    mo.observe(video, { attributes: true, attributeFilter: ['src'] })
-    fireEvent.error(video)
-    await recoverTo(container, 2)
-    await new Promise((r) => setTimeout(r, 50))
-    mo.disconnect()
+    const setAttr = video.setAttribute.bind(video)
+    video.setAttribute = (k: string, v: string) => {
+      setAttr(k, v)
+      if (k === 'src' && v.includes('t2.') && !injected) {
+        injected = true
+        const t0 = performance.now()
+        while (performance.now() - t0 < 15) { /* use up the scheduler time slice */ }
+        queueMicrotask(() => {
+          st.time = 0 // what load() does to the element
+          fireEvent.error(video) // lands before the passive effect that used to set reloadingRef
+        })
+      }
+    }
+    const g = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
+    const prevAct = g.IS_REACT_ACT_ENVIRONMENT
+    g.IS_REACT_ACT_ENVIRONMENT = false
+    try {
+      settle()
+      await new Promise((r) => setTimeout(r, 100)) // real time: let React commit and flush its passive effects
+    } finally {
+      g.IS_REACT_ACT_ENVIRONMENT = prevAct
+    }
+    expect(injected).toBe(true)
     st.code = null
     fireEvent(video, new Event('loadedmetadata'))
-    expect(injected).toBe(true)
     expect(st.time).toBe(30)
   })
 
