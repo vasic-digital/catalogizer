@@ -3024,3 +3024,10 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 - PGLAR-m2 (minor): lock_x_delete variant detects missing lock / check-then-act only 1-2 of 50 rounds; add deterministic interleaving or raise rounds for that variant.
 - PGLAR-n3 (nit): handlers/lock_last_admin_pglast_test.go runs on SQLite only; name is misleading.
 - PGLAR-n4 (nit): HTTP 409 test sequences calls, not real concurrency; do not cite as concurrency evidence.
+
+## SSEFU-F4/F5 docs review (Opus GO-with-follow-ups, PROVISIONAL; F1-F3 tests already on main via 909edffa6, 4 SSEFU2 tests pass)
+- SSEFUR-m1 (minor): 5 other admin-gated sync GETs (/sync/endpoints, /sync/endpoints/{id}, /sync/sessions, /sync/sessions/{id}, /sync/statistics; openapi ~7217/7266/7538/7587/7718) still use the older 503 wording; align.
+- SSEFUR-m2 (minor): API_DOCUMENTATION.md GET /sync/history Errors line (~5317) omits 403/503.
+- SSEFUR-n3 (nit): status/providers 500 schemas lost `example: database query failed`.
+- SSEFUR-n4 (nit): Error.error description "default envelope is only {error: ...}" awkward next to new `success`.
+- SSEFUR-i5 (info): scripts/check_api_route_vs_spec.py exits 3 (blind, unknown-receiver main.go aliases) on main too; track separately. No offline OpenAPI validator available (UNCONFIRMED schema validity).
