@@ -4,6 +4,8 @@ Base path: `/api/v1/sync`
 
 All endpoints require JWT authentication via `Authorization: Bearer <token>` header. Endpoints return JSON with `{ "success": true, "data": ... }` or `{ "success": false, "error": "...", "details": "..." }`. `details` is a fixed class text chosen by the HTTP status (`invalid input` for 400, `not permitted` for 401/403, `not found` for 404, `endpoint is not active` for 409, `connection test failed` for 502, `internal error` otherwise); it never carries the text of the underlying error, which is written to the server log only (CAT-PXF23-R5B).
 
+**Access control (operator decision 2026-11-16, CAT-SYNC-404-1):** every `/api/v1/sync/*` route is admin-gated. A caller who is not an administrator receives **403** (`Admin role required`), never 404; the answer does not depend on whether the id exists. An administrator who is not the owner of an endpoint or session and lacks the `share.view` permission also receives 403. 404 is returned only for an id that does not exist, to a caller who passed the admin gate.
+
 ## Endpoint Management
 
 ### POST /api/v1/sync/endpoints
@@ -52,7 +54,7 @@ List all sync endpoints for the authenticated user.
 
 ### GET /api/v1/sync/endpoints/:id
 
-Get a specific endpoint by ID. Returns 403 if the endpoint belongs to another user.
+Get a specific endpoint by ID. Non-administrators receive 403 (admin-gated route). An administrator who is not the owner and lacks `share.view` also receives 403.
 
 ### PUT /api/v1/sync/endpoints/:id
 
