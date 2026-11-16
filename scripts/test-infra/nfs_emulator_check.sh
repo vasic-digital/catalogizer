@@ -10,9 +10,9 @@ nfs_emulator_required_tests() {
 nfs_emulator_missing_pass() {
   local log=${1:?log path}; local t miss=0
   [ -s "$log" ] || { echo "(empty or missing log)"; return 1; }
-  if grep -q -e '^--- FAIL:' -e '^panic:' "$log"; then echo "(log contains an anchored --- FAIL: or panic: line)"; miss=1; fi
+  if command grep -q -e '^--- FAIL:' -e '^panic:' "$log"; then echo "(log contains an anchored --- FAIL: or panic: line)"; miss=1; fi
   while IFS= read -r t; do
-    grep -Eq -- "^--- PASS: ${t} \([0-9]+(\.[0-9]+)?s\)$" "$log" || { echo "$t"; miss=1; }
+    command grep -Eq -- "^--- PASS: ${t} \([0-9]+(\.[0-9]+)?s\)$" "$log" || { echo "$t"; miss=1; }
   done < <(nfs_emulator_required_tests)
   return "$miss"
 }

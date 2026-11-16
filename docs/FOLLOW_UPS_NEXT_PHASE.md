@@ -3237,9 +3237,9 @@ Explicit `x-catalogizer-admin-gated: true` marker (85 ops) + census golden + rou
 
 ## NFS3W-FU2 test-gap commit review follow-ups (Opus GO-with-follow-ups, 2026-11-16; PROVISIONAL)
 
-- **NFS3FU2-M1 (minor, test-instrumentation):** factory leg of `TestNFS3FloatPortsFromJSONSettings` sends only float64 `port`; a factory-only mishandling of float64 `mount_port`/`portmap_port` survives (mutant G6). Send all three through `CreateClient`, assert NFSPort/MountPort/PortmapPort.
-- **NFS3FU2-M2 (minor, test-instrumentation):** `nfs_emulator_check.sh` CR-terminated PASS line is refused with GNU grep but accepted via the harness's ugrep wrapper function (inherited by `bash script.sh`); mutant S3 survives. Use `command grep` and add a CRLF fixture + `type grep` assertion.
-- **NFS3FU2-N1/N2 (nit):** no fixture pins the fractional-digit requirement (`(0.s)`, mutant S6) or a column-0 `TestX/sub` PASS line (S7).
+- **NFS3FU2-M1 (minor, test-instrumentation):** factory leg of `TestNFS3FloatPortsFromJSONSettings` sends only float64 `port`; a factory-only mishandling of float64 `mount_port`/`portmap_port` survives (mutant G6). Send all three through `CreateClient`, assert NFSPort/MountPort/PortmapPort. **Status: PROVISIONAL-DONE (CAT-NFS3-FU2, branch ssefr; own mutants killed, GREEN x3).**
+- **NFS3FU2-M2 (minor, test-instrumentation):** `nfs_emulator_check.sh` CR-terminated PASS line is refused with GNU grep but accepted via the harness's ugrep wrapper function (inherited by `bash script.sh`); mutant S3 survives. Use `command grep` and add a CRLF fixture + `type grep` assertion. **Status: PROVISIONAL-DONE (CAT-NFS3-FU2, branch ssefr; own mutants killed, GREEN x3).**
+- **NFS3FU2-N1/N2 (nit):** no fixture pins the fractional-digit requirement (`(0.s)`, mutant S6) or a column-0 `TestX/sub` PASS line (S7). **Status: PROVISIONAL-DONE (CAT-NFS3-FU2, branch ssefr; own mutants killed, GREEN x3).**
 
 ## CAT-HAUTHZ-1 follow-ups 2 review follow-ups (Opus GO-with-follow-ups, 2026-11-16; PROVISIONAL)
 
@@ -3253,8 +3253,8 @@ Explicit `x-catalogizer-admin-gated: true` marker (85 ops) + census golden + rou
 ## SSEFU2-F3 body-pin review follow-ups (Opus GO-with-follow-ups, 2026-11-16; PROVISIONAL)
 
 All SSEFU-F1..F5 / SSEFU2-F1..F5 items verified satisfied on main (tests + docs). 
-- **SSEFU2R-m1 (minor, test-instrumentation):** the RequireAdmin checker `(false, err)` -> 503 path (auth_test.go:492-496) asserts status only, not the body; add the same JSONEq or table both error cases.
-- **SSEFU2R-m2 (minor, test-instrumentation):** `TestSSEFU2_F3_SyncRoutesDBFailureBodyIsPinned` has no in-test positive control (open DB -> 200) (same as HYGF4-F4).
+- **SSEFU2R-m1 (minor, test-instrumentation):** the RequireAdmin checker `(false, err)` -> 503 path (auth_test.go:492-496) asserts status only, not the body; add the same JSONEq or table both error cases. **Status: PROVISIONAL-DONE (CAT-SSE-FU2R, branch ssefr).** Own-mutant/GREEN claims for the other ssefr items (m1, NFS3FU2-M1/M2/N1/N2) have no saved evidence file yet: UNCONFIRMED until re-run. **Verification:** provisional — job: re-run `go test ./handlers -run TestSSEFU2 -count=3` on main after landing — due: next iteration cycle; Note: the NFS3FU2 M2 'type grep' assertion was replaced by a CR-tolerant `command grep` stand-in.
+- **SSEFU2R-m2 (minor, test-instrumentation):** `TestSSEFU2_F3_SyncRoutesDBFailureBodyIsPinned` has no in-test positive control (open DB -> 200) (same as HYGF4-F4). **Status: PROVISIONAL-DONE (CAT-SSE-FU2R, branch ssefr).** Open-DB control added (200 on /sync/status and /sync/providers, same router, before the DB is closed); GREEN x3 in `m2_green_x3.txt`; own mutant (DB closed before the control) FAILs with 'open-DB control /sync/status' in `m2_mutant_closed_before_control.txt`. **Verification:** provisional — job: re-run `go test ./handlers -run TestSSEFU2 -count=3` on main after landing — due: next iteration cycle; evidence `docs/qa/ssefr-2026-11-16/` (sha256 in SHA256SUMS).
 
 ## CAT-CPN-1 M1/M2/M3 commit review follow-ups (Opus GO-with-follow-ups, 2026-11-16; PROVISIONAL)
 

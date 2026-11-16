@@ -1,0 +1,4 @@
+--- FAIL: TestSSEFU2_F3_SyncRoutesDBFailureBodyIsPinned (2.13s)
+        	Messages:   	open-DB control /sync/status
+FAIL
+FAIL	catalogizer/handlers	2.647s
