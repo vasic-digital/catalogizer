@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Revision | 3 |
+| Revision | 4 |
 | Created | 2026-10-07 |
-| Last modified | 2026-10-08 |
-| Status | the revision-2 state is COMMITTED: `submodules/filesystem` 83c0ac1 (main repository e9d6883d). Revision 3 (this text) describes the third fix pass, which closes the independent re-review `WF24` and sits as an UNCOMMITTED working-tree change on top of 83c0ac1 when this was written (the conductor commits it; own-org submodule). Wired into the storage factory as protocol `nfs3` (`catalog-api/filesystem/nfs3_register.go`, registered in `main`; settings `host`, `path` = export, `port` (sets both the NFS and MOUNT port; absent = portmapper), `uid`, `gid`). Dials go through the SEC-DIAL-1 operator-class dialer; host/export syntax and the create-time host policy apply (`validateStorageSyntax`, `VetStorageRoot`, the storage-root handler). The API path works through the generic registered-protocol allow-list and `SettingsFromRoot` (host, path, port); NOT done: uid/gid from a stored root (no columns), the UI, scan/crawl integration tests, the Synology-offline SKIP. The live factory lifecycle test runs only under `scripts/test-infra/nfs_emulator_live.sh` and is UNCONFIRMED until that leg runs. See "Review history" |
+| Last modified | 2026-11-16 |
+| Status | COMMITTED: the `submodules/filesystem` pin is 7b58084 (the third fix pass that closed the independent re-review `WF24` is in it). Revision 4 (2026-11-16) adds the optional split ports `mount_port` / `portmap_port` to the factory mapping. Wired into the storage factory as protocol `nfs3` (`catalog-api/filesystem/nfs3_register.go`, registered in `main`; settings `host`, `path` = export, `port` (the NFS port, and the MOUNT port unless `mount_port` is set; absent = portmapper), optional `mount_port` and `portmap_port` (1-65535), `uid`, `gid`; uid/gid 0 or absent = 65534, never root). Dials go through the SEC-DIAL-1 operator-class dialer; host/export syntax and the create-time host policy apply (`validateStorageSyntax`, `VetStorageRoot`, the storage-root handler). The API path works through the generic registered-protocol allow-list and `SettingsFromRoot` (host, path, port); NOT done: uid/gid from a stored root (no columns), the UI, scan/crawl integration tests, the Synology-offline SKIP. The live factory lifecycle test runs only under `scripts/test-infra/nfs_emulator_live.sh` and is UNCONFIRMED until that leg runs. See "Review history" |
 | Task | WP-12 PA-06 (`specs/001-full-project-audit-remediation/evidence/wp12/protocol-analysis/REPORT.md` sections 2.3, 3, 4) |
 | Evidence | `specs/001-full-project-audit-remediation/evidence/wp12/nfs3/` |
 | Licence | own code, Apache-2.0 |

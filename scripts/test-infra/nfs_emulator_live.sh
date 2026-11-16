@@ -23,5 +23,9 @@ cd "$ROOT/catalog-api" && NFS_EMU_ADDR="127.0.0.1:$NFSP" NFS_EMU_PORTMAP_PORT="$
 # NFS3-WIRE-1: the storage factory lifecycle (factory -> Connect -> list -> Disconnect) against the same server
 NFS_EMU_ADDR="127.0.0.1:$NFSP" GOMAXPROCS=2 nice -n 10 go test -p 1 -buildvcs=false -count=1 -v -run TestNFS3FactoryLifecycleLive ./filesystem/ >>"$OUT/go_test.txt" 2>&1; rc2=$?
 [ "$rc" -eq 0 ] && rc=$rc2
+# NFS3-WIRE-1-n3: a SKIP of the lifecycle test is not success; its own PASS line must be in the log
+if [ "$rc" -eq 0 ] && ! grep -q -- '--- PASS: TestNFS3FactoryLifecycleLive' "$OUT/go_test.txt"; then
+  echo "TestNFS3FactoryLifecycleLive did not report PASS (skipped or missing)" | tee -a "$OUT/go_test.txt" >&2; rc=1
+fi
 podman logs "$N" >"$OUT/server.log" 2>&1
 echo "go_test_rc=$rc" | tee -a "$OUT/go_test.txt" | tail -1; exit $rc
