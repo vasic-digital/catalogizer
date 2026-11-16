@@ -4082,7 +4082,11 @@ paths:
               $ref: '#/components/schemas/CreateStorageRootRequest'
       responses:
         '409':
-          description: Private-network confirmation required (code private_network_confirmation_required); no root was stored
+          description: |
+            Nothing was stored. Either private-network confirmation is required (code private_network_confirmation_required),
+            or a root with this name already exists ("storage root with this name already exists"; the body carries `name`,
+            `existing_id` and a `hint`). The duplicate is refused both when the name is already stored and when two creates
+            race for it (the loser of the race also gets 409, never 500).
           content:
             application/json:
               schema:
@@ -4965,8 +4969,9 @@ paths:
           description: |
             Role change refused: an administrator cannot remove their own administrator role,
             the last active, unlocked administrator cannot be demoted or deactivated (the check and the
-            write are one atomic statement, also for DELETE /users/:id and PUT /users/:id), or the user
-            changed concurrently.
+            write are one atomic statement, also for DELETE /users/:id and PUT /users/:id), the user
+            changed concurrently, or the new email (or username) already belongs to another user
+            ("Username or email already exists", ADMD1RRR-I1, also when two updates race for it).
           content:
             application/json:
               schema:
