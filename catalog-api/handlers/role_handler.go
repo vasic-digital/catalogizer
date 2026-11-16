@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"github.com/lib/pq"
 	"net/http"
 	"strconv"
 	"strings"
@@ -76,7 +77,7 @@ func (h *RoleHandler) CreateRole(w http.ResponseWriter, r *http.Request) {
 
 	id, err := h.userRepo.CreateRole(role)
 	if err != nil {
-		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
+		if isRoleNameConflict(err) {
 			http.Error(w, "Role name already exists", http.StatusConflict)
 			return
 		}
@@ -193,7 +194,7 @@ func (h *RoleHandler) UpdateRole(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Role not found or is system role", http.StatusNotFound)
 			return
 		}
-		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
+		if isRoleNameConflict(err) {
 			http.Error(w, "Role name already exists", http.StatusConflict)
 			return
 		}
@@ -359,4 +360,18 @@ func (h *RoleHandler) getCurrentUser(r *http.Request) (*models.User, error) {
 	}
 
 	return h.authService.GetCurrentUser(token)
+}
+
+// isRoleNameConflict reports whether err is a unique-constraint violation of roles.name on either dialect:
+// SQLite ("UNIQUE constraint failed: ...") or PostgreSQL (SQLSTATE 23505, "duplicate key value violates unique
+// constraint ..."). ADMD1R-m1: the SQLite-only text match answered 500 on PostgreSQL.
+func isRoleNameConflict(err error) bool {
+	var pqErr *pq.Error
+	if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+		return true
+	}
+	msg := err.Error()
+	return strings.Contains(msg, "UNIQUE constraint failed") ||
+		strings.Contains(msg, "duplicate key value") ||
+		strings.Contains(msg, "violates unique constraint")
 }

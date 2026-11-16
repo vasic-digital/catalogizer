@@ -520,7 +520,12 @@ time cannot leave the system without an administrator. A `lock_until` that is
 already in the past is not refused, even for the last administrator, and it is
 NOT a no-op: the account is written as locked (`is_locked` set, `locked_until`
 in the past) and every session of the account is revoked, so that administrator
-has to log in again. Because the stored expiry has already passed, the account
+has to log in again. Session revocation is not tied to a row having been written:
+it also runs when the lock statement changed nothing (for example the target is
+already permanently suspended; the request still answers 200). The lock is written
+first and the sessions are revoked second, so if the revocation itself fails the
+request answers 500 `Failed to lock account` while the lock stays in place
+(read from `user_repository.go:514-608`; the failure path was not exercised). Because the stored expiry has already passed, the account
 is treated as unlocked at once and can log in again (measured on SQLite: the
 account reports not locked and can log in). Use a future `lock_until` to keep an
 account out. You also cannot lock your own account (400).
@@ -578,9 +583,19 @@ curl -X PUT http://localhost:8080/api/v1/roles/{role_id} \
 ```
 
 `PUT` overwrites the role: the handler builds the role from the request body
-alone (`role_handler.go:179-184`), so a request that omits `description` or
-`permissions` writes them empty (read from code, not exercised over HTTP). Send
+alone (`role_handler.go:179-184`), so a request that omits `description` stores
+it as NULL (the field is a nullable string, so it reads back as `null`, not as an
+empty string) and one that omits `permissions` stores an empty list `[]`
+(measured on SQLite over the real handler, pinned by
+`TestADMD1RN3_PutOmittedFieldsWriteNullDescriptionAndEmptyPermissions`). Send
 the complete `permissions` list (and description) every time.
+
+A role name must be unique: creating or renaming a role onto an existing name is
+refused with HTTP 409 `Role name already exists`, on SQLite and on PostgreSQL
+(both measured over the real handler; pinned by
+`TestADMD1RM1_DuplicateRoleNameIs409_SQLite` and the live PostgreSQL leg
+`TestADMD1RM1_DuplicateRoleNameIs409_PostgresLive`). Before this was fixed a
+duplicate name answered 500 on PostgreSQL.
 
 A write that removes `system.admin` from the only role that gives an active,
 unlocked account administrator rights is refused with HTTP 409 `The last
@@ -591,7 +606,8 @@ administrator role cannot lose administrator permission`.
 If the permissions JSON stored for a custom role cannot be parsed (for example a
 manual edit of the database), the role is unreadable and the damage spreads,
 because the last-administrator guard reads every role. What happens (measured on
-SQLite with the real repository code, each statement with its code location):
+SQLite with the real repository code except where a statement says "read from
+code", each with its code location):
 
 - Reading that role (`GET /roles/{id}`) or listing roles fails
   (`user_repository.go` `GetRole` / `ListRoles`, "failed to unmarshal permissions").
@@ -599,8 +615,9 @@ SQLite with the real repository code, each statement with its code location):
   fail closed) instead of a clean yes/no. The database-backed checks
   (`livePermissions`, `user_repository.go:432`, used by `IsAdmin` and
   `HasPermission`) return (false, nil) for an inactive, suspended or locked member
-  before the permissions are parsed (`:451-453`), so only every ACTIVE, UNLOCKED
-  member gets the error; `AuthService.CheckPermission` (`auth_service.go:508`)
+  before the permissions are parsed (`:451-453`), so the error reaches only members
+  who are active and unlocked (inactive, suspended and locked members get a plain
+  "no"; read from code); `AuthService.CheckPermission` (`auth_service.go:508`)
   reads the role without that status test and errors for every member of the
   corrupt role. If you are signed in
   through the corrupt role you cannot call the repair yourself: sign in with
@@ -612,7 +629,8 @@ SQLite with the real repository code, each statement with its code location):
   including a plain profile edit that changes neither role nor active state
   (`UpdateGuarded` reads the roles on both of its paths, `user_repository.go:253,269`;
   callers `user_handler.go:389`, `admin_handler.go:387`). Unlocking (`UnlockAccount`) and lifting a suspension still
-  work (they read no roles).
+  work (they read no roles). `PUT /users/{id}/settings` is also unaffected: it
+  writes only the settings column and reads no roles (`user_handler.go:819-820`).
 - `UpdateRole` (`user_repository.go:1026`) on the corrupt role with permissions
   that do NOT include `system.admin` fails ("failed to parse current role
   permissions", HTTP 500 by `role_handler.go:200`, not exercised over HTTP), because it must first read the current value to run the
