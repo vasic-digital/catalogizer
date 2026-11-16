@@ -19,6 +19,12 @@ printf 'ok  \tcatalogizer/tests/nfsemu\t0.1s [no tests to run]\n' >"$T/zero.log"
   echo "--- PASS: TestNFS3FactoryLifecycleLiveExtra (0.00s)"; } >"$T/prefix.log"
 { cat "$T/pass.log"; echo "--- FAIL: TestSomethingElse (0.01s)"; } >"$T/failalso.log"
 { cat "$T/pass.log"; echo "panic: runtime error: index out of range"; } >"$T/panic.log"
+{ for t in $(nfs_emulator_required_tests | head -4); do echo "--- PASS: $t (0.01s)"; done
+  echo "--- PASS: TestNFS3FactoryLifecycleLive (fake"; } >"$T/fakecarrier.log"
+{ for t in $(nfs_emulator_required_tests | head -4); do echo "--- PASS: $t (0.01s)"; done
+  echo "--- PASS: TestNFS3FactoryLifecycleLive (0.00s) trailing junk"; } >"$T/trailing.log"
+{ for t in $(nfs_emulator_required_tests | head -4); do echo "--- PASS: $t (0.01s)"; done
+  echo "--- PASS: TestNFS3FactoryLifecycleLive (s)"; } >"$T/nodigits.log"
 : >"$T/empty.log"
 nfs_emulator_missing_pass "$T/pass.log" >/dev/null; ok $? 0 "full PASS log accepted"
 nfs_emulator_missing_pass "$T/skip.log" >/dev/null; ok $? 1 "lifecycle SKIP refused"
@@ -30,6 +36,9 @@ nfs_emulator_missing_pass "$T/prefix.log" >/dev/null; ok $? 1 "PASS line of a lo
 nfs_emulator_missing_pass "$T/failalso.log" >/dev/null; ok $? 1 "all PASS lines plus an anchored FAIL refused"
 nfs_emulator_missing_pass "$T/panic.log" >/dev/null; ok $? 1 "all PASS lines plus a panic refused"
 nfs_emulator_missing_pass "$T/zero.log" >/dev/null; ok $? 1 "zero-test run refused"
+nfs_emulator_missing_pass "$T/fakecarrier.log" >/dev/null; ok $? 1 "unterminated fake PASS line refused"
+nfs_emulator_missing_pass "$T/trailing.log" >/dev/null; ok $? 1 "PASS line with trailing junk refused"
+nfs_emulator_missing_pass "$T/nodigits.log" >/dev/null; ok $? 1 "PASS line with no duration digits refused"
 nfs_emulator_missing_pass "$T/empty.log" >/dev/null; ok $? 1 "empty log refused"
 nfs_emulator_missing_pass "$T/nonexistent.log" >/dev/null; ok $? 1 "missing log refused"
 exit $fail
