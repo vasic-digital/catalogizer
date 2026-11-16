@@ -11,6 +11,7 @@ package handlers
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -208,15 +209,18 @@ func TestADMD1RRRRfu_SequentialStorageRootConflictBody_SQLite(t *testing.T) {
 
 // ADMD1RRRRR-m1: deterministic insert-path 409. The test seam inserts the winner row AFTER the duplicate-name pre-check
 // and BEFORE the handler's insert, so the request provably misses the pre-check and the 409 can only come from the
-// insert-time unique-violation branch (the hook counter proves the pre-check was passed first).
+// insert-time unique-violation branch. The hook receives the pre-check outcome (sql.ErrNoRows) and the test asserts it,
+// which proves the pre-check ran before the hook (ADMD1RRRRRR-m1).
 func TestADMD1RRRRRfu_InsertPathConflictBodyDeterministic_SQLite(t *testing.T) {
 	base := t.TempDir()
 	a := newAccessHarness(t, base)
 	admin := cat001Token(t, 1, "1")
 	var winnerID int64
 	calls := 0
-	storageRootBeforeInsertHook = func(ctx context.Context, name string) {
+	var preErr error
+	storageRootBeforeInsertHook = func(ctx context.Context, name string, preCheckErr error) {
 		calls++
+		preErr = preCheckErr
 		id, err := a.h.db.InsertReturningID(ctx,
 			`INSERT INTO storage_roots (name, protocol, path, enabled, max_depth) VALUES (?, 'local', ?, ?, 10)`, name, base, true)
 		require.NoError(t, err)
@@ -227,6 +231,7 @@ func TestADMD1RRRRRfu_InsertPathConflictBodyDeterministic_SQLite(t *testing.T) {
 		"name": "seamroot", "protocol": "local", "path": base, "confirm_private_network": true})
 	require.Equal(t, http.StatusConflict, code, "%v", body)
 	require.Equal(t, 1, calls, "the request must have passed the pre-check and reached the insert")
+	require.ErrorIs(t, preErr, sql.ErrNoRows, "the hook must run after the pre-check, which found no row")
 	require.NotZero(t, winnerID)
 	checkRootConflictBody(t, "insert path", winnerID, []map[string]interface{}{body})
 	assert.Equal(t, "seamroot", body["name"])
@@ -249,4 +254,40 @@ func TestADMD1RRRRRfu_ConflictBodyWithoutExistingIDHint(t *testing.T) {
 	w := storageRootConflictBody("x", &id)
 	assert.Equal(t, int64(7), w["existing_id"])
 	assert.Contains(t, w["hint"], "existing_id")
+}
+
+// ADMD1RRRRRR-m2: the failed-winner-lookup branch through the real handler. The hook makes the request miss the
+// pre-check (winner inserted), then the after-conflict hook deletes the winner so the handler's real lookup finds no
+// row: the 409 must omit existing_id and use the no-id hint.
+func TestADMD1RRRRRRfu_FailedWinnerLookupOmitsExistingID_SQLite(t *testing.T) {
+	base := t.TempDir()
+	a := newAccessHarness(t, base)
+	admin := cat001Token(t, 1, "1")
+	storageRootBeforeInsertHook = func(ctx context.Context, name string, _ error) {
+		_, err := a.h.db.InsertReturningID(ctx,
+			`INSERT INTO storage_roots (name, protocol, path, enabled, max_depth) VALUES (?, 'local', ?, ?, 10)`, name, base, true)
+		require.NoError(t, err)
+	}
+	afterCalls := 0
+	storageRootAfterConflictHook = func(ctx context.Context, name string) {
+		afterCalls++
+		_, err := a.h.db.ExecContext(ctx, "DELETE FROM storage_roots WHERE name = ?", name)
+		require.NoError(t, err)
+	}
+	t.Cleanup(func() { storageRootBeforeInsertHook = nil; storageRootAfterConflictHook = nil })
+	code, body := a.do(admin, "POST", "/storage/roots", map[string]interface{}{
+		"name": "lostwinner", "protocol": "local", "path": base, "confirm_private_network": true})
+	require.Equal(t, http.StatusConflict, code, "%v", body)
+	require.Equal(t, 1, afterCalls, "the conflict must have come from the insert-time unique violation")
+	_, has := body["existing_id"]
+	assert.False(t, has, "existing_id must be omitted when the winner lookup failed: %v", body)
+	assert.Equal(t, storageRootConflictHintNoID, body["hint"])
+	assert.Equal(t, "lostwinner", body["name"])
+	// control needle: with the lookup succeeding (no deletion) existing_id is present and the normal hint is used
+	storageRootAfterConflictHook = nil
+	code, body = a.do(admin, "POST", "/storage/roots", map[string]interface{}{
+		"name": "winnerkept", "protocol": "local", "path": base, "confirm_private_network": true})
+	require.Equal(t, http.StatusConflict, code, "%v", body)
+	assert.NotNil(t, body["existing_id"], "%v", body)
+	assert.Equal(t, storageRootConflictHint, body["hint"])
 }
