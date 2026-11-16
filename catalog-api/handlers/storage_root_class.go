@@ -127,6 +127,15 @@ func respondPrivateConfirmationRequired(c *gin.Context) {
 	})
 }
 
+// ClassifyStorageDestination and RespondPrivateConfirmationRequired are the create path's classifier and fixed refusal body, exported so every
+// other route that stores a networked storage root (POST /smb/probe-and-ingest) applies the same rule (CAT-CPN-1 round 2, review F1).
+func ClassifyStorageDestination(ctx context.Context, host, rawURL string) (class netguard.Class, refused bool) {
+	return classifyForApproval(ctx, host, rawURL)
+}
+
+// RespondPrivateConfirmationRequired writes the 400 of an unconfirmed private-network destination (fixed class text, never the host).
+func RespondPrivateConfirmationRequired(c *gin.Context) { respondPrivateConfirmationRequired(c) }
+
 // contextUserID reads the authenticated user id the auth middleware stored under "user_id".
 func contextUserID(c *gin.Context) (int, bool) {
 	v, ok := c.Get("user_id")

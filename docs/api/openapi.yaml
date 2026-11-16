@@ -2336,6 +2336,12 @@ components:
       properties:
         host:
           type: string
+        confirm_private_network:
+          type: boolean
+          default: false
+          description: |
+            Required (true) when the host is on a private network or cannot be resolved now; without it the request is refused with 400
+            private_network_confirmation_required before anything is probed or stored (same rule as POST /storage/roots).
       required:
       - host
     ProbeAndIngestResponse:
@@ -10485,7 +10491,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProbeAndIngestResponse'
         '400':
-          description: Invalid request or disallowed host
+          description: Invalid request, disallowed host, or a private-network host without `confirm_private_network` (code private_network_confirmation_required; nothing was probed or stored)
           content:
             application/json:
               schema:

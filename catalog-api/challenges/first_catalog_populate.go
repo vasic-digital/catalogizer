@@ -118,11 +118,9 @@ func (c *FirstCatalogPopulateChallenge) Execute(ctx context.Context) (*challenge
 		return challengeResult, nil
 	}
 
-	// Step 3: POST /api/v1/storage/roots — create SMB storage root
-	createBody := fmt.Sprintf(
-		`{"name":%q,"protocol":"smb","host":%q,"port":%d,"path":%q,"username":%q,"password":%q,"domain":%q,"max_depth":10}`,
-		rootName, ep.Host, ep.Port, ep.Share, ep.Username, ep.Password, ep.Domain,
-	)
+	// Step 3: POST /api/v1/storage/roots — create SMB storage root. The NAS is on the operator's LAN, so the request carries the operator's
+	// confirmation (CAT-CPN-1); it is harmless for a public destination.
+	createBody := createStorageRootBody(rootName, ep)
 	createCode, createRaw, createErr := client.PostJSON(ctx, "/api/v1/storage/roots", createBody)
 	createOK := createErr == nil && (createCode == 200 || createCode == 201)
 	var storageRootID float64
@@ -374,4 +372,13 @@ func (c *FirstCatalogPopulateChallenge) Execute(ctx context.Context) (*challenge
 	challengeResult := c.CreateResult(status, start, assertions, metrics, outputs, "")
 	challengeResult.RecordAction(fmt.Sprintf("%s: challenge completed with status %s", c.Name(), status))
 	return challengeResult, nil
+}
+
+// createStorageRootBody is the POST /api/v1/storage/roots body for the NAS endpoint. The NAS is on the operator's LAN, so it carries the operator's
+// confirmation (CAT-CPN-1); the flag is harmless for a public destination.
+func createStorageRootBody(rootName string, ep Endpoint) string {
+	return fmt.Sprintf(
+		`{"name":%q,"protocol":"smb","host":%q,"port":%d,"path":%q,"username":%q,"password":%q,"domain":%q,"max_depth":10,"confirm_private_network":true}`,
+		rootName, ep.Host, ep.Port, ep.Share, ep.Username, ep.Password, ep.Domain,
+	)
 }

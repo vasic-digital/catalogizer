@@ -97,7 +97,7 @@ func (suite *ProbeAndIngestHandlerTestSuite) TestProbeAndIngest_NoBody() {
 // this will panic at runtime — we only verify the 400 does NOT come from
 // binding rejection. The real e2e path is tested via the service-level tests.
 func (suite *ProbeAndIngestHandlerTestSuite) TestProbeAndIngest_ValidRequestShape() {
-	body := `{"host": "192.168.1.100"}`
+	body := `{"host": "192.168.1.100", "confirm_private_network": true}`
 	req := httptest.NewRequest("POST", "/api/v1/smb/probe-and-ingest",
 		bytes.NewBufferString(body))
 	req.Header.Set("Content-Type", "application/json")

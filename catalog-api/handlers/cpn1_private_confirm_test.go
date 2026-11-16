@@ -102,7 +102,7 @@ func TestCPN1_RebindPublicToPrivateAtApprovalIs400(t *testing.T) {
 		return netguard.ClassPrivate, nil
 	}
 	t.Cleanup(func() { classifyDestination = old })
-	code, body := h.do("POST", "/storage/roots", map[string]interface{}{"name": "rb", "protocol": "smb", "host": "example.invalid", "path": "m", "username": "u", "password": "p"})
+	code, body := h.do("POST", "/storage/roots", map[string]interface{}{"name": "rb", "protocol": "smb", "host": "example.invalid", "path": "m", "username": "u", "password": "p", "confirm_private_network": true}) // confirmed: only the rebinding guard can refuse
 	require.Equal(t, http.StatusBadRequest, code, "%v", body)
 	require.Equal(t, secq1cNoConfirm, body["code"])
 	require.Equal(t, 0, rootCount(t, h.db))
