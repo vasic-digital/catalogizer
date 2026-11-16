@@ -239,18 +239,14 @@ func TestHorizontalAuthz_RealBinary(t *testing.T) {
 		// PUT /media/:id/favorite writes the GLOBAL media_items.is_favorite: open finding HAUTHZ-F2, see TestHorizontalAuthz_OpenFinding_MediaFavoriteFlag.
 	})
 
-	// ---- entity user-metadata (write path is token-bound; no read route) -------------------------------------------------------
+	// ---- entity user-metadata: write path only ---------------------------------------------------------------------------------
+	// No API route returns user metadata (GET /entities/:id and /metadata never carry it), so a binary-level read cannot
+	// discriminate an owner leak here. The cross-user property (owner from the token, never the body) is pinned at store
+	// level in handlers/horizontal_authz_unit_test.go (TestHorizontalAuthzUnit_UserMetadataOwnerFromTokenNotBody). This
+	// block only checks that both users can write their own row through the real binary.
 	t.Run("user_metadata", func(t *testing.T) {
-		// body user ids must be ignored: A cannot write B's row by naming it
-		e.t.Run("denied/usermeta body names B", func(t *testing.T) {
-			code, raw := c.do("PUT", fmt.Sprintf("/api/v1/entities/%d/user-metadata", m0), e.a, map[string]interface{}{"user_id": e.bid, "personal_notes": "hzmark-a-note", "user_rating": 1.0})
-			t.Logf("HZ|user-metadata body user_id|%d|CHECKED", code)
-			assert.Less(t, code, 300, "A writes its own row: %s", raw)
-		})
+		e.ok("usermeta A writes own (body names B)", "PUT", fmt.Sprintf("/api/v1/entities/%d/user-metadata", m0), e.a, map[string]interface{}{"user_id": e.bid, "personal_notes": "hzmark-a-note", "user_rating": 1.0})
 		e.ok("usermeta B writes own", "PUT", fmt.Sprintf("/api/v1/entities/%d/user-metadata", m0), e.b, map[string]interface{}{"personal_notes": "hzmark-b-note"})
-		for _, p := range []string{fmt.Sprintf("/api/v1/entities/%d", m0), fmt.Sprintf("/api/v1/entities/%d/metadata", m0)} {
-			e.noLeak("usermeta read "+p, "GET", p, e.a, "hzmark-b-note")
-		}
 	})
 
 	// ---- playback sessions / progress / history ----------------------------------------------------------------------------
@@ -277,6 +273,17 @@ func TestHorizontalAuthz_RealBinary(t *testing.T) {
 		// A names B's session id
 		e.denied("playback progress foreign session", "POST", "/api/v1/playback/sessions/progress", e.a, map[string]interface{}{"session_id": sid, "end_position": 999, "total_amount": 999})
 		e.denied("playback end foreign session", "POST", "/api/v1/playback/sessions/end", e.a, map[string]interface{}{"session_id": sid, "end_position": 888, "total_amount": 888, "completed": true})
+		// no id oracle: a foreign session and a nonexistent session answer with the same status and the same body
+		e.t.Run("denied/foreign session is indistinguishable from a missing one", func(t *testing.T) {
+			for _, ep := range []string{"/api/v1/playback/sessions/progress", "/api/v1/playback/sessions/end"} {
+				fc, fraw := c.do("POST", ep, e.a, map[string]interface{}{"session_id": sid, "end_position": 5, "total_amount": 9})
+				mc, mraw := c.do("POST", ep, e.a, map[string]interface{}{"session_id": 987654321, "end_position": 5, "total_amount": 9})
+				t.Logf("HZ|playback no-oracle %s|%d/%d|CHECKED", ep, fc, mc)
+				assert.Equal(t, 404, mc, "%s missing: %s", ep, mraw)
+				assert.Equal(t, 404, fc, "%s foreign must be 404 (not 403): %s", ep, fraw)
+				assert.Equal(t, string(mraw), string(fraw), "%s: foreign and missing bodies must be identical", ep)
+			}
+		})
 		e.t.Run("state/B's session unchanged", func(t *testing.T) {
 			_, raw := c.do("GET", hist, e.b, nil)
 			assert.Contains(t, string(raw), `"end_position":111`, "B's session must still read 111: %s", raw)
