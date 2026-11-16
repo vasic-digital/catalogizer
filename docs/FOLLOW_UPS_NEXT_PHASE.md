@@ -3128,3 +3128,8 @@ Evidence: RED 3 of 48 on parent source with the new tests, GREEN 48/48; full :ap
 - ADMD1RRRRRRR-m2 (minor): no automated contract test validates real POST /storage/roots 409 bodies (dup with/without existing_id, private-network) against the openapi oneOf; add one (reviewer's oa.py/vs.py ad-hoc check as template).
 - ADMD1RRRRRRR-n1 (nit): oneOf exclusivity depends on the duplicate body never carrying code; add `not: {required: [code]}` to StorageRootConflict and an enum/const for StorageRootPrivateConfirmation.code.
 - ADMD1RRRRRRR-n2 (nit): failed-lookup test control needle checks only NotNil(existing_id); assert it equals the winner's id.
+
+## ADMD1RRRRRRRR (review of ADMD1RRRRRRR-fu, Opus GO-with-follow-ups, PROVISIONAL)
+- ADMD1RRRRRRRR-m1 (minor): oneOf exclusivity never exercised (reviewer mutant C `matches != 1` -> `matches == 0` survives). Add a synthetic two-branch overlapping oneOf negative control asserting "2 branches match".
+- ADMD1RRRRRRRR-n1 (nit): contract-test validator silently skips keywords (type, format, additionalProperties, non-string/integer property types); add an unknown-keyword guard so the coverage claim is mechanical.
+- ADMD1RRRRRRRR-n2 (nit): docs/api/openapi.yaml has duplicate `403` response keys (~7358 and ~7679); yaml.v3 refuses to decode it. Pre-existing; fix or track as its own item.
