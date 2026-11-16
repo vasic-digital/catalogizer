@@ -3180,3 +3180,12 @@ Evidence: RED 3 of 48 on parent source with the new tests, GREEN 48/48; full :ap
 ## WSF2B2RRR-fu reviews (round 1 Opus GO-with-follow-ups, PROVISIONAL; host JVM only, on-device UNCONFIRMED)
 - WSF2B2RRRR-n1 (nit, test-instrumentation): test "WSF2B2RRR-n1 a clientFactory failure after disconnect records no Error" largely repeats WSF2B2RR-m2 factory test and survives the mutant outer-catch guard `intentional` instead of `!isActive` (on the disconnect path both are true); retitle or drop the "second discriminating" claim.
 - WSF2B2RRRR-n2 (nit, test-instrumentation): the 401 guard has no disconnect-path sequence test (a mint that calls disconnect() then throws a 401); mutant 401 guard `intentional` is killed only on the connect path.
+
+## CAT-HAUTHZ-1 review follow-ups (Opus GO-with-follow-ups, 2026-11-16; PROVISIONAL)
+
+- **HAUTHZ-F2 (important, source-defect, pre-existing, security):** `PUT /media/:id/favorite` writes the single shared `media_items.is_favorite` column, so any user sets/clears the flag every user sees (reproduced with `HAUTHZ_OPEN_FINDINGS=1`; used by Android, desktop and api-client). Smallest fix per reviewer: write the per-user favorites table, compute `GetMediaByID.is_favorite` per caller, stop using the global column, migrate to clear it. Changes the data model: needs operator scope decision before work.
+- **HAUTHZ-M-T1 (minor):** `usermeta` cases cannot fail (no control needle; mutant X6 survived); assert on a DB read or drop inventory rows 21/22 "exercised" claim.
+- **HAUTHZ-M-T2 (minor):** pin 404-no-oracle for foreign session (mutant X4 answering 403 survived).
+- **HAUTHZ-M-T3 (minor):** add fail-closed unit test for `ownsSession` store error → 500 (mutant X1 survived); the pxf23_r5b harness can drop `playback_sessions`.
+- **HAUTHZ-N1/N2 (nit, doc):** INVENTORY section 2: error/crash reports are owner-filtered (`error_reporting_service.go`), not installation-wide; `GET /logs/share/:token` is a bearer-token capability. Wizard rows 54-56: replace "UNCONFIRMED" with the code fact (query has `WHERE user_id = ?`, writes need `system.configure`).
+- **HAUTHZ-N3 (nit, pre-existing):** repeated `End` on one session increments `total_reproductions` each time.
