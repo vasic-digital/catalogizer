@@ -3205,3 +3205,14 @@ Census old==new over the 93 real 403s (73 gated, diff=0). Structural change: aft
 - **ADMD1F1-F2 (minor, process-doc):** stale comments: api_contract_gate_test.go lines ~20-24 and ~30-31 still describe the removed after-quote regex; classifier doc example "not for owners, gets body Q" is actually gated; unit test comments ("still negated: a quote verb follows the negation", matrixAux, KnownLimitsPinned "only false negatives", ClassifierNegationScope header "after the quotation").
 - **ADMD1F1-F3 (minor, test-instrumentation):** mutants N2 (drop `be` from adverb chain) and N7 (drop `(?i)` from negatedVerbBefore) survive (false-positive direction only); add pre-quote "not be <participle>" and upper-case negation matrix cells.
 - **ADMD1F1-F4 (nit):** pre-existing scope-restricted ("only owners do not receive body Q") and bare-JSON-with-session-words false negatives only partly pinned (same verdict as base).
+
+## CAT-CPN-1 review follow-ups (Opus GO-with-follow-ups round 2, 2026-11-16; PROVISIONAL)
+
+Round 1 NO-GO fixed: POST /smb/probe-and-ingest now requires `confirm_private_network` for non-public hosts (400 before any dial/store, fixed body, no host echoed); challenge sends the flag; rebind test isolates the guard. Web vitest and live SMB ingest remain UNCONFIRMED (no node_modules, no SMB server).
+- **CPN1-M1 (minor, source-defect):** a confirmed private host ingested via probe-and-ingest is stored `approved_class='private'`, source `default` (migration default), not `operator`; a public host is stored private/default rather than public/auto. Pass class + confirmation to the ingester and call SetApprovedClass (low impact: approved_class does not tighten SMB dials, NFS3-WIRE-1-n1).
+- **CPN1-M2 (minor, source-defect):** TOCTOU: host resolved separately by isHostAllowed, the classifier and the probe's own VetSMBHostIPs (smb_probe.go:122); a name public at classification and RFC1918 at probe time is dialled/stored unconfirmed. POST /storage/roots reclassifies after insert; this route does not. Admin-only; needs attacker-controlled DNS. Classify the vetted IPs or reclassify before ingest.
+- **CPN1-M3 (minor, test-instrumentation):** no test of the stored row for confirmed/public ingest (needs SMB stub/emulator); tied to M1.
+- **CPN1-N1 (nit):** the new `refused` branch is unreachable (isHostAllowed refuses first); defence in depth, mutant survives.
+- **CPN1-N2 (nit, doc):** other /smb routes that dial (/smb/discover, /test, /browse, /probe) store nothing and need no confirmation; record.
+- **CPN1-F2 (minor, operator decision):** sync endpoints still answer 409 `private_network_confirmation_required` while storage roots answer 400; align?
+- **CPN1-F5/F6 (nit):** rebinding refusal hints repeat-with-flag even when flag was true; web `mediaApi` calls update/delete/test storage-root routes the server does not register (dead client calls); no web create form exists.
