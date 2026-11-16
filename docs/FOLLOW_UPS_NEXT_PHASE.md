@@ -3189,3 +3189,10 @@ Evidence: RED 3 of 48 on parent source with the new tests, GREEN 48/48; full :ap
 - **HAUTHZ-M-T3 (minor):** add fail-closed unit test for `ownsSession` store error → 500 (mutant X1 survived); the pxf23_r5b harness can drop `playback_sessions`.
 - **HAUTHZ-N1/N2 (nit, doc):** INVENTORY section 2: error/crash reports are owner-filtered (`error_reporting_service.go`), not installation-wide; `GET /logs/share/:token` is a bearer-token capability. Wizard rows 54-56: replace "UNCONFIRMED" with the code fact (query has `WHERE user_id = ?`, writes need `system.configure`).
 - **HAUTHZ-N3 (nit, pre-existing):** repeated `End` on one session increments `total_reproductions` each time.
+
+## NFS3W-FU2 review follow-ups (Opus GO-with-follow-ups round 2, 2026-11-16; PROVISIONAL)
+
+- **NFS3W-FU2-FU1 (minor, test-instrumentation):** mutant N2 (check portmap_port before port) survives; add a case with `port` and `portmap_port` both out of range.
+- **NFS3W-FU2-FU2 (minor, test-instrumentation):** mutant N6 (float64 `port` silently becomes 0) survives; add a case passing float64 2049 through `nfs3ConfigFromSettings`/factory expecting NFSPort=MountPort=2049.
+- **NFS3W-FU2-FU3 (nit):** `TestNFS3FactoryPortContract` should use `withNFS3(t)` instead of an unconditional `defer UnregisterProtocol("nfs3")`.
+- **NFS3W-FU2-FU4 (nit):** an unindented fake line `--- PASS: TestNFS3FactoryLifecycleLive (fake` is accepted by the emulator check; `[ -s ]` guard redundant; bash-only; the live container leg is still not run (UNCONFIRMED).
