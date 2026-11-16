@@ -38,6 +38,8 @@ type ProbeAndIngestResponse struct {
 	BoundShares   int    `json:"bound_shares,omitempty"`
 	NewRoots      int    `json:"new_roots,omitempty"`
 	Message       string `json:"message,omitempty"`
+	// Partial is set on a persistence error when some shares were already committed (CPN1R-m4); BoundShares/NewRoots then count them.
+	Partial bool `json:"partial,omitempty"`
 }
 
 // ProbeAndIngestHandler handles SMB probe-and-ingest API requests.
@@ -159,9 +161,13 @@ func (h *ProbeAndIngestHandler) ProbeAndIngest(c *gin.Context) {
 			h.logger.Error("Failed to ingest probe result",
 				zap.String("host", req.Host),
 				zap.Error(ingestErr))
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": "Failed to persist bindings",
-			})
+			body := gin.H{"error": "Failed to persist bindings"}
+			if ingestResult != nil && (ingestResult.BoundShares > 0 || ingestResult.NewRoots > 0) {
+				body["partial"] = true
+				body["bound_shares"] = ingestResult.BoundShares
+				body["new_roots"] = ingestResult.NewRoots
+			}
+			c.JSON(http.StatusInternalServerError, body)
 			return
 		}
 

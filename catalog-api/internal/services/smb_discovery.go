@@ -57,7 +57,9 @@ type SMBDiscoveryService struct {
 }
 
 // WithProbeSeam installs a unit-class replacement for the SMB session of a probe attempt (see probeSeam) and returns s. Tests only;
-// production never calls it.
+// production never calls it. Deliberately exported (CPN1R-n1): the handler-package integration tests that need it live in a different
+// package, so it cannot be unexported or moved to an _test.go file; a build tag would make plain `go test` skip those tests. A lint for
+// non-test callers is the mechanical guard (see docs/FOLLOW_UPS_NEXT_PHASE.md).
 func (s *SMBDiscoveryService) WithProbeSeam(fn func(ctx context.Context, host string, ips []net.IP, id SMBIdentity) ([]SMBShareInfo, error)) *SMBDiscoveryService {
 	s.probeSeam = fn
 	return s

@@ -127,10 +127,17 @@ func (s *SMBDiscoveryService) ProbeHostWithIdentities(ctx context.Context, host 
 }
 
 // ProbeVettedIPsWithIdentities is ProbeHostWithIdentities for a caller that already resolved and vetted the host (VetSMBHostIPs) and
-// classified exactly these addresses: every attempt dials ips and nothing is resolved again (CPN1-M2). ips MUST come from VetSMBHostIPs.
+// classified exactly these addresses: every attempt dials ips and nothing is resolved again (CPN1-M2). The addresses come from
+// VetSMBHostIPs, but this exported method does not trust that: each is re-checked with smbIPBlocked and any blocked one is refused
+// before anything is dialled (CPN1R-m3).
 func (s *SMBDiscoveryService) ProbeVettedIPsWithIdentities(ctx context.Context, host string, ips []net.IP, identities []SMBIdentity) (*SMBProbeResult, error) {
 	if len(ips) == 0 {
 		return &SMBProbeResult{Host: host}, fmt.Errorf("%w: host does not resolve", ErrInvalidSMBInput)
+	}
+	for _, ip := range ips {
+		if smbIPBlocked(ip) {
+			return &SMBProbeResult{Host: host}, fmt.Errorf("%w: host not allowed", ErrInvalidSMBInput)
+		}
 	}
 	candidates := make([]SMBIdentity, 0, len(identities)+1)
 	candidates = append(candidates, SMBIdentity{Index: 0, Kind: "guest", Username: "guest"})
