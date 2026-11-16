@@ -3,6 +3,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 import fs from 'fs'
+import { assertSubmodulesPopulated } from './submoduleGuard'
 
 function getApiPort(): number {
   try {
@@ -40,9 +41,12 @@ function submoduleSourceFallbacks(): Record<string, string> {
     '@vasic-digital/ui-components': 'ui_components_react',
     '@vasic-digital/websocket-client': 'websocket_client_ts',
   };
+  // CATALOG_WEB_SUBMODULES_ROOT lets the guard test point the real config at a temporary layout.
+  const submodulesRoot = process.env.CATALOG_WEB_SUBMODULES_ROOT || path.resolve(__dirname, '../submodules');
+  assertSubmodulesPopulated(submodulesRoot, pkgs);
   const out: Record<string, string> = {};
   for (const [name, dir] of Object.entries(pkgs)) {
-    const root = path.resolve(__dirname, '../submodules', dir);
+    const root = path.join(submodulesRoot, dir);
     const src = path.join(root, 'src/index.ts');
     if (!fs.existsSync(path.join(root, 'dist/index.js')) && fs.existsSync(src)) {
       out[name] = src;
