@@ -3037,3 +3037,7 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 - ENVR-n2 (nit): mutant fixture host = real LAN host survives (equivalent, redirect means no packet); optionally pin the vetted host string.
 - ENVR-n3 (nit): sec_dial1 fallback-dropped mutant survives on this host (192.168.1.20 not owned); covered by TestFirstUnownedAddr.
 - ENVR-i4 (info): services tests deliberately dial TEST-NET-1 192.0.2.1:445 (smb_dialvetted_test.go:224/236), a SYN toward default route; pre-existing.
+
+## SSEFUR docs review (Opus GO-with-follow-ups, PROVISIONAL; 252 operations unchanged, schema validity UNCONFIRMED: no offline validator)
+- SSEFURR-m1 (minor): six sync mutation operations (POST/PUT/DELETE /sync/endpoints*, POST /sync/endpoints/{id}/sync, POST /sync/schedules, POST /sync/cleanup) and other admin-gated operations (/copy/*, /storage*, /smb/*, /recommendations/personalized) in openapi.yaml still describe 503 as "Could not verify the caller's permissions (lookup failed)"; real body from RequireAdmin is {"success":false,"error":"Could not verify admin role"}; align.
+- SSEFURR-n2 (nit): Error.error description "Always present" is UNCONFIRMED as a global claim for every body using the shared Error schema.
