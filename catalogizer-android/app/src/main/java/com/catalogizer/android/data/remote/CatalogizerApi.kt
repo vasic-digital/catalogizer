@@ -135,12 +135,6 @@ interface CatalogizerApi {
         @Query("offset") offset: Int = 0
     ): Response<MediaSearchResponse>
 
-    @POST("user/favorites/{mediaId}")
-    suspend fun addToFavorites(@Path("mediaId") mediaId: Long): Response<Unit>
-
-    @DELETE("user/favorites/{mediaId}")
-    suspend fun removeFromFavorites(@Path("mediaId") mediaId: Long): Response<Unit>
-
     @GET("user/watchlist")
     suspend fun getWatchlist(
         @Query("limit") limit: Int = 20,
