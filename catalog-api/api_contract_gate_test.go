@@ -1,59 +1,125 @@
 package main
 
-// ADMD1RRRRRRRRR-m1: the classifier the live contract sweep uses to decide whether a documented 403 is an admin gate (so the
-// non-admin leg must assert it). It lives outside the live build tag so a default `go test` exercises it against the real spec.
+// ADMD1F1-S1: the live contract sweep decides whether an operation is an admin gate (so the non-admin leg must assert 403) from an
+// explicit machine marker in docs/api/openapi.yaml, never from the wording of the 403 description. Replaces the regex classifier
+// of ADMD1RRRRRRRRR..ADMD1RRRRRRRRRRR (five review rounds; its worst failure was a silent false negative).
+//
+//	operation-level vendor extension:  x-catalogizer-admin-gated: true
+//
+// gated  <=>  the marker is present and is the boolean true.
+// adminGateSpecViolations is the drift guard: it reports every way the spec can be wrong about the marker, so a new admin route cannot
+// be added unmarked silently and a marker cannot sit on an operation that has no documented 403.
 
 import (
+	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 )
 
-var adminGate403 = regexp.MustCompile(`(?i)admin|lacks|system\.configure|user\.manage|report\.`)
-var nonGate403 = regexp.MustCompile(`(?i)registration|pending|owner|not the caller|neither|visible but|share|job|domain not allowed|another user|session`)
+const adminGateMarker = "x-catalogizer-admin-gated"
 
-// adminRoleBody is the exact body string of middleware.RequireAdmin's 403 (auth.go): a description that QUOTES it as `body {...}` in an
-// affirmative clause documents an admin gate even when it also mentions an owner or a session (merged 403s of the /sync GET {id}
-// operations). ADMD1RRRRRRRRRR-n5: a quotation inside a negative clause ("never returns body {...}") does not classify, and neither
-// does the bare string without the `body ` marker.
-const adminRoleBody = `{"success":false,"error":"Admin role required"}`
+// adminRoleText is the text of middleware.RequireAdmin's 403 ("Admin role required"); any 403 description that still mentions it on an
+// operation without the marker is drift.
+// ADMD1F1-S1 round 2: this wording regex is only a SECONDARY signal (it cannot cover every phrasing used by the 85 marked operations);
+// the primary cross-check is the code-derived route table (admin_gate_route_table_test.go).
+var adminRoleText = regexp.MustCompile(`(?i)admin\s+role\s+required|administrator\s+role\s+required|not\s+an\s+administrator|is\s+not\s+an\s+admin|lacks\s+` + "`?" + `(?:system\.|user\.|report\.)`)
 
-// ADMD1RRRRRRRRRRR-F1..F3: a negation matters only when it DIRECTLY governs the verb that introduces the quotation ("never returns",
-// "are not refused with", "doesn't send", "cannot return"), or follows the quotation as its own predicate ("body {...} is never sent").
-// A bare negation elsewhere in the clause ("a caller who is not an administrator gets body {...}", "not-the-owner callers get body")
-// describes the caller, not the quotation, and no longer poisons it. A dot splits clauses only before whitespace or at the end, so
-// identifiers such as system.admin stay whole.
-var (
-	adminBodyQuote = regexp.MustCompile(`body ` + regexp.QuoteMeta(adminRoleBody))
-	quoteVerbs     = `(?:return(?:s|ed|ing)?|send(?:s|ing)?|sent|get(?:s|ting)?|got|refus(?:e|es|ed|ing)|reject(?:s|ed|ing)?|serv(?:e|es|ed|ing)|emit(?:s|ted|ting)?|produc(?:e|es|ed|ing)|respond(?:s|ed|ing)?|answer(?:s|ed|ing)?|yield(?:s|ed|ing)?|show(?:s|n|ed|ing)?|includ(?:e|es|ed|ing)|carr(?:y|ies|ied|ying)|quot(?:e|es|ed|ing)|document(?:s|ed|ing)?|receiv(?:e|es|ed|ing))`
-	// negation (word, contraction or "cannot") immediately before, optionally through a copula/adverb, a quote-introducing verb
-	negatedVerbBefore = regexp.MustCompile(`(?i)(?:\b(?:never|not|no\s+longer|neither|nor|without)|n't|\bcannot)\s+(?:(?:be|been|being|longer|ever|also|normally|ordinarily|to)\s+)*` + quoteVerbs + `(?:\s+with)?\s*$`)
-	// predicate negation right after the quotation, only when a quote verb follows it: `body {...} is never sent`, `... isn't returned`.
-	// "not the generic error", "cannot be retried", "don't retry" are affirmative continuations and do not negate the quotation.
-)
+// selfOrAdminWording marks RequireSelfOrAdmin descriptions ("... is not the caller (and the caller is not an admin)"): they mention
+// administrators legitimately and are not admin-only gates, so the secondary wording signal skips them.
+var selfOrAdminWording = regexp.MustCompile(`(?i)not the caller|\bself\b`)
 
-// adminBodyDocumented reports whether desc quotes the admin body (`body {...}`) in at least one place that is not negated.
-// STRUCTURAL RULE (round 5): only a negation directly BEFORE the verb that introduces the quotation ("never returns body {...}",
-// "does not return body {...}", "without returning body {...}") marks it not-gated. A negation AFTER the quotation is never
-// applied: such text ("body {...} is not returned to owners only, every non-administrator session gets it") cannot be told apart
-// from an affirmative description by a regex, so ambiguity resolves to GATED (a false positive fails loudly in the live sweep; a
-// false negative would silently stop asserting the non-admin 403). Known limits, pinned in the tests: a scope-restricted pre-quote
-// negation ("not for owners, gets body {...}"), "never not get body {...}" and a bare JSON body without the `body ` marker.
-func adminBodyDocumented(desc string) bool {
-	desc = strings.NewReplacer("\u2019", "'", "\u2018", "'", "\u02bc", "'").Replace(desc)
-	for _, loc := range adminBodyQuote.FindAllStringIndex(desc, -1) {
-		if negatedVerbBefore.MatchString(desc[:loc[0]]) {
-			continue
-		}
-		return true
-	}
-	return false
+// adminGatedOp reports whether the operation object carries the marker with the boolean value true (anything else is not gated).
+func adminGatedOp(op map[string]interface{}) bool {
+	v, ok := op[adminGateMarker].(bool)
+	return ok && v
 }
 
-func admin403Gated(desc string) bool {
-	if adminBodyDocumented(desc) {
-		return true
+// adminGateSpecViolations inspects a parsed OpenAPI document and returns sorted violations (empty means consistent).
+func adminGateSpecViolations(doc map[string]interface{}) []string {
+	var out []string
+	paths, _ := doc["paths"].(map[string]interface{})
+	for p, ops := range paths {
+		opm, _ := ops.(map[string]interface{})
+		if _, present := opm[adminGateMarker]; present {
+			out = append(out, fmt.Sprintf("%s: %s must be on an operation, not on the path item", p, adminGateMarker))
+		}
+		for m, o := range opm {
+			op, ok := o.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			resp, _ := op["responses"].(map[string]interface{})
+			r403, has403 := resp["403"].(map[string]interface{})
+			r403 = resolveResponseRef(doc, r403)
+			if raw, present := op[adminGateMarker]; present {
+				if _, isBool := raw.(bool); !isBool {
+					out = append(out, fmt.Sprintf("%s %s: %s must be a boolean, got %T", m, p, adminGateMarker, raw))
+				} else if adminGatedOp(op) && !has403 {
+					out = append(out, fmt.Sprintf("%s %s: marked admin-gated but documents no 403 response", m, p))
+				}
+			}
+			if !adminGatedOp(op) && has403 {
+				if desc, _ := r403["description"].(string); adminRoleText.MatchString(desc) && !selfOrAdminWording.MatchString(desc) {
+					out = append(out, fmt.Sprintf("%s %s: 403 description mentions the admin role body but the operation has no %s: true marker", m, p, adminGateMarker))
+				}
+			}
+		}
 	}
-	// the quotation's own "Admin role required" must not feed the keyword fallback once its clause was judged negated
-	rest := adminBodyQuote.ReplaceAllString(desc, "")
-	return adminGate403.MatchString(rest) && !nonGate403.MatchString(rest)
+	sort.Strings(out)
+	return out
+}
+
+// adminGatedSet returns the sorted "METHOD /path" list of marked operations.
+func adminGatedSet(doc map[string]interface{}) []string {
+	var out []string
+	paths, _ := doc["paths"].(map[string]interface{})
+	for p, ops := range paths {
+		opm, _ := ops.(map[string]interface{})
+		for m, o := range opm {
+			if op, ok := o.(map[string]interface{}); ok && adminGatedOp(op) {
+				out = append(out, m+" "+p)
+			}
+		}
+	}
+	sort.Strings(out)
+	return out
+}
+
+// resolveResponseRef follows a '#/components/responses/<name>' $ref so a referenced 403 is judged by its real description.
+func resolveResponseRef(doc map[string]interface{}, r map[string]interface{}) map[string]interface{} {
+	for i := 0; i < 5; i++ {
+		ref, _ := r["$ref"].(string)
+		const pre = "#/components/responses/"
+		if !strings.HasPrefix(ref, pre) {
+			return r
+		}
+		comps, _ := doc["components"].(map[string]interface{})
+		resps, _ := comps["responses"].(map[string]interface{})
+		next, ok := resps[strings.TrimPrefix(ref, pre)].(map[string]interface{})
+		if !ok {
+			return r
+		}
+		r = next
+	}
+	return r
+}
+
+// adminGateLoaderViolations is what the live loader enforces for ANY spec (also API_CONTRACT_SPEC overrides): a marker that is not a
+// boolean, or one placed on the path item, is a loud failure instead of a silently ungated route.
+func adminGateLoaderViolations(path string, item map[string]interface{}) []string {
+	var out []string
+	if _, present := item[adminGateMarker]; present {
+		out = append(out, fmt.Sprintf("%s: %s must be on an operation, not on the path item", path, adminGateMarker))
+	}
+	for m, o := range item {
+		if op, ok := o.(map[string]interface{}); ok {
+			if raw, present := op[adminGateMarker]; present {
+				if _, isBool := raw.(bool); !isBool {
+					out = append(out, fmt.Sprintf("%s %s: %s must be a boolean, got %T", m, path, adminGateMarker, raw))
+				}
+			}
+		}
+	}
+	return out
 }

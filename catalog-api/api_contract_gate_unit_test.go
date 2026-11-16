@@ -1,9 +1,10 @@
 package main
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"testing"
 
@@ -11,346 +12,173 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func spec403(t *testing.T, path string) string {
+// goldenAdminGatedSHA256 pins testdata/admin_gated_ops.golden, the frozen census of the 73 operations the pre-ADMD1F1-S1 description
+// classifier gated (derived mechanically over the real spec before the markers were added) PLUS the 12 RequireAdmin routes the review
+// found unmarked (4 sync mutators with a stale owner-wording 403, 8 routes without any 403) = 85. Changing the set of admin
+// routes means changing the spec marker AND this golden file AND this hash in the same reviewed change.
+const goldenAdminGatedSHA256 = "d30c5e8baad790e6934898100f3e8a3a6bc113d9a9abd0fb6c801e1192127726"
+
+func loadRealSpec(t *testing.T) map[string]interface{} {
 	t.Helper()
 	raw, err := os.ReadFile(filepath.Join("..", "docs", "api", "openapi.yaml"))
 	require.NoError(t, err)
 	var doc map[string]interface{}
 	require.NoError(t, yaml.Unmarshal(raw, &doc))
-	op := doc["paths"].(map[string]interface{})[path].(map[string]interface{})["get"].(map[string]interface{})
-	return op["responses"].(map[string]interface{})["403"].(map[string]interface{})["description"].(string)
+	return doc
 }
 
-// ADMD1RRRRRRRRR-m1: the merged 403 of the two sync GET {id} operations must classify as an admin gate (the non-admin leg then
-// asserts 403), and the classifier must keep rejecting genuinely non-gate descriptions.
-func TestADMD1RRRRRRRRR_SyncMerged403IsClassifiedAdminGated(t *testing.T) {
-	for _, p := range []string{"/api/v1/sync/endpoints/{id}", "/api/v1/sync/sessions/{id}"} {
-		require.True(t, admin403Gated(spec403(t, p)), "%s: %q must classify as an admin gate", p, spec403(t, p))
-	}
-	// negative controls: non-gate wording stays non-gate; a bare owner-only wording is not forced to gated
-	require.False(t, admin403Gated("Forbidden; the caller is not the owner of the session"))
-	require.False(t, admin403Gated("Forbidden: registration is disabled"))
-	require.True(t, admin403Gated("Forbidden (admin role required)"))
-	require.False(t, admin403Gated("Forbidden: pending approval"), "no admin token at all")
-}
-
-// ADMD1RRRRRRRRRR-n5: quoting the admin body in a NEGATIVE sentence is not documenting an admin gate; only a `body {...}` quotation
-// that is not negated within its clause classifies. The real spec descriptions must keep classifying.
-func TestADMD1RRRRRRRRRR_AdminBodyQuoteInNegativeSentenceIsNotGated(t *testing.T) {
-	const q = `{"success":false,"error":"Admin role required"}`
-	require.False(t, admin403Gated(`Forbidden; this route never returns body `+q+` (owner check only)`), "negated quotation")
-	require.False(t, admin403Gated(`Forbidden; callers are not refused with body `+q+` here; owner session only`), "negated quotation (not)")
-	require.False(t, admin403Gated(`Forbidden; unlike other routes `+q+` is quoted only for contrast with the owner session`), "quotation without 'body'")
-	// positive controls: the same quotation in an affirmative clause, and the real descriptions, stay gated
-	require.True(t, admin403Gated(`Forbidden; not the owner of the session or (body `+q+`) the caller is not an administrator`), "negation in an earlier clause does not poison a later affirmative one")
-	require.True(t, admin403Gated(`Forbidden; the caller is not an administrator (body `+q+`) or is not the session owner`))
-	for _, p := range []string{"/api/v1/sync/endpoints/{id}", "/api/v1/sync/sessions/{id}"} {
-		require.True(t, admin403Gated(spec403(t, p)), p)
-	}
-}
-
-// legacyAdmin403Gated is a verbatim copy of the classifier as merged before ADMD1RRRRRRRRRRR-F1..F3, kept only to prove the census of the
-// real spec did not move.
-var (
-	legacyAdminBodyQuote   = regexp.MustCompile(`body ` + regexp.QuoteMeta(`{"success":false,"error":"Admin role required"}`))
-	legacyAdminGate403     = regexp.MustCompile(`(?i)admin|lacks|system\.configure|user\.manage|report\.`)
-	legacyNonGate403       = regexp.MustCompile(`(?i)registration|pending|owner|not the caller|neither|visible but|share|job|domain not allowed|another user|session`)
-	legacyClauseBoundary   = regexp.MustCompile(`(?i)[;,.()]|\b(or|but|and)\b`)
-	legacyNegationInClause = regexp.MustCompile(`(?i)\b(never|not|no|neither|nor|without)\b`)
-)
-
-func legacyAdmin403Gated(desc string) bool {
-	doc := false
-	for _, loc := range legacyAdminBodyQuote.FindAllStringIndex(desc, -1) {
-		before := desc[:loc[0]]
-		if cuts := legacyClauseBoundary.FindAllStringIndex(before, -1); len(cuts) > 0 {
-			before = before[cuts[len(cuts)-1][1]:]
-		}
-		if !legacyNegationInClause.MatchString(before) {
-			doc = true
-		}
-	}
-	if doc {
-		return true
-	}
-	return legacyAdminGate403.MatchString(desc) && !legacyNonGate403.MatchString(desc)
-}
-
-// ADMD1RRRRRRRRRRR-F1: every described 403 of the real spec classifies exactly as under the pre-change classifier.
-func TestADMD1RRRRRRRRRRR_CensusOfRealSpec403sUnchanged(t *testing.T) {
-	raw, err := os.ReadFile(filepath.Join("..", "docs", "api", "openapi.yaml"))
+func goldenSet(t *testing.T) []string {
+	t.Helper()
+	raw, err := os.ReadFile(filepath.Join("testdata", "admin_gated_ops.golden"))
 	require.NoError(t, err)
-	var doc map[string]interface{}
-	require.NoError(t, yaml.Unmarshal(raw, &doc))
-	n, gated := 0, 0
-	for path, ops := range doc["paths"].(map[string]interface{}) {
-		for method, op := range ops.(map[string]interface{}) {
-			opm, ok := op.(map[string]interface{})
-			if !ok {
-				continue
-			}
-			resp, ok := opm["responses"].(map[string]interface{})
-			if !ok {
-				continue
-			}
-			r403, ok := resp["403"].(map[string]interface{})
-			if !ok {
-				continue
-			}
-			desc, _ := r403["description"].(string)
-			if desc == "" {
-				continue
-			}
-			n++
-			want := legacyAdmin403Gated(desc)
-			if want {
-				gated++
-			}
-			require.Equal(t, want, admin403Gated(desc), "%s %s: %q", method, path, desc)
+	sum := sha256.Sum256(raw)
+	require.Equal(t, goldenAdminGatedSHA256, hex.EncodeToString(sum[:]), "golden census file was edited without updating its pinned hash")
+	return strings.Split(strings.TrimRight(string(raw), "\n"), "\n")
+}
+
+func opOf(t *testing.T, doc map[string]interface{}, method, path string) map[string]interface{} {
+	t.Helper()
+	item, ok := doc["paths"].(map[string]interface{})[path].(map[string]interface{})
+	require.True(t, ok, "path %s", path)
+	op, ok := item[method].(map[string]interface{})
+	require.True(t, ok, "%s %s", method, path)
+	return op
+}
+
+func r403(t *testing.T, op map[string]interface{}) map[string]interface{} {
+	t.Helper()
+	m, ok := op["responses"].(map[string]interface{})["403"].(map[string]interface{})
+	require.True(t, ok)
+	return m
+}
+
+// ADMD1F1-S1: the marked set of the real spec equals the frozen census exactly (diff = 0, both directions) and the spec has no drift.
+func TestADMD1F1S1_RealSpecMarkerCensusEqualsGolden(t *testing.T) {
+	doc := loadRealSpec(t)
+	want := goldenSet(t)
+	require.Len(t, want, 85)
+	require.Equal(t, want, adminGatedSet(doc), "marked operations must equal the frozen census")
+	require.Empty(t, adminGateSpecViolations(doc))
+	for _, l := range []string{"get /api/v1/sync/endpoints/{id}", "get /api/v1/sync/sessions/{id}"} {
+		require.Contains(t, want, l)
+	}
+}
+
+func TestADMD1F1S1_MarkerSemantics(t *testing.T) {
+	require.True(t, adminGatedOp(map[string]interface{}{adminGateMarker: true}))
+	require.False(t, adminGatedOp(map[string]interface{}{adminGateMarker: false}))
+	require.False(t, adminGatedOp(map[string]interface{}{adminGateMarker: "true"}), "string is not the boolean")
+	require.False(t, adminGatedOp(map[string]interface{}{}))
+	// a description is never consulted for the decision
+	require.False(t, adminGatedOp(map[string]interface{}{"responses": map[string]interface{}{"403": map[string]interface{}{"description": "Admin role required"}}}))
+}
+
+// Mutants M1..M7 (each must turn a gate red, proving the checks are live; each mutates a fresh parse of the real spec).
+func TestADMD1F1S1_MutantsAreKilled(t *testing.T) {
+	const gatedM, gatedP = "get", "/api/v1/sync/endpoints/{id}"
+	want := goldenSet(t)
+
+	t.Run("M1 marker removed from one operation", func(t *testing.T) {
+		doc := loadRealSpec(t)
+		delete(opOf(t, doc, gatedM, gatedP), adminGateMarker)
+		require.NotEqual(t, want, adminGatedSet(doc), "census gate")
+		require.NotEmpty(t, adminGateSpecViolations(doc), "drift gate: its 403 still quotes the admin body")
+	})
+	t.Run("M2 marker set false", func(t *testing.T) {
+		doc := loadRealSpec(t)
+		opOf(t, doc, gatedM, gatedP)[adminGateMarker] = false
+		require.NotEqual(t, want, adminGatedSet(doc))
+		require.NotEmpty(t, adminGateSpecViolations(doc))
+	})
+	t.Run("M3 admin body text added to an unmarked operation", func(t *testing.T) {
+		doc := loadRealSpec(t)
+		op := opOf(t, doc, "get", "/api/v1/auth/status")
+		require.False(t, adminGatedOp(op))
+		op["responses"].(map[string]interface{})["403"] = map[string]interface{}{"description": `Forbidden; body {"success":false,"error":"Admin role required"}`}
+		v := adminGateSpecViolations(doc)
+		require.Len(t, v, 1)
+		require.Contains(t, v[0], "no x-catalogizer-admin-gated")
+	})
+	t.Run("M4 marker on an operation without a 403", func(t *testing.T) {
+		doc := loadRealSpec(t)
+		op := opOf(t, doc, "get", "/api/v1/auth/status")
+		delete(op["responses"].(map[string]interface{}), "403")
+		op[adminGateMarker] = true
+		v := adminGateSpecViolations(doc)
+		require.Len(t, v, 1)
+		require.Contains(t, v[0], "documents no 403")
+	})
+	t.Run("M5 census off by one (extra marker, with a 403)", func(t *testing.T) {
+		doc := loadRealSpec(t)
+		op := opOf(t, doc, "get", "/api/v1/auth/status")
+		r := op["responses"].(map[string]interface{})
+		if _, has := r["403"]; !has {
+			r["403"] = map[string]interface{}{"description": "Forbidden"}
 		}
-	}
-	require.Equal(t, 93, n, "census size of described 403s")
-	require.Greater(t, gated, 0)
+		op[adminGateMarker] = true
+		require.Len(t, adminGatedSet(doc), 86)
+		require.NotEqual(t, want, adminGatedSet(doc))
+	})
+	t.Run("M6 non-boolean marker", func(t *testing.T) {
+		doc := loadRealSpec(t)
+		opOf(t, doc, gatedM, gatedP)[adminGateMarker] = "true"
+		v := adminGateSpecViolations(doc)
+		require.NotEmpty(t, v)
+		require.Contains(t, strings.Join(v, "\n"), "must be a boolean")
+	})
+	t.Run("M7 a description reworded to hide the admin text still gates when marked, and a gated op loses nothing", func(t *testing.T) {
+		doc := loadRealSpec(t)
+		r403(t, opOf(t, doc, gatedM, gatedP))["description"] = "Forbidden"
+		require.Equal(t, want, adminGatedSet(doc), "decision no longer depends on the wording")
+		require.Empty(t, adminGateSpecViolations(doc))
+	})
 }
 
-// ADMD1RRRRRRRRRRR-F1..F3: affirmative descriptions with a negation that does not govern the quotation stay gated; negations that do
-// (before the verb, contractions, after the quotation) do not.
-func TestADMD1RRRRRRRRRRR_Admin403ClassifierNegationScope(t *testing.T) {
-	const q = `{"success":false,"error":"Admin role required"}`
-	// positive controls
-	require.True(t, admin403Gated(`Forbidden; a caller who is not an administrator gets body `+q+` or the non-owner gets the session error`), "(a)")
-	require.True(t, admin403Gated(`Forbidden; not-the-owner callers get body `+q), "(b) hyphenated not")
-	require.True(t, admin403Gated(`Forbidden; callers without the system.admin permission get body `+q), "dot in identifier, 'without' not governing the verb")
-	require.True(t, admin403Gated(`Forbidden. The non-admin caller gets body `+q), "dot ends a clause")
-	// negative cases
-	require.False(t, admin403Gated(`Forbidden; this route doesn't return body `+q), "doesn't")
-	require.False(t, admin403Gated(`Forbidden; this route isn't refused with body `+q+` for owners`), "isn't")
-	require.False(t, admin403Gated(`Forbidden; callers cannot get body `+q), "cannot")
-	require.True(t, admin403Gated(`Forbidden; body `+q+` is never sent for the session owner`), "negation after the quotation")
-	require.True(t, admin403Gated(`Forbidden; body `+q+` isn't sent here (owner session only)`), "contraction after the quotation")
-	require.False(t, admin403Gated(`Forbidden; this route does not return body `+q+` and owner session only`), "plain not before verb")
+// golden-FALSE controls: legitimate non-admin 403 wording without the marker is not drift.
+func TestADMD1F1S1_NonAdminDescriptionsAreNotDrift(t *testing.T) {
+	doc := loadRealSpec(t)
+	op := opOf(t, doc, "get", "/api/v1/auth/status")
+	op["responses"].(map[string]interface{})["403"] = map[string]interface{}{"description": "Forbidden; the caller is not the owner of the session"}
+	require.Empty(t, adminGateSpecViolations(doc))
 }
 
-// ADMD1RRRRRRRRRRR round 2: a negation right after the quotation negates it only when a quote verb follows ("is never sent"); other
-// continuations ("not the generic error", "cannot be retried") are affirmative statements about the same clause.
-func TestADMD1RRRRRRRRRRR_Admin403AfterQuoteNegationNeedsQuoteVerb(t *testing.T) {
-	const q = `{"success":false,"error":"Admin role required"}`
-	for _, tail := range []string{
-		`callers get body ` + q + ` not the generic error`,
-		`callers get body ` + q + ` not the owner error`,
-		`callers get body ` + q + ` is not cached`,
-		`the session holder gets body ` + q + ` never the owner error`,
-		`a non-owner gets body ` + q + ` cannot be retried`,
-		`callers get body ` + q + ` no longer the session error`,
-		`callers get body ` + q + ` don't retry`,
-		`callers get body ` + q + ` won't be cached`,
-		`callers get body ` + q + ` not only for the owner`,
-	} {
-		require.True(t, admin403Gated("Forbidden; "+tail), tail)
-	}
-	// still negated: a quote verb follows the negation
-	require.True(t, admin403Gated(`Forbidden; body `+q+` is never sent for the session owner`))
-	require.True(t, admin403Gated(`Forbidden; body `+q+` isn't returned here`))
-	require.True(t, admin403Gated(`Forbidden; body `+q+` is not to be sent to owners`))
-	require.True(t, admin403Gated(`Forbidden; body `+q+` is no longer returned`))
-	// curly apostrophe is normalised
-	require.False(t, admin403Gated("Forbidden; this route doesn’t return body "+q))
-	require.True(t, admin403Gated("Forbidden; body "+q+" isn’t sent here"))
-}
-
-// Known limit (documented, not fixed): a negation separated from its verb by a comma-delimited interjection is read as affirmative,
-// i.e. the conservative direction for a gate (the non-admin 403 keeps being asserted).
-func TestADMD1RRRRRRRRRRR_Admin403CommaInterjectionKnownLimit(t *testing.T) {
-	const q = `{"success":false,"error":"Admin role required"}`
-	require.True(t, admin403Gated(`Forbidden; this route does not, for owners, return body `+q))
-}
-
-// ADMD1RRRRRRRRRRR round 3/4 (structural): the negation-scope class enumerated as a GENERATED matrix. The expectation of every cell
-// comes from how the cell was BUILT (an independent plain-language oracle), never from the classifier's regexes:
-//
-//	RULE  a quotation `body {...}` is negated ONLY when a negation directly governs the verb that introduces it
-//	      (before-adjacent): "never returns body {...}", "does not return body {...}", "no longer", "neither/nor",
-//	      "without returning body {...}". EVERYTHING ELSE IS GATED: a negation after the quotation (subject form or not, with or
-//	      without an auxiliary, with or without an affirmative verb before the quotation), a non-adjacent negation, a negation in
-//	      another clause, a negated quotation followed by an affirmative one. Ambiguity resolves to gated.
-//	HARD RULE a false negative (oracle says gated, classifier says not gated) can NEVER be allow-listed. Only the conservative
-//	      direction (oracle says negated, classifier says gated) may appear in matrixAllowList, each with a reason.
-type matrixVerb struct{ base, third, ing, part string }
-
-// every verb the classifier's verb list contains, so dropping any of them is detected
-var matrixVerbs = []matrixVerb{
-	{"return", "returns", "returning", "returned"}, {"send", "sends", "sending", "sent"}, {"get", "gets", "getting", "got"},
-	{"refuse", "refuses", "refusing", "refused"}, {"reject", "rejects", "rejecting", "rejected"}, {"serve", "serves", "serving", "served"},
-	{"emit", "emits", "emitting", "emitted"}, {"produce", "produces", "producing", "produced"}, {"respond", "responds", "responding", "responded"},
-	{"answer", "answers", "answering", "answered"}, {"yield", "yields", "yielding", "yielded"}, {"show", "shows", "showing", "shown"},
-	{"include", "includes", "including", "included"}, {"carry", "carries", "carrying", "carried"}, {"quote", "quotes", "quoting", "quoted"},
-	{"document", "documents", "documenting", "documented"}, {"receive", "receives", "receiving", "received"},
-}
-
-type matrixNeg struct {
-	kind string // word | contraction | cannot | without | nor
-	text string // as written before a base verb
-}
-
-var matrixNegs = []matrixNeg{
-	{"word", "never"}, {"word", "not"}, {"word", "no longer"}, {"nor", "neither"}, {"nor", "nor"},
-	{"contraction", "doesn't"}, {"contraction", "don't"}, {"contraction", "won't"}, {"contraction", "isn't"}, {"contraction", "wasn't"},
-	{"cannot", "cannot"}, {"without", "without"},
-}
-
-// every auxiliary the classifier accepts after the quotation; do-forms take the base verb, the rest the participle
-var matrixAux = []string{"is", "are", "was", "were", "be", "been", "being", "do", "does", "did", "will", "would", "has", "have", "had"}
-
-var matrixAllowList = map[string]string{}
-
-func TestADMD1RRRRRRRRRRR_Admin403NegationScopeMatrix(t *testing.T) {
-	const q = `{"success":false,"error":"Admin role required"}`
-	type cell struct {
-		name, desc string
-		negated    bool
-	}
-	var cells []cell
-	add := func(name, desc string, negated bool) {
-		cells = append(cells, cell{name, "Forbidden; " + desc, negated})
-	}
-	isDo := func(a string) bool { return a == "do" || a == "does" || a == "did" || a == "will" || a == "would" }
-	for _, n := range matrixNegs {
-		for _, v := range matrixVerbs {
-			id := n.text + "/" + v.base
-			// before-adjacent: negation directly before the introducing verb
-			switch n.kind {
-			case "without":
-				add("before-adj/"+id, "callers are refused without "+v.ing+" body "+q, true)
-			case "word":
-				add("before-adj/"+id+"/aux", "this route does "+strings.Replace(n.text, "no longer", "not", 1)+" "+v.base+" body "+q, true)
-				add("before-adj/"+id+"/noaux", "this route "+n.text+" "+v.third+" body "+q, true)
-			case "nor":
-				add("before-adj/"+id, "this route "+n.text+" "+v.third+" body "+q, true)
-			default:
-				add("before-adj/"+id, "this route "+n.text+" "+v.base+" body "+q, true)
-			}
-			// before-non-adjacent: the negation governs a different verb; the introducing verb is the affirmative "gets"
-			add("before-nonadj/"+id, "a caller who "+n.text+" "+v.base+" the role gets body "+q+" for the session", false)
-			// after-adjacent, quotation as subject (no affirmative verb before it)
-			switch n.kind {
-			case "word":
-				for _, aux := range matrixAux {
-					form := v.part
-					if isDo(aux) {
-						form = v.base
-					}
-					add("after-subj/"+id+"/aux-"+aux, "body "+q+" "+aux+" "+n.text+" "+form, false)
-				}
-				add("after-subj/"+id+"/noaux", "body "+q+" "+n.text+" "+v.part+" to anyone else", false)
-				// an affirmative quote verb directly before the quotation: ambiguous ("get" may be passive), read affirmative
-				add("after-affverb/"+id, "callers "+v.third+" body "+q+" is "+n.text+" "+v.part, false)
-				add("after-affverb-with/"+id, "callers are refused with body "+q+" is "+n.text+" "+v.part, false)
-			case "contraction":
-				add("after-subj/"+id, "body "+q+" "+n.text+" "+v.base, false)
-				add("after-affverb/"+id, "callers "+v.third+" body "+q+" "+n.text+" "+v.base, false)
-			case "cannot":
-				add("after-subj/"+id, "body "+q+" cannot be "+v.part, false)
-				add("after-affverb/"+id, "callers "+v.third+" body "+q+" cannot be "+v.part, false)
-			case "without", "nor":
-				add("after-subj/"+id, "body "+q+" "+n.text+" "+v.ing+" more", false)
-			}
-			// after-non-adjacent and other-clause
-			add("after-nonadj/"+id, "callers get body "+q+" for everyone "+n.text+" "+v.part, false)
-			add("after-otherclause/"+id, "callers get body "+q+" and owners "+n.text+" "+v.base+" it", false)
-			add("before-otherclause/"+id, "owners "+n.text+" "+v.base+" it; callers get body "+q, false)
-			// a negated quotation followed by an affirmative one: the affirmative one decides (gated)
-			add("neg-then-aff/"+id, "owners "+n.text+" "+v.base+" body "+q+"; other callers get body "+q, false)
-		}
-	}
-	require.Greater(t, len(cells), 1000)
-	for _, c := range cells {
-		got := admin403Gated(c.desc)
-		wantGated := !c.negated
-		if got == wantGated {
+// Round 2 (F4/F5): drift check for every method, $ref 403s, path-level and non-boolean markers, secondary wording signal.
+func TestADMD1F1S1_DriftAllMethodsAndRefs(t *testing.T) {
+	for _, mp := range [][2]string{{"post", "/api/v1/auth/login"}, {"put", "/api/v1/auth/profile"}, {"delete", "/api/v1/collections/{id}"}, {"get", "/api/v1/auth/status"}} {
+		doc := loadRealSpec(t)
+		item, ok := doc["paths"].(map[string]interface{})[mp[1]].(map[string]interface{})
+		if !ok {
 			continue
 		}
-		reason, allowed := matrixAllowList[c.name]
-		if wantGated && !got {
-			t.Errorf("FALSE NEGATIVE (never allow-listable) %s: %q", c.name, c.desc)
+		op, ok := item[mp[0]].(map[string]interface{})
+		if !ok {
 			continue
 		}
-		if !allowed {
-			t.Errorf("mismatch %s: classifier gated=%v oracle gated=%v: %q", c.name, got, wantGated, c.desc)
-		} else {
-			require.NotEmpty(t, reason)
+		op["responses"].(map[string]interface{})["403"] = map[string]interface{}{"description": "Forbidden; caller is not an administrator (decided from the database)"}
+		v := adminGateSpecViolations(doc)
+		require.Len(t, v, 1, "%s %s", mp[0], mp[1])
+	}
+	t.Run("ref 403 resolved", func(t *testing.T) {
+		doc := loadRealSpec(t)
+		doc["components"].(map[string]interface{})["responses"] = map[string]interface{}{"AdminForbidden": map[string]interface{}{"description": "Administrator role required"}}
+		op := opOf(t, doc, "post", "/api/v1/auth/login")
+		op["responses"].(map[string]interface{})["403"] = map[string]interface{}{"$ref": "#/components/responses/AdminForbidden"}
+		require.Len(t, adminGateSpecViolations(doc), 1)
+	})
+	t.Run("path-level marker", func(t *testing.T) {
+		doc := loadRealSpec(t)
+		doc["paths"].(map[string]interface{})["/api/v1/auth/status"].(map[string]interface{})[adminGateMarker] = true
+		require.Len(t, adminGateSpecViolations(doc), 1)
+		require.NotEmpty(t, adminGateLoaderViolations("/x", map[string]interface{}{adminGateMarker: true}))
+	})
+	t.Run("loader rejects non-boolean", func(t *testing.T) {
+		require.NotEmpty(t, adminGateLoaderViolations("/x", map[string]interface{}{"get": map[string]interface{}{adminGateMarker: "yes"}}))
+		require.Empty(t, adminGateLoaderViolations("/x", map[string]interface{}{"get": map[string]interface{}{adminGateMarker: true}}))
+	})
+	t.Run("wording variants all flagged when unmarked", func(t *testing.T) {
+		for _, d := range []string{"Caller is not an administrator (decided from the database)", "Administrator role required", "Caller lacks `system.admin`", "lacks report.view", "Caller lacks user.manage"} {
+			require.True(t, adminRoleText.MatchString(d), d)
 		}
-	}
-}
-
-// ADMD1RRRRRRRRRRR round 4: the reviewer's ambiguous after-quote sentences (an affirmative verb stands before the quotation) are gated,
-// the subject forms stay negated, and a negated quotation followed by an affirmative one is gated.
-func TestADMD1RRRRRRRRRRR_Admin403AmbiguousAfterQuoteResolvesGated(t *testing.T) {
-	const q = `{"success":false,"error":"Admin role required"}`
-	for _, tail := range []string{
-		"callers get body " + q + " is not sent",
-		"callers get body " + q + " does not get retried",
-		"callers get body " + q + " won't get retried by the session layer",
-		"callers get body " + q + " isn't shown as the owner error",
-		"callers get body " + q + " are not returned to the owner",
-		"owners never receive body " + q + "; other callers get body " + q,
-	} {
-		require.True(t, admin403Gated("Forbidden; "+tail), tail)
-	}
-	require.True(t, admin403Gated("Forbidden; body "+q+" is not sent"))
-	require.True(t, admin403Gated("The body "+q+" is never returned"))
-}
-
-// Known limits, documented and pinned at their CURRENT verdict (not-gated; these are the only false negatives and they require a
-// double negative or a negation inside an "or"/"without" construction that the classifier does not parse). Changing this verdict is
-// deliberate work: handle them, then flip these assertions.
-func TestADMD1RRRRRRRRRRR_Admin403KnownLimitsPinned(t *testing.T) {
-	const q = `{"success":false,"error":"Admin role required"}`
-	require.False(t, admin403Gated("Forbidden; callers either get it or not get body "+q), "KNOWN LIMIT: 'or not get body'")
-	require.False(t, admin403Gated("Forbidden; callers are never anonymous, never without getting body "+q), "KNOWN LIMIT: 'without getting body'")
-	require.False(t, admin403Gated("Forbidden; callers are never not refused with body "+q), "KNOWN LIMIT: double negative")
-}
-
-// ADMD1RRRRRRRRRRR round 3: the reviewer's concrete descriptions, pinned verbatim next to the generated matrix.
-func TestADMD1RRRRRRRRRRR_Admin403ReviewerPhrasings(t *testing.T) {
-	const q = `{"success":false,"error":"Admin role required"}`
-	for _, tail := range []string{
-		"callers get body " + q + " not shown to owners",
-		"callers get body " + q + " never sent to the session owner",
-		"callers get body " + q + " not included in the audit log",
-		"callers get body " + q + " not returned by v1 servers",
-		"callers get body " + q + " no longer returned as 401",
-		"callers get body " + q + " not documented elsewhere",
-		"a caller who never received the role gets body " + q,
-		"callers get body " + q + " and owners never receive it",
-	} {
-		require.True(t, admin403Gated("Forbidden; "+tail), tail)
-	}
-	require.True(t, admin403Gated("Forbidden; body "+q+" is never sent for the session owner"))
-	require.False(t, admin403Gated("Forbidden; this route doesnʼt return body "+q))
-}
-
-// ADMD1RRRRRRRRRRR round 5: after-quote negation is never applied, and the keyword fallback keeps a bare JSON body's "admin" word.
-func TestADMD1RRRRRRRRRRR_Admin403AfterQuoteNeverNegatesAndBareBodyKeepsKeyword(t *testing.T) {
-	const q = `{"success":false,"error":"Admin role required"}`
-	for _, d := range []string{
-		"Forbidden: body " + q + " does not get cached by the session layer",
-		"body " + q + " is never returned to administrators, only to non-admin sessions",
-		"body " + q + " is not returned to owners only, every non-administrator session gets it",
-		"body " + q + " is not shown differently to owners",
-		"body " + q + " isn't documented elsewhere; it is the session admin gate",
-		"body " + q + " is not returned with a 401 for the session owner",
-		"Forbidden; the response is `" + q + "`",
-		"Forbidden; returns `" + q + "` to non-gated callers",
-	} {
-		require.True(t, admin403Gated(d), d)
-	}
-}
-
-// Known limits (documented, pinned at the CURRENT verdict): a scope-restricted pre-quote negation reads as negated, as does a
-// double negative; and a bare JSON body (no `body ` marker) that is accompanied by owner/session words is not gated.
-func TestADMD1RRRRRRRRRRR_Admin403Round5KnownLimitsPinned(t *testing.T) {
-	const q = `{"success":false,"error":"Admin role required"}`
-	require.False(t, admin403Gated("Forbidden; callers never not get body "+q), "KNOWN LIMIT: never not get")
-	require.False(t, admin403Gated("Forbidden; owners do not get body "+q+" but other callers do"), "KNOWN LIMIT: scope-restricted pre-quote negation")
-	require.False(t, admin403Gated("Forbidden; the session owner is shown "+q), "KNOWN LIMIT: bare JSON with owner/session words and no body marker")
+		require.False(t, adminRoleText.MatchString("Forbidden; the caller is not the owner of the session"))
+	})
 }
