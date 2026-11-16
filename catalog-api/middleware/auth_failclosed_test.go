@@ -25,7 +25,7 @@ func TestSSEFU2_F2_RequireAdmin_CheckerTrueWithErrorIsDenied503(t *testing.T) {
 	w := httptest.NewRecorder()
 	router.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/admin/x", nil))
 	assert.Equal(t, http.StatusServiceUnavailable, w.Code)
-	assert.Contains(t, w.Body.String(), "Could not verify admin role")
+	assert.JSONEq(t, `{"success":false,"error":"Could not verify admin role"}`, w.Body.String())
 	assert.False(t, reached, "the protected handler must not run")
 }
 
