@@ -10,7 +10,7 @@
 
 ## Purpose
 
-READ-ONLY survey of the owner's seven Synology hosts (`docs/infrastructure/synology-hosts.md`) over NFS, FTP, explicit FTPS and SFTP (SMB is covered by `nas_readonly_leg.md` and the earlier survey), to prove reachability and
+READ-ONLY survey of the owner's seven protocol live hosts (`docs/infrastructure/protocol-live-hosts.md`) over NFS, FTP, explicit FTPS and SFTP (SMB is covered by `nas_readonly_leg.md` and the earlier survey), to prove reachability and
 read access per host and protocol and to measure listing latency and read throughput so that the best protocol per host can be chosen. Nothing is written, created, deleted, renamed or changed on a NAS.
 
 ## What is measured

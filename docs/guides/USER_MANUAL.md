@@ -186,13 +186,13 @@ curl -X POST http://localhost:8080/api/v1/storage/roots \
 
 ### Configuring SMB/CIFS Shares (Windows/NAS)
 
-SMB is the most common protocol for NAS devices (Synology, QNAP) and Windows file shares.
+SMB is the most common protocol for NAS devices (NAS, QNAP) and Windows file shares.
 
 **Required information:**
 
 | Field | Example | Description |
 |-------|---------|-------------|
-| Host | `192.168.0.241` or `synology.local` | Server hostname or IP |
+| Host | `192.168.0.241` or `nas.local` | Server hostname or IP |
 | Port | `445` | SMB port (445 is standard) |
 | Share Name | `media` | Name of the shared folder |
 | Username | `mediauser` | SMB authentication username |

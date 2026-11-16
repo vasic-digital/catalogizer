@@ -4278,8 +4278,8 @@ Network Issues:
 Problem: NAS (SMB/NFS) connection drops
 ```bash
 # Test NAS connectivity
-ping synology.local
-smbclient //synology.local/media -U user -c 'ls'
+ping nas.local
+smbclient //nas.local/media -U user -c 'ls'
 ```
 The SMB client has built-in circuit breaker with
 exponential backoff retry. Check logs for retry

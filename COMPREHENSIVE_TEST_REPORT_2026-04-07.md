@@ -60,7 +60,7 @@ This constraint has been added to **99 files** across all repositories:
 **Root Cause:** SMB storage scan never triggered
 
 **Fix Applied:**
-- Queued full scan for storage root ID 4 (Synology NAS Data8)
+- Queued full scan for storage root ID 4 (NAS Data8)
 - Endpoint: `POST /api/v1/scans`
 
 **Result:** 96,787 media items indexed (6.76 TB)
@@ -122,7 +122,7 @@ This constraint has been added to **99 files** across all repositories:
 | API Health | http://localhost:8080/health | ✅ healthy |
 | Web UI | http://localhost:3000 | ✅ 200 OK |
 | Database | SQLite catalog.db | ✅ 96,787 items |
-| SMB Storage | synology.local:data8 | ✅ Connected |
+| SMB Storage | nas.local:data8 | ✅ Connected |
 | Scan Status | Running | 🔄 In Progress |
 
 ---

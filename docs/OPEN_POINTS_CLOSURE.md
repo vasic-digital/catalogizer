@@ -78,8 +78,8 @@ These require physical hardware Claude cannot acquire.
         non-device lanes (API, web, desktop) still run.
 - [ ] **Physical Android phone** — running Android 13+ for
       `catalogizer-android` UI regression.
-- [ ] **Synology (or equivalent) NAS** populated with the canonical
-      media corpus — `synology.local` at 192.168.0.241 is the pin.
+- [ ] **NAS (or equivalent) NAS** populated with the canonical
+      media corpus — `nas.local` at 192.168.0.241 is the pin.
       First-catalog-populate challenges run ~25 min against it.
 
 ---

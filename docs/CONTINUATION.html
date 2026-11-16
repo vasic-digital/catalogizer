@@ -243,7 +243,7 @@ the v2.4.3 run with comparison; the 11.4.40 full-suite retest of the
 tag; 11.4.185 manual QA; live UI QA with Vision; every live leg in
 <code>docs/PROVISIONAL_VERIFICATION_PLAN.md</code> section 6 (gaps
 <code>G243-1..18</code>); independent review of <code>V250-GATES</code>.
-Synology stays SKIP <code>hardware_not_present</code>.</li>
+NAS stays SKIP <code>hardware_not_present</code>.</li>
 <li><strong>Next steps:</strong> independent review (11.4.209 substrate)
 of the prep branch, merge to <code>main</code> fast-forward (11.4.288),
 then decide the tag <code>v2.4.3</code> (pre-release); then the
@@ -284,7 +284,7 @@ manual QA; live UI QA with Vision (llmctl <code>vision</code> start gate
 hung about 80 s on this host, root cause UNCONFIRMED, no Vision
 validation PASS exists); Anton SMB runs 2 and 3 (N=1 &lt; N&gt;=3);
 stack rebuild from the tag; Sonar scan of the tag; GNU
-<code>sha256sum</code> exercise; FU2-1..4 nits. Synology stays SKIP
+<code>sha256sum</code> exercise; FU2-1..4 nits. NAS stays SKIP
 <code>hardware_not_present</code>.</li>
 <li>Next steps: independent review of the prep branch (11.4.209
 substrate), merge to <code>main</code> fast-forward (11.4.288), run the
@@ -329,7 +329,7 @@ control, evidence
 TestLiveSMBServiceSubdir PASS, N=1, log committed in
 <code>652928dc</code>, <code>sha256sum -c go_test.log.sha256</code>
 passes (run from repo root); single run, N=1 = PROVISIONAL (N=1 &lt;
-required N&gt;=3). Neither is a bare-IP proof or a Synology run. The
+required N&gt;=3). Neither is a bare-IP proof or a NAS run. The
 "Anton run held" wording in Rev 18 section 0.0 and in
 <code>[2.4.0]</code> is superseded by this paragraph; the stale notes in
 FOLLOW_UPS (SMB-FU-5),
@@ -346,7 +346,7 @@ landed: the 2 API go:S3923 bugs have a fix in <code>79547302</code>
 (merge <code>b304304b</code>), PROVISIONAL, Sonar re-run owed (follow-up
 CAT-QA-SONAR-5, an operator decision on an ignored wizard
 template).</li>
-<li>Synology stays SKIP (<code>hardware_not_present</code>), drives off
+<li>NAS stays SKIP (<code>hardware_not_present</code>), drives off
 since 2026-11-05.</li>
 <li>Held/owed: live <code>stack3/up.sh</code> through the Containers
 backend; two more Anton runs with committed logs (N=1 &lt; N&gt;=3);
@@ -390,7 +390,7 @@ is the last permitted round.</li>
 <code>Public/Testing</code> SMB run, and Vision/HelixQA UI QA. Run when
 load allows (hold while above ~12).</li>
 <li><strong>PROVISIONAL at v2.4.0</strong> (not VERIFIED): Tauri desktop
-and wizard live GUI; Android real login; Synology (honest SKIP
+and wizard live GUI; Android real login; NAS (honest SKIP
 <code>hardware_not_present</code>); SMB over a bare IP; stack scripts
 not yet run against a real <code>catqa3-api</code> through the
 Containers submodule; cover-art SSRF live proof; follow-ups LIFE-FU-5..9
@@ -452,7 +452,7 @@ labelled pre-release now, with the PROVISIONAL items listed in the
 changelog (this supersedes the "tag only after live validation" hold in
 section 1 and the HELD <code>release/v2.4.0-prep</code> row; CHANGELOG
 must list VERIFIED, PROVISIONAL, REOPENED, OVERDUE separately per
-§11.4.290). (6) Synology: honest SKIP <code>hardware_not_present</code>,
+§11.4.290). (6) NAS: honest SKIP <code>hardware_not_present</code>,
 ship without it. (7) SonarQube scan (CAT-QA-SONAR-1), the Anton
 <code>Public/Testing</code> SMB run and the Vision/HelixQA UI QA are to
 run when host load allows (load was about 30 when Rev 17 was written;
@@ -507,7 +507,7 @@ override only via <code>QA_LAN_IP</code>).</li>
 <code>verify.py</code>, cover-art SSRF F2-F5, rate-limit isolation
 (needs a real second LAN host). (3) Vision/HelixQA UI leg
 (CAT-HELIXQA-VISION-1). (4) Android real login (CAT-ANDROID-LOGIN-1).
-(5) Tauri wizard live GREEN runs (TAURI-R1-FU-7). (6) Synology: SKIP
+(5) Tauri wizard live GREEN runs (TAURI-R1-FU-7). (6) NAS: SKIP
 <code>hardware_not_present</code> (drives OFF). (7)
 <code>release/v2.4.0-prep</code> HELD at <code>b334ebd0</code>; tag
 <code>v2.4.0</code> only after live validation.</li>
@@ -548,8 +548,8 @@ artefact (pasta alias 169.254.1.2); remote-LAN isolation UNCONFIRMED
 <code>CAT-FRONTDOOR-RATELIMIT-1</code> stays open.</li>
 <li><strong>Tauri desktop/installer native QA agent</strong>: see
 section 2 for its exact state at stop.</li>
-<li><strong>Synology drives are OFF</strong> (operator 2026-11-05 19:09
-CET): Synology SMB/FTP/NFS live tests = SKIP
+<li><strong>NAS drives are OFF</strong> (operator 2026-11-05 19:09
+CET): NAS SMB/FTP/NFS live tests = SKIP
 <code>hardware_not_present</code>.</li>
 <li>Constitution pin 92a9ecf8 (v73.2). Periodic fetch still owed.</li>
 <li>Binding rules: memory
@@ -729,7 +729,7 @@ follow-ups + subtitles panel; responsive/a11y live matrix across
 devices/browsers; desktop+installer wizard; Android/Android TV; HelixQA
 with Vision; performance/security/chaos; N&gt;=3 determinism ledger;
 retire stacks catqa1/catqa2 (docs note only); LV3-1..5; D5 bursty-audio
-fixture; Synology idle-deadline/cut-recovery live and Synology
+fixture; NAS idle-deadline/cut-recovery live and NAS
 SMB/FTP/NFS live tests (SKIP <code>hardware_not_present</code> while the
 drives are OFF); PostgreSQL last-admin race; key-rotation waiver =
 operator-accepted open risk, no expiry, never invent a date;
@@ -807,7 +807,7 @@ has them), <code>andqa.Lo6bOU</code> (Android, ~7 GB),
 tokens; prune scope (section 6); Prometheus LAN-only; live S3 on Garage;
 throwaway pre-release tag test; Tauri confirm on URL change (done).
 Still open: tag form (default <code>v2.4.0</code>); horizontal-authz /
-second-LAN-host measurement; when the Synology drives are powered back
+second-LAN-host measurement; when the NAS drives are powered back
 on; Docker Hub access method for the SonarQube images (login, mirror, or
 wait).</p>
 <h2
@@ -833,7 +833,7 @@ Vision QA: stop the decide model via <code>llmctl stop</code>, then
 ~14).</li>
 <li>FU2-4: remove <code>onActivateKey</code> (fix/opdec-b). 10. Tauri:
 confirm on every server URL change (already done). 11. SonarQube images:
-the operator will docker-login via a 0600 file (waiting). 12. Synology:
+the operator will docker-login via a 0600 file (waiting). 12. NAS:
 honest SKIP.</li>
 <li>Jev: stays SHADOW (typesafe jev-latest + openrouter jev-1.13
 reachable); <code>jev-calibrate --dry-run</code> found 61046 of 61046

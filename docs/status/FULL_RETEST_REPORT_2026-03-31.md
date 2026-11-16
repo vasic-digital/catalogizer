@@ -127,5 +127,5 @@ Removed 8 duplicate simple bank files (YAML and JSON versions with same IDs): `c
 
 1. **Tauri Desktop/Wizard builds** fail in container due to FUSE/AppImage limitation
 2. **Challenge self-referential HTTP** — challenge runner making requests to itself causes queueing
-3. **NAS-dependent challenges** (464) cannot run without Synology NAS
+3. **NAS-dependent challenges** (464) cannot run without NAS
 4. **HelixQA autonomous session** pending (Mi Box prepared, APK installed)

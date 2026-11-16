@@ -28,7 +28,7 @@ The simplest option. Point Catalogizer at a directory on the machine where the b
 For Windows file shares or Samba servers on your network.
 
 1. Select **SMB/CIFS** as the protocol
-2. Enter the server address (hostname or IP, e.g., `192.168.0.241` or `synology.local`)
+2. Enter the server address (hostname or IP, e.g., `192.168.0.241` or `nas.local`)
 3. Enter the share name (e.g., `Media`)
 4. Enter username and password for the share
 5. Click **Test Connection** -- the backend will attempt to connect and list the share

@@ -27,7 +27,7 @@ graph TB
         end
 
         subgraph Storage["Storage Access"]
-            NAS["Synology NAS<br/>synology.local:445<br/>SMB / NFS / WebDAV"]
+            NAS["NAS<br/>nas.local:445<br/>SMB / NFS / WebDAV"]
             LOCAL_FS["Local Filesystem<br/>/media mount"]
         end
 
@@ -48,7 +48,7 @@ graph TB
     API -->|"DB_TYPE=postgres<br/>Port 5432"| PG
     API -->|"REDIS_HOST=redis<br/>Port 6379"| REDIS
     API -->|"GET /metrics"| PROM
-    API -->|"--add-host=synology.local<br/>SMB/NFS/WebDAV"| NAS
+    API -->|"--add-host=nas.local<br/>SMB/NFS/WebDAV"| NAS
     API -->|"/media:ro mount"| LOCAL_FS
 
     PROM -->|"Scrape /metrics<br/>every 15s"| API

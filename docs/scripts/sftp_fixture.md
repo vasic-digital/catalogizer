@@ -66,4 +66,4 @@ The exit status is the `go test` status. `sftp-fixture: REFUSED reason=<code>` (
 
 * One run at a time per checkout is assumed (the operation purpose is unique per run, but the host's memory/thread budget is not arbitrated by this script beyond `run_pinned.sh`'s limits).
 * The image `atmoz/sftp` is a community image (`signature_status: UNKNOWN` in the lock); it is used only as a test peer.
-* OpenSSH inside the image: `OpenSSH_8.4p1 Debian-5+deb11u3` (`ssh -V` in the pinned image); an old release, adequate as a peer, not a statement about Synology.
+* OpenSSH inside the image: `OpenSSH_8.4p1 Debian-5+deb11u3` (`ssh -V` in the pinned image); an old release, adequate as a peer, not a statement about NAS.

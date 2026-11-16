@@ -140,8 +140,8 @@ NAS endpoint challenges require a configuration file at `catalog-api/challenges/
 {
   "endpoints": [
     {
-      "name": "synology",
-      "host": "synology.local",
+      "name": "nas",
+      "host": "nas.local",
       "protocol": "smb",
       "username": "user",
       "password": "pass",

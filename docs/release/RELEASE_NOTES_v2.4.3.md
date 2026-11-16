@@ -90,7 +90,7 @@ Each item landed after an Opus review that returned GO-with-follow-ups (minor-cl
 - Release checker: `scripts/release/check_release_consistency.sh --repo . --version 2.4.3 --prev-tag v2.4.2` (section `[2.4.3]`) returns PASS with only `unused_waivers=3` (version_ok=19, sha_ok=64, sha_fail=0, unlisted=0). The "known 4 findings" (sha_fail=1, no_manifest=1, unlisted=1, unused_waivers=3) come from checking the `[2.4.2]` section (`--section 2.4.2`, the cover-art evidence set) and are unchanged. The checker is advisory for v2.4.3 and blocking for v2.5.0.
 - `scripts/anti-bluff-scan.sh` reports 4 `ASSERT_TAUTOLOGY` findings, all in third-party/hub code, none in first-party code (carried from the retest, unchanged).
 - **CAT-NFS-EMU-1 was NOT landed** (R_max NO-GO on `feat/nfs-emulator`); successor **CAT-NFS-EMU-2** is open. Likewise not landed or still open: CAT-PREEXIST-9b (web load failures, UNREPRODUCED), D8-F1, D9-F1, SEC-WS-1 follow-ups, RS-1..RS-4 (minor, from CAT-RETEST-STALE-1). Items owed before v2.5.0 are in `docs/release/V2_5_0_GATE_CHECKLIST.md`.
-- Synology SMB/FTP/NFS live tests remain SKIPPED (drives powered off).
+- NAS SMB/FTP/NFS live tests remain SKIPPED (drives powered off).
 
 ### Behaviour changes and upgrade notes (read before upgrading)
 - **Job ids:** a conversion job owned by another user now returns 404, identical to a missing id (was distinguishable from a missing id).

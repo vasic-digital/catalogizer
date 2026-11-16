@@ -58,7 +58,7 @@ Comprehensive documentation for the Catalogizer multi-platform media collection 
 
 | Document | Description |
 |----------|-------------|
-| [Synology hosts](infrastructure/synology-hosts.md) | Seven read-only NAS hosts: shares, access method, safety policy, survey results |
+| [protocol live hosts](infrastructure/protocol-live-hosts.md) | Seven read-only NAS hosts: shares, access method, safety policy, survey results |
 | [Deployment Guide](DEPLOYMENT_GUIDE.md) | Full deployment instructions (dev to production) |
 | [Deployment (Detailed)](deployment/DEPLOYMENT.md) | Extended deployment documentation |
 | [Docker Setup](deployment/DOCKER_SETUP.md) | Docker and Docker Compose configuration |
@@ -233,7 +233,7 @@ Every directory under `docs/`, with its entry point. A directory with its own `R
 | `filesystem/` | [pkg_decorators.md](filesystem/pkg_decorators.md), [pkg_fabric.md](filesystem/pkg_fabric.md) | small directory, files listed below |
 | `guides/` | [guides/README.md](guides/README.md) |  |
 | `incidents/` | [2026-04-28-host-reboot-investigation.md](incidents/2026-04-28-host-reboot-investigation.md) | small directory, files listed below |
-| `infrastructure/` | [synology-hosts.md](infrastructure/synology-hosts.md) | small directory, files listed below |
+| `infrastructure/` | [protocol-live-hosts.md](infrastructure/protocol-live-hosts.md) | small directory, files listed below |
 | `issues/` | [issues/](issues/) | The single tracker root for workable-item tickets (one file per item, ID-prefixed names). Not indexed file by file here; the files are generated tracker output and the directory is the canonical entry. |
 | `manuals/` | [manuals/README.md](manuals/README.md) |  |
 | `nexus/` | [nexus/README.md](nexus/README.md) |  |

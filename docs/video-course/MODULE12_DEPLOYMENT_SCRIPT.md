@@ -158,7 +158,7 @@ export DB_PASSWORD=secure-password
 
 **[Visual: Show NAS access configuration]**
 
-**Narrator**: For NAS scanning in containers, the API container needs `--add-host=synology.local:192.168.0.241` to resolve NAS hostnames. SMB, NFS, and other protocols connect directly to the NAS from within the container.
+**Narrator**: For NAS scanning in containers, the API container needs `--add-host=nas.local:192.168.0.241` to resolve NAS hostnames. SMB, NFS, and other protocols connect directly to the NAS from within the container.
 
 **[Visual: Show backup strategies]**
 

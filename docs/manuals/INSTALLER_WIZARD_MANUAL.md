@@ -153,8 +153,8 @@ A storage root tells Catalogizer: "This directory (and everything inside it) con
 
 For each configured share, the wizard proposes a storage root:
 
-- **Name** -- A human-readable label (e.g., "Synology Movies", "NAS TV Shows"). The wizard suggests a name based on the device hostname and share name.
-- **Path** -- The full path to the share as seen by the Catalogizer server (e.g., `smb://synology.local/media/movies`).
+- **Name** -- A human-readable label (e.g., "NAS Movies", "NAS TV Shows"). The wizard suggests a name based on the device hostname and share name.
+- **Path** -- The full path to the share as seen by the Catalogizer server (e.g., `smb://nas.local/media/movies`).
 - **Protocol** -- Automatically set based on the share type (SMB, NFS, WebDAV, FTP, or local).
 - **Enabled** -- Whether the root is active for scanning (enabled by default).
 
