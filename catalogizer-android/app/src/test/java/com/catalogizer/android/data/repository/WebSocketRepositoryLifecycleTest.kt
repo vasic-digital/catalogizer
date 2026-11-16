@@ -164,6 +164,8 @@ class WebSocketRepositoryLifecycleTest {
         val m = HookMinter { r.disconnect() }
         r = repo(this, m)
         r.connect(); runCurrent()
+        advanceTimeBy(60_000); runCurrent() // WSF2B2R-m1: a cancelled attempt must not schedule a reconnect either
+        assertEquals("no extra mint after the cancelled attempt", 1, m.calls)
         assertEquals("no socket may be built after disconnect", 0, RecSocket.made.size)
         assertEquals(0, RecSocket.connects)
         assertEquals(WebSocketEvent.Disconnected, r.events.value)
@@ -174,6 +176,8 @@ class WebSocketRepositoryLifecycleTest {
         val m = HookMinter { r.connect() } // replaces the in-flight attempt; the old one then gets its ticket
         r = repo(this, m)
         r.connect(); runCurrent()
+        advanceTimeBy(60_000); runCurrent() // WSF2B2R-m1: the cancelled attempt must not schedule a reconnect after its mint
+        assertEquals("exactly the cancelled attempt and the live attempt minted, no reconnect mint", 2, m.calls)
         assertEquals("only the live attempt builds a client", 1, RecSocket.made.size)
         assertEquals(1, RecSocket.connects)
         assertEquals("old client must never be closed because it never existed", 0, RecSocket.made[0].closes)
@@ -196,6 +200,41 @@ class WebSocketRepositoryLifecycleTest {
         advanceTimeBy(1_500); runCurrent()
         assertEquals("a reconnect must follow the timed-out mint", 2, m.calls)
         assertEquals(1, RecSocket.connects)
+        r.disconnect()
+    }
+
+    @Test fun `WSF2B2R-m2 an attempt cancelled between factory and install does not install its client`() = runTest {
+        val m = GateMinter(); val r = repo(this, m)
+        var first = true
+        val base = r.clientFactory
+        // Cancels THIS attempt (connect() replaces the job) after its socket was built and before the install lock.
+        r.clientFactory = { u, l -> base(u, l).also { if (first) { first = false; r.connect() } } }
+        r.connect(); runCurrent()
+        advanceTimeBy(60_000); runCurrent()
+        assertEquals("cancelled attempt built its socket, live attempt built its own", 2, RecSocket.made.size)
+        assertEquals("only the live client connects", 1, RecSocket.connects)
+        assertEquals("the cancelled attempt's client was never installed, so never replaced or closed", 0, RecSocket.made[0].closes)
+        r.disconnect()
+    }
+
+    @Test fun `WSF2B2R-m3 a mint IOException after the attempt was cancelled publishes no Error and schedules no reconnect`() = runTest {
+        lateinit var r: WebSocketRepository
+        val m = object : WsTicketMinter {
+            var calls = 0
+            override suspend fun mint(token: String): String {
+                calls++
+                if (calls == 1) { r.connect(); throw java.io.IOException("raced the cancel") }
+                return "t$calls"
+            }
+        }
+        r = repo(this, m)
+        r.connect(); runCurrent()
+        assertEquals("a cancelled attempt must not publish Error", WebSocketEvent.Disconnected, r.events.value)
+        advanceTimeBy(60_000); runCurrent()
+        assertEquals("a cancelled attempt must not schedule a reconnect mint", 2, m.calls)
+        assertEquals("the newer live client is the only one", 1, RecSocket.made.size)
+        assertEquals(1, RecSocket.connects)
+        assertEquals(0, RecSocket.made[0].closes)
         r.disconnect()
     }
 }
