@@ -144,9 +144,9 @@ bash "$S/blocked_external.sh" --out /proc/forbidden.json >/dev/null 2>&1; check 
 # ================= DOTENV (TI-D11): python-dotenv is the independent reference =================
 if python3 -I -c 'import dotenv' 2>/dev/null; then
   D="$TI_SCRATCH/dot"; mkdir -p "$D"
-  printf 'A=1\r\nexport B = two # c\r\nC="fa\\"ke"\nA=3\nD='"'"'x#y'"'"'\nE=a#b\nF=\nSYNOLOGY_SMB_USER=fakeuser\r\nexport SYNOLOGY_SMB_PASSWORD = fakepw\r\nSYNOLOGY_IP_3=192.0.2.3\nSYNOLOGY_IP_4=192.0.2.4 # lab\n' >"$D/mixed.env"
+  printf 'A=1\r\nexport B = two # c\r\nC="fa\\"ke"\nA=3\nD='"'"'x#y'"'"'\nE=a#b\nF=\nLIVE_HOST_SMB_USER=fakeuser\r\nexport LIVE_HOST_SMB_PASSWORD = fakepw\r\nLIVE_HOST_IP_3=192.0.2.3\nLIVE_HOST_IP_4=192.0.2.4 # lab\n' >"$D/mixed.env"
   agree=0; total=0
-  for k in A B C D E F SYNOLOGY_SMB_USER SYNOLOGY_SMB_PASSWORD SYNOLOGY_IP_3 SYNOLOGY_IP_4; do
+  for k in A B C D E F LIVE_HOST_SMB_USER LIVE_HOST_SMB_PASSWORD LIVE_HOST_IP_3 LIVE_HOST_IP_4; do
     want=$(python3 -I -c "import sys;from dotenv import dotenv_values as d;v=d(sys.argv[1]).get(sys.argv[2]);print('' if v is None else v)" "$D/mixed.env" "$k")
     got=$(python3 -I "$S/dotenv_get.py" "$D/mixed.env" "$k")
     total=$((total+1)); [ "$want" = "$got" ] && agree=$((agree+1)) || echo "  DOTENV key $k: python-dotenv='$want' dotenv_get='$got'"
@@ -154,9 +154,9 @@ if python3 -I -c 'import dotenv' 2>/dev/null; then
   check "DOTENV: dotenv_get.py agrees with python-dotenv on every key of the mixed-dialect file (CRLF, export, spaces, last duplicate, quotes, inline comment)" "$agree/$total" "$total/$total"
   rec=$(TI_ENV_FILE="$D/mixed.env" TI_NFS_FALLBACK=/nonexistent bash "$S/blocked_external.sh")
   check "DOTENV: blocked_external reads the CRLF/export/spaces file as available (the reference reads all four names)" "$(jq -r '.legs[]|select(.leg=="nas_smb_readonly")|.state' <<<"$rec")" available
-  printf 'SYNOLOGY_SMB_USER=u\nSYNOLOGY_SMB_PASSWORD=p\nSYNOLOGY_IP_3=192.0.2.3\nSYNOLOGY_IP_4=nas4.local\n' >"$D/hostname.env"
+  printf 'LIVE_HOST_SMB_USER=u\nLIVE_HOST_SMB_PASSWORD=p\nLIVE_HOST_IP_3=192.0.2.3\nLIVE_HOST_IP_4=nas4.local\n' >"$D/hostname.env"
   rec=$(TI_ENV_FILE="$D/hostname.env" TI_NFS_FALLBACK=/nonexistent bash "$S/blocked_external.sh")
-  check "DOTENV: a non-IPv4 SYNOLOGY_IP_4 is not 'available' (the leg's client refuses it too): credentials_invalid" "$(jq -r '.legs[]|select(.leg=="nas_smb_readonly")|.state+" "+.reason' <<<"$rec")" "blocked-unavailable credentials_invalid"
+  check "DOTENV: a non-IPv4 LIVE_HOST_IP_4 is not 'available' (the leg's client refuses it too): credentials_invalid" "$(jq -r '.legs[]|select(.leg=="nas_smb_readonly")|.state+" "+.reason' <<<"$rec")" "blocked-unavailable credentials_invalid"
 else blocked "DOTENV rows: python-dotenv is not installed on this host (no independent reference)"; fi
 
 # ================= EMPTY (TI-D12) =================

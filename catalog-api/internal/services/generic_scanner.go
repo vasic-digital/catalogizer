@@ -219,7 +219,7 @@ type GenericScannerOptions struct {
 	// AllowEmptyRoot lets a scan of an empty root complete. Default false: an empty root is a failure. A storage root can set the same
 	// per root (models.StorageRoot.AllowEmpty, the allow_empty column); either one allows it.
 	AllowEmptyRoot bool
-	// SkipDirNames are directory names that are never entered or recorded (default: Synology "@eaDir", "#recycle" and "#snapshot").
+	// SkipDirNames are directory names that are never entered or recorded (default: NAS "@eaDir", "#recycle" and "#snapshot").
 	SkipDirNames []string
 	// MaxSkippedRatio and MaxRecordFailRatio (defaults 0.5) are the shares of unreadable sub-directories and of unstorable records above
 	// which the scan fails instead of completing with a smaller catalog.

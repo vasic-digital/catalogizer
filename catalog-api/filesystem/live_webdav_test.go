@@ -1,6 +1,6 @@
 //go:build live
 
-// LIVE WebDAV integration test for the REAL catalog-api WebDAVClient against a real WebDAV server (e.g. a Synology NAS
+// LIVE WebDAV integration test for the REAL catalog-api WebDAVClient against a real WebDAV server (e.g. a NAS
 // with the WebDAV Server package enabled). Constitution §11.4.289: no stubs, mocks or fixture servers.
 //
 // Environment (names only; values are never logged):

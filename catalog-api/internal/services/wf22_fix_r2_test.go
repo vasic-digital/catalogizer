@@ -424,7 +424,7 @@ func TestWF22_R15_RecordFailureThreshold(t *testing.T) {
 	assert.Contains(t, err.Error(), "3 of 5 records could not be stored")
 }
 
-// ---- Synology metadata ------------------------------------------------------------------------------------------------------------------
+// ---- NAS metadata ------------------------------------------------------------------------------------------------------------------
 
 func TestWF22_A20_S1_MetadataDirectoriesAreSkippedAtEveryDepth(t *testing.T) {
 	m := newMemFS()
@@ -436,7 +436,7 @@ func TestWF22_A20_S1_MetadataDirectoriesAreSkippedAtEveryDepth(t *testing.T) {
 	m.addSubdir("/", "real")
 	m.addFile("/real", "f", 1, t0)
 	for _, d := range []string{"@eaDir", "#recycle", "#snapshot"} {
-		m.addSubdir("/real", d) // Synology puts @eaDir into EVERY directory
+		m.addSubdir("/real", d) // NAS puts @eaDir into EVERY directory
 		m.addFile("/real/"+d, "x", 1, t0)
 	}
 	rec := newRecorder()

@@ -567,7 +567,7 @@ func TestGenericScanner_HostileEntryNamesAreNotFollowed(t *testing.T) {
 	assert.Equal(t, []string{"/"}, m.listedPaths(), "no listing was issued for a hostile name")
 }
 
-func TestGenericScanner_SkipsSynologyMetadataDirectories(t *testing.T) {
+func TestGenericScanner_SkipsNASMetadataDirectories(t *testing.T) {
 	m := newMemFS()
 	m.addDir("/")
 	m.addSubdir("/", "@eaDir")

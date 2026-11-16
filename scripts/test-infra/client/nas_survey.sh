@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# nas_survey.sh - READ-ONLY bounded survey of the disk shares of ONE Synology host (inside IMG-INFRA-CLIENT). Only `smbclient -L` and `ls` of directories (breadth-first,
+# nas_survey.sh - READ-ONLY bounded survey of the disk shares of ONE protocol live host (inside IMG-INFRA-CLIENT). Only `smbclient -L` and `ls` of directories (breadth-first,
 # depth <= 3, <= 5000 entries and <= 80 listing requests per share, 1 request/second). No write-class command exists here. Credentials: auth file /out/auth (0600), never argv/env.
 # Output /out/survey-<idx>.json: per share status, top-level dir/file counts, sha256 of the sorted top-level names, extension histogram. Entry names are never recorded.
 # Usage: nas_survey.sh <ip> <1-7>
@@ -45,6 +45,6 @@ for s in "${SH[@]}"; do
   hist="[$(sort /tmp/ext.txt | uniq -c | sort -rn | head -25 | awk '{printf "%s{\"ext\":\"%s\",\"count\":%s}",(NR>1?",":""),$2,$1}')]"
   addres "$(printf '{"share":"%s","status":"listed","top_level_entries":%s,"top_level_dirs":%s,"top_level_files":%s,"top_level_names_sha256":"%s","sampled_entries":%s,"sampled_files":%s,"sampled_dirs":%s,"listing_requests":%s,"truncated_by_bound":%s,"max_depth":3,"ext_histogram_top25":%s}' "$s" "$tn" "$td" "$((tn-td))" "$tsha" "$total" "$files" "$dirs" "$reqs" "$trunc" "$hist")"
 done
-printf '{"alias":"Synology%s","requests":%s,"writes_performed":0,"names_recorded":false,"shares":[%s]}
+printf '{"alias":"LiveHost%s","requests":%s,"writes_performed":0,"names_recorded":false,"shares":[%s]}
 ' "$IDX" "$REQ" "$RES" >"$OUT"
 pass "survey host $IDX shares=${#SH[@]} requests=$REQ writes=0"

@@ -226,7 +226,7 @@ func (c *FTPClient) ReadFile(ctx context.Context, path string) (_ io.ReadCloser,
 }
 
 // ftpReadCloser closes an FTP data transfer and keeps the client usable afterwards. Closing a RETR before its end (header sniffing,
-// thumbnails, range-like reads) makes some servers (measured on a real Synology FTP service) drop the CONTROL connection; the next command then
+// thumbnails, range-like reads) makes some servers (measured on a real NAS FTP service) drop the CONTROL connection; the next command then
 // failed with "EOF" while IsConnected() still said true. When Close fails, the dead session is discarded and a
 // new one is opened, so the next operation works. A transfer that was read to its end keeps its normal Close error semantics.
 type ftpReadCloser struct {

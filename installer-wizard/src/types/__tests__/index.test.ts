@@ -26,7 +26,7 @@ describe('Installer Wizard type definitions', () => {
         ip: '192.168.1.100',
         hostname: 'media-server',
         mac_address: '00:11:22:33:44:55',
-        vendor: 'Synology',
+        vendor: 'ExampleNAS',
         open_ports: [445, 139, 80],
         smb_shares: ['media', 'backups'],
       }

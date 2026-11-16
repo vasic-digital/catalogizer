@@ -153,7 +153,7 @@ func TestProbeHostWithIdentities_GuestFirstThenIdentities(t *testing.T) {
 }
 
 // TestProbeHostWithIdentities_RealNAS is the §11.4.27 real-system integration
-// proof: against a reachable Synology NAS with the operator's stored identities
+// proof: against a reachable NAS with the operator's stored identities
 // it asserts the probe (a) authenticates with guest-or-an-identity, (b) returns
 // REAL shares (via ListSharenames, §11.4.6 — not a guessed common-name list),
 // and (c) never exposes a secret in the result (§11.4.10 — IdentityLabel is a

@@ -2,7 +2,7 @@
 
 package nasclients
 
-// Diagnostic of the one client discrepancy of the main run: Synology6 / DATA20-3, the FTP/FTPS client fails a directory listing at depth 2 with
+// Diagnostic of the one client discrepancy of the main run: LiveHost6 / DATA20-3, the FTP/FTPS client fails a directory listing at depth 2 with
 // "directory listing has lines that could not be parsed" while the SFTP client lists the same directory. This test (NCL_DIAG=1) re-walks the same deterministic
 // sample over plain FTP until that error appears, records the STRUCTURE of the unparsed line (never the name), then lists the same directory over SFTP
 // and records which peculiarities its entry names have (counts only). Read-only, same chain and budget as the main run.
@@ -72,7 +72,7 @@ func TestDiagFTPUnparsed(t *testing.T) {
 	host := hostFor(n)
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
 	defer cancel()
-	res := map[string]interface{}{"schema": "wp12-nas-client-diag/1", "alias": fmt.Sprintf("Synology%d", n), "share": "DATA20-3", "names_recorded": false}
+	res := map[string]interface{}{"schema": "wp12-nas-client-diag/1", "alias": fmt.Sprintf("LiveHost%d", n), "share": "DATA20-3", "names_recorded": false}
 	defer func() {
 		b, _ := json.MarshalIndent(res, "", "  ")
 		s := string(b)
