@@ -3249,3 +3249,9 @@ Explicit `x-catalogizer-admin-gated: true` marker (85 ops) + census golden + rou
 - **HAUTHZ-FU2-M3 (minor, test-instrumentation):** no owner positive control for the crash status route ("B resolves its own crash").
 - **HAUTHZ-FU2-N1 (nit, process-doc):** INVENTORY §2a: 11 `errors/*` routes (13 with admin ones), migrations_sqlite.go:284 not :285, also unrouted UpdateConfiguration/GetConfiguration/CleanupOldReports, §2 wording "NOT swept" contradicts §2a.
 - **HAUTHZ-O1-DECISION (operator):** `internal/handlers/media.go:570 getUserMetadata` (from 16843b133, 2025-10-04) was never routed (no commit unwired it; only a README snippet and media_test.go use it); reads `user_metadata` with no user filter, would leak across users if routed. Recommend fix (caller user_id) or remove dead handler+README snippet+tests; no removal done (§11.4.124).
+
+## SSEFU2-F3 body-pin review follow-ups (Opus GO-with-follow-ups, 2026-11-16; PROVISIONAL)
+
+All SSEFU-F1..F5 / SSEFU2-F1..F5 items verified satisfied on main (tests + docs). 
+- **SSEFU2R-m1 (minor, test-instrumentation):** the RequireAdmin checker `(false, err)` -> 503 path (auth_test.go:492-496) asserts status only, not the body; add the same JSONEq or table both error cases.
+- **SSEFU2R-m2 (minor, test-instrumentation):** `TestSSEFU2_F3_SyncRoutesDBFailureBodyIsPinned` has no in-test positive control (open DB -> 200) (same as HYGF4-F4).
