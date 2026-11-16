@@ -180,7 +180,14 @@ const storageRootConflictHintNoID = "choose a different name; a root with this n
 // storageRootBeforeInsertHook is a test seam (ADMD1RRRRR-m1): nil in production; called after the duplicate-name pre-check
 // and before the insert, so a test can deterministically make the request miss the pre-check and hit the insert-time
 // unique violation.
-var storageRootBeforeInsertHook func(ctx context.Context, name string)
+//
+// ADMD1RRRRRR-m1: the hook receives the outcome of the pre-check query (sql.ErrNoRows on the insert path), so a test can
+// assert the pre-check really ran before the hook.
+var storageRootBeforeInsertHook func(ctx context.Context, name string, preCheckErr error)
+
+// storageRootAfterConflictHook is a test seam (ADMD1RRRRRR-m2): nil in production; called after the insert reported a
+// unique violation and before the winner lookup, so a test can make the real lookup fail (e.g. delete the winner row).
+var storageRootAfterConflictHook func(ctx context.Context, name string)
 
 // storageRootConflictBody builds the 409 body of a duplicate storage-root name; existingID nil omits existing_id and
 // uses the matching hint.
@@ -300,7 +307,7 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 		return
 	}
 	if storageRootBeforeInsertHook != nil {
-		storageRootBeforeInsertHook(c.Request.Context(), req.Name)
+		storageRootBeforeInsertHook(c.Request.Context(), req.Name, err)
 	}
 
 	newID, insertErr := h.db.InsertReturningID(c.Request.Context(),
@@ -314,6 +321,9 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 		// constraint on storage_roots.name and must see the same 409 as the sequential duplicate.
 		if isUniqueViolation(insertErr) {
 			// ADMD1RRRR-n1: name the winner of the race like the sequential 409 does; a failed lookup only omits the field.
+			if storageRootAfterConflictHook != nil {
+				storageRootAfterConflictHook(c.Request.Context(), req.Name)
+			}
 			var winnerID int64
 			var winner *int64
 			if lerr := h.db.QueryRowContext(c.Request.Context(),

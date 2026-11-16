@@ -103,10 +103,11 @@ components:
 
   schemas:
     StorageRootConflict:
-      description: 409 body of POST /storage/roots for a duplicate name (the private-network confirmation 409 uses the Error shape)
+      description: 409 body of POST /storage/roots for a duplicate name (the private-network confirmation 409 is StorageRootPrivateConfirmation); the code always sends error, name and hint
       allOf:
         - $ref: '#/components/schemas/Error'
         - type: object
+          required: [error, name, hint]
           properties:
             name:
               type: string
@@ -118,6 +119,16 @@ components:
             hint:
               type: string
               description: Human-readable next step; refers to existing_id only when it is present
+    StorageRootPrivateConfirmation:
+      description: 409 body of POST /storage/roots when private-network confirmation is required (storage_root_class.go respondPrivateConfirmationRequired); always carries error, code and hint
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          required: [error, code, hint]
+          properties:
+            hint:
+              type: string
+              description: Repeat the request with confirm_private_network=true if the destination is meant to be on your LAN
     Error:
       type: object
       properties:
@@ -4107,7 +4118,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StorageRootConflict'
+                oneOf:
+                  - $ref: '#/components/schemas/StorageRootConflict'
+                  - $ref: '#/components/schemas/StorageRootPrivateConfirmation'
         '503':
           description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '403':
@@ -4985,7 +4998,7 @@ paths:
         '409':
           description: |
             Refused: an administrator cannot remove their own administrator role,
-            the last active, unlocked administrator cannot be demoted or deactivated (the check and the
+            the last active, unlocked administrator cannot be demoted, deactivated or suspended (the check and the
             write are one atomic statement, also for DELETE /users/:id and PUT /users/:id), the user
             changed concurrently, or the new email (or username) already belongs to another user
             ("Username or email already exists", ADMD1RRR-I1, also when two updates race for it).
