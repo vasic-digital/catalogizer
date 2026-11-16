@@ -3160,3 +3160,8 @@ Evidence: RED 3 of 48 on parent source with the new tests, GREEN 48/48; full :ap
 - NFS3-WIRE-1-f6 (follow-up): assert effective uid via client config readback (uid=0 -> 65534).
 - NFS3-WIRE-1-p3 (phase 2 remaining): uid/gid from stored root (columns), NFS root-config UI, scan/crawl integration tests, Synology-offline SKIP.
 - OBSERVATION (out of scope, not investigated): in the harness private LAN roots (smb and nfs3) were created with 201 without confirm_private_network.
+
+## ADMD1RRRRRRRRRRR reviews (round 1 Opus GO-with-follow-ups, PROVISIONAL)
+- ADMD1RRRRRRRRRRR-F1 (minor, test-instrumentation): admin403Gated negation check looks for a bare not/no/never anywhere earlier in the clause, not for negation of the verb introducing the quote. False negatives (silent: live sweep stops asserting the non-admin 403): "a caller who is not an administrator gets body {...}", "not-the-owner callers get body {...}". Not recognised: doesn't/isn't/cannot; negation after the quote; "." in identifiers like system.admin counts as clause boundary. Fix: negation relevant only within a short window before the verb that introduces the quote; add the two probes as positive controls.
+- ADMD1RRRRRRRRRRR-F2 (nit, test-instrumentation): OwnerBranch403AlsoOnPermissionLookupError checks only the service error, not handler or gate; dangling-role scenario cannot reach the handler in production (adminGate refuses first).
+- ADMD1RRRRRRRRRRR-F3 (nit): pin test sets up gate and route separately; no test proves the gate fronts these routes (main.go:1378,1383).
