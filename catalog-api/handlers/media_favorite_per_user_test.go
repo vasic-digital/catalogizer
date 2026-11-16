@@ -90,3 +90,60 @@ func TestFavoriteIsPerUser(t *testing.T) {
 	code, _ = favCall(anon, "PUT", "/api/v1/media/1/favorite", `{"favorite": true}`)
 	assert.Equal(t, http.StatusUnauthorized, code)
 }
+
+func favSetup(t *testing.T, items int) (*database.DB, *AndroidTVMediaHandler) {
+	sqlDB, err := sql.Open("sqlite3", ":memory:")
+	require.NoError(t, err)
+	t.Cleanup(func() { sqlDB.Close() })
+	sqlDB.SetMaxOpenConns(1)
+	ctx := context.Background()
+	db := database.WrapDB(sqlDB, database.DialectSQLite)
+	require.NoError(t, db.RunMigrations(ctx))
+	_, err = db.ExecContext(ctx, `PRAGMA foreign_keys = ON`)
+	require.NoError(t, err)
+	_, err = db.ExecContext(ctx, `INSERT INTO users (id, username, email, password_hash, salt, role_id) VALUES (1, 'u1', 'u1@example.test', 'x', 'x', 2)`)
+	require.NoError(t, err)
+	for i := 0; i < items; i++ {
+		_, err = db.ExecContext(ctx, `INSERT INTO media_items (media_type_id, title, status) VALUES (1, ?, 'detected')`, fmt.Sprintf("Item%d", i+1))
+		require.NoError(t, err)
+	}
+	return db, NewAndroidTVMediaHandler(db)
+}
+
+// Favoriting item 1 must not make item 2 read as favorite for the same caller (the GET EXISTS must join on media_id).
+func TestFavoriteIsPerItem(t *testing.T) {
+	_, h := favSetup(t, 2)
+	r := favRouter(t, h, 1)
+	code, _ := favCall(r, "PUT", "/api/v1/media/1/favorite", `{"favorite": true}`)
+	require.Equal(t, http.StatusOK, code)
+	_, got := favCall(r, "GET", "/api/v1/media/1", "")
+	assert.Equal(t, true, got["is_favorite"])
+	_, got = favCall(r, "GET", "/api/v1/media/2", "")
+	assert.Equal(t, false, got["is_favorite"], "item 2 was never favorited by the caller")
+}
+
+// Deleting a media item removes its favorite rows (FK cascade), for every user.
+func TestFavoriteRowsRemovedWithMediaItem(t *testing.T) {
+	db, h := favSetup(t, 2)
+	ctx := context.Background()
+	r := favRouter(t, h, 1)
+	for _, id := range []string{"1", "2"} {
+		code, _ := favCall(r, "PUT", "/api/v1/media/"+id+"/favorite", `{"favorite": true}`)
+		require.Equal(t, http.StatusOK, code)
+	}
+	_, err := db.ExecContext(ctx, `DELETE FROM media_items WHERE id = 1`)
+	require.NoError(t, err)
+	var n int
+	require.NoError(t, db.QueryRowContext(ctx, `SELECT COUNT(*) FROM user_favorites WHERE media_id = 1`).Scan(&n))
+	assert.Zero(t, n, "favorite rows of the deleted item must be gone")
+	require.NoError(t, db.QueryRowContext(ctx, `SELECT COUNT(*) FROM user_favorites WHERE media_id = 2`).Scan(&n))
+	assert.Equal(t, 1, n, "other items' favorites stay")
+}
+
+// Anonymous caller gets 401 even when the body is invalid (auth is checked before parsing).
+func TestFavoriteAnonymousIs401BeforeBodyParsing(t *testing.T) {
+	_, h := favSetup(t, 1)
+	anon := favRouter(t, h, 0)
+	code, _ := favCall(anon, "PUT", "/api/v1/media/1/favorite", `not json`)
+	assert.Equal(t, http.StatusUnauthorized, code)
+}

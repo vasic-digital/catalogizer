@@ -29,7 +29,7 @@ Sweep test: `catalog-api/horizontal_authz_binary_test.go` (`TestHorizontalAuthz_
 | 17 | GET /api/v1/favorites/check/:entity_type/:entity_id | main.go:1352 | SELF | favorite check |
 | 18 | PUT /api/v1/media/:id/favorite | main.go:1063 | per-item GLOBAL flag | HAUTHZ-F2 FIXED (CAT-HAUTHZ-F2): per-user `user_favorites`; `TestHorizontalAuthz_MediaFavoriteFlag` |
 | 19 | PUT /api/v1/media/:id/progress | main.go:1062 | validated no-op, nothing persisted (handlers/media_handler.go UpdateWatchProgress) | not exercisable: no state to leak |
-| 20 | GET /api/v1/media/:id | main.go:1061 | shared catalogue, but returns the global `is_favorite` | via F2 |
+| 20 | GET /api/v1/media/:id | main.go:1061 | shared catalogue; `is_favorite` is the caller's own `user_favorites` state | HAUTHZ-F2 FIXED; `TestHorizontalAuthz_MediaFavoriteFlag`, `TestFavoriteIsPerUser`, `TestFavoriteIsPerItem` |
 | 21 | PUT /api/v1/entities/:id/user-metadata | main.go:1309 | SELF write (user id from token, handlers/media_entity_handler.go:1192) | NOT exercised by the binary sweep (no read route returns user metadata: `GET /entities/:id` and `/metadata` never carry it, so the old `usermeta` cases could not fail). Covered at store level by `handlers/horizontal_authz_unit_test.go` `TestHorizontalAuthzUnit_UserMetadataOwnerFromTokenNotBody` (real handler, real SQLite, read back through `UserMetadataRepository`); the binary sweep keeps only the owner-write positive controls |
 | 22 | POST /api/v1/entities/:id/user-metadata | main.go:1310 | SELF write | same handler as 21 (same store-level test) |
 | 23 | GET /api/v1/entities/:id/progress | main.go:1316 | SELF | playback progress |
@@ -101,7 +101,7 @@ Still not swept horizontally: `GET /errors/health` and `admin/errors|health` (sy
 61 rows (row 61 groups three installation-wide routes, so 63 routes). Disposition of the 61 rows:
 
 - 48 rows exercised by the sweep (rows 1-17 and 21-51): a negative case as the other user plus a positive control (the creates 2, 8, 15, 25, 32, 34 and row 22 serve as setup or share a handler with row 21).
-- 2 rows (18, 20) carry open finding HAUTHZ-F2, reproduced by the gated test `TestHorizontalAuthz_OpenFinding_MediaFavoriteFlag`.
+- Rows 18 and 20 carried finding HAUTHZ-F2, now FIXED (CAT-HAUTHZ-F2, per-user `user_favorites`); pinned by `TestHorizontalAuthz_MediaFavoriteFlag` (real binary) and the handler tests in `catalog-api/handlers/media_favorite_per_user_test.go`. No open finding remains for these rows.
 - 1 row (19) is a validated no-op that persists nothing, so there is no state to leak.
 - 2 rows (52, 53) act on the caller only and revoke the token under test: not exercised.
 - 3 rows (54-56) NOT COVERED (reason in the table).

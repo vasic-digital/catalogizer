@@ -3405,6 +3405,10 @@ paths:
       responses:
         '200':
           description: Favorite status updated
+        '400':
+          description: Invalid media id, invalid JSON body, or the `favorite` field is missing
+        '401':
+          description: Authentication required (checked before the id and body are parsed)
         '404':
           description: Media item not found
 

@@ -231,11 +231,19 @@ func (h *AndroidTVMediaHandler) UpdateWatchProgress(c *gin.Context) {
 // @Param body body map[string]bool true "Favorite status"
 // @Success 200 {object} utils.SuccessResponse
 // @Failure 400 {object} utils.SendErrorResponse
+// @Failure 401 {object} utils.SendErrorResponse
 // @Failure 404 {object} utils.SendErrorResponse
 // @Failure 500 {object} utils.SendErrorResponse
 // @Router /api/v1/media/{id}/favorite [put]
 func (h *AndroidTVMediaHandler) UpdateFavoriteStatus(c *gin.Context) {
 	ctx := c.Request.Context()
+
+	// Authentication is checked first, before any input is parsed (an anonymous caller gets 401, never 400).
+	callerID, _ := callerUserID(c)
+	if callerID == 0 {
+		utils.SendErrorResponse(c, http.StatusUnauthorized, "Authentication required", nil)
+		return
+	}
 
 	// Parse media ID from path
 	idStr := c.Param("id")
@@ -261,11 +269,6 @@ func (h *AndroidTVMediaHandler) UpdateFavoriteStatus(c *gin.Context) {
 	// CAT-HAUTHZ-F2: the favorite flag is per user. It used to UPDATE media_items.is_favorite (one flag per item shared by
 	// every account); now it adds or removes the caller's own user_favorites row, so it can neither show nor change what
 	// another user favorited. The item must exist (404 otherwise, as before); both toggles are idempotent.
-	callerID, _ := callerUserID(c)
-	if callerID == 0 {
-		utils.SendErrorResponse(c, http.StatusUnauthorized, "Authentication required", nil)
-		return
-	}
 	var one int
 	if err := h.db.QueryRowContext(ctx, `SELECT 1 FROM media_items WHERE id = ?`, id).Scan(&one); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
