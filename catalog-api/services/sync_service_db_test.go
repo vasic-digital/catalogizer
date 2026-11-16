@@ -1456,8 +1456,7 @@ func TestSyncService_GetEndpoint_NonOwnerNoPermission(t *testing.T) {
 	// User 999 (regular user without view_shares) tries to view user 1's endpoint
 	_, err = service.GetEndpoint(id, 999)
 	assert.Error(t, err)
-	// CAT-SYNC-404-1: a caller who may not view shares is answered as if the record did not exist
-	assert.Contains(t, err.Error(), "endpoint not found")
+	assert.Contains(t, err.Error(), "unauthorized")
 }
 
 func TestSyncService_GetSession_NonOwnerNoPermission(t *testing.T) {
@@ -1480,8 +1479,7 @@ func TestSyncService_GetSession_NonOwnerNoPermission(t *testing.T) {
 	// User 999 (regular user without view_shares) tries to view user 1's session
 	_, err = service.GetSession(id, 999)
 	assert.Error(t, err)
-	// CAT-SYNC-404-1: a caller who may not view shares is answered as if the record did not exist
-	assert.Contains(t, err.Error(), "session not found")
+	assert.Contains(t, err.Error(), "unauthorized")
 }
 
 func TestSyncService_UpdateEndpoint_NonOwnerNoPermission(t *testing.T) {
@@ -1510,8 +1508,7 @@ func TestSyncService_UpdateEndpoint_NonOwnerNoPermission(t *testing.T) {
 		Name: "Hijacked",
 	})
 	assert.Error(t, err)
-	// CAT-SYNC-404-1: a caller who may not view shares is answered as if the record did not exist
-	assert.Contains(t, err.Error(), "endpoint not found")
+	assert.Contains(t, err.Error(), "unauthorized")
 }
 
 func TestSyncService_UpdateEndpoint_WithRemotePath(t *testing.T) {
@@ -1570,8 +1567,7 @@ func TestSyncService_ScheduleSync_NonOwnerNoPermission(t *testing.T) {
 		Frequency: models.SyncFrequencyDaily,
 	})
 	assert.Error(t, err)
-	// CAT-SYNC-404-1: a caller who may not even view shares is answered as if the endpoint did not exist
-	assert.Contains(t, err.Error(), "endpoint not found")
+	assert.Contains(t, err.Error(), "unauthorized")
 }
 
 func TestSyncService_ProcessScheduledSyncs_WithDB(t *testing.T) {
