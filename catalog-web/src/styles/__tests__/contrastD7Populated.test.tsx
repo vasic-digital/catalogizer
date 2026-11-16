@@ -63,7 +63,7 @@ describe.each(['light', 'dark'] as Theme[])('UI-D7-FU populated states, %s theme
   })
 
   it('FormatConverter: selected quality preset (bg-blue-50 when selected) with the form open', () => {
-    const { container } = render(<FormatConverter jobs={[JOB]} supportedFormats={['mp4', 'mkv']} />)
+    const { container } = render(<FormatConverter jobs={[JOB]} supportedFormats={['mp4', 'mkv']} canCreate />)
     fireEvent.click(screen.getAllByText('New Conversion')[0])
     const radios = Array.from(container.querySelectorAll('input[type=radio][name=quality]'))
     expect(radios.length).toBeGreaterThan(0)

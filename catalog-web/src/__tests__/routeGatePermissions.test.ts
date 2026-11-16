@@ -119,3 +119,18 @@ describe('route-gate extractor completeness (SSEF4R-FD-m1)', () => {
     expect(() => assertAllGatesCaptured(src)).toThrow(/line 1/)
   })
 })
+
+// F2F3-m3: the Header NAV_ITEMS gate must equal the App.tsx route gate, read from the real files.
+describe('Header NAV_ITEMS gates equal App.tsx route gates (F2F3-m3)', () => {
+  const header = readFileSync(resolve(repo, 'catalog-web/src/components/layout/Header.tsx'), 'utf8')
+  const navGates = [...header.matchAll(/\{\s*to:\s*'([^']+)'[^}]*requiredPermission:\s*'([^']+)'[^}]*\}/g)].map(
+    (m) => [m[1], m[2]] as [string, string]
+  )
+  it('finds the gated nav items (control needle)', () => {
+    expect([...header.matchAll(/requiredPermission:/g)].length).toBe(navGates.length)
+    expect(Object.fromEntries(navGates)).toHaveProperty('/conversion', 'conversion.view')
+  })
+  it.each(navGates)('nav item %s gate (%s) equals its App.tsx route gate', (to, perm) => {
+    expect(Object.fromEntries(gates)[to]).toBe(perm)
+  })
+})

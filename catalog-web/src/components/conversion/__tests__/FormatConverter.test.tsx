@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { FormatConverter } from '../FormatConverter'
 
@@ -46,7 +46,7 @@ describe('FormatConverter', () => {
   })
 
   it('renders New Conversion button', () => {
-    render(<FormatConverter jobs={[]} supportedFormats={supportedFormats} />)
+    render(<FormatConverter jobs={[]} supportedFormats={supportedFormats} canCreate />)
     expect(screen.getByText('New Conversion')).toBeInTheDocument()
   })
 
@@ -56,27 +56,51 @@ describe('FormatConverter', () => {
     expect(screen.getByText('Start your first media format conversion')).toBeInTheDocument()
   })
 
+  // F2F3-m1: empty-state "Create Conversion Job" is gated by canCreate.
+  it('empty state hides Create Conversion Job when canCreate is false (conversion.view only)', () => {
+    render(<FormatConverter jobs={[]} supportedFormats={supportedFormats} canCreate={false} canManage={false} />)
+    expect(screen.getByText('No conversion jobs')).toBeInTheDocument()
+    expect(screen.queryByText('Create Conversion Job')).not.toBeInTheDocument()
+    expect(screen.queryByText('New Conversion')).not.toBeInTheDocument()
+  })
+
+  it('empty state shows Create Conversion Job when canCreate is true', () => {
+    render(<FormatConverter jobs={[]} supportedFormats={supportedFormats} canCreate canManage={false} />)
+    expect(screen.getByText('Create Conversion Job')).toBeInTheDocument()
+  })
+
+  // F2F3-m2: omitted props fail closed.
+  it('fails closed: omitted canCreate/canManage show no create or manage controls', () => {
+    render(<FormatConverter jobs={[failedJob, processingJob]} supportedFormats={supportedFormats} />)
+    expect(screen.queryByText('New Conversion')).not.toBeInTheDocument()
+    expect(screen.queryByText('Retry')).not.toBeInTheDocument()
+    expect(screen.queryByText('Cancel')).not.toBeInTheDocument()
+    cleanup()
+    render(<FormatConverter jobs={[]} supportedFormats={supportedFormats} />)
+    expect(screen.queryByText('Create Conversion Job')).not.toBeInTheDocument()
+  })
+
   it('renders completed job with download button', () => {
-    render(<FormatConverter jobs={[completedJob]} supportedFormats={supportedFormats} />)
+    render(<FormatConverter jobs={[completedJob]} supportedFormats={supportedFormats} canCreate canManage />)
     expect(screen.getByText('test.mkv')).toBeInTheDocument()
     expect(screen.getByText('Download')).toBeInTheDocument()
     expect(screen.getByText('Completed')).toBeInTheDocument()
   })
 
   it('shows success message for completed jobs', () => {
-    render(<FormatConverter jobs={[completedJob]} supportedFormats={supportedFormats} />)
+    render(<FormatConverter jobs={[completedJob]} supportedFormats={supportedFormats} canCreate canManage />)
     expect(screen.getByText(/Conversion completed successfully/)).toBeInTheDocument()
   })
 
   it('renders processing job with progress and cancel button', () => {
-    render(<FormatConverter jobs={[processingJob]} supportedFormats={supportedFormats} />)
+    render(<FormatConverter jobs={[processingJob]} supportedFormats={supportedFormats} canCreate canManage />)
     expect(screen.getByText('video.avi')).toBeInTheDocument()
     expect(screen.getByText('Cancel')).toBeInTheDocument()
     expect(screen.getByText('Processing')).toBeInTheDocument()
   })
 
   it('renders failed job with retry button and error', () => {
-    render(<FormatConverter jobs={[failedJob]} supportedFormats={supportedFormats} />)
+    render(<FormatConverter jobs={[failedJob]} supportedFormats={supportedFormats} canCreate canManage />)
     expect(screen.getByText('bad.avi')).toBeInTheDocument()
     expect(screen.getByText('Retry')).toBeInTheDocument()
     expect(screen.getByText('Unsupported codec')).toBeInTheDocument()
@@ -106,6 +130,7 @@ describe('FormatConverter', () => {
         jobs={[processingJob]}
         supportedFormats={supportedFormats}
         onCancelConversion={onCancelConversion}
+        canManage
       />
     )
 
@@ -121,6 +146,7 @@ describe('FormatConverter', () => {
         jobs={[failedJob]}
         supportedFormats={supportedFormats}
         onRetryConversion={onRetryConversion}
+        canManage
       />
     )
 
@@ -130,7 +156,7 @@ describe('FormatConverter', () => {
 
   it('opens create conversion modal on button click', async () => {
     const user = userEvent.setup()
-    render(<FormatConverter jobs={[]} supportedFormats={supportedFormats} />)
+    render(<FormatConverter jobs={[]} supportedFormats={supportedFormats} canCreate canManage />)
 
     await user.click(screen.getByText('Create Conversion Job'))
     // "Create Conversion Job" appears as both button and modal title
@@ -143,7 +169,7 @@ describe('FormatConverter', () => {
 
   it('shows format options for each supported format', async () => {
     const user = userEvent.setup()
-    render(<FormatConverter jobs={[]} supportedFormats={supportedFormats} />)
+    render(<FormatConverter jobs={[]} supportedFormats={supportedFormats} canCreate canManage />)
 
     await user.click(screen.getByText('Create Conversion Job'))
 
@@ -154,7 +180,7 @@ describe('FormatConverter', () => {
 
   it('shows quality presets in the modal', async () => {
     const user = userEvent.setup()
-    render(<FormatConverter jobs={[]} supportedFormats={supportedFormats} />)
+    render(<FormatConverter jobs={[]} supportedFormats={supportedFormats} canCreate canManage />)
 
     await user.click(screen.getByText('Create Conversion Job'))
 
@@ -165,7 +191,7 @@ describe('FormatConverter', () => {
   })
 
   it('displays file size correctly', () => {
-    render(<FormatConverter jobs={[completedJob]} supportedFormats={supportedFormats} />)
+    render(<FormatConverter jobs={[completedJob]} supportedFormats={supportedFormats} canCreate canManage />)
     // 1073741824 bytes = 1 GB
     expect(screen.getByText('1 GB')).toBeInTheDocument()
   })
