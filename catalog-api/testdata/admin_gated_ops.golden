@@ -1,5 +1,6 @@
 delete /api/v1/logs/share/{token}
 delete /api/v1/roles/{id}
+delete /api/v1/sync/endpoints/{id}
 delete /api/v1/users/{id}
 get /api/v1/admin/backups
 get /api/v1/admin/config
@@ -9,6 +10,7 @@ get /api/v1/admin/logs
 get /api/v1/admin/storage
 get /api/v1/admin/system-info
 get /api/v1/admin/users
+get /api/v1/analytics/media/{media_id}
 get /api/v1/analytics/system
 get /api/v1/challenges
 get /api/v1/challenges/results
@@ -27,6 +29,7 @@ get /api/v1/smb/test
 get /api/v1/storage-roots
 get /api/v1/storage/list/{path}
 get /api/v1/storage/roots
+get /api/v1/subtitles/search
 get /api/v1/sync/conflicts
 get /api/v1/sync/devices
 get /api/v1/sync/endpoints
@@ -42,6 +45,8 @@ post /api/v1/admin/backups/{id}/restore
 post /api/v1/admin/covers/generate-thumbnails
 post /api/v1/admin/image-quality/revalidate
 post /api/v1/admin/storage/scan
+post /api/v1/analytics/reports
+post /api/v1/assets/request
 post /api/v1/challenges/run
 post /api/v1/challenges/run/category/{category}
 post /api/v1/challenges/{id}/run
@@ -51,6 +56,8 @@ post /api/v1/configuration/wizard/step/{step_id}/validate
 post /api/v1/copy/local
 post /api/v1/copy/storage
 post /api/v1/copy/upload
+post /api/v1/entities/enrich
+post /api/v1/entities/{id}/metadata/refresh
 post /api/v1/logs/collections/{id}/export
 post /api/v1/logs/share
 post /api/v1/scans
@@ -60,8 +67,12 @@ post /api/v1/smb/probe
 post /api/v1/smb/probe-and-ingest
 post /api/v1/smb/test
 post /api/v1/storage/roots
+post /api/v1/subtitles/download
+post /api/v1/subtitles/translate
 post /api/v1/sync/cleanup
 post /api/v1/sync/endpoints
+post /api/v1/sync/endpoints/{id}/sync
+post /api/v1/sync/schedules
 post /api/v1/users
 post /api/v1/users/{id}/lock
 post /api/v1/users/{id}/reset-password
@@ -71,3 +82,4 @@ put /api/v1/errors/crashes/{id}/status
 put /api/v1/errors/reports/{id}/status
 put /api/v1/roles/{id}
 put /api/v1/storage/roots/{id}/approved-class
+put /api/v1/sync/endpoints/{id}

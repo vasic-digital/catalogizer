@@ -134,6 +134,9 @@ func loadSpec(t *testing.T, path string) *cSpec {
 		if pl, ok := item["parameters"].([]interface{}); ok {
 			common = parseParams(s, pl)
 		}
+		if v := adminGateLoaderViolations(p, item); len(v) > 0 {
+			t.Fatalf("admin-gate marker violations (ADMD1F1-S1): %s", strings.Join(v, "; "))
+		}
 		for _, m := range []string{"get", "post", "put", "patch", "delete", "head", "options"} {
 			od := asMap(item[m])
 			if od == nil {

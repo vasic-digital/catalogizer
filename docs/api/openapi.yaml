@@ -3829,6 +3829,7 @@ paths:
 
   /api/v1/subtitles/search:
     get:
+      x-catalogizer-admin-gated: true
       tags: [subtitles]
       summary: Search subtitles
       security:
@@ -3843,6 +3844,8 @@ paths:
           schema:
             type: string
       responses:
+        '403':
+          description: Administrator role required (decided from the database on every request)
         '401':
           description: Missing or invalid token
         '501':
@@ -3852,6 +3855,7 @@ paths:
 
   /api/v1/subtitles/download:
     post:
+      x-catalogizer-admin-gated: true
       tags: [subtitles]
       summary: Download subtitle
       security:
@@ -3862,6 +3866,8 @@ paths:
             schema:
               type: object
       responses:
+        '403':
+          description: Administrator role required (decided from the database on every request)
         '200':
           description: Subtitle downloaded
         '503':
@@ -3921,6 +3927,7 @@ paths:
 
   /api/v1/subtitles/translate:
     post:
+      x-catalogizer-admin-gated: true
       tags: [subtitles]
       summary: Translate subtitle
       security:
@@ -3931,6 +3938,8 @@ paths:
             schema:
               type: object
       responses:
+        '403':
+          description: Administrator role required (decided from the database on every request)
         '200':
           description: Translated subtitle
         '404':
@@ -6331,6 +6340,7 @@ paths:
 
   /api/v1/assets/request:
     post:
+      x-catalogizer-admin-gated: true
       tags: [assets]
       summary: Request asset resolution
       description: Submits an asset for background resolution (cover art, thumbnails).
@@ -6343,6 +6353,8 @@ paths:
             schema:
               $ref: '#/components/schemas/AssetRequestBody'
       responses:
+        '403':
+          description: Administrator role required (decided from the database on every request)
         '200':
           description: Asset request accepted
           content:
@@ -6713,6 +6725,7 @@ paths:
 
   /api/v1/entities/{id}/metadata/refresh:
     post:
+      x-catalogizer-admin-gated: true
       tags: [entities]
       summary: Refresh entity metadata
       description: Queues a metadata refresh from external providers.
@@ -6725,6 +6738,8 @@ paths:
           schema:
             type: integer
       responses:
+        '403':
+          description: Administrator role required (decided from the database on every request)
         '200':
           description: No directory found for the entity; nothing queued
         '202':
@@ -7424,6 +7439,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     put:
+      x-catalogizer-admin-gated: true
       tags: [sync]
       summary: Update sync endpoint
       description: Updates an existing sync endpoint configuration. Only accessible by the endpoint owner.
@@ -7486,7 +7502,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: Access denied (not endpoint owner)
+          description: Administrator role required (decided from the database on every request)
           content:
             application/json:
               schema:
@@ -7510,6 +7526,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     delete:
+      x-catalogizer-admin-gated: true
       tags: [sync]
       summary: Delete sync endpoint
       description: Deletes a sync endpoint. Only accessible by the endpoint owner.
@@ -7546,7 +7563,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: Access denied (not endpoint owner)
+          description: Administrator role required (decided from the database on every request)
           content:
             application/json:
               schema:
@@ -7566,6 +7583,7 @@ paths:
 
   /api/v1/sync/endpoints/{id}/sync:
     post:
+      x-catalogizer-admin-gated: true
       tags: [sync]
       summary: Start sync operation
       description: |
@@ -7601,7 +7619,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: Access denied (not endpoint owner)
+          description: Administrator role required (decided from the database on every request)
           content:
             application/json:
               schema:
@@ -7747,6 +7765,7 @@ paths:
 
   /api/v1/sync/schedules:
     post:
+      x-catalogizer-admin-gated: true
       tags: [sync]
       summary: Schedule a sync
       description: Creates a scheduled sync for a specific endpoint with a given frequency.
@@ -7785,7 +7804,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: Access denied (not endpoint owner)
+          description: Administrator role required (decided from the database on every request)
           content:
             application/json:
               schema:
@@ -8336,6 +8355,7 @@ paths:
                 $ref: '#/components/schemas/Error'
   /api/v1/analytics/media/{media_id}:
     get:
+      x-catalogizer-admin-gated: true
       tags:
       - analytics
       summary: Get analytics for a media item
@@ -8361,6 +8381,8 @@ paths:
           format: date
         description: 'End of the range, YYYY-MM-DD (default: today)'
       responses:
+        '403':
+          description: Administrator role required (decided from the database on every request)
         '200':
           description: Media analytics
           content:
@@ -8389,6 +8411,7 @@ paths:
           description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
   /api/v1/analytics/reports:
     post:
+      x-catalogizer-admin-gated: true
       tags:
       - analytics
       summary: Create an analytics report
@@ -8402,6 +8425,8 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateAnalyticsReportRequest'
       responses:
+        '403':
+          description: Administrator role required (decided from the database on every request)
         '200':
           description: Report
           content:
@@ -9000,6 +9025,7 @@ paths:
                 $ref: '#/components/schemas/Error'
   /api/v1/entities/enrich:
     post:
+      x-catalogizer-admin-gated: true
       tags:
       - entities
       summary: Enrich entities in the background
@@ -9015,6 +9041,8 @@ paths:
           maximum: 200
           default: 50
       responses:
+        '403':
+          description: Administrator role required (decided from the database on every request)
         '200':
           description: Accepted, or nothing to do
           content:

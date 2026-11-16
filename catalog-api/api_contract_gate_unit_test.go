@@ -13,9 +13,10 @@ import (
 )
 
 // goldenAdminGatedSHA256 pins testdata/admin_gated_ops.golden, the frozen census of the 73 operations the pre-ADMD1F1-S1 description
-// classifier gated, derived mechanically over the real spec before the markers were added (ADMD1F1-S1). Changing the set of admin
+// classifier gated (derived mechanically over the real spec before the markers were added) PLUS the 12 RequireAdmin routes the review
+// found unmarked (4 sync mutators with a stale owner-wording 403, 8 routes without any 403) = 85. Changing the set of admin
 // routes means changing the spec marker AND this golden file AND this hash in the same reviewed change.
-const goldenAdminGatedSHA256 = "d0de7b0248fe5fe6830832d7a6f4a774575c25312f374eeacdf89b0251329171"
+const goldenAdminGatedSHA256 = "d30c5e8baad790e6934898100f3e8a3a6bc113d9a9abd0fb6c801e1192127726"
 
 func loadRealSpec(t *testing.T) map[string]interface{} {
 	t.Helper()
@@ -55,7 +56,7 @@ func r403(t *testing.T, op map[string]interface{}) map[string]interface{} {
 func TestADMD1F1S1_RealSpecMarkerCensusEqualsGolden(t *testing.T) {
 	doc := loadRealSpec(t)
 	want := goldenSet(t)
-	require.Len(t, want, 73)
+	require.Len(t, want, 85)
 	require.Equal(t, want, adminGatedSet(doc), "marked operations must equal the frozen census")
 	require.Empty(t, adminGateSpecViolations(doc))
 	for _, l := range []string{"get /api/v1/sync/endpoints/{id}", "get /api/v1/sync/sessions/{id}"} {
@@ -115,7 +116,7 @@ func TestADMD1F1S1_MutantsAreKilled(t *testing.T) {
 			r["403"] = map[string]interface{}{"description": "Forbidden"}
 		}
 		op[adminGateMarker] = true
-		require.Len(t, adminGatedSet(doc), 74)
+		require.Len(t, adminGatedSet(doc), 86)
 		require.NotEqual(t, want, adminGatedSet(doc))
 	})
 	t.Run("M6 non-boolean marker", func(t *testing.T) {
@@ -139,4 +140,45 @@ func TestADMD1F1S1_NonAdminDescriptionsAreNotDrift(t *testing.T) {
 	op := opOf(t, doc, "get", "/api/v1/auth/status")
 	op["responses"].(map[string]interface{})["403"] = map[string]interface{}{"description": "Forbidden; the caller is not the owner of the session"}
 	require.Empty(t, adminGateSpecViolations(doc))
+}
+
+// Round 2 (F4/F5): drift check for every method, $ref 403s, path-level and non-boolean markers, secondary wording signal.
+func TestADMD1F1S1_DriftAllMethodsAndRefs(t *testing.T) {
+	for _, mp := range [][2]string{{"post", "/api/v1/auth/login"}, {"put", "/api/v1/auth/profile"}, {"delete", "/api/v1/collections/{id}"}, {"get", "/api/v1/auth/status"}} {
+		doc := loadRealSpec(t)
+		item, ok := doc["paths"].(map[string]interface{})[mp[1]].(map[string]interface{})
+		if !ok {
+			continue
+		}
+		op, ok := item[mp[0]].(map[string]interface{})
+		if !ok {
+			continue
+		}
+		op["responses"].(map[string]interface{})["403"] = map[string]interface{}{"description": "Forbidden; caller is not an administrator (decided from the database)"}
+		v := adminGateSpecViolations(doc)
+		require.Len(t, v, 1, "%s %s", mp[0], mp[1])
+	}
+	t.Run("ref 403 resolved", func(t *testing.T) {
+		doc := loadRealSpec(t)
+		doc["components"].(map[string]interface{})["responses"] = map[string]interface{}{"AdminForbidden": map[string]interface{}{"description": "Administrator role required"}}
+		op := opOf(t, doc, "post", "/api/v1/auth/login")
+		op["responses"].(map[string]interface{})["403"] = map[string]interface{}{"$ref": "#/components/responses/AdminForbidden"}
+		require.Len(t, adminGateSpecViolations(doc), 1)
+	})
+	t.Run("path-level marker", func(t *testing.T) {
+		doc := loadRealSpec(t)
+		doc["paths"].(map[string]interface{})["/api/v1/auth/status"].(map[string]interface{})[adminGateMarker] = true
+		require.Len(t, adminGateSpecViolations(doc), 1)
+		require.NotEmpty(t, adminGateLoaderViolations("/x", map[string]interface{}{adminGateMarker: true}))
+	})
+	t.Run("loader rejects non-boolean", func(t *testing.T) {
+		require.NotEmpty(t, adminGateLoaderViolations("/x", map[string]interface{}{"get": map[string]interface{}{adminGateMarker: "yes"}}))
+		require.Empty(t, adminGateLoaderViolations("/x", map[string]interface{}{"get": map[string]interface{}{adminGateMarker: true}}))
+	})
+	t.Run("wording variants all flagged when unmarked", func(t *testing.T) {
+		for _, d := range []string{"Caller is not an administrator (decided from the database)", "Administrator role required", "Caller lacks `system.admin`", "lacks report.view", "Caller lacks user.manage"} {
+			require.True(t, adminRoleText.MatchString(d), d)
+		}
+		require.False(t, adminRoleText.MatchString("Forbidden; the caller is not the owner of the session"))
+	})
 }
