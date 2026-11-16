@@ -35,6 +35,7 @@ type hzEnv struct {
 	bEmail string
 	bName  string
 	ca, cb string // two ordinary users holding the conversion permissions
+	ra, rb string // two ordinary users holding report.view and report.create (error/crash reports)
 	media  []int  // real scanned entity ids
 	mtype  string // entity type of the scanned items
 	dir    string // server working directory (holds ./data)
@@ -154,6 +155,12 @@ func hzSetup(t *testing.T) *hzEnv {
 	}
 	e.ca = c.login("hzconva", "Contract-Value-Strong-77")
 	e.cb = c.login("hzconvb", "Contract-Value-Strong-77")
+	rrole := c.id("POST", "/api/v1/roles", adm, map[string]interface{}{"name": "hz-report", "permissions": []string{"report.create", "report.view"}}, 201)
+	for _, n := range []string{"hzrepa", "hzrepb"} {
+		c.id("POST", "/api/v1/users", adm, map[string]interface{}{"username": n, "email": n + "@example.invalid", "password": "Contract-Value-Strong-77", "role_id": rrole}, 201)
+	}
+	e.ra = c.login("hzrepa", "Contract-Value-Strong-77")
+	e.rb = c.login("hzrepb", "Contract-Value-Strong-77")
 	// A and B must be ordinary users: neither may reach an admin-only route.
 	code, _ = c.do("GET", "/api/v1/admin/users", e.a, nil)
 	require.Equal(t, 403, code, "user A must be non-admin")
@@ -378,6 +385,59 @@ func TestHorizontalAuthz_RealBinary(t *testing.T) {
 		e.noLeak("conversion list", "GET", "/api/v1/conversion/jobs", e.ca, "hzmark-b-source")
 		e.ok("conversion list B sees own", "GET", "/api/v1/conversion/jobs", e.cb, nil, "hzmark-b-source")
 		e.ok("conversion job survives", "GET", p, e.cb, nil, "hzmark-b-source")
+	})
+
+	// ---- error and crash reports (owner-scoped by caller id; users holding report.view + report.create) ----------------------
+	// The default User role holds neither permission (a plain user gets 403 on every route here); a holder is still only
+	// served its OWN reports: services/error_reporting_service.go refuses report.UserID != caller and the list and
+	// statistics queries filter WHERE user_id = caller. B files reports, A (also a holder) must see none of them.
+	t.Run("error_reports", func(t *testing.T) {
+		const compB, sigB = "hzmark-b-component", "HZSIGB"
+		eid := c.id("POST", "/api/v1/errors/report", e.rb, map[string]interface{}{"level": "error", "message": "hzmark-b-error", "component": compB}, 200)
+		cid := c.id("POST", "/api/v1/errors/crash", e.rb, map[string]interface{}{"signal": sigB, "message": "hzmark-b-crash"}, 200)
+		c.id("POST", "/api/v1/errors/report", e.ra, map[string]interface{}{"level": "error", "message": "hzmark-a-error", "component": "hzmark-a-component"}, 200)
+		ep := fmt.Sprintf("/api/v1/errors/reports/%d", eid)
+		cp := fmt.Sprintf("/api/v1/errors/crashes/%d", cid)
+		e.ok("error report B reads own", "GET", ep, e.rb, nil, "hzmark-b-error")
+		e.ok("error report admin-less B list", "GET", "/api/v1/errors/reports", e.rb, nil, "hzmark-b-error")
+		e.ok("crash report B reads own", "GET", cp, e.rb, nil, "hzmark-b-crash")
+		e.ok("crash report B list", "GET", "/api/v1/errors/crashes", e.rb, nil, "hzmark-b-crash")
+		e.ok("error statistics B sees own", "GET", "/api/v1/errors/statistics", e.rb, nil, compB)
+		e.ok("crash statistics B sees own", "GET", "/api/v1/errors/crash-statistics", e.rb, nil, sigB)
+		e.denied("error report read", "GET", ep, e.ra, nil, "hzmark-b-error")
+		e.denied("crash report read", "GET", cp, e.ra, nil, "hzmark-b-crash")
+		// OPEN FINDING HAUTHZ-F3 (status code only): a foreign status update is refused (nothing is written, see the state check
+		// below) but answers 500 (the service returns "access denied" and the handler maps every error to 500) instead of 403/404.
+		// A missing id answers the same 500, so there is no ownership oracle. The write refusal is what is pinned here.
+		for _, kind := range []string{"reports", "crashes"} {
+			e.t.Run("denied-write/"+kind+" status by A", func(t *testing.T) {
+				id := eid
+				if kind == "crashes" {
+					id = cid
+				}
+				foreign, fraw := c.do("PUT", fmt.Sprintf("/api/v1/errors/%s/%d/status", kind, id), e.ra, map[string]interface{}{"status": "resolved"})
+				missing, _ := c.do("PUT", fmt.Sprintf("/api/v1/errors/%s/987654321/status", kind), e.ra, map[string]interface{}{"status": "resolved"})
+				t.Logf("HZ|%s status foreign|%d|WRITE-REFUSED-CODE-IS-OPEN-FINDING-F3", kind, foreign)
+				assert.NotContains(t, []int{200, 204}, foreign, "A's status update on B's report must not succeed: %s", fraw)
+				assert.Equal(t, missing, foreign, "foreign and missing ids answer alike (no oracle)")
+			})
+		}
+		e.noLeak("error report list", "GET", "/api/v1/errors/reports", e.ra, "hzmark-b-error")
+		e.noLeak("crash report list", "GET", "/api/v1/errors/crashes", e.ra, "hzmark-b-crash")
+		e.noLeak("error statistics", "GET", "/api/v1/errors/statistics", e.ra, compB)
+		e.noLeak("crash statistics", "GET", "/api/v1/errors/crash-statistics", e.ra, sigB)
+		e.t.Run("state/B reports intact", func(t *testing.T) {
+			_, raw := c.do("GET", ep, e.rb, nil)
+			assert.NotContains(t, string(raw), `"status":"resolved"`, "A's status attempt did not change B's error report: %s", raw)
+			assert.Contains(t, string(raw), "hzmark-b-error")
+			_, raw = c.do("GET", cp, e.rb, nil)
+			assert.NotContains(t, string(raw), `"status":"resolved"`, "A's status attempt did not change B's crash report: %s", raw)
+			// positive control: the owner CAN resolve its own report, so the unchanged state above is not an inert route
+			code, _ := c.do("PUT", ep+"/status", e.rb, map[string]interface{}{"status": "resolved"})
+			require.Less(t, code, 300)
+			_, raw = c.do("GET", ep, e.rb, nil)
+			assert.Contains(t, string(raw), `"status":"resolved"`, "owner B resolves its own report: %s", raw)
+		})
 	})
 
 	// ---- users: profile of another account (permission gated; A has none) ---------------------------------------------------

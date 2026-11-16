@@ -1,0 +1,7 @@
+{"item":"CAT-HAUTHZ-1 follow-ups 2 (review F1/F2)","label":"PROVISIONAL",
+ "mutants":[
+  {"id":"R5","change":"playback_handler.go ownsSession: return true on a non-NotFound repo.Get error (fail open); previously SURVIVED the End leg of OwnershipLookupErrorFailsClosed","new_tests":"killed by TestHorizontalAuthzUnit_OwnershipLookupErrorFailsClosed (lookup failure now via an unreadable start_position cell that only Get reads; caller is the owner)"},
+  {"id":"R6","change":"error_reporting_service.go GetErrorReport: owner check disabled","new_tests":"killed by sweep denied/error_report_read"},
+  {"id":"R7","change":"error_reporting_repository.go GetErrorStatistics component query: WHERE user_id = ? OR 1=1","new_tests":"killed by sweep noleak/error_statistics"},
+  {"id":"R8","change":"error_reporting_service.go UpdateErrorStatus: owner check removed","new_tests":"killed by sweep denied-write/reports_status_by_A and state/B_reports_intact"},
+  {"id":"R9","change":"error_reporting_repository.go GetErrorReportsByUser: WHERE user_id = ? OR 1=1","new_tests":"killed by sweep noleak/error_report_list"}]}
