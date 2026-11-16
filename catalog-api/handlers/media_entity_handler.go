@@ -1224,6 +1224,33 @@ func (h *MediaEntityHandler) UpdateUserMetadata(c *gin.Context) {
 	})
 }
 
+// GetUserMetadata handles GET /api/v1/entities/:id/user-metadata (HAUTHZ-O1). It returns ONLY the authenticated caller's
+// own row for the entity: the row is looked up by (entity id, token user id), never by entity id alone. A caller with no
+// row of its own, whether the entity is missing or another user holds the only row, gets one and the same 404, so the API
+// is no oracle for foreign rows.
+func (h *MediaEntityHandler) GetUserMetadata(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid entity ID", err)
+		return
+	}
+	userID, ok := userIDFromContext(c)
+	if !ok {
+		utils.SendErrorResponse(c, http.StatusUnauthorized, "Authentication required", nil)
+		return
+	}
+	um, err := h.userMetaRepo.GetByItemAndUser(c.Request.Context(), id, userID)
+	if err != nil {
+		respondInternal(c, http.StatusInternalServerError, "internal error", err)
+		return
+	}
+	if um == nil {
+		utils.SendErrorResponse(c, http.StatusNotFound, "User metadata not found", nil)
+		return
+	}
+	c.JSON(http.StatusOK, um)
+}
+
 // GetEntityStats handles GET /api/v1/entities/stats.
 func (h *MediaEntityHandler) GetEntityStats(c *gin.Context) {
 	ctx := c.Request.Context()

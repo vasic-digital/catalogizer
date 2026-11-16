@@ -1,0 +1,325 @@
+ok  	catalogizer	122.652s
+2026/11/16 23:32:39 handlers: POST /api/v1/storage/roots: failed to create storage root (not returned to client): forced non-unique failure
+2026/11/16 23:33:26 handlers: user 2 updated but the post-update session revoke failed: injected revoke failure
+2026/11/16 23:33:46 handlers: POST /api/v1/scans: Invalid request body (not returned to client): EOF
+2026/11/16 23:34:03 handlers: POST /api/v1/assets/request: Invalid request body (not returned to client): Key: 'EntityType' Error:Field validation for 'EntityType' failed on the 'required' tag
+Key: 'EntityID' Error:Field validation for 'EntityID' failed on the 'required' tag
+2026/11/16 23:35:25 handlers: http 404 (error text not returned to client): assert.AnError general error for testing
+2026/11/16 23:35:25 handlers: http 500 (error text not returned to client): assert.AnError general error for testing
+2026/11/16 23:35:25 handlers: http 500 (error text not returned to client): assert.AnError general error for testing
+2026/11/16 23:35:25 handlers: http 404 (error text not returned to client): assert.AnError general error for testing
+2026/11/16 23:35:25 handlers: http 500 (error text not returned to client): assert.AnError general error for testing
+2026/11/16 23:35:25 handlers: http 500 (error text not returned to client): assert.AnError general error for testing
+2026/11/16 23:35:25 handlers: http 500 (error text not returned to client): assert.AnError general error for testing
+2026/11/16 23:36:53 handlers: http 500 (error text not returned to client): service error
+2026/11/16 23:36:55 handlers: POST /pb/progress: internal error (not returned to client): sql: Scan error on column index 7, name "start_position": converting driver.Value type []uint8 ("unreadable-cell") to a int64: invalid syntax
+2026/11/16 23:36:55 handlers: POST /pb/end: internal error (not returned to client): sql: Scan error on column index 7, name "start_position": converting driver.Value type []uint8 ("unreadable-cell") to a int64: invalid syntax
+2026/11/16 23:39:22 auth: login throttle unavailable: no such table: login_throttle
+2026/11/16 23:41:14 handlers: auth internal error (not returned to client): failed to create session: failed to create session: pq: connection refused host=db
+2026/11/16 23:41:15 handlers: auth internal error (not returned to client): failed to create session: failed to create session: pq: connection refused host=db
+2026/11/16 23:41:15 handlers: auth internal error (not returned to client): failed to update session: pq: connection refused host=db
+2026/11/16 23:41:15 handlers: auth internal error (not returned to client): failed to update session: pq: connection refused host=db
+2026/11/16 23:41:16 handlers: logout failed (not returned to client): pq: connection refused host=db
+2026/11/16 23:41:16 handlers: logout failed (not returned to client): pq: connection refused host=db
+2026/11/16 23:41:16 handlers: logout-all failed (not returned to client): pq: connection refused host=db
+2026/11/16 23:41:17 handlers: auth internal error (not returned to client): failed to update password: pq: connection refused host=db
+2026/11/16 23:41:17 handlers: get sessions failed (not returned to client): failed to scan session: sql: Scan error on column index 4, name "device_info": converting NULL to string is unsupported
+2026/11/16 23:41:17 handlers: deactivate session failed (not returned to client): pq: connection refused host=db
+2026/11/16 23:41:18 handlers: create user failed (not returned to client): failed to create user: pq: connection refused host=db
+2026/11/16 23:41:18 handlers: reset password failed (not returned to client): failed to update password: pq: connection refused host=db
+2026/11/16 23:41:19 handlers: lock account failed (not returned to client): pq: connection refused host=db
+2026/11/16 23:41:19 handlers: unlock account failed (not returned to client): pq: connection refused host=db
+2026/11/16 23:41:19 handlers: registration bind failed (not returned to client): Key: 'Email' Error:Field validation for 'Email' failed on the 'email' tag
+Key: 'Password' Error:Field validation for 'Password' failed on the 'min' tag
+Key: 'FirstName' Error:Field validation for 'FirstName' failed on the 'required' tag
+Key: 'LastName' Error:Field validation for 'LastName' failed on the 'required' tag
+2026/11/16 23:41:22 handlers: POST /pb/start: Invalid request body (not returned to client): json: cannot unmarshal string into Go struct field startPlaybackRequest.media_item_id of type int64
+2026/11/16 23:41:22 handlers: POST /pb/progress: Invalid request body (not returned to client): json: cannot unmarshal string into Go struct field progressPlaybackRequest.session_id of type int64
+2026/11/16 23:41:22 handlers: POST /pb/end: Invalid request body (not returned to client): json: cannot unmarshal string into Go struct field endPlaybackRequest.session_id of type int64
+2026/11/16 23:41:22 handlers: POST /sr: Invalid request body (not returned to client): json: cannot unmarshal number into Go struct field createStorageRootRequest.name of type string
+2026/11/16 23:41:22 handlers: POST /scans: Invalid request body (not returned to client): json: cannot unmarshal string into Go struct field queueScanRequest.storage_root_id of type int64
+2026/11/16 23:41:22 handlers: POST /pb/start: internal error (not returned to client): pq: connection refused host=db
+2026/11/16 23:41:22 handlers: GET /pb/:id/progress: internal error (not returned to client): no such table: media_progress
+2026/11/16 23:41:22 handlers: GET /pb/:id/history: internal error (not returned to client): list history: no such table: playback_sessions
+2026/11/16 23:41:22 handlers: POST /sr: failed to create storage root (not returned to client): pq: connection refused host=db
+2026/11/16 23:41:22 handlers: POST /scans: Storage root not found (not returned to client): sql: no rows in result set
+2026/11/16 23:41:22 handlers: GET /sr: failed to query storage roots (not returned to client): no such table: storage_roots
+2026/11/16 23:41:23 handlers: POST /scans: failed to queue scan (not returned to client): queue: pq: connection refused host=db
+2026/11/16 23:41:23 handlers: http 404 (error text not returned to client): pq: connection refused host=db
+2026/11/16 23:41:23 handlers: http 500 (error text not returned to client): pq: connection refused host=db
+2026/11/16 23:41:23 handlers: sync GET /sync/endpoints: Failed to get sync endpoints (not returned to client): failed to get user endpoints: no such table: sync_endpoints
+2026/11/16 23:41:23 handlers: sync POST /sync/endpoints: Invalid request body (not returned to client): json: cannot unmarshal number into Go struct field SyncEndpoint.name of type string
+2026/11/16 23:41:23 handlers: storage root url refused (detail not returned to client): webdav url refused: outbound destination not allowed: 169.254.169.254 is a loopback, link-local, metadata, reserved or own address, or outside the approved class (private)
+2026/11/16 23:41:23 handlers: local storage root rejected (detail not returned to client): local storage root is outside the allowed base directories: /x: cannot resolve path: lstat /x: permission denied
+2026/11/16 23:41:23 handlers: auth internal error (not returned to client): pq: connection refused
+2026/11/16 23:41:23 handlers: auth internal error (not returned to client): session not found
+2026/11/16 23:41:25 auth: unknown REGISTRATION_MODE "bogus", using "approval"
+2026/11/16 23:41:27 handlers: POST /api/v1/storage/roots: Invalid request body (not returned to client): Key: 'createStorageRootRequest.Name' Error:Field validation for 'Name' failed on the 'required' tag
+2026/11/16 23:41:27 handlers: POST /api/v1/scans: Invalid request body (not returned to client): Key: 'queueScanRequest.StorageRootID' Error:Field validation for 'StorageRootID' failed on the 'required' tag
+2026/11/16 23:41:27 handlers: POST /api/v1/scans: Storage root not found (not returned to client): sql: no rows in result set
+panic: test timed out after 10m0s
+	running tests:
+		TestSSEOPQ1_StorageRoots_AdminOnly (2s)
+
+goroutine 235670 [running]:
+testing.(*M).startAlarm.func1()
+	/usr/lib/go-1.26/src/testing/testing.go:2802 +0x354
+created by time.goFunc
+	/usr/lib/go-1.26/src/time/sleep.go:215 +0x2d
+
+goroutine 1 [chan receive]:
+testing.(*T).Run(0x2e84163fe008, {0x2d64398?, 0x0?}, 0x2e9be40)
+	/usr/lib/go-1.26/src/testing/testing.go:2109 +0x4e5
+testing.runTests.func1(0x2e84163fe008)
+	/usr/lib/go-1.26/src/testing/testing.go:2585 +0x3e
+testing.tRunner(0x2e84163fe008, 0x2e841670dbe0)
+	/usr/lib/go-1.26/src/testing/testing.go:2036 +0xea
+testing.runTests({0x2cfff05, 0xb}, {0x2d26f0e, 0x14}, 0x2e8416416240, {0x4a3f5e0, 0x2eb, 0x2eb}, {0xc2b6ff9604cfb414, 0x8bbcada21e, ...})
+	/usr/lib/go-1.26/src/testing/testing.go:2583 +0x505
+testing.(*M).Run(0x2e84163d0140)
+	/usr/lib/go-1.26/src/testing/testing.go:2443 +0x6ac
+catalogizer/handlers.TestMain(0x2e84163d0140)
+	/home/milosvasic/.cache/claude-tmp/umeta.Rx6M5U/repo/catalog-api/handlers/testmain_dbkey_test.go:18 +0xaf
+main.main()
+	_testmain.go:1540 +0xa5
+
+goroutine 215835 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e8416a6f040, {0x2efa870, 0x2e8416b9b6d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 215834
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 215961 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e84165fda00, {0x2efa870, 0x2e8416d64a50})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 215960
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 216051 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e84169805b0, {0x2efa870, 0x2e8416431450})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 216050
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 215846 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e8416a6f520, {0x2efa870, 0x2e8416b9b860})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 215845
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 215997 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e8416b9c680, {0x2efa870, 0x2e8416430c30})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 215996
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 215894 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e8416c428f0, {0x2efa870, 0x2e8416d64190})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 215893
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 216060 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e8416980a90, {0x2efa870, 0x2e8416431540})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 216059
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 216037 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e8416b9de10, {0x2efa870, 0x2e8416431130})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 216036
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 215856 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e8416a6f860, {0x2efa870, 0x2e8416b9b9a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 215855
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 237161 [select]:
+database/sql.(*DB).connectionCleaner(0x2e8416d49520, 0x7892f8e35008?)
+	/usr/lib/go-1.26/src/database/sql/sql.go:1104 +0x9e
+created by database/sql.(*DB).startCleanerLocked in goroutine 237158
+	/usr/lib/go-1.26/src/database/sql/sql.go:1091 +0x105
+
+goroutine 215865 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e8416a6fba0, {0x2efa870, 0x2e8416b9bae0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 215864
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 215874 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e8416c42270, {0x2efa870, 0x2e8416b9bc20})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 215873
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 237279 [select]:
+github.com/mutecomm/go-sqlcipher.(*SQLiteStmt).exec.func3(0x7892f8e35008)
+	/home/milosvasic/go/pkg/mod/github.com/mutecomm/go-sqlcipher@v0.0.0-20190227152316-55dbde17881f/sqlite3.go:673 +0x69
+created by github.com/mutecomm/go-sqlcipher.(*SQLiteStmt).exec in goroutine 237158
+	/home/milosvasic/go/pkg/mod/github.com/mutecomm/go-sqlcipher@v0.0.0-20190227152316-55dbde17881f/sqlite3.go:672 +0x185
+
+goroutine 216078 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e84169815f0, {0x2efa870, 0x2e8416431720})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 216077
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 215816 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e8416641e10, {0x2efa870, 0x2e8416b9b4a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 215815
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 215943 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e84165fd040, {0x2efa870, 0x2e8416d647d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 215942
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 215903 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e84165fc270, {0x2efa870, 0x2e8416d64280})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 215902
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 216069 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e8416980dd0, {0x2efa870, 0x2e8416431630})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 216068
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 215825 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e8416a6e4e0, {0x2efa870, 0x2e8416b9b590})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 215824
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 215952 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e84165fd520, {0x2efa870, 0x2e8416d648c0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 215951
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 216028 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e8416b9dad0, {0x2efa870, 0x2e8416431040})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 216027
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 215912 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e84165fc5b0, {0x2efa870, 0x2e8416d64370})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 215911
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 215973 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e84163fa410, {0x2efa870, 0x2e8416d64cd0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 215972
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 237159 [select]:
+database/sql.(*DB).connectionOpener(0x2e8416d49520, {0x2efa870, 0x2e84164307d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 237158
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 215884 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e8416c425b0, {0x2efa870, 0x2e8416b9bdb0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 215883
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 237158 [syscall]:
+github.com/mutecomm/go-sqlcipher._Cfunc__sqlite3_step(0x789302000148, 0x2e8416fd0230, 0x2e8416fd0238)
+	_cgo_gotypes.go:175 +0x46
+github.com/mutecomm/go-sqlcipher.(*SQLiteStmt).exec.func4(...)
+	/home/milosvasic/go/pkg/mod/github.com/mutecomm/go-sqlcipher@v0.0.0-20190227152316-55dbde17881f/sqlite3.go:681
+github.com/mutecomm/go-sqlcipher.(*SQLiteStmt).exec(0x2e8416b023c0, {0x2efa6b0, 0x4e1da40}, {0x4e1da40?, 0x7893062825c8?, 0x789352b107a0?})
+	/home/milosvasic/go/pkg/mod/github.com/mutecomm/go-sqlcipher@v0.0.0-20190227152316-55dbde17881f/sqlite3.go:681 +0x205
+github.com/mutecomm/go-sqlcipher.(*SQLiteConn).exec(0x2e8416ee1100, {0x2efa6b0, 0x4e1da40}, {0x2e34ede?, 0x2e8417266740?}, {0x4e1da40?, 0x0?, 0x2e8416ee1100?})
+	/home/milosvasic/go/pkg/mod/github.com/mutecomm/go-sqlcipher@v0.0.0-20190227152316-55dbde17881f/sqlite3.go:234 +0x159
+github.com/mutecomm/go-sqlcipher.(*SQLiteConn).Exec(0x2e8416ee1100, {0x2e34ede, 0x3a5}, {0x4e1da40, 0x0, 0x28?})
+	/home/milosvasic/go/pkg/mod/github.com/mutecomm/go-sqlcipher@v0.0.0-20190227152316-55dbde17881f/sqlite3.go:214 +0x149
+database/sql.ctxDriverExec({0x2efa6b0, 0x4e1da40}, {0x0?, 0x2e8416ee1100?}, {0x7893071bfed0, 0x2e8416ee1100}, {0x2e34ede, 0x3a5}, {0x4e1da40, 0x0, ...})
+	/usr/lib/go-1.26/src/database/sql/ctxutil.go:43 +0x21d
+database/sql.(*DB).execDC.func2()
+	/usr/lib/go-1.26/src/database/sql/sql.go:1713 +0x15c
+database/sql.withLock({0x2ee7670, 0x2e8416330080}, 0x2e8416b432e0)
+	/usr/lib/go-1.26/src/database/sql/sql.go:3572 +0x71
+database/sql.(*DB).execDC(0x46d401?, {0x2efa6b0, 0x4e1da40}, 0x2e8416330080, 0x2e8416b433d8?, {0x2e34ede, 0x3a5}, {0x0, 0x0, 0x0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1708 +0x1f6
+database/sql.(*DB).exec(0x2e8416d49520, {0x2efa6b0, 0x4e1da40}, {0x2e34ede, 0x3a5}, {0x0, 0x0, 0x0}, 0x0?)
+	/usr/lib/go-1.26/src/database/sql/sql.go:1693 +0xcf
+database/sql.(*DB).ExecContext.func1(0xf3?)
+	/usr/lib/go-1.26/src/database/sql/sql.go:1672 +0x4f
+database/sql.(*DB).retry(0x48fce5?, 0x2e8416b434d0)
+	/usr/lib/go-1.26/src/database/sql/sql.go:1576 +0x42
+database/sql.(*DB).ExecContext(0x2e8416ee11c0?, {0x2efa6b0?, 0x4e1da40?}, {0x2e34ede?, 0x2e84170400d8?}, {0x0?, 0x2e84170400d8?, 0x2e8416de00e0?})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1671 +0x9b
+catalogizer/database.(*DB).ExecContext(0x2e8416ee11c0, {0x2efa6b0, 0x4e1da40}, {0x2e34ede?, 0x2e8416b435c0?}, {0x0, 0x0, 0x0})
+	/home/milosvasic/.cache/claude-tmp/umeta.Rx6M5U/repo/catalog-api/database/connection.go:166 +0x7a
+catalogizer/database.(*DB).createPlaylistTablesSQLite(0x2d9e933?, {0x2efa6b0?, 0x4e1da40?})
+	/home/milosvasic/.cache/claude-tmp/umeta.Rx6M5U/repo/catalog-api/database/migrations_v13_playlist_tables.go:46 +0x36
+catalogizer/database.(*DB).createPlaylistTables(0x83a820?, {0x2efa6b0?, 0x4e1da40?})
+	/home/milosvasic/.cache/claude-tmp/umeta.Rx6M5U/repo/catalog-api/database/migrations_v13_playlist_tables.go:14 +0x45
+catalogizer/database.(*DB).runMigration(0x2e8416ee11c0, {0x2efa6b0, 0x4e1da40}, {0x2e8416b43600?, {0x2d3007a?, 0x2e8416330080?}, 0x2e8416d39df0?})
+	/home/milosvasic/.cache/claude-tmp/umeta.Rx6M5U/repo/catalog-api/database/migrations.go:82 +0x135
+catalogizer/database.(*DB).RunMigrations(0x2e8416ee11c0, {0x2efa6b0, 0x4e1da40})
+	/home/milosvasic/.cache/claude-tmp/umeta.Rx6M5U/repo/catalog-api/database/migrations.go:47 +0x972
+catalogizer/handlers.openProductionFileDB(0x2e8416d7d208)
+	/home/milosvasic/.cache/claude-tmp/umeta.Rx6M5U/repo/catalog-api/handlers/wf22_r3_test.go:31 +0x14b
+catalogizer/handlers.newAPIHarness(0x2e8416d7d208, 0x0)
+	/home/milosvasic/.cache/claude-tmp/umeta.Rx6M5U/repo/catalog-api/handlers/wf22_fix_r2_test.go:46 +0x99
+catalogizer/handlers.newOPQHarness(0x2e8416d7d208, 0x0)
+	/home/milosvasic/.cache/claude-tmp/umeta.Rx6M5U/repo/catalog-api/handlers/sse_opq1_test.go:49 +0x45
+catalogizer/handlers.TestSSEOPQ1_StorageRoots_AdminOnly(0x2e8416d7d208)
+	/home/milosvasic/.cache/claude-tmp/umeta.Rx6M5U/repo/catalog-api/handlers/sse_opq1_test.go:99 +0x2c
+testing.tRunner(0x2e8416d7d208, 0x2e9be40)
+	/usr/lib/go-1.26/src/testing/testing.go:2036 +0xea
+created by testing.(*T).Run in goroutine 1
+	/usr/lib/go-1.26/src/testing/testing.go:2101 +0x4c5
+
+goroutine 216019 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e8416b9d790, {0x2efa870, 0x2e8416430f00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 216018
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 215988 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e8416b9c0d0, {0x2efa870, 0x2e8416430b40})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 215987
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 215922 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e84165fc9c0, {0x2efa870, 0x2e8416d644b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 215921
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 216010 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e8416b9d450, {0x2efa870, 0x2e8416430dc0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 216009
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 215934 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e84165fcd00, {0x2efa870, 0x2e8416d64690})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 215933
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 215807 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x2e8416641ad0, {0x2efa870, 0x2e8416b9b3b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 215806
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+FAIL	catalogizer/handlers	600.237s
+ok  	catalogizer/internal/handlers	58.942s
+ok  	catalogizer/internal/media/database	0.053s
+FAIL
+END

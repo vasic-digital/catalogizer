@@ -150,6 +150,7 @@ CREATE TABLE IF NOT EXISTS media_collection_items (
 CREATE TABLE IF NOT EXISTS user_metadata (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     media_item_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL DEFAULT 0,
     user_rating REAL,
     watched_status TEXT, -- unwatched, watching, completed, dropped
     watched_date DATETIME,
