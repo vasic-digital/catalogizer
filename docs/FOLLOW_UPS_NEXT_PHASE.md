@@ -3090,3 +3090,8 @@ Evidence: RED 3 of 48 on parent source with the new tests, GREEN 48/48; full :ap
 - WSF2B2R-m3 (pre-existing): an attempt cancelled whose minter then throws a NON-cancellation exception (e.g. IOException racing the cancel) still publishes Error and calls scheduleReconnect, which can briefly replace a newer live client. Check cancellation first for every exception (`if (!isActive) return@launch`) before handling.
 - WSF2B2R-m4: WSF2BR-m3 (flaky Bearer-header test, first mockk use in runTest, 10 s default timeout) is NOT addressed by ca79a7d04; test unchanged at WebSocketRepositoryTicketTest.kt:138.
 - WSF2B2R-n5: the fixed minter-timeout path is unreachable with the shipped ApiWsTicketMinter (OkHttp timeouts arrive as IOException); hardening only.
+- SSEFURRRR-m1: GET /metrics has no 503 documented (RequireAdmin fallback when no scrape token matches, main_router.go:150).
+- SSEFURRRR-m2 (pre-existing): global 503 sources documented on no operation: ConcurrencyLimiter(100) "server too busy" (main_router.go:133, middleware/concurrency_limiter.go:21) and Redis rate limiter "Rate limiting service temporarily unavailable" (middleware/redis_rate_limiter.go:385,498).
+- SSEFURRRR-n3: Error.error wording calls wrapped-handler errors text/plain; GET /configuration/status 501 is JSON (configuration_handler.go:254-257) and gate responses on /admin aliases and the config wizard are JSON; say "handler-level errors".
+- SSEFURRRR-n4 (pre-existing): openapi ~line 2367 cites main.go:1106-1108 for "Overall status is unhealthy"; those lines are /stats registrations (stale).
+- SSEFURRRR-n5: the "236" http.Error count excludes stdError (7 configuration, 15 error_reporting) calls; state it as literal http.Error calls wherever cited.
