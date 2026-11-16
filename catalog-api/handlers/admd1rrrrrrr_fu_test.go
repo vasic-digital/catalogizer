@@ -26,8 +26,7 @@ func loadOpenAPI(t *testing.T) oaDoc {
 	t.Helper()
 	raw, err := os.ReadFile(filepath.Join("..", "..", "docs", "api", "openapi.yaml"))
 	require.NoError(t, err)
-	// The spec file currently repeats a "403" response key in two operations (pre-existing, not part of this item);
-	// yaml.v3 refuses to decode a map with duplicate keys, so the node tree is converted by hand (last key wins).
+	// The node tree is converted by hand; duplicate mapping keys in the spec are policed by TestADMD1RRRRRRRRfu_OpenAPIHasNoDuplicateKeys.
 	var n yaml.Node
 	require.NoError(t, yaml.Unmarshal(raw, &n))
 	d, ok := nodeToIface(&n).(map[string]interface{})
@@ -69,22 +68,85 @@ func (d oaDoc) schema(t *testing.T, name string) map[string]interface{} {
 	return s
 }
 
-// validate returns the list of violations of body against schema (empty = valid).
+// ADMD1RRRRRRRR-n1: keywords the validator knows. Anything else in a schema it walks fails the test loudly instead of being
+// silently skipped, so "the contract is checked" cannot quietly mean "only the keywords I happened to implement".
+var (
+	oaSchemaEnforced = map[string]bool{"$ref": true, "allOf": true, "oneOf": true, "not": true, "required": true, "properties": true}
+	// intentionally ignored: documentation-only, or a type the body (a decoded JSON object) satisfies by construction
+	oaSchemaIgnored = map[string]bool{"description": true, "example": true, "title": true, "type": true}
+	oaPropEnforced  = map[string]bool{"enum": true}
+	oaPropIgnored   = map[string]bool{"description": true, "example": true, "format": true, "type": true}
+	oaPropTypes     = map[string]bool{"string": true, "integer": true, "boolean": true}
+)
+
+// unsupported lists every keyword (and property type) under schema that validateInner neither enforces nor intentionally ignores.
+func (d oaDoc) unsupported(t *testing.T, schema map[string]interface{}, where string, seen map[string]bool) []string {
+	t.Helper()
+	var out []string
+	for k := range schema {
+		if !oaSchemaEnforced[k] && !oaSchemaIgnored[k] {
+			out = append(out, fmt.Sprintf("%s: unsupported schema keyword %q", where, k))
+		}
+	}
+	if ty, ok := schema["type"].(string); ok && ty != "object" {
+		out = append(out, fmt.Sprintf("%s: unsupported top-level type %q (only object bodies are validated)", where, ty))
+	}
+	if ref, ok := schema["$ref"].(string); ok && !seen[ref] {
+		seen[ref] = true
+		out = append(out, d.unsupported(t, d.schema(t, strings.TrimPrefix(ref, "#/components/schemas/")), ref, seen)...)
+	}
+	for _, key := range []string{"allOf", "oneOf"} {
+		if subs, ok := schema[key].([]interface{}); ok {
+			for i, sub := range subs {
+				out = append(out, d.unsupported(t, sub.(map[string]interface{}), fmt.Sprintf("%s/%s[%d]", where, key, i), seen)...)
+			}
+		}
+	}
+	if not, ok := schema["not"].(map[string]interface{}); ok {
+		out = append(out, d.unsupported(t, not, where+"/not", seen)...)
+	}
+	if props, ok := schema["properties"].(map[string]interface{}); ok {
+		for name, ps := range props {
+			p, _ := ps.(map[string]interface{})
+			for k := range p {
+				if !oaPropEnforced[k] && !oaPropIgnored[k] {
+					out = append(out, fmt.Sprintf("%s.%s: unsupported property keyword %q", where, name, k))
+				}
+			}
+			if ty, ok := p["type"].(string); ok && !oaPropTypes[ty] {
+				out = append(out, fmt.Sprintf("%s.%s: unsupported property type %q", where, name, ty))
+			}
+		}
+	}
+	return out
+}
+
+// validate returns the violations of body against schema (empty = valid); an unsupported keyword is reported as a violation, so every
+// require.Empty(validate(...)) call site fails loudly instead of skipping it.
 func (d oaDoc) validate(t *testing.T, schema map[string]interface{}, body map[string]interface{}) []string {
+	t.Helper()
+	if u := d.unsupported(t, schema, "schema", map[string]bool{}); len(u) > 0 {
+		return []string{"unsupported keywords: " + strings.Join(u, "; ")}
+	}
+	return d.validateInner(t, schema, body)
+}
+
+// validateInner returns the list of violations of body against schema (empty = valid); keyword coverage is policed by validate.
+func (d oaDoc) validateInner(t *testing.T, schema map[string]interface{}, body map[string]interface{}) []string {
 	t.Helper()
 	var errs []string
 	if ref, ok := schema["$ref"].(string); ok {
-		return d.validate(t, d.schema(t, strings.TrimPrefix(ref, "#/components/schemas/")), body)
+		return d.validateInner(t, d.schema(t, strings.TrimPrefix(ref, "#/components/schemas/")), body)
 	}
 	if all, ok := schema["allOf"].([]interface{}); ok {
 		for _, sub := range all {
-			errs = append(errs, d.validate(t, sub.(map[string]interface{}), body)...)
+			errs = append(errs, d.validateInner(t, sub.(map[string]interface{}), body)...)
 		}
 	}
 	if one, ok := schema["oneOf"].([]interface{}); ok {
 		matches := 0
 		for _, sub := range one {
-			if len(d.validate(t, sub.(map[string]interface{}), body)) == 0 {
+			if len(d.validateInner(t, sub.(map[string]interface{}), body)) == 0 {
 				matches++
 			}
 		}
@@ -93,7 +155,7 @@ func (d oaDoc) validate(t *testing.T, schema map[string]interface{}, body map[st
 		}
 	}
 	if not, ok := schema["not"].(map[string]interface{}); ok {
-		if len(d.validate(t, not, body)) == 0 {
+		if len(d.validateInner(t, not, body)) == 0 {
 			errs = append(errs, "not: body matches the forbidden schema")
 		}
 	}
@@ -115,6 +177,10 @@ func (d oaDoc) validate(t *testing.T, schema map[string]interface{}, body map[st
 			case "string":
 				if _, ok := v.(string); !ok {
 					errs = append(errs, k+": want string")
+				}
+			case "boolean":
+				if _, ok := v.(bool); !ok {
+					errs = append(errs, k+": want boolean")
 				}
 			case "integer":
 				if f, ok := v.(float64); !ok || f != float64(int64(f)) {
@@ -201,4 +267,81 @@ func TestADMD1RRRRRRRfu_StorageRoot409BodiesMatchOpenAPIOneOf(t *testing.T) {
 	require.NotEmpty(t, d.validate(t, one, bothBadCode), "a body with name and an unknown code matches neither branch")
 	badCode := map[string]interface{}{"error": "x", "hint": "h", "code": "something_else"}
 	require.NotEmpty(t, d.validate(t, one, badCode), "an unknown code must fail the enum")
+}
+
+// ADMD1RRRRRRRR-m1: oneOf exclusivity is exercised by a synthetic overlapping schema, driving the real validator.
+func TestADMD1RRRRRRRRfu_ValidatorOneOfExclusivity(t *testing.T) {
+	d := oaDoc{}
+	overlap := map[string]interface{}{"oneOf": []interface{}{
+		map[string]interface{}{"required": []interface{}{"a"}},
+		map[string]interface{}{"required": []interface{}{"b"}},
+	}}
+	errs := d.validate(t, overlap, map[string]interface{}{"a": 1, "b": 2})
+	require.Len(t, errs, 1)
+	require.Contains(t, errs[0], "2 branches match")
+	errs = d.validate(t, overlap, map[string]interface{}{"c": 1})
+	require.Len(t, errs, 1)
+	require.Contains(t, errs[0], "0 branches match")
+	require.Empty(t, d.validate(t, overlap, map[string]interface{}{"a": 1}), "exactly one branch matches")
+}
+
+// ADMD1RRRRRRRR-n1: the guard fires on every kind of unsupported keyword and stays quiet on the two real 409 schemas.
+func TestADMD1RRRRRRRRfu_ValidatorUnknownKeywordGuard(t *testing.T) {
+	d := loadOpenAPI(t)
+	for _, name := range []string{"StorageRootConflict", "StorageRootPrivateConfirmation"} {
+		require.Empty(t, d.unsupported(t, d.schema(t, name), name, map[string]bool{}), "the real %s schema must use only supported keywords", name)
+	}
+	mk := func(schema map[string]interface{}) []string { return d.unsupported(t, schema, "s", map[string]bool{}) }
+	require.NotEmpty(t, mk(map[string]interface{}{"additionalProperties": false}), "unknown schema keyword")
+	require.NotEmpty(t, mk(map[string]interface{}{"allOf": []interface{}{map[string]interface{}{"pattern": "x"}}}), "unknown keyword nested in allOf")
+	require.NotEmpty(t, mk(map[string]interface{}{"oneOf": []interface{}{map[string]interface{}{"minProperties": 1}}}), "unknown keyword nested in oneOf")
+	require.NotEmpty(t, mk(map[string]interface{}{"not": map[string]interface{}{"anyOf": []interface{}{}}}), "unknown keyword nested in not")
+	require.NotEmpty(t, mk(map[string]interface{}{"properties": map[string]interface{}{"p": map[string]interface{}{"type": "string", "minLength": 1}}}), "unknown property keyword")
+	require.NotEmpty(t, mk(map[string]interface{}{"properties": map[string]interface{}{"p": map[string]interface{}{"type": "array"}}}), "unsupported property type")
+	require.NotEmpty(t, mk(map[string]interface{}{"type": "array"}), "unsupported top-level type")
+	// the guard reaches through $ref
+	d2 := oaDoc{"components": map[string]interface{}{"schemas": map[string]interface{}{"X": map[string]interface{}{"format": "uuid"}}}}
+	require.NotEmpty(t, d2.unsupported(t, map[string]interface{}{"$ref": "#/components/schemas/X"}, "s", map[string]bool{}))
+	// validate itself surfaces the guard (not only the helper)
+	ug := d.validate(t, map[string]interface{}{"additionalProperties": false}, map[string]interface{}{})
+	require.Len(t, ug, 1)
+	require.Contains(t, ug[0], "unsupported keywords")
+	// boolean property type is enforced
+	require.NotEmpty(t, d.validateInner(t, map[string]interface{}{"properties": map[string]interface{}{"p": map[string]interface{}{"type": "boolean"}}}, map[string]interface{}{"p": "yes"}))
+}
+
+// ADMD1RRRRRRRR-n2: openapi.yaml must not repeat a mapping key (yaml.v3 and most tooling refuse such a document).
+func oaDuplicateKeys(n *yaml.Node, path string) []string {
+	var out []string
+	switch n.Kind {
+	case yaml.DocumentNode, yaml.SequenceNode:
+		for i, c := range n.Content {
+			out = append(out, oaDuplicateKeys(c, fmt.Sprintf("%s[%d]", path, i))...)
+		}
+	case yaml.MappingNode:
+		seen := map[string]int{}
+		for i := 0; i+1 < len(n.Content); i += 2 {
+			k := n.Content[i]
+			if first, dup := seen[k.Value]; dup {
+				out = append(out, fmt.Sprintf("%s: duplicate key %q at lines %d and %d", path, k.Value, first, k.Line))
+			}
+			seen[k.Value] = k.Line
+			out = append(out, oaDuplicateKeys(n.Content[i+1], path+"/"+k.Value)...)
+		}
+	}
+	return out
+}
+
+func TestADMD1RRRRRRRRfu_OpenAPIHasNoDuplicateKeys(t *testing.T) {
+	var ctl yaml.Node
+	require.NoError(t, yaml.Unmarshal([]byte("a:\n  '403': x\n  '403': y\n"), &ctl))
+	require.Len(t, oaDuplicateKeys(&ctl, ""), 1, "negative control: the detector must see a repeated key")
+
+	raw, err := os.ReadFile(filepath.Join("..", "..", "docs", "api", "openapi.yaml"))
+	require.NoError(t, err)
+	var n yaml.Node
+	require.NoError(t, yaml.Unmarshal(raw, &n))
+	require.Empty(t, oaDuplicateKeys(&n, ""))
+	var strict map[string]interface{}
+	require.NoError(t, yaml.Unmarshal(raw, &strict), "yaml.v3 must decode the spec into a map")
 }

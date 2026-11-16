@@ -7324,8 +7324,6 @@ paths:
           schema:
             type: integer
       responses:
-        '403':
-          description: Caller is not an administrator (decided from the database on every request)
         '503':
           description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
           content:
@@ -7356,7 +7354,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: Access denied (not endpoint owner)
+          description: Forbidden; either the caller is not an administrator (decided from the database on every request; every /sync route is admin-gated) or the caller is not the endpoint owner
           content:
             application/json:
               schema:
@@ -7645,8 +7643,6 @@ paths:
           schema:
             type: integer
       responses:
-        '403':
-          description: Caller is not an administrator (decided from the database on every request)
         '503':
           description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
           content:
@@ -7677,7 +7673,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: Access denied (not session owner)
+          description: Forbidden; either the caller is not an administrator (decided from the database on every request; every /sync route is admin-gated) or the caller is not the session owner
           content:
             application/json:
               schema:
