@@ -108,24 +108,31 @@ func TestHorizontalAuthzUnit_ForeignSessionIndistinguishableFromMissing(t *testi
 	assert.Equal(t, 200, w.Code, w.Body.String())
 }
 
-// M-T3: fail closed. When the ownership lookup itself fails (here: the stored owner cell is unreadable, while the UPDATE
-// that Progress/End run would still succeed), the answer is 500 and nothing is written; it must never fall through to the write.
+// M-T3: fail closed. When the ownership lookup itself fails the answer is 500 and nothing is written; it must never fall
+// through to the write. The lookup (repository.Get) is made to fail by an unreadable start_position cell, a column that
+// Get scans but that the UPDATE and the in-transaction reload of repository.Progress/End never read. So with a fail-open
+// ownsSession the write path would run to completion and answer 200 and persist end_position=777; only the ownership
+// check can produce the 500 here. (An earlier version corrupted user_id, which End re-reads itself, so End answered 500
+// regardless of ownsSession and the End leg did not discriminate.)
 func TestHorizontalAuthzUnit_OwnershipLookupErrorFailsClosed(t *testing.T) {
 	e := newRTEnv(t)
 	r := hzUnitRouter(e)
 	w := hzUnitDo(r, "2", "POST", "/pb/start", `{"media_item_id":1,"file_id":1,"position_unit":"seconds","start_position":0}`)
 	require.Equal(t, 200, w.Code, w.Body.String())
 	sid := hzJSONField(t, w.Body.Bytes(), "session_id")
-	_, err := e.db.Exec("UPDATE playback_sessions SET user_id = 'unreadable-owner' WHERE id = " + sid)
+	_, err := e.db.Exec("UPDATE playback_sessions SET start_position = 'unreadable-cell' WHERE id = " + sid)
 	require.NoError(t, err)
 
 	for _, ep := range []string{"/pb/progress", "/pb/end"} {
-		w := hzUnitDo(r, "1", "POST", ep, `{"session_id":`+sid+`,"end_position":777,"total_amount":777}`)
+		// the caller IS the owner (user 2): only the lookup failure can stop the write
+		w := hzUnitDo(r, "2", "POST", ep, `{"session_id":`+sid+`,"end_position":777,"total_amount":777}`)
 		assert.Equal(t, 500, w.Code, ep+": lookup error must be 500 (fail closed): "+w.Body.String())
+		var end interface{}
+		var ended interface{}
+		require.NoError(t, e.db.QueryRow("SELECT end_position, ended_at FROM playback_sessions WHERE id = "+sid).Scan(&end, &ended))
+		assert.NotEqual(t, int64(777), end, ep+": no write happened after the failed ownership lookup")
+		assert.Nil(t, ended, ep+": session not ended after the failed ownership lookup")
 	}
-	var end interface{}
-	require.NoError(t, e.db.QueryRow("SELECT end_position FROM playback_sessions WHERE id = "+sid).Scan(&end))
-	assert.NotEqual(t, int64(777), end, "no write happened after the failed ownership lookup")
 }
 
 func hzJSONField(t *testing.T, raw []byte, key string) string {
