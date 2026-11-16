@@ -3045,3 +3045,7 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 ## PGR3RR/ENVR follow-ups review (Opus GO-with-follow-ups, PROVISIONAL; poolguard/errleak/services whole packages ok, 7 reviewer mutants, 2 survive as explained)
 - PGRRR-n1 (nit): sweep.go:108 comment credits sentinelName with treating bare `Err` as error value, but errName("Err") guarantees it redundantly (mutant 'sentinelName accepts bare Err' is equivalent); reword comment or add direct sentinelName("Err") assertion. Closes PGR3RR-m1 as pinned-by-behaviour.
 - PGRRR-n2 (nit): smb_test.go fixtureHost value (10.254.254.1) is not pinned (mutant set to real LAN host 192.168.1.100 survives); the withSMBDialer redirect (vetted-host assertion) is the guard; document.
+
+## WBF1R3 review follow-ups (Opus round 3, GO; PROVISIONAL)
+- WBF1R3-n1: `npx tsc -p catalog-web/tsconfig.node.json` fails on TypeScript 4.9.5 (TS6046 `moduleResolution: "bundler"`); pre-existing, same on main. Upgrade TS or change the setting.
+- WBF1R3-n2: MediaPlayer.test.tsx overrides `video.setAttribute` in the WBF1-m3 test and never restores it (harmless, element is test-local).
