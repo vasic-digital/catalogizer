@@ -54,6 +54,7 @@ type removeCall struct {
 	name    string
 	ctxErr  error
 	hasDL   bool
+	dl      time.Time
 	created bool
 }
 
@@ -69,6 +70,14 @@ type fakeFS struct {
 	renames    *[][2]string
 	renameErr  error
 	cx         context.Context
+	removeFail string // Remove of this name returns an error
+	creates    *[]createCall
+}
+
+type createCall struct {
+	name string
+	dl   time.Time
+	has  bool
 }
 
 func (s *fakeFS) Open(n string) (copyFile, error) {
@@ -77,6 +86,8 @@ func (s *fakeFS) Open(n string) (copyFile, error) {
 	return f, nil
 }
 func (s *fakeFS) Create(n string) (copyFile, error) {
+	dl, has := s.cx.Deadline()
+	*s.creates = append(*s.creates, createCall{name: n, dl: dl, has: has})
 	f := &fakeFile{name: n, writeErr: s.tmpWriteEr, closeErr: s.tmpCloseEr, onWrite: s.onWrite}
 	s.files["tmp:"+n] = f
 	return f, nil
@@ -88,8 +99,11 @@ func (s *fakeFS) Stat(n string) (fs.FileInfo, error) {
 	return nil, fs.ErrNotExist
 }
 func (s *fakeFS) Remove(n string) error {
-	_, has := s.cx.Deadline()
-	*s.removes = append(*s.removes, removeCall{name: n, ctxErr: s.cx.Err(), hasDL: has})
+	dl, has := s.cx.Deadline()
+	*s.removes = append(*s.removes, removeCall{name: n, ctxErr: s.cx.Err(), hasDL: has, dl: dl})
+	if s.removeFail != "" && n == s.removeFail {
+		return errors.New("remove failed")
+	}
 	return nil
 }
 func (s *fakeFS) Rename(o, n string) error {
@@ -101,11 +115,12 @@ type harness struct {
 	base    *fakeFS
 	removes []removeCall
 	renames [][2]string
+	creates []createCall
 }
 
 func newHarness() *harness {
 	h := &harness{base: &fakeFS{files: map[string]*fakeFile{}, infos: map[string]fs.FileInfo{}, srcBody: "data"}}
-	h.base.removes, h.base.renames = &h.removes, &h.renames
+	h.base.removes, h.base.renames, h.base.creates = &h.removes, &h.renames, &h.creates
 	return h
 }
 
@@ -118,7 +133,7 @@ func (h *harness) run(ctx context.Context, src, dst string) error {
 }
 
 func TestSeamSamePathCleaned(t *testing.T) {
-	for _, p := range [][2]string{{"x", "./x"}, {"a/../x", "x"}, {"a//x", "a/x"}} {
+	for _, p := range [][2]string{{"x", "./x"}, {"a/../x", "x"}, {"a//x", "a/x"}, {`a\x`, "a/x"}, {"a/x", `a\x`}} {
 		h := newHarness()
 		if err := h.run(context.Background(), p[0], p[1]); !errors.Is(err, ErrCopySameFile) {
 			t.Fatalf("%v: err=%v want ErrCopySameFile", p, err)
@@ -233,6 +248,46 @@ func TestSeamCleanupUsesFreshBoundedContext(t *testing.T) {
 	}
 	if h.removes[0].ctxErr != nil || !h.removes[0].hasDL {
 		t.Fatalf("cleanup ctx must be live and bounded: %+v", h.removes[0])
+	}
+	// F1 (kills X7: cleanup on the transfer ctx): the cleanup ctx must differ from the transfer ctx and carry its own ~copyCleanupBudget
+	// deadline, not the transfer deadline (caller + 15s).
+	if len(h.creates) != 1 || !h.creates[0].has {
+		t.Fatalf("creates=%v", h.creates)
+	}
+	if h.removes[0].dl.Equal(h.creates[0].dl) {
+		t.Fatalf("cleanup must not reuse the transfer context deadline: %v", h.removes[0].dl)
+	}
+	if rem := time.Until(h.removes[0].dl); rem > copyCleanupBudget+time.Second {
+		t.Fatalf("cleanup deadline must be ~%v from now, got %v", copyCleanupBudget, rem)
+	}
+}
+
+// F2 (kills X3: temp not beside the destination): the temp lives in the destination's directory.
+func TestSeamTempBesideDestinationInSubdirectory(t *testing.T) {
+	h := newHarness()
+	h.base.infos["a/b/d"] = fakeInfo{"d", 0o644}
+	if err := h.run(context.Background(), "a/s", "a/b/d"); err != nil {
+		t.Fatal(err)
+	}
+	if len(h.creates) != 1 || !strings.HasPrefix(h.creates[0].name, "a/b/.copy-") {
+		t.Fatalf("creates=%v", h.creates)
+	}
+	if len(h.renames) != 1 || !strings.HasPrefix(h.renames[0][0], "a/b/.copy-") || h.renames[0][1] != "a/b/d" {
+		t.Fatalf("renames=%v", h.renames)
+	}
+}
+
+// F3 (kills X8: no temp cleanup when removing the old destination fails).
+func TestSeamDestinationRemoveFailureRemovesTemp(t *testing.T) {
+	h := newHarness()
+	h.base.infos["d"] = fakeInfo{"d", 0o644}
+	h.base.removeFail = "d"
+	err := h.run(context.Background(), "s", "d")
+	if err == nil || len(h.renames) != 0 {
+		t.Fatalf("err=%v renames=%v", err, h.renames)
+	}
+	if len(h.removes) != 2 || h.removes[0].name != "d" || !strings.HasPrefix(h.removes[1].name, ".copy-") {
+		t.Fatalf("destination remove then temp remove expected, removes=%v", h.removes)
 	}
 }
 
