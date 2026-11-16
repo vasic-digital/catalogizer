@@ -63,7 +63,7 @@ original RED. The reviewer's file was adopted with the two deviations stated in 
 * SFTP-01 consequence: cancelling a stuck call closes the shared connection; streams on it are not resumed. By design (the only way to end a blocked call), documented with the grace-period mitigation and a test that a healthy cancel does not disturb other streams.
 * SFTP-17: the directory fsync after the rename is implemented but not observable by a test; ownership of a pin file by ANOTHER user cannot be created without privileges, so that branch is covered by a unit test with a fabricated `Stat_t` only.
 * `ListDirectory` can still, in a microsecond window, accept a partial list from a connection that died at exactly the last reply (see the guide, honest limits).
-* UNCONFIRMED (no NAS contacted): Synology keyboard-interactive requirement, `MaxSessions`, `@eaDir`, behaviour of its `REALPATH`.
+* UNCONFIRMED (no NAS contacted): NAS keyboard-interactive requirement, `MaxSessions`, `@eaDir`, behaviour of its `REALPATH`.
 
 ## Round 3 (fix-r3): the findings of the WF24 re-review, one mechanism per class
 
@@ -108,7 +108,7 @@ reviewer mutants V13/V13b (fix-direction probes) is not re-run: they ARE the sha
 * S07 is fixed for sequential streams; random access that never reads two blocks in a row still pays one request per read (no read-ahead is started), by design. The read-ahead costs up to one read window of memory per sequentially read open file and server reads beyond the reader's position (documented).
 * Observed while fixing S02, NOT part of it and NOT changed (`pkg/fabric` is another package, edited concurrently by another worker): reading `pkg/fabric/errors.go` `Classify` (state at the time of writing), it has no clause for `gosftp.ErrSSHFxConnectionLost` (what `pkg/sftp` returns when the connection dies mid-call), whose text carries no marker, so it would read as `ClassPermanent`; the sftp client retries such errors itself before they leave the package. UNCONFIRMED by a test; reported for the fabric owner.
 * The factory now REFUSES every key it does not read (S11 fix direction). A caller that passes extra keys (`name`, `timeout` ...) to the sftp protocol must stop doing so; `catalog-api` is not wired to this factory yet (its own "sftp" protocol registration is separate), so nothing breaks today.
-* UNCONFIRMED (no NAS contacted): whether Synology DSM advertises keyboard-interactive the way the fixture's OpenSSH does (S02 shape), the latency of its global-request answers under load (S04: now bounded by the owner's `KeepAliveTimeout`), the scanner's real listing overlap (S03).
+* UNCONFIRMED (no NAS contacted): whether NAS DSM advertises keyboard-interactive the way the fixture's OpenSSH does (S02 shape), the latency of its global-request answers under load (S04: now bounded by the owner's `KeepAliveTimeout`), the scanner's real listing overlap (S03).
 * The independent re-review of fix-r3 is OWED.
 
 ## What was built (round 1 list, updated)
@@ -158,7 +158,7 @@ They are corrected in this revision; round-1 `green-run*.txt` and `red.txt` are 
 ## UNCONFIRMED / not done
 
 * No throughput measurement in MB/s (pipelining is shown by concurrency). No chaos/fuzz lane beyond the random-input test of the frame validator (30,000 inputs, no panic) and the table tests for confinement; no `go test -fuzz`.
-* Not contacted: any NAS. Synology SFTP behaviour (chroot, `@eaDir`, `MaxSessions`, password SFTP enabled, keyboard-interactive) is UNCONFIRMED.
+* Not contacted: any NAS. NAS SFTP behaviour (chroot, `@eaDir`, `MaxSessions`, password SFTP enabled, keyboard-interactive) is UNCONFIRMED.
 * The pin store used by the application is not wired: `sftp.DefaultPinStore` is nil until the application installs one (a factory-built client refuses every host until then). Owner-confirmation UI/API is not part of this task.
 * Race detector: run with `-race` in all three GREEN runs (CGO enabled in IMG-GO). No stress run.
 * The independent re-review of fix-r2 (11.4.142 / 11.4.209) is OWED. This round's reviewer-adopted mutants and probes are the reviewer's, but the mutation harness `fix-r2-mutants.py` and the new tests were written by the fixer.

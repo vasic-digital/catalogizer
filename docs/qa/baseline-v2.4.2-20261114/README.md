@@ -25,7 +25,7 @@ Screenshots/traces (`artifacts/`, ~5 MB per run) are not committed.
 |---|---|---|---|
 | web (catalog-api + catalog-web) | BLOCKED-NO-BASELINE | 21 | comparison_web.rec = INCOMPARABLE-BASELINE-MISSING (no previous run; `image_no_worse.out`). The hardware and live-run records satisfy the gate (the gate reaches the comparison step). |
 | android, androidtv, desktop, wizard | BLOCKED-NO-HARDWARE | 20 | no connected hardware, no live run in this task (Android/TV/desktop/wizard not driven). |
-| synology | BLOCKED-NO-HARDWARE | 20 | per CAT-SYN-LIVE-1: drives powered off, SKIP `hardware_not_present`; not a pass. |
+| api | BLOCKED-NO-HARDWARE | 20 | no connected hardware, no live run in this task (api not driven standalone). Protocol live hosts (servers exposing SMB/NFS/WebDAV/FTP/SFTP) are NOT a product and have no gate record; their per-protocol runs are separate (`docs/qa/protocol-live-20261115/`). |
 
 `control_selfbaseline_comparison.rec`: control only, shows image_no_worse.sh refuses a comparison of an image with itself (INCOMPARABLE), so no self-baseline can mint a RELEASABLE.
 UNCONFIRMED: whether `web` is a product the operator wants gated as "physical hardware" (the gate takes this host, kind=physical, as the target; the product list and deployable-build kinds are still the open operator declaration in G2 of docs/release/V2_5_0_GATE_CHECKLIST.md).

@@ -26,5 +26,5 @@ WebSocketContext, WebSocketContext.connectionStatus, websocket. Same 8 files / 1
 ## SKIPPED (untestable here)
 - catalogizer-desktop, installer-wizard vitest: no node_modules present, no installs allowed.
 - cargo/Tauri unit tests: cargo/rustc not installed.
-- Live stacks (catqa*/helix*), Synology, credentials: not run per instructions.
+- Live stacks (catqa*/helix*), NAS, credentials: not run per instructions.
 Cleanup: node_modules symlinks removed, temp root deleted. No repo modifications.

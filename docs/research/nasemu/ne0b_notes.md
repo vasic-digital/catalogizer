@@ -1,9 +1,9 @@
 # NE-0b residual verification notes (BG-NASEMU) — 2026-11-13 ~00:32-00:45 CET
 Read-only; no sudo, no mounts, no pulls, no VM run. Raw artifacts alongside: fs.pdf (File Station API Guide, 5 PDF "pages" but 6141 text lines via pdftotext), fs.txt, web_auth.html/.txt, nfs.html.
 
-## 1. Synology API contract (source: Synology_File_Station_API_Guide.pdf from cndl.synology.cn, fetched 2026-11-13, 502145 B)
-Doc is "Synology File Station Official API", marked proprietary (no reproduction/design-basis without permission): contract notes below are paraphrased minimal facts for interop; legal use as shim basis = UNCONFIRMED/operator question.
-NOTE: URL https://help.synology.com/developer-guide/integrate_dsm/web_authentication.html is actually "Application Authentication" (package CGI authenticate.cgi), NOT the Login Web API. It only confirms login URL form `/webapi/auth.cgi?api=SYNO.API.Auth&version=3&method=login&account=..&passwd=..&format=cookie`, ports 5001 https / 5000 http, logout `version=1&method=logout`. The separate "DSM Login Web API" PDF was NOT found/opened (UNCONFIRMED).
+## 1. NAS API contract (source: Vendor_File_Station_API_Guide.pdf from cndl.vendor-docs.example, fetched 2026-11-13, 502145 B)
+Doc is "NAS File Station Official API", marked proprietary (no reproduction/design-basis without permission): contract notes below are paraphrased minimal facts for interop; legal use as shim basis = UNCONFIRMED/operator question.
+NOTE: URL https://help.vendor-docs.example/developer-guide/integrate_dsm/web_authentication.html is actually "Application Authentication" (package CGI authenticate.cgi), NOT the Login Web API. It only confirms login URL form `/webapi/auth.cgi?api=SYNO.API.Auth&version=3&method=login&account=..&passwd=..&format=cookie`, ports 5001 https / 5000 http, logout `version=1&method=logout`. The separate "DSM Login Web API" PDF was NOT found/opened (UNCONFIRMED).
 Request form: GET /webapi/<path>?api=<NAME>&version=<N>&method=<M>[&params][&_sid=<sid>]  (or cookie `id`); params escaped (comma->`\`... per doc); passwd not escaped; POST also accepted for upload.
 Response: JSON {"success":true,"data":{...}} or {"success":false,"error":{"code":N[,"errors":[...]]}}.
 - SYNO.API.Info v1, since DSM 4.0, fixed at /webapi/query.cgi, method=query&query=all|comma-list -> data{<API>:{path,minVersion,maxVersion}}. Doc examples: SYNO.API.Auth path auth.cgi min1 max3; SYNO.FileStation.List path FileStation/file_share.cgi (old v1 example); File Station v2 APIs (DSM 6.0+) use /webapi/entry.cgi. No API-specific error codes.

@@ -13,7 +13,7 @@ DB/Redis are loopback-only on purpose (Redis has no password). Change the port m
 API HTTPS/HTTP3 listens on 28443 inside the container, not published.
 Media fixtures: ./media (mp4, mp3, txt) mounted at /media; storage root "qa-local-media" (protocol local, /media).
 
-NOT booted: MinIO (image unobtainable, see defects), Android/AndroidTV (no prebuilt APK in tree; Gradle build not run), Tauri desktop + installer-wizard (native apps, not built), catalogizer-api-client (library, no server), HelixQA/challenge services, Synology share (not configured: read-only SMB source not wired).
+NOT booted: MinIO (image unobtainable, see defects), Android/AndroidTV (no prebuilt APK in tree; Gradle build not run), Tauri desktop + installer-wizard (native apps, not built), catalogizer-api-client (library, no server), HelixQA/challenge services, NAS share (not configured: read-only SMB source not wired).
 
 Scripts: qa_stack_start.sh (idempotent, refuses if <6 GiB free), qa_stack_stop.sh [--purge], smoke_journey.sh (evidence -> evidence/smoke_*/journey.log).
 Rebuild images: cd $(cat ROOT_PATH)/src && podman build --network host -f catalog-api/Dockerfile -t localhost/catqa-api:main . (same for catalog-web/Dockerfile -> catqa-web:main). Website: re-run vitepress build into ./website_dist.

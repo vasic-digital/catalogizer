@@ -63,7 +63,7 @@ Assertions of earlier tests that changed, and why (a changed assertion is eviden
 
 ## UNCONFIRMED / not done (round 2)
 
-- UNCONFIRMED: behaviour against the 7 NAS hosts (no NAS contact was made, as instructed). UNCONFIRMED: Synology `#snapshot` applies to those hosts (the skip is a default, `SkipDirNames` is configurable).
+- UNCONFIRMED: behaviour against the 7 NAS hosts (no NAS contact was made, as instructed). UNCONFIRMED: NAS `#snapshot` applies to those hosts (the skip is a default, `SkipDirNames` is configurable).
 - UNCONFIRMED: PostgreSQL execution of the v21 migration and of `insertFileRecord`'s unchanged PostgreSQL branch with the new `parent`-path convention (no PostgreSQL server in this environment).
 - Not done, tracked: a cancel endpoint (needs a job-context registry in `UniversalScanner`); `reason` and `scan.cancelled` in `catalog-web/src/lib/scansApi.ts` and the UI; a persistent change-token store (migration) so that a production scanner can truthfully be incremental; deleted-file detection.
 - Abandoned listing: a client that ignores the context (the FTP library) keeps its call running after a cancel; the scan returns at once and the call's answer is dropped. The window in which the caller disconnects the client under that call is covered by a recover, not by a client change (the submodule is not this worker's).

@@ -1,5 +1,5 @@
 {
-  "alias": "Synology1",
+  "alias": "LiveHost1",
   "content_recorded": false,
   "error": "ConnectionRefusedError: [Errno 111] Connection refused",
   "limits": {

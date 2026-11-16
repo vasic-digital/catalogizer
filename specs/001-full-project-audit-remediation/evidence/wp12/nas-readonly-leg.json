@@ -21,7 +21,7 @@
       "requests": "3",
       "writes_performed": "0",
       "max_protocol_requested": "SMB3",
-      "alias": "Synology3",
+      "alias": "LiveHost3",
       "ok": true
     },
     {
@@ -36,7 +36,7 @@
       "requests": "3",
       "writes_performed": "0",
       "max_protocol_requested": "SMB3",
-      "alias": "Synology4",
+      "alias": "LiveHost4",
       "ok": true
     }
   ]

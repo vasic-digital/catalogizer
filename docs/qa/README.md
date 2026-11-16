@@ -859,7 +859,7 @@ Back to the documentation index: [docs/README.md](../README.md). Descriptions ar
 | [stack3-rebuild-live-20261105/health.json](stack3-rebuild-live-20261105/health.json) | (JSON data artefact; not read, listed by name only) |
 | [stack3-rebuild-live-20261105/images_after.txt](stack3-rebuild-live-20261105/images_after.txt) | (plain-text artefact; not read, listed by name only) |
 | [stack3-rebuild-live-20261105/images_before.txt](stack3-rebuild-live-20261105/images_before.txt) | (plain-text artefact; not read, listed by name only) |
-| [stack3-rebuild-live-20261105/live_synology.txt](stack3-rebuild-live-20261105/live_synology.txt) | (plain-text artefact; not read, listed by name only) |
+| [stack3-rebuild-live-20261105/live_protocol_host.txt](stack3-rebuild-live-20261105/live_protocol_host.txt) | (plain-text artefact; not read, listed by name only) |
 | [stack3-rebuild-live-20261105/live_yandex.txt](stack3-rebuild-live-20261105/live_yandex.txt) | (plain-text artefact; not read, listed by name only) |
 | [stack3-rebuild-live-20261105/pg_migrations.txt](stack3-rebuild-live-20261105/pg_migrations.txt) | (plain-text artefact; not read, listed by name only) |
 | [stack3-rebuild-live-20261105/results_table.md](stack3-rebuild-live-20261105/results_table.md) | results_table.md |

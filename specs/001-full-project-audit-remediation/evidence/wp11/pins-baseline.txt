@@ -76,7 +76,7 @@ from_unpinned	docker/Dockerfile.android4	5	ubuntu:22.04
 from_unpinned	docker/Dockerfile.builder	5	ubuntu:22.04
 pipe_to_shell	docker/Dockerfile.builder	66	curl -fsSL https://deb.nodesource.com/setup_18.x && break || (echo "Attempt $i failed, waiting 15s..." && sleep 15); done | bash
 pipe_to_shell	docker/Dockerfile.builder	80	curl --retry 5 --retry-delay 10 --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-script_image_unpinned	scripts/api-up.sh	58	synology.local:192.168.0.241
+script_image_unpinned	scripts/api-up.sh	58	nas.local:192.168.0.241
 pipe_to_shell	scripts/complete-remaining-tasks.sh	45	curl -s https://get.sdkman.io | bash
 script_image_unpinned	scripts/containers/tests/test_run_pinned.sh	131	docker.io/example/tool:1.2
 pipe_to_shell	scripts/distribute.sh	58	curl -sL firebase.tools | bash

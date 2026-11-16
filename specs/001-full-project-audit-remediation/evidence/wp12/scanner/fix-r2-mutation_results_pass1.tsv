@@ -15,7 +15,7 @@ M17-record-failures-never-fail-the-scan	KILLED	TestGenericScanner_AllRecordsFail
 M18-per-dir-bound-removed	KILLED	TestGenericScanner_BoundsFailInsteadOfTruncating, TestGenericScanner_BoundsFailInsteadOfTruncating/entries_per_directory	13s
 M20-registered-protocol-not-resolved-on-demand	KILLED	TestScanJob_RegisteredPluggableProtocolIsScannedGenerically	14s
 M21-hostile-names-followed	KILLED	TestGenericScanner_HostileEntryNamesAreNotFollowed	14s
-M22-skip-dirs-ignored	KILLED	TestGenericScanner_SkipsSynologyMetadataDirectories	15s
+M22-skip-dirs-ignored	KILLED	TestGenericScanner_SkipsNASMetadataDirectories	15s
 A01-default-depth-1	KILLED	TestWF22_A01_DefaultDepthIsTen	41s
 A03-total-bound-off-by-one	KILLED	TestWF22_A03_TotalBoundIsExact	38s
 A04-perdir-bound-ge	KILLED	TestWF22_A04_PerDirectoryBoundIsExact	38s

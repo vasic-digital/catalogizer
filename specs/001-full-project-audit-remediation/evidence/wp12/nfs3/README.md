@@ -178,7 +178,7 @@ bash specs/001-full-project-audit-remediation/evidence/wp12/nfs3/tools/image_leg
   artifact plus the mutant kills, not a first-write RED. The negative control and the 22 kills are the stronger evidence.
 * **Reserved source ports on a real NAS: UNCONFIRMED.** The privileged path is proven against an in-process server that gates on the
   client's source port, with the bind simulated by a dial hook. `TestRealPrivilegedBind` exercises the real bind and records which of the two
-  allowed outcomes occurred: in the rootless container the bind of source port 1023 failed with `permission denied` and was classified `ErrPrivilegedPortUnavailable` (`green-race-run1.txt`), i.e. a rootless run cannot satisfy a reserved-port NAS and reports that precisely. Whether Synology/other NAS demand a reserved port, and
+  allowed outcomes occurred: in the rootless container the bind of source port 1023 failed with `permission denied` and was classified `ErrPrivilegedPortUnavailable` (`green-race-run1.txt`), i.e. a rootless run cannot satisfy a reserved-port NAS and reports that precisely. Whether NAS/other NAS demand a reserved port, and
   whether `rtpref`/`READDIRPLUS` sizes behave as modelled, is UNCONFIRMED until the NAS read-only leg runs.
 * **T134 unfs3 fixture not used.** It lives on the compose network and only `IMG-INFRA-CLIENT` (no Go toolchain) joins it. The rpcbind
   path is covered by the in-process server only; go-nfs has no portmapper. A libnfs `nfs-ls` oracle comparison is therefore not done

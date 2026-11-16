@@ -1,0 +1,8 @@
+2026-11-15T21:26:14Z
+LiveHost1 ping=up 445:open 2049:open 111:open 21:closed 22:closed 5000:open 5001:open 139:open 80:open 443:open
+LiveHost2 ping=up 445:open 2049:open 111:open 21:open 22:open 5000:open 5001:open 139:open 80:open 443:open
+LiveHost3 ping=up 445:open 2049:open 111:open 21:open 22:open 5000:open 5001:open 139:open 80:open 443:open
+LiveHost4 ping=up 445:open 2049:open 111:open 21:open 22:open 5000:open 5001:open 139:open 80:open 443:open
+LiveHost5 ping=up 445:open 2049:open 111:open 21:open 22:open 5000:open 5001:open 139:open 80:open 443:open
+LiveHost6 ping=up 445:open 2049:open 111:open 21:open 22:open 5000:open 5001:open 139:open 80:open 443:open
+LiveHost7 ping=up 445:open 2049:open 111:open 21:open 22:open 5000:open 5001:open 139:open 80:open 443:open

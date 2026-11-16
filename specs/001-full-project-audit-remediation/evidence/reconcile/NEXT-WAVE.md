@@ -20,7 +20,7 @@ Sources read: `tasks.md` (rev 36, 685 task ids parsed, 1 ticked: T019), `progres
 
 ## 1. The next wave: 36 unblocked tasks
 
-Legend. Dep state: `ok` = deliverable on disk; `ok*` = on disk, independent review owed or in fix (not a gate for starting); `fix` = delivered but a NO-GO fix round may still touch the file (do not edit that file). Tests = test types the task text requires (all P0-P3 tool tasks are `[TDD]`: RED captured first, GREEN x3, paired mutation). Lane: `none` = host/shim/`TIC tooling` only; `build` = needs the dispatch hub (blocked, none in this wave); `NAS` = real Synology; `svc` = real services (WP-13 stack).
+Legend. Dep state: `ok` = deliverable on disk; `ok*` = on disk, independent review owed or in fix (not a gate for starting); `fix` = delivered but a NO-GO fix round may still touch the file (do not edit that file). Tests = test types the task text requires (all P0-P3 tool tasks are `[TDD]`: RED captured first, GREEN x3, paired mutation). Lane: `none` = host/shim/`TIC tooling` only; `build` = needs the dispatch hub (blocked, none in this wave); `NAS` = real NAS; `svc` = real services (WP-13 stack).
 
 | Task | One-line goal | Phase / WP | Dependencies | Exact write-set | Tests required | Size | Lane |
 |---|---|---|---|---|---|---|---|
@@ -87,7 +87,7 @@ Recommended order: **wave start**: W6, W2 (T166/T174/T170-T172 development legs)
 | **C. HC-0 / T014** | T029, T047, T012a, many exits | Owner gives the verbatim launcher-trust answer (HC-0.json `remaining` item 1) and the request list T013 is committed as a document (item 2) | owner (item 2: conductor, commit window) |
 | **D. Commit window** | T161 and everything freeze-based (T166, T174, T176) real runs; T178 | Conductor runs one small reviewed commit batch to clean the tree: 7,574 untracked `evidence/disk/*` files need a decision (ignore rule or relocation; T001 says T582 alone redirects them), ~120 real evidence/code paths and 161 modified paths need independent review before commit | conductor + reviewers |
 | **E. Firebase** (OD-43/OD-45 Crashlytics tasks) | tasks marked BLOCKED-ON OD-43, OD-45 | Owner runs `firebase login` for project `catalogizer-7a3f1` (`/usr/local/bin/firebase` exists) | owner |
-| **F. ODG-08 NFS kernel-mount proof** | T134a, T346, T361 real-NFS leg, T407 | Owner enables NFS on one Synology and names host and export; until then the protocol-level (user-space) evidence stands and the claim stays UNMET | owner |
+| **F. ODG-08 NFS kernel-mount proof** | T134a, T346, T361 real-NFS leg, T407 | Owner enables NFS on one NAS and names host and export; until then the protocol-level (user-space) evidence stands and the claim stays UNMET | owner |
 | **G. ODG-16 signing key** | signing legs of T446 and T566-class tasks | Owner enters the keyring passphrase at signing time (custody confirmed as policy-grade) | owner |
 | **H. ODG-18 first manual QA cycle** | T554, T556 | Owner schedules the first manual-QA cycle after the remediation release candidate | owner |
 | **I. ODG-41, ODG-42, ODG-43** | T582, T595b, T576, T588, T593 | Decided after the T525 per-class report / at the closing window | owner |
