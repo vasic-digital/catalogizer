@@ -173,6 +173,31 @@ func validateRootURL(protocol string, raw *string) error {
 // connection fields, so the hint names the existing root instead of a route that does not exist.
 const storageRootConflictHint = "choose a different name, or use the root named by existing_id"
 
+// storageRootConflictHintNoID is the hint when the winner could not be looked up (ADMD1RRRRR-n2): existing_id is omitted,
+// so the hint must not refer to it.
+const storageRootConflictHintNoID = "choose a different name; a root with this name already exists (its id could not be looked up)"
+
+// storageRootBeforeInsertHook is a test seam (ADMD1RRRRR-m1): nil in production; called after the duplicate-name pre-check
+// and before the insert, so a test can deterministically make the request miss the pre-check and hit the insert-time
+// unique violation.
+var storageRootBeforeInsertHook func(ctx context.Context, name string)
+
+// storageRootConflictBody builds the 409 body of a duplicate storage-root name; existingID nil omits existing_id and
+// uses the matching hint.
+func storageRootConflictBody(name string, existingID *int64) gin.H {
+	body := gin.H{
+		"error": "storage root with this name already exists",
+		"name":  name,
+		"hint":  storageRootConflictHint,
+	}
+	if existingID != nil {
+		body["existing_id"] = *existingID
+	} else {
+		body["hint"] = storageRootConflictHintNoID
+	}
+	return body
+}
+
 // CreateStorageRoot handles POST /api/v1/storage/roots.
 // Strictly creates a new storage root. If a row with the same name
 // already exists, returns 409 Conflict (CATAPI-DEFECT-005) naming the
@@ -271,13 +296,11 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 		"SELECT id FROM storage_roots WHERE name = ?", req.Name,
 	).Scan(&existingID)
 	if err == nil {
-		c.JSON(http.StatusConflict, gin.H{
-			"error":       "storage root with this name already exists",
-			"name":        req.Name,
-			"existing_id": existingID,
-			"hint":        storageRootConflictHint,
-		})
+		c.JSON(http.StatusConflict, storageRootConflictBody(req.Name, &existingID))
 		return
+	}
+	if storageRootBeforeInsertHook != nil {
+		storageRootBeforeInsertHook(c.Request.Context(), req.Name)
 	}
 
 	newID, insertErr := h.db.InsertReturningID(c.Request.Context(),
@@ -290,18 +313,14 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 		// ADMD1RRR-I1: the name check above is check-then-insert; the loser of a concurrent create hits the unique
 		// constraint on storage_roots.name and must see the same 409 as the sequential duplicate.
 		if isUniqueViolation(insertErr) {
-			body := gin.H{
-				"error": "storage root with this name already exists",
-				"name":  req.Name,
-				"hint":  storageRootConflictHint,
-			}
 			// ADMD1RRRR-n1: name the winner of the race like the sequential 409 does; a failed lookup only omits the field.
 			var winnerID int64
+			var winner *int64
 			if lerr := h.db.QueryRowContext(c.Request.Context(),
 				"SELECT id FROM storage_roots WHERE name = ?", req.Name).Scan(&winnerID); lerr == nil {
-				body["existing_id"] = winnerID
+				winner = &winnerID
 			}
-			c.JSON(http.StatusConflict, body)
+			c.JSON(http.StatusConflict, storageRootConflictBody(req.Name, winner))
 			return
 		}
 		respondInternal(c, http.StatusInternalServerError, "failed to create storage root", insertErr)

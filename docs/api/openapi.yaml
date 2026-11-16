@@ -102,6 +102,22 @@ components:
       description: JWT token obtained from /api/v1/auth/login
 
   schemas:
+    StorageRootConflict:
+      description: 409 body of POST /storage/roots for a duplicate name (the private-network confirmation 409 uses the Error shape)
+      allOf:
+        - $ref: '#/components/schemas/Error'
+        - type: object
+          properties:
+            name:
+              type: string
+              description: The requested storage-root name that already exists
+            existing_id:
+              type: integer
+              format: int64
+              description: Id of the root that owns the name; omitted when the winner lookup fails after a creation race
+            hint:
+              type: string
+              description: Human-readable next step; refers to existing_id only when it is present
     Error:
       type: object
       properties:
@@ -4086,11 +4102,12 @@ paths:
             Nothing was stored. Either private-network confirmation is required (code private_network_confirmation_required),
             or a root with this name already exists ("storage root with this name already exists"; the body carries `name`,
             `existing_id` and a `hint`). The duplicate is refused both when the name is already stored and when two creates
-            race for it (the loser of the race also gets 409, never 500).
+            race for it (the loser of the race also gets 409, never 500). `existing_id` is omitted when the lookup of
+            the winning root fails after a race; the `hint` then does not refer to it.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/StorageRootConflict'
         '503':
           description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '403':
@@ -4967,7 +4984,7 @@ paths:
                 $ref: '#/components/schemas/Error'
         '409':
           description: |
-            Role change refused: an administrator cannot remove their own administrator role,
+            Refused: an administrator cannot remove their own administrator role,
             the last active, unlocked administrator cannot be demoted or deactivated (the check and the
             write are one atomic statement, also for DELETE /users/:id and PUT /users/:id), the user
             changed concurrently, or the new email (or username) already belongs to another user
