@@ -30,8 +30,8 @@ Sweep test: `catalog-api/horizontal_authz_binary_test.go` (`TestHorizontalAuthz_
 | 18 | PUT /api/v1/media/:id/favorite | main.go:1063 | per-item GLOBAL flag | **FINDING HAUTHZ-F2** (gated test) |
 | 19 | PUT /api/v1/media/:id/progress | main.go:1062 | validated no-op, nothing persisted (handlers/media_handler.go UpdateWatchProgress) | not exercisable: no state to leak |
 | 20 | GET /api/v1/media/:id | main.go:1061 | shared catalogue, but returns the global `is_favorite` | via F2 |
-| 21 | PUT /api/v1/entities/:id/user-metadata | main.go:1309 | SELF write (user id from token, handlers/media_entity_handler.go:1192) | usermeta body names B; usermeta reads |
-| 22 | POST /api/v1/entities/:id/user-metadata | main.go:1310 | SELF write | same handler as 21 |
+| 21 | PUT /api/v1/entities/:id/user-metadata | main.go:1309 | SELF write (user id from token, handlers/media_entity_handler.go:1192) | NOT exercised by the binary sweep (no read route returns user metadata: `GET /entities/:id` and `/metadata` never carry it, so the old `usermeta` cases could not fail). Covered at store level by `handlers/horizontal_authz_unit_test.go` `TestHorizontalAuthzUnit_UserMetadataOwnerFromTokenNotBody` (real handler, real SQLite, read back through `UserMetadataRepository`); the binary sweep keeps only the owner-write positive controls |
+| 22 | POST /api/v1/entities/:id/user-metadata | main.go:1310 | SELF write | same handler as 21 (same store-level test) |
 | 23 | GET /api/v1/entities/:id/progress | main.go:1316 | SELF | playback progress |
 | 24 | GET /api/v1/entities/:id/history | main.go:1317 | SELF | playback history |
 | 25 | POST /api/v1/playback/sessions/start | main.go:1323 | SELF create | (setup) |
@@ -63,9 +63,9 @@ Sweep test: `catalog-api/horizontal_authz_binary_test.go` (`TestHorizontalAuthz_
 | 51 | GET /api/v1/auth/permissions | main_router.go:291 | SELF | self view |
 | 52 | POST /api/v1/auth/change-password | main_router.go:294 | SELF (current password required) | not exercised: acts on the caller only, no foreign id; would revoke the token under test |
 | 53 | POST /api/v1/auth/logout | main_router.go:296 | SELF | not exercised (revokes the token under test); acts on the caller's session only |
-| 54 | GET /api/v1/configuration/wizard/progress | main.go:1226 | SELF (configUserID) | NOT COVERED: B needs `system.configure` to write progress and the step ids are configuration-service data; reason UNCONFIRMED whether a leak exists |
-| 55 | POST /api/v1/configuration/wizard/step/:step_id/save | main.go:1225 (configGate) | SELF write | NOT COVERED (same) |
-| 56 | POST /api/v1/configuration/wizard/complete | main.go:1227 (configGate) | SELF write | NOT COVERED (same; also mutates server configuration) |
+| 54 | GET /api/v1/configuration/wizard/progress | main.go:1226 | SELF (configUserID) | NOT COVERED by a live test. Code fact: `ConfigurationRepository.GetWizardProgress` queries `WHERE user_id = ?` with the caller's id (`repository/configuration_repository.go:90`), so the read is owner-scoped; writes need `system.configure`, which only Admin holds by default |
+| 55 | POST /api/v1/configuration/wizard/step/:step_id/save | main.go:1225 (configGate) | SELF write | NOT COVERED by a live test (same code fact) |
+| 56 | POST /api/v1/configuration/wizard/complete | main.go:1227 (configGate) | SELF write | NOT COVERED by a live test (same code fact; also mutates server configuration) |
 | 57 | POST /api/v1/stream/:id/ticket | main.go:1038 | capability minted for caller+session+media id | NOT COVERED horizontally: shared catalogue; the ticket is a 60 s bearer capability for ONE media id (covered by `stream_ticket_binary_test.go`) |
 | 58 | GET /api/v1/stream/:id (`?ticket=`) | main.go:1035 | shared catalogue | same |
 | 59 | POST /api/v1/ws/ticket | main_wsroute.go:20 | capability, bound to user and session | NOT COVERED horizontally (covered by `main_wsticket_test.go`) |
@@ -76,7 +76,7 @@ Rows 60 and 61 are counted once each although row 61 holds three routes; row 2/8
 
 ## 2. Permission-gated installation-wide diagnostics (not horizontal by design)
 
-`/api/v1/errors/*` (main.go:1233-1243), `/api/v1/logs/*` (main.go:1249-1259) incl. log shares (`logs/share`, `logs/share/:token`), `/api/v1/roles/*`, `/api/v1/configuration` (non-wizard). Each handler requires `system.admin`, `report.view`/`report.create`, `user.manage` or `system.configure` before touching a record (`handlers/log_management_handler.go:142` etc.; `handlers/error_reporting_handler.go:58`). A holder sees installation-wide records by design, so "user A reads B's record" is the granted permission, not a defect. NOT swept horizontally; plain-user 403 is pinned by the route-permission tests (`route_perms_*_binary_test.go`).
+`/api/v1/errors/*` (main.go:1233-1243), `/api/v1/logs/*` (main.go:1249-1259) incl. log shares (`logs/share`, `logs/share/:token`), `/api/v1/roles/*`, `/api/v1/configuration` (non-wizard). Each handler requires `system.admin`, `report.view`/`report.create`, `user.manage` or `system.configure` before touching a record (`handlers/log_management_handler.go:142` etc.; `handlers/error_reporting_handler.go:58`). Correction (CAT-HAUTHZ-1 follow-up): error and crash reports are NOT installation-wide for a holder: `services/error_reporting_service.go` `GetErrorReport`/`GetCrashReport` (lines 182-205) refuse when `report.UserID != userID`, so they are owner-filtered. Log collections and diagnostics are installation-wide for a permission holder by design (the granted permission, not a defect). `GET /logs/share/:token` is a bearer-token capability: possession of the token is the grant (checked against the share's `read` permission and expiry), classified with the ws/stream tickets (rows 58-59), not as a per-user resource. NOT swept horizontally; plain-user 403 is pinned by the route-permission tests (`route_perms_*_binary_test.go`).
 
 ## 3. Admin-only routes (cannot be horizontal; a non-admin never reaches the handler)
 
