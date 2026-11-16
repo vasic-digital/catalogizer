@@ -133,17 +133,10 @@ func (suite *SMBServiceTestSuite) TestSMBConnectionPooling() {
 	assert.True(suite.T(), initialState)
 
 	// Connect() does a real TCP probe with a bounded timeout. ENV-F1: the fixture address 192.168.1.100 is a REAL SMB host on the developer
-	// LAN, so no test may rely on, or dial, a LAN address. The fixture host is an RFC 1918 address no local interface carries (it passes the
-	// real vetting, loopback would be refused); the vetted dial is redirected to a loopback port that was bound and closed at once, so the
-	// connect is a real TCP attempt that is refused deterministically and reaches no other machine.
+	// LAN, so no test may rely on, or dial, a LAN address. The fixture host is a fixed RFC 1918 address (it passes the real vetting, loopback
+	// would be refused; the vetting does not refuse a server's own addresses, so no per-host interface check is made); the vetted dial is
+	// redirected to a loopback port that was bound and closed at once, so the connect is a real TCP attempt that is refused deterministically and reaches no other machine.
 	fixtureHost := "10.254.254.1"
-	if addrs, err := net.InterfaceAddrs(); err == nil {
-		for _, a := range addrs {
-			if ipn, ok := a.(*net.IPNet); ok && ipn.IP.Equal(net.ParseIP(fixtureHost)) {
-				fixtureHost = "172.31.254.1"
-			}
-		}
-	}
 	suite.service.config.SMB.Hosts[0].Host = fixtureHost
 	ln, lerr := net.Listen("tcp", "127.0.0.1:0")
 	suite.Require().NoError(lerr)
