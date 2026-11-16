@@ -1,7 +1,12 @@
 package services
 
 import (
+	"context"
+	"errors"
+	"net"
+	"syscall"
 	"testing"
+	"time"
 
 	"catalogizer/internal/config"
 	"catalogizer/internal/models"
@@ -127,16 +132,38 @@ func (suite *SMBServiceTestSuite) TestSMBConnectionPooling() {
 	initialState := suite.service.IsConnected("test-server")
 	assert.True(suite.T(), initialState)
 
-	// Connect() now does a real TCP probe with a bounded 5s timeout.
-	// ENV-F1: the fixture's RFC1918 address 192.168.1.100 is a REAL SMB host on
-	// the developer LAN (Connect returned nil there), so reachability of the
-	// address cannot be assumed. Port 1 (tcpmux) never serves SMB, so the probe
-	// fails (refused or timed out) on any network, which is what this test needs.
-	suite.service.config.SMB.Hosts[0].Port = 1
+	// Connect() does a real TCP probe with a bounded timeout. ENV-F1: the fixture address 192.168.1.100 is a REAL SMB host on the developer
+	// LAN, so no test may rely on, or dial, a LAN address. The fixture host is an RFC 1918 address no local interface carries (it passes the
+	// real vetting, loopback would be refused); the vetted dial is redirected to a loopback port that was bound and closed at once, so the
+	// connect is a real TCP attempt that is refused deterministically and reaches no other machine.
+	fixtureHost := "10.254.254.1"
+	if addrs, err := net.InterfaceAddrs(); err == nil {
+		for _, a := range addrs {
+			if ipn, ok := a.(*net.IPNet); ok && ipn.IP.Equal(net.ParseIP(fixtureHost)) {
+				fixtureHost = "172.31.254.1"
+			}
+		}
+	}
+	suite.service.config.SMB.Hosts[0].Host = fixtureHost
+	ln, lerr := net.Listen("tcp", "127.0.0.1:0")
+	suite.Require().NoError(lerr)
+	closedAddr := ln.Addr().String()
+	suite.Require().NoError(ln.Close())
+	var vetted string
+	withSMBDialer(suite.T(), func(ctx context.Context, addr string, timeout time.Duration) (net.Conn, error) {
+		vetted = addr
+		d := net.Dialer{Timeout: timeout}
+		return d.DialContext(ctx, "tcp", closedAddr)
+	})
 	err := suite.service.Connect("test-server")
-	assert.Error(suite.T(), err, "Connect to unreachable host must fail")
+	suite.Require().Error(err, "Connect to an unreachable host must fail")
+	assert.Contains(suite.T(), vetted, fixtureHost+":", "the dial must have been handed the vetted fixture host")
 	assert.Contains(suite.T(), err.Error(), "failed to connect to SMB host",
 		"error should come from the network probe, not a config lookup")
+	assert.NotContains(suite.T(), err.Error(), "is not allowed", "the host must pass vetting; this tests the connect failure")
+	var opErr *net.OpError
+	assert.True(suite.T(), errors.As(err, &opErr), "failure must be a network error, got %v", err)
+	assert.True(suite.T(), errors.Is(err, syscall.ECONNREFUSED), "closed local port must refuse: %v", err)
 
 	// IsConnected continues to return true because it's a config-level
 	// check, not a live probe.

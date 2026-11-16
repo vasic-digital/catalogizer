@@ -48,7 +48,14 @@ func TestSECDIAL1_CreateStorageRootRefusesUnvettedHost(t *testing.T) {
 func TestSECDIAL1_CreateStorageRootAllowsPrivateLANHost(t *testing.T) {
 	t.Setenv(netguard.AllowCIDRsEnv, "")
 	h := newAPIHarness(t, false)
-	for i, host := range []string{"192.168.1.20", "10.0.0.5", "172.16.3.4", "100.64.1.2", "fd12:3456::1"} {
+	// ENV-F1: one unowned address per class (a machine that owns a hard-coded one is refused by the own-address rule).
+	for i, host := range []string{
+		unownedHost(t, "192.168.1.20", "192.168.254.20"),
+		unownedHost(t, "10.0.0.5", "10.254.254.5"),
+		unownedHost(t, "172.16.3.4", "172.31.254.4"),
+		unownedHost(t, "100.64.1.2", "100.127.254.2"),
+		unownedHost(t, "fd12:3456::1", "fd12:3456::2"),
+	} {
 		for _, proto := range []string{"smb", "ftp", "nfs"} {
 			code, body := h.do("POST", "/storage/roots", secDialRoot(proto, host, proto+"-lan-"+string(rune('a'+i))))
 			require.Equal(t, 201, code, "%s %s: %v", proto, host, body)
