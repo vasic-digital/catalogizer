@@ -3007,3 +3007,9 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 ### ELFU-m1 review follow-ups (Opus round 1 GO-with-follow-ups; round 2 GO with no open findings, 2026-11-16, PROVISIONAL)
 - ELFUR-m1 (minor, test-instrumentation, out of scope, from round 1 F4): other name-trust heuristics in the errleak checker have no identity check: isStdStream exempts any receiver whose name contains stdout/stderr; isSentinel treats any name starting with Err as safe; errName matches names with the err suffix. Name heuristics, not import-path matches; no other HasSuffix-on-import-path match exists.
 - ELFUR-i2 (info): round 2 differential over all 1361 catalog-api .go files: head vs base flag the identical 1287 sites (0 gained, 0 lost); positive control (pkgMappers emptied) shows +3 scan_handler sites; 9 reviewer mutants killed; catalog-api root `go test -short .` passes (69 s) on the merged tree. Rounds used: 2 of 5.
+
+### TH3/WTB1 follow-ups review follow-ups (Opus GO-with-follow-ups, 2026-11-16, PROVISIONAL)
+- TH3R-m1 (minor, test-instrumentation): TestRunWithin claims the leaked goroutine finishes and sends into the buffered channel without blocking but never asserts it; mutant R3 (unbuffered channel) survives. Have fn signal a done channel after returning and assert it fires within a bound after release.
+- TH3R-m2 (minor, test-instrumentation): nothing covers the Fatalf path of withinDeadlockGuard (mutant R4: ignore !ok survives); add a subtest with a blocking fn, short deadline and a recording testing.TB.
+- TH3R-n3 (nit): example regex anchored at the end only (prefix-injected variants still match); production string is a constant, low value. Trailing `;` would break the pin (deliberate).
+- TH3R-i4 (info): -race runs on handlers LastAdmin|LockAccount|PGLA|RunWithin (188 s), whole internal/tests/examples, repository PGLAX1F7 and 2 vitest files all pass; TH3-m1 (live PG 409, wider -race) and TH3-m2 stay open.
