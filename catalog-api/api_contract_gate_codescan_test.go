@@ -85,6 +85,24 @@ func isGroupType(e ast.Expr) bool {
 	return strings.Contains(s, "RouterGroup") || strings.Contains(s, "IRoutes") || strings.Contains(s, "IRouter") || strings.HasSuffix(s, "gin.Engine")
 }
 
+// allowedGroupSinkNames: callees that legitimately receive an engine/group value without registering routes on it (round 3, I1: any
+// OTHER callee that is handed a group value and is not a scanned function with a group parameter is reported unresolved).
+//   - verifyAuthRouteTable(e *gin.Engine): reads the finished engine's route table at startup (main_router.go), registers nothing.
+//   - engineChain(eng any, field string): reflectively reads a HandlersChain field of the finished engine for verifyAuthRouteTable.
+//   - applyTrustedProxies / setTrustedProxies: configure X-Forwarded-For trust on the engine (trusted_proxies.go), register nothing.
+//
+// Pinned by TestADMD1F1S1R3_AllowListPinned.
+var allowedGroupSink = map[string]bool{"verifyAuthRouteTable": true, "applyTrustedProxies": true, "setTrustedProxies": true, "engineChain": true}
+
+func allowedGroupSinkNames() []string {
+	var out []string
+	for k := range allowedGroupSink {
+		out = append(out, k)
+	}
+	sort.Strings(out)
+	return out
+}
+
 func isGateType(e ast.Expr) bool { return exprStr(e) == "gin.HandlerFunc" }
 
 type fnInfo struct {
@@ -335,17 +353,60 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 					}
 					return n, true
 				case s.Sel.Name == "Use":
-					return recv(s.X)
+					b, ok := recv(s.X)
+					if !ok {
+						return scanEnv{}, false
+					}
+					for _, a := range x.Args { // r.Group("/api").Use(gate).GET(...): the gate rides the chain (round 3, I2)
+						if isGate(a) {
+							b.gated = true
+						}
+					}
+					return b, true
 				case (s.Sel.Name == "New" || s.Sel.Name == "Default") && exprStr(s.X) == "gin", engineFuncs[s.Sel.Name]:
 					return scanEnv{prefix: "/"}, true
 				}
 			}
 			return scanEnv{}, false
 		}
-		bind := func(lhs, rhs ast.Expr) {
+		// fail-closed escape sinks (round 3): a group value that leaves the walk's model is reported, never dropped
+		escape := func(e ast.Expr, why string) {
+			if _, ok := recv(e); ok {
+				report(j.fi.file, fname, "group value escapes the scanner ("+why+"): "+exprStr(e))
+			}
+		}
+		// ctxOf: innermost if/for/switch/select/closure/go/defer construct enclosing a call or declaration (nil = straight-line body).
+		// A gate Use(...) is unconditional for a group only when it sits in the SAME context in which the group was declared.
+		ctxOf := map[ast.Node]ast.Node{}
+		declCtx := map[string]ast.Node{}
+		calledSel := map[*ast.SelectorExpr]bool{}
+		var mark func(n ast.Node, ctx ast.Node)
+		mark = func(n ast.Node, ctx ast.Node) {
+			ast.Inspect(n, func(c ast.Node) bool {
+				if c == n {
+					return true
+				}
+				switch cx := c.(type) {
+				case *ast.IfStmt, *ast.ForStmt, *ast.RangeStmt, *ast.SwitchStmt, *ast.TypeSwitchStmt, *ast.SelectStmt, *ast.FuncLit, *ast.CaseClause, *ast.CommClause, *ast.GoStmt, *ast.DeferStmt:
+					mark(c, c)
+					return false
+				case *ast.CallExpr:
+					if sl, ok := cx.Fun.(*ast.SelectorExpr); ok {
+						calledSel[sl] = true
+					}
+					ctxOf[cx] = ctx
+				case *ast.AssignStmt, *ast.ValueSpec:
+					ctxOf[c] = ctx
+				}
+				return true
+			})
+		}
+		mark(fd.Body, nil)
+		bind := func(lhs, rhs ast.Expr, ctx ast.Node) {
 			switch lhs.(type) {
 			case *ast.Ident, *ast.SelectorExpr:
 			default:
+				escape(rhs, "assigned to a non-name target "+exprStr(lhs))
 				return
 			}
 			k := exprStr(lhs)
@@ -357,6 +418,9 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 					report(j.fi.file, fname, "group name "+k+" is redefined with a different value (block scoping is not modelled)")
 				}
 				groups[k] = e
+				if _, has := declCtx[k]; !has {
+					declCtx[k] = ctx
+				}
 			} else if isGate(rhs) {
 				gates[k] = true
 			} else if v, ok := evalStr(rhs); ok {
@@ -365,6 +429,31 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 		}
 		ast.Inspect(fd.Body, func(n ast.Node) bool {
 			switch x := n.(type) {
+			case *ast.CompositeLit:
+				isSrv := strings.HasSuffix(exprStr(x.Type), ".Server") // http.Server, http3.Server: Handler: <engine> serves, registers nothing
+				for _, el := range x.Elts {
+					if kv, ok := el.(*ast.KeyValueExpr); ok {
+						if k, isID := kv.Key.(*ast.Ident); isSrv && isID && k.Name == "Handler" {
+							continue // serving the finished engine as an http.Handler registers no route
+						}
+						el = kv.Value
+					}
+					escape(el, "composite literal element")
+				}
+			case *ast.ReturnStmt:
+				if !engineFuncs[fname] {
+					for _, r := range x.Results {
+						escape(r, "returned")
+					}
+				}
+			case *ast.SendStmt:
+				escape(x.Value, "channel send")
+			case *ast.SelectorExpr:
+				if !calledSel[x] && (routeMethods[x.Sel.Name] || x.Sel.Name == "Use" || x.Sel.Name == "Group") {
+					if _, ok := recv(x.X); ok {
+						report(j.fi.file, fname, "route/group method value is not called directly (calls through it are not modelled): "+exprStr(x))
+					}
+				}
 			case *ast.FuncLit:
 				for _, fl := range x.Type.Params.List {
 					for _, nm := range fl.Names {
@@ -376,15 +465,15 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 			case *ast.AssignStmt:
 				if len(x.Lhs) == len(x.Rhs) {
 					for i := range x.Lhs {
-						bind(x.Lhs[i], x.Rhs[i])
+						bind(x.Lhs[i], x.Rhs[i], ctxOf[x])
 					}
 				} else if len(x.Rhs) == 1 && len(x.Lhs) > 1 {
-					bind(x.Lhs[0], x.Rhs[0])
+					bind(x.Lhs[0], x.Rhs[0], ctxOf[x])
 				}
 			case *ast.ValueSpec:
 				if len(x.Names) == len(x.Values) {
 					for i := range x.Names {
-						bind(x.Names[i], x.Values[i])
+						bind(x.Names[i], x.Values[i], ctxOf[x])
 					}
 				}
 			case *ast.CallExpr:
@@ -394,6 +483,9 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 						for _, a := range x.Args {
 							if isGate(a) {
 								e.gated = true
+								if dc := declCtx[exprStr(s.X)]; ctxOf[x] != dc {
+									report(j.fi.file, fname, "gate Use(...) in a conditional, loop, closure, go or defer context other than the group's declaration is not unconditional: "+exprStr(x))
+								}
 							}
 						}
 						k := exprStr(s.X)
@@ -403,7 +495,9 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 					}
 				}
 				if id, isID := x.Fun.(*ast.SelectorExpr); isID && imports[j.fi.file][exprStr(id.X)] {
-					isSel = false // package-qualified function (zap.Any), not a method on a router value
+					if _, isGrp := recv(id.X); !isGrp { // a local group may shadow an import name (round 3, N11)
+						isSel = false // package-qualified function (zap.Any), not a method on a router value
+					}
 				}
 				if isSel && routeMethods[s.Sel.Name] {
 					pi := routePathIdx(s.Sel.Name)
@@ -455,6 +549,7 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 				case *ast.SelectorExpr:
 					cname = f.Sel.Name
 				}
+				bound := make([]bool, len(x.Args)) // argument positions that a scanned callee receives in a group-typed parameter
 				for _, ci := range byName[cname] {
 					if !ci.hasGroupParam() {
 						continue
@@ -506,12 +601,32 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 						}
 						r = ce.Fun
 					}
+					for i := range x.Args {
+						if isGroupType(ptypes[i]) {
+							bound[i] = true
+						}
+					}
 					seeded[ci.id] = true
 					qk := ci.id + "#" + sd.key()
 					if !queued[qk] {
 						queued[qk] = true
 						cp := sd
 						queue = append(queue, job{ci, &cp})
+					}
+				}
+				// I1 (round 3): a group value handed to any callee that is not a scanned function receiving it in a group parameter (other
+				// package, interface method, func value, arity/type mismatch) leaves the scanner's model: reported unless allow-listed.
+				ownMethod := false
+				if isSel {
+					if _, ok := recv(s.X); ok && (routeMethods[s.Sel.Name] || s.Sel.Name == "Use" || s.Sel.Name == "Group") {
+						ownMethod = true
+					}
+				}
+				if !ownMethod && !allowedGroupSink[cname] {
+					for i, a := range x.Args {
+						if !bound[i] {
+							escape(a, "passed to "+exprStr(x.Fun)+", which is not a scanned function with a group parameter at this position")
+						}
 					}
 				}
 			}

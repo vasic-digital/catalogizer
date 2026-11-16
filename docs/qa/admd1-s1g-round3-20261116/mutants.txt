@@ -1,0 +1,17 @@
+KILLED   M1 drop arg-escape rule | --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported (0.03s) ; --- FAIL: TestADMD1F1S1R3_AllowListPinned (0.00s) ; FAIL
+KILLED   M2 allow-list ignored (all allowed) | --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported (0.02s) ; --- FAIL: TestADMD1F1S1R3_AllowListPinned (0.00s) ; FAIL
+KILLED   M3 every arg counted as bound | --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported (0.04s) ; FAIL ; FAIL	catalogizer/zzmini	3.586s
+KILLED   M4 Use-chain gate ignored | --- FAIL: TestADMD1F1S1R3_UseChainGatesTheRoute (0.00s) ; FAIL ; FAIL	catalogizer/zzmini	3.957s
+KILLED   M5 method-value report off | --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported (0.16s) ; FAIL ; FAIL	catalogizer/zzmini	4.039s
+KILLED   M6 import filter back to unconditional | --- FAIL: TestADMD1F1S1R3_RealNamesStillResolve (0.00s) ; FAIL ; FAIL	catalogizer/zzmini	3.163s
+KILLED   M7 composite-literal escape off | --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported (0.04s) ; FAIL ; FAIL	catalogizer/zzmini	3.873s
+KILLED   M8 return escape off | --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported (0.04s) ; FAIL ; FAIL	catalogizer/zzmini	3.391s
+KILLED   M9 send escape off | --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported (0.03s) ; FAIL ; FAIL	catalogizer/zzmini	3.067s
+KILLED   M10 non-name assign escape off | --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported (0.03s) ; FAIL ; FAIL	catalogizer/zzmini	2.734s
+KILLED   M11 Use-context check off | --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported (0.02s) ; FAIL ; FAIL	catalogizer/zzmini	3.549s
+KILLED   M12 Server exemption for any key | --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported (0.04s) ; FAIL ; FAIL	catalogizer/zzmini	3.254s
+KILLED   M13 allow-list drops engineChain | --- FAIL: TestADMD1F1S1R3_AllowListPinned (0.00s) ; --- FAIL: TestMiniReal (1.26s) ; FAIL
+KILLED   M14 Group arg not reported when group is a Use-chain (recv Use returns unresolved) | FAIL	catalogizer/zzmini [build failed] ; FAIL
+KILLED   M15 ctx of decl always nil (Use in decl cond ctx reported) | --- FAIL: TestMiniReal (1.23s) ; FAIL ; FAIL	catalogizer/zzmini	3.200s
+KILLED   M16 Handler exemption for any composite type | --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported (0.02s) ; FAIL ; FAIL	catalogizer/zzmini	4.089s
+KILLED   M17 unseeded-engine return exemption for all funcs | --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported (0.02s) ; FAIL ; FAIL	catalogizer/zzmini	3.362s
