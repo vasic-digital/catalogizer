@@ -166,10 +166,7 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		// — exactly the empty-diagnostic 500 §11.9 forbids. Caught by
 		// FQA-API-244 / FQA-API-248 in the 2026-04-29 real-binary bank
 		// verification.
-		msg := err.Error()
-		if strings.Contains(msg, "UNIQUE constraint failed") ||
-			strings.Contains(msg, "duplicate key value") ||
-			strings.Contains(msg, "violates unique constraint") {
+		if isUniqueViolation(err) {
 			http.Error(w, `{"error":"Username or email already exists"}`, http.StatusConflict)
 			return
 		}
@@ -392,7 +389,7 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 				http.Error(w, "The last administrator cannot be demoted or deactivated", http.StatusConflict)
 				return
 			}
-			if strings.Contains(gerr.Error(), "UNIQUE constraint failed") {
+			if isUniqueViolation(gerr) {
 				http.Error(w, "Username or email already exists", http.StatusConflict)
 				return
 			}
@@ -408,7 +405,7 @@ func (h *UserHandler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		err = h.userRepo.Update(user)
 	}
 	if err != nil {
-		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
+		if isUniqueViolation(err) {
 			http.Error(w, "Username or email already exists", http.StatusConflict)
 			return
 		}
