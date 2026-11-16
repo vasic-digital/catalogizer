@@ -7,6 +7,261 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-11-17 (pre-release 2.5.0-rc.1 candidate, not production-ready)
+
+Release class: **pre-release** (provisional-eligible, constitution 11.4.290(G)). Prepared on branch `rc1ver` from `main` `824099fac` (469 commits since the `v2.4.3` tag, `git log v2.4.3..HEAD`). Not tagged, not published. The intended tag is `v2.5.0-rc.1`. Version files carry `2.5.0` (not `2.5.0-rc.1`) because `scripts/release/check_release_consistency.sh` compares every field with one `X.Y.Z` taken from `versions.json` global (major.minor.patch integers, which cannot hold a pre-release suffix); the pre-release identity is carried by the tag and by this heading. Bumped to 2.5.0: `versions.json` (via `bump_version minor` of `Build/lib/version.sh`), `docs/api/openapi.yaml`, `catalog-web`, `catalogizer-desktop` and `installer-wizard` (package.json, package-lock.json, tauri.conf.json, Cargo.toml), Android `versionCode` 10 (was 9), Android TV `versionCode` 12 (was 11), both `versionName` 2.5.0. Not touched: `Cargo.lock` files, the `CLAUDE.md` version lines, README and guide mentions of 2.4.3, `build_number` in `versions.json` (still 25).
+
+### Release gate (constitution 11.4.298, stated first)
+- **Gate state: `BLOCKED-NO-BASELINE`.** No 11.4.298 live run of the whole suite on connected target hardware has been done for this candidate and no 11.4.293 comparison exists. The 11.4.40 full-suite retest of the candidate, the 11.4.185 manual QA and the live UI QA have NOT been run. This is a labelled pre-release and must not be deployed to users or called production-ready.
+
+### State summary by label (11.4.290(G))
+V = 1 evidence set whose hashes verify (the behaviour it backs stays PROVISIONAL). P = 233 distinct `Roadmap-Item` ids (derived from the `Roadmap-Item:` trailer lines of `git log v2.4.3..HEAD`, split on commas, `sort -u`; 469 commits, 36 carry no `Roadmap-Item` line). R = 0 reopened items identified in this range (UNCONFIRMED: not cross-checked against the tracker database). O = 0 new overdue jobs identified (UNCONFIRMED, same reason). Nothing below is claimed fixed or verified beyond what the VERIFIED section states.
+
+### VERIFIED (committed machine evidence)
+"VERIFIED" here means the evidence set exists and its hashes verify, not that behaviour is verified.
+- `docs/qa/img-slim/` (CAT-IMG-SLIM-1 minimal-ffmpeg image evidence, carried from 2.4.3; `SHA256SUMS.txt` checked with `sha256sum -c`). Container class; not re-run for this candidate.
+
+### REOPENED
+- None identified in this range (UNCONFIRMED, see above).
+
+### OVERDUE
+- Verification jobs carried from `[2.4.3]` remain overdue; none new was identified here (UNCONFIRMED).
+
+### PROVISIONAL (every item below; commits since v2.4.3 grouped by `Roadmap-Item`, latest commit subject shown; PROVISIONAL means implemented and wired, verification pending)
+- `ADMD1-F1` (2 commits; latest 68396c78c): Merge admd1f1-fu: structural admin-403 classifier (no after-quote negation; ambiguity resolves to gated) (ADMD1-F1; Opus GO-with-follow-ups round 5; PROVISIONAL)
+- `ADMD1-m1` (3 commits; latest 5ba34385f): Merge ADMD1-m1..m4: ADMIN_GUIDE/openapi corrections (Opus GO-with-follow-ups; PROVISIONAL)
+- `ADMD1F1-S1` (2 commits; latest b8e00e929): test(admd1f1-s1): route-table cross-check, 12 more admin ops marked (85), loader hardening (Opus round 1 F1-F5)
+- `ADMD1R-m1` (3 commits; latest ffafd85f4): Merge ADMD1R-m1/m2/n3-n6: PG duplicate role name 409, session-revocation docs (Opus GO-with-follow-ups; PROVISIONAL)
+- `ADMD1R-m2` (2 commits; latest ffafd85f4): Merge ADMD1R-m1/m2/n3-n6: PG duplicate role name 409, session-revocation docs (Opus GO-with-follow-ups; PROVISIONAL)
+- `ADMD1R-n3` (2 commits; latest ffafd85f4): Merge ADMD1R-m1/m2/n3-n6: PG duplicate role name 409, session-revocation docs (Opus GO-with-follow-ups; PROVISIONAL)
+- `ADMD1R-n4` (2 commits; latest ffafd85f4): Merge ADMD1R-m1/m2/n3-n6: PG duplicate role name 409, session-revocation docs (Opus GO-with-follow-ups; PROVISIONAL)
+- `ADMD1R-n5` (2 commits; latest ffafd85f4): Merge ADMD1R-m1/m2/n3-n6: PG duplicate role name 409, session-revocation docs (Opus GO-with-follow-ups; PROVISIONAL)
+- `ADMD1R-n6` (2 commits; latest ffafd85f4): Merge ADMD1R-m1/m2/n3-n6: PG duplicate role name 409, session-revocation docs (Opus GO-with-follow-ups; PROVISIONAL)
+- `ADMD1RR-ma` (2 commits; latest ae1d2ae45): Merge ADMD1RR-md/ma: shared dialect-neutral unique-violation classifier, user update 409 on PostgreSQL (Opus GO-with-follow-ups; PROVISIONAL)
+- `ADMD1RR-md` (3 commits; latest ae1d2ae45): Merge ADMD1RR-md/ma: shared dialect-neutral unique-violation classifier, user update 409 on PostgreSQL (Opus GO-with-follow-ups; PROVISIONAL)
+- `ADMD1RRR-I1` (2 commits; latest 66666daf0): Merge admd1rrr-i1: duplicate-email/name 409 on admin update, register, storage-root (ADMD1RRR-I1; Opus GO-with-follow-ups; PROVISIONAL)
+- `ADMD1RRR-m1` (1 commit; latest ad7885a65): fix(admin,auth,storage): duplicate email on admin user update, racing registration and racing storage-root create answer 409 on SQLite and PostgreSQL, not 500 (ADMD1RRR-I1/m1/m2) (PROVISIONAL)
+- `ADMD1RRR-m2` (1 commit; latest ad7885a65): fix(admin,auth,storage): duplicate email on admin user update, racing registration and racing storage-root create answer 409 on SQLite and PostgreSQL, not 500 (ADMD1RRR-I1/m1/m2) (PROVISIONAL)
+- `ADMD1RRRR` (3 commits; latest 867eb185f): Merge admd1rrrr-fu: storage-root 409 existing_id/hint, non-unique negative controls, PG race leg, openapi 409 wording (ADMD1RRRR-m1..m4,n1,n2; Opus GO-with-follow-ups; PROVISIONAL)
+- `ADMD1RRRRR` (3 commits; latest fa6dc5f93): Merge admd1rrrrr-fu: deterministic insert-path 409 test seam, StorageRootConflict schema, no-id hint (ADMD1RRRRR-m1,n1,n2,n3; Opus GO-with-follow-ups; PROVISIONAL)
+- `ADMD1RRRRRR` (3 commits; latest 7e87aab95): Merge admd1rrrrrr-fu: provable pre-check order, failed-winner-lookup handler test, oneOf 409 schemas, admin-update wording (ADMD1RRRRRR-m1,m2,n1,n2; Opus GO-with-follow-ups; PROVISIONAL)
+- `ADMD1RRRRRRR` (3 commits; latest fce3c0671): Merge admd1rrrrrrr-fu: after-conflict hook assertion, real 409 bodies vs openapi oneOf contract test, not-required-code + enum, winner id assert (ADMD1RRRRRRR-m1,m2,n1,n2; Opus GO-with-follow-ups; PROVISIONAL)
+- `ADMD1RRRRRRRR` (3 commits; latest f3b4ed96c): Merge admd1rrrrrrrr-fu: oneOf exclusivity control, unknown-keyword guard, duplicate 403 merge (ADMD1RRRRRRRR-m1,n1,n2; Opus GO-with-follow-ups; PROVISIONAL)
+- `ADMD1RRRRRRRRR` (3 commits; latest 248e3dcf5): Merge admd1rrrrrrrrr-fu: admin403 classifier, sync 403 body pins, validator guard extension (ADMD1RRRRRRRRR-m1,m2,n1,n2; Opus GO-with-follow-ups; PROVISIONAL)
+- `ADMD1RRRRRRRRRR` (4 commits; latest 155348976): Merge admd1rrrrrrrrrr-fu: pin test drives real SyncHandler and live adminCheck, int32 boundaries, classifier ignores negated quotes (ADMD1RRRRRRRRRR-m1,n1..n5; Opus GO-with-follow-ups; PROVISIONAL)
+- `ADMD1RRRRRRRRRRR` (5 commits; latest 4cc6817c6): test(admd1f1-fu): drop after-quote negation entirely (ambiguity resolves gated), fallback strips only body-marked quotations (ADMD1RRRRRRRRRRR round 5)
+- `ADMINDOC-1` (3 commits; latest 3f2a544a1): Merge ADMINDOC-1: ADMIN_GUIDE lock/corrupt-role docs (Opus GO-with-follow-ups; PROVISIONAL)
+- `BG-OPQ-2026-11-14b` (2 commits; latest 07255d30d): docs: record sweep 4 operator answers
+- `BG-OPQ-2026-11-15` (1 commit; latest b6202942b): docs: record BG-OPQ-2026-11-15 operator decision sweep
+- `BG-OPQ-2026-11-16` (2 commits; latest 4288c6a82): docs: record BG-OPQ-2026-11-16 operator answers
+- `BG-OPQ-2026-11-16b` (2 commits; latest 1391b0ff9): docs: record operator answers of decision sweep 7 (BG-OPQ-2026-11-16b)
+- `CAT-CONSTITUTION-BUMP` (1 commit; latest 8e74497b7): chore: bump constitution to e3f156617 (PR #7 merged; operator approved 2026-11-16)
+- `CAT-CONSTITUTION-BUMP-2` (1 commit; latest c9ce429c8): chore: bump constitution e3f156617 -> 9f9f808b (PR #8..#11: label-sync hooks, F9/F9b/L8, N-04 port, F3a registry-login mutant)
+- `CAT-CONSTITUTION-BUMP-3` (1 commit; latest 95248de32): chore: bump constitution 9f9f808b -> cc51c320 (CON-423 secscan deadlock fix, tracker follow-ups)
+- `CAT-CONSTITUTION-BUMP-4` (1 commit; latest 1569638d2): chore: bump constitution cc51c320 -> 93465196 (PR #13: constitution-cmd mutation test sharded)
+- `CAT-CONSTITUTION-BUMP-5` (1 commit; latest 82d05777d): chore: bump constitution 93465196 -> cb7008c4 (CON-425 history-scan replace-ref fix, CON-435..442 follow-ups)
+- `CAT-CONSTITUTION-BUMP-6` (1 commit; latest 5a2be8541): chore: bump constitution cb7008c4 -> 1dfbb4d1 (CON-435 gitleaks fix, drift-seam landing, CON-443..478 follow-ups)
+- `CAT-CPN-1` (5 commits; latest b24a3759e): CAT-CPN-1 follow-ups: probe-and-ingest stores the approved class (M1), classifies and dials one vetted resolution (M2), stored-row tests (M3)
+- `CAT-GENERIC-HOSTS-1` (7 commits; latest 9b4651f58): docs: keep disclosure note free of the vendor name (PROVISIONAL)
+- `CAT-HAUTHZ-1` (10 commits; latest 45a1adc6e): CAT-HAUTHZ-1 follow-ups 3: evidence (RED/GREEN x3, mutants M3-M8), SHA256SUMS regenerated (PROVISIONAL)
+- `CAT-KEYROT-WAIVER-1` (2 commits; latest 632c3d0b3): Merge CAT-KEYROT-WAIVER-1 permanent-risk waiver kind (Opus GO-with-follow-ups; PROVISIONAL)
+- `CAT-MW-TIERTEST-1` (3 commits; latest 6546bc75e): Merge cat-mw-tiertest-1-rlw-fu2 (tier test, Retry-After on RateLimiter and pprof 429; Opus round 1 GO-with-follow-ups; PROVISIONAL)
+- `CAT-NFS-EMU-2` (3 commits; latest b96303dbb): Merge CAT-NFS-EMU-2: live unfs3 emulator leg for pkg/nfs3 (Opus GO-with-follow-ups; PROVISIONAL, EMULATOR)
+- `CAT-NFS3-FU2` (1 commit; latest 0b0beb752): test: NFS factory leg sends all float64 ports; command grep + CRLF/fraction/col-0 fixtures (NFS3FU2-M1/M2/N1/N2)
+- `CAT-PG-LASTADMIN-1` (6 commits; latest 0422accac): docs: register CAT-PG-LASTADMIN-1 review follow-ups
+- `CAT-QA-BASELINE-V242` (2 commits; latest 9e624f09f): Merge qa/baseline-v2.4.2 (first live baseline of v2.4.2 for product web; Opus round 2 GO-with-follow-ups)
+- `CAT-QA-SONAR-CRIT-1` (1 commit; latest 7eb68ec26): docs: record operator Sonar gate scope (G5 = bugs/vulns/hotspots) and register CAT-QA-SONAR-CRIT-1
+- `CAT-REL-2.5.0-GATES` (9 commits; latest c42e0e216): docs: register gate checklist Rev 4 review follow-ups
+- `CAT-SECQ1-C` (5 commits; latest 9343681d9): Merge CAT-SECQ1-C W4 step-up limiter + approved class on live WebDAV path (Opus GO-with-follow-ups; PROVISIONAL)
+- `CAT-SMB-COPY-1` (6 commits; latest 2c3c117d8): fix(smb): CAT-SMB-COPY-1 review follow-ups m1-m5 (clean same-path guard, fresh-ctx temp cleanup, refuse read-only dest, copyFS seam + mutant-killing tests) PROVISIONAL
+- `CAT-SSE-FU2R` (1 commit; latest 8d0440abf): test: pin RequireAdmin (false,err) 503 body + positive control (SSEFU2R-m1/m2)
+- `CAT-SYN-LIVE-1` (1 commit; latest 2846f4bef): docs(qa): SYNOLOGY-LIVE-1 real-NAS live evidence 2026-11-15 (PROVISIONAL)
+- `CAT-SYNC-404-1` (4 commits; latest 368f610e8): docs(qa): CAT-SYNC-404-1 is NEEDS-DECISION (conflicts with the pinned ADMD1 403 contract), PROVISIONAL
+- `CHPW-RL-1-F1` (1 commit; latest 19fdf45ef): test(auth): drive real limiter tiers through the real router; extract newAuthRateTiers (PKGC-FU4-F1, CHPW-RL-1-F1/F2)
+- `CHPW-RL-1-F2` (1 commit; latest 19fdf45ef): test(auth): drive real limiter tiers through the real router; extract newAuthRateTiers (PKGC-FU4-F1, CHPW-RL-1-F1/F2)
+- `ELFU-m1` (4 commits; latest fa2e7b058): Merge ELFU-m1: errleak pins exact services path, closes bare-ScrubErrorFor bypass (Opus round-2 GO; PROVISIONAL)
+- `ELFUR-m1` (2 commits; latest 0662d0459): Merge PGR3R-m1/m2/n3 + ELFUR-m1: escaped cgo fixture, unquote-error-as-cgo, tight errleak name heuristics (Opus GO-with-follow-ups; PROVISIONAL)
+- `ENV-F1` (3 commits; latest 5cf3e9ffa): Merge ENV-F1: SMB tests no longer depend on host-own or real LAN addresses (Opus GO-with-follow-ups; PROVISIONAL)
+- `ENVR-i4` (1 commit; latest 97504de96): docs: register ENV-F1 review follow-ups
+- `ENVR-m1` (3 commits; latest afd5524c0): Merge PGR3RR-m1/m2/n3 + ENVR-m1: real unicode-escape assertion, e.Err pin, SMB fixture cleanup (Opus GO-with-follow-ups; PROVISIONAL)
+- `ENVR-n2` (1 commit; latest 97504de96): docs: register ENV-F1 review follow-ups
+- `ENVR-n3` (1 commit; latest 97504de96): docs: register ENV-F1 review follow-ups
+- `ERRLEAK-FU-A` (3 commits; latest a3ea474e3): Merge ERRLEAK-FU: narrowed GetStorageRootStatus pin, TestConnection redaction test, S6 fixture (Opus GO-with-follow-ups; PROVISIONAL)
+- `ERRLEAK-FU-B` (2 commits; latest a3ea474e3): Merge ERRLEAK-FU: narrowed GetStorageRootStatus pin, TestConnection redaction test, S6 fixture (Opus GO-with-follow-ups; PROVISIONAL)
+- `ERRLEAK-FU-C` (2 commits; latest 2ab31e583): Merge ERRLEAK-FU-C/D: errleak checker callee identity (Opus GO-with-follow-ups; PROVISIONAL)
+- `ERRLEAK-FU-C ERRLEAK-FU-D` (1 commit; latest 989b99de5): errleak: resolve callee identity (shadowing, receiver, package) for mappers and wrappers
+- `ERRLEAK-FU-D` (2 commits; latest 2ab31e583): Merge ERRLEAK-FU-C/D: errleak checker callee identity (Opus GO-with-follow-ups; PROVISIONAL)
+- `ERRLEAK-FU-E` (2 commits; latest a3ea474e3): Merge ERRLEAK-FU: narrowed GetStorageRootStatus pin, TestConnection redaction test, S6 fixture (Opus GO-with-follow-ups; PROVISIONAL)
+- `EXAMPLES-F7-FALLOUT-1` (3 commits; latest 7acba1140): Merge EXAMPLES-F7-FALLOUT-1: example sqlmock for tx-wrapped Delete (Opus GO; PROVISIONAL)
+- `F2F3-m1` (3 commits; latest 44ec831b6): Merge F2F3-m1..m3: fail-closed conversion gates + nav/route tie test (Opus GO-with-follow-ups; PROVISIONAL)
+- `FU-TESTS-A` (3 commits; latest ea4a53757): Merge FU-TESTS-A test strengthening (Opus GO-with-follow-ups; PROVISIONAL)
+- `FU-TESTS-B` (2 commits; latest 2c93ed933): Merge FU-TESTS-B CORS case, nearNow time pin, web state waits (Opus GO; PROVISIONAL)
+- `FU2-1` (2 commits; latest 4b9350efb): qa: correct PW-F4 conclusion (plugin-react adds dedupe), commit variant reproducer, tighten FU2-1 controls
+- `FU7..FU11 (CAT-PREEXIST-3)` (1 commit; latest 54b600ed3): docs(qa): PX-F18 enumeration corrections PXF18-FU1..FU5, FU7..FU11 (FU6 not touched); html/pdf twins regenerated
+- `FUTB-F1` (3 commits; latest 11c25039b): Merge FUTB-FU: tighter nearNow bound, state-based web wait (Opus GO; PROVISIONAL)
+- `FUTB-F2` (2 commits; latest 11c25039b): Merge FUTB-FU: tighter nearNow bound, state-based web wait (Opus GO; PROVISIONAL)
+- `FUTB-N3` (1 commit; latest d218a55b4): test: WEB-TEST-BUNDLE-1 route-gate golden cases, header wording, FUTB-N3 timer advance
+- `HANDLERS-RED-1-F3` (1 commit; latest aeaea77f6): logredact: route-param secrets in any path segment and decoded %2F tokens no longer reach the path log field
+- `HYG-F3` (3 commits; latest 934fa382a): Merge hyg-f3-f8 (access-log route-param redaction HYG-F3, error-text HYG-F8; Opus round 3 GO-with-follow-ups; PROVISIONAL)
+- `HYG-F4` (3 commits; latest 628268d49): docs: register HYG-F4/SSEFU2 review follow-ups
+- `HYG-F4 SSEFU2-F1 SSEFU2-F2 SSEFU2-F3` (1 commit; latest 290c73189): Merge HYG-F4 + SSEFU2 tests (Opus GO-with-follow-ups; PROVISIONAL)
+- `HYG-F6` (1 commit; latest 638f49d8d): fix(logredact): ReplaceKnown also removes the %q-quoted form of a secret (HYG-F6)
+- `HYG-F8` (1 commit; latest 4de55eb77): test(handlers): PXF17R1 redaction tests exercise the production ErrorTextKnown path (HYG-F8)
+- `HYG-R1-F1` (1 commit; latest dbc97863b): fix(middleware): canonical per-segment path for all log sinks; sink and buildRouter tests (HYG-R1-F1, F2, F3)
+- `HYG-R1-F2` (1 commit; latest dbc97863b): fix(middleware): canonical per-segment path for all log sinks; sink and buildRouter tests (HYG-R1-F1, F2, F3)
+- `HYG-R1-F3` (1 commit; latest dbc97863b): fix(middleware): canonical per-segment path for all log sinks; sink and buildRouter tests (HYG-R1-F1, F2, F3)
+- `HYG-R1-F4` (1 commit; latest b0a5bb1b8): fix(logredact): ReplaceKnown also removes the %+q (QuoteToASCII) form (HYG-R1-F4)
+- `HYG-R2-F1` (1 commit; latest a88d53fa2): fix(router): pin AccessLogRouteParams in the global middleware chain lists (HYG-R2-F1)
+- `HYG-R3-F1` (7 commits; latest 608843b1b): Merge HYG-R3-F1/F2 (Opus round 5 GO-with-follow-ups; PROVISIONAL)
+- `HYG-R3-F2` (5 commits; latest eb875875d): fix(logredact,middleware): %2F key shapes in the gin formatter; punctuation-only token (HYG-R3-F1 review round 4)
+- `HYGF4-F1` (4 commits; latest 28fbbe538): Merge HYGF4-F1 logredact invalid-escape fail-closed fix (Opus GO-with-follow-ups; PROVISIONAL)
+- `HYGF4B` (4 commits; latest ad6803ec5): Merge HYGF4B logredact cap/key-word/alloc fixes (Opus GO-with-follow-ups; PROVISIONAL)
+- `HYGF4C` (3 commits; latest 70d3afefd): Merge HYGF4C logredact slot-refill fix (Opus GO-with-follow-ups; PROVISIONAL)
+- `HYGF4D` (3 commits; latest 106f4bc38): Merge HYGF4D logredact determinism + aliasing/case tests (Opus GO-with-follow-ups; PROVISIONAL)
+- `MAIN-ERRLEAK` (4 commits; latest a05689cf5): Merge MAIN-ERRLEAK: errleak sweep green on main (Opus GO-with-follow-ups; PROVISIONAL)
+- `MAIN-EXAMPLES` (1 commit; latest 019278272): test(examples): DeleteUser_ProtectedLastAdmin binds the real 6-arg guarded DELETE (time cut-off matcher)
+- `MAIN-POOLGUARD` (1 commit; latest f09fa5d25): docs: register MAIN-EXAMPLES landing and MAIN-POOLGUARD hold
+- `MAIN-POOLGUARD-R3` (5 commits; latest f920383a2): Merge MAIN-POOLGUARD-R3: go/types poolguard successor (Opus round-3 GO-with-follow-ups; PROVISIONAL)
+- `NFS3-READDIR` (3 commits; latest 37138396d): Merge nfs3-readdir: plain READDIR fallback in pkg/nfs3 + pin filesystem 6d89c22 (NFS3-READDIR; Opus GO-with-follow-ups; EMULATOR+unit evidence; PROVISIONAL)
+- `NFS3-WIRE-1` (11 commits; latest b9f6cd4a3): Merge nfs3w-fu2: port range contract, factory contract test, emulator log check hardening (NFS3-WIRE-1 follow-ups; Opus GO-with-follow-ups; PROVISIONAL)
+- `NFS3RD` (1 commit; latest b2b09e8b2): chore: pin filesystem 0a13554 (NFS3RD follow-up tests, FallbackMaxEntries; Opus GO-with-follow-ups; unit evidence; PROVISIONAL); register NFS3RDFU follow-ups
+- `NFS3RDFU` (1 commit; latest b4902c4e6): chore: pin filesystem 50b5e75 (NFS3RDFU attempted-entry cap, negative cap rejected; Opus GO-with-follow-ups; unit evidence; PROVISIONAL); register NFS3RDFUFU follow-ups
+- `NFS3RDFUFU` (1 commit; latest 7ae234105): chore: bump submodules/filesystem 50b5e75 -> 7b58084 (NFS3RDFUFU-m1..n3; Opus GO-with-follow-ups; PROVISIONAL); register NFS3RDFUFUFU follow-up
+- `NFS3W-FU2` (1 commit; latest 5b978c4fb): NFS3W-FU2 follow-ups: port-order/float64 JSON port tests, withNFS3 helper, strict emulator PASS-line shape
+- `NFSE2-follow-ups` (3 commits; latest 53c08e927): Merge NFSE2-follow-ups: IMG-INFRA-NFS lock entry, checker map, nfs_build note (Opus GO-with-follow-ups; PROVISIONAL)
+- `OBF-FU-F1` (1 commit; latest f7bf38a03): wizard: relative CONFIG_PATH no longer refuses an absolute in-config symlink target
+- `PGLA-M1` (3 commits; latest db8957b0d): Merge PGLA-M1 + TIERPGLA-F3: in-tx re-read live test, rate-limit header comment (Opus GO-with-follow-ups; PROVISIONAL)
+- `PGLA-M1-F1` (3 commits; latest 82dec7a41): Merge test-hygiene bundle: PG role leak, F6 -count, R5/N3/N4, api-client getPermissions cases (Opus GO-with-follow-ups; PROVISIONAL)
+- `PGLA-M1-N1` (1 commit; latest 88566cb50): test(PGLA-M1): drop LOGIN role after database drop with checked errors, pin full advisory key, fail on unparsable port
+- `PGLA-M1-N2` (1 commit; latest 88566cb50): test(PGLA-M1): drop LOGIN role after database drop with checked errors, pin full advisory key, fail on unparsable port
+- `PGLA-X1` (3 commits; latest daf2117e4): Merge PGLA-X1 UpdateRole last-admin guard, settings stale-read fix, lock-before-read (Opus GO-with-follow-ups; live PG16 interleave 0 violations; PROVISIONAL)
+- `PGLAR-m1` (1 commit; latest 0803bf211): docs: register CAT-PG-LASTADMIN-1 review follow-ups
+- `PGLAR-m2` (1 commit; latest 0803bf211): docs: register CAT-PG-LASTADMIN-1 review follow-ups
+- `PGLAR-n3` (1 commit; latest 0803bf211): docs: register CAT-PG-LASTADMIN-1 review follow-ups
+- `PGLAR-n4` (1 commit; latest 0803bf211): docs: register CAT-PG-LASTADMIN-1 review follow-ups
+- `PGLAST-F2` (1 commit; latest 3f2a544a1): Merge ADMINDOC-1: ADMIN_GUIDE lock/corrupt-role docs (Opus GO-with-follow-ups; PROVISIONAL)
+- `PGLAX1-F6` (5 commits; latest 9df927d2c): Merge PGLAX1-F6: SQLite UpdateRole strip serialised by write-first tx (Opus GO-with-follow-ups; PROVISIONAL)
+- `PGLAX1-F6-FU1` (2 commits; latest 82dec7a41): Merge test-hygiene bundle: PG role leak, F6 -count, R5/N3/N4, api-client getPermissions cases (Opus GO-with-follow-ups; PROVISIONAL)
+- `PGLAX1-F6-FU2` (1 commit; latest 7c1d0d859): test(PGLAX1-F6): run with -count>1 (unique driver names) and pin admin-set read through tx with a one-connection pool
+- `PGLAX1-F7` (4 commits; latest 4fd58b5ac): Merge PGLAX1-F7: SQLite user-write guards serialised by write-first tx (Opus GO-with-follow-ups; PROVISIONAL)
+- `PGLAX1-FU` (8 commits; latest d8b21ec3c): Merge PGLAX1-FU last-admin follow-ups: fail-closed currentlyAdmin, 409 on role strip, live PG deactivate variants (Opus GO-with-follow-ups; PROVISIONAL)
+- `PGLAXFU-F1` (3 commits; latest 1b22faffa): Merge PGLAXFU tests: PG-path fail-closed, role handler error mapping, deterministic F4 control (Opus GO-with-follow-ups; PROVISIONAL)
+- `PGLAXFU-F2` (2 commits; latest 1b22faffa): Merge PGLAXFU tests: PG-path fail-closed, role handler error mapping, deterministic F4 control (Opus GO-with-follow-ups; PROVISIONAL)
+- `PGLAXFU-F3` (1 commit; latest 3f2a544a1): Merge ADMINDOC-1: ADMIN_GUIDE lock/corrupt-role docs (Opus GO-with-follow-ups; PROVISIONAL)
+- `PGLAXFU-N2` (2 commits; latest 1b22faffa): Merge PGLAXFU tests: PG-path fail-closed, role handler error mapping, deterministic F4 control (Opus GO-with-follow-ups; PROVISIONAL)
+- `PGLAXFU-N3` (1 commit; latest 29ec1b574): test(PGLAXFU): fail-closed when admin-role set unreadable (sqlmock), assert live error text, document env
+- `PGLAXFU-N4` (1 commit; latest 29ec1b574): test(PGLAXFU): fail-closed when admin-role set unreadable (sqlmock), assert live error text, document env
+- `PGLAXFU-R5` (2 commits; latest 82dec7a41): Merge test-hygiene bundle: PG role leak, F6 -count, R5/N3/N4, api-client getPermissions cases (Opus GO-with-follow-ups; PROVISIONAL)
+- `PGR3-m1` (3 commits; latest 3946b8686): Merge PGR3-m1/m2: poolguard raw-string cgo import + cgo-last corpus (Opus GO-with-follow-ups; PROVISIONAL)
+- `PGR3R-m1` (2 commits; latest 0662d0459): Merge PGR3R-m1/m2/n3 + ELFUR-m1: escaped cgo fixture, unquote-error-as-cgo, tight errleak name heuristics (Opus GO-with-follow-ups; PROVISIONAL)
+- `PGR3R-m2` (2 commits; latest 0662d0459): Merge PGR3R-m1/m2/n3 + ELFUR-m1: escaped cgo fixture, unquote-error-as-cgo, tight errleak name heuristics (Opus GO-with-follow-ups; PROVISIONAL)
+- `PGR3R-n3` (2 commits; latest 0662d0459): Merge PGR3R-m1/m2/n3 + ELFUR-m1: escaped cgo fixture, unquote-error-as-cgo, tight errleak name heuristics (Opus GO-with-follow-ups; PROVISIONAL)
+- `PGR3RR-m1` (3 commits; latest afd5524c0): Merge PGR3RR-m1/m2/n3 + ENVR-m1: real unicode-escape assertion, e.Err pin, SMB fixture cleanup (Opus GO-with-follow-ups; PROVISIONAL)
+- `PGR3RR-m2` (3 commits; latest afd5524c0): Merge PGR3RR-m1/m2/n3 + ENVR-m1: real unicode-escape assertion, e.Err pin, SMB fixture cleanup (Opus GO-with-follow-ups; PROVISIONAL)
+- `PGR3RR-n3` (3 commits; latest afd5524c0): Merge PGR3RR-m1/m2/n3 + ENVR-m1: real unicode-escape assertion, e.Err pin, SMB fixture cleanup (Opus GO-with-follow-ups; PROVISIONAL)
+- `PGRRR-n1` (1 commit; latest de1355928): docs: register PGR3RR/ENVR review follow-ups
+- `PGRRR-n2` (1 commit; latest de1355928): docs: register PGR3RR/ENVR review follow-ups
+- `PKGB-FU1` (4 commits; latest 0d9e74220): Merge fix/red-hyg (PKGB-FU1/FU2, HANDLERS-RED-1-F3, OBF-FU-F1, PXR-2, PXF23-F1; Opus round 1 GO-with-follow-ups; PROVISIONAL)
+- `PKGB-FU2` (1 commit; latest f5a4ea82e): main: access-log formatter removes the request's known secrets from error text
+- `PKGC-FU4-F1` (3 commits; latest e3b2d4a2d): Merge test/rl-wiring (real-limiter wiring tests for auth routes; Opus round 1 GO-with-follow-ups; PROVISIONAL)
+- `PW-F4` (4 commits; latest 46c834e50): Merge PW-F4 + FU2-1 web verification evidence (Opus round 2 GO; PROVISIONAL)
+- `PXF18-FU1` (2 commits; latest 5a199fe36): Merge docs/pxf18-fu (PXF18-FU1..5,7..11 corrections, PXF23-F2 sweep; Opus round 1 GO-with-follow-ups; PROVISIONAL)
+- `PXF18-FU1..FU5` (1 commit; latest 54b600ed3): docs(qa): PX-F18 enumeration corrections PXF18-FU1..FU5, FU7..FU11 (FU6 not touched); html/pdf twins regenerated
+- `PXF18-FU6` (4 commits; latest 4903ed47b): Merge fix/pxf18-fu6-challenge-results-admin (challenges routes admin-only; Opus round 1 GO-with-follow-ups; PROVISIONAL)
+- `PXF18-FU6-F1` (1 commit; latest 7f07f3c61): docs(api): add 403 admin-required to GET challenges routes (PXF18-FU6-F1)
+- `PXF18-FU6-F2` (1 commit; latest aca660155): docs(api): whole challenges group is admin-only (PXF18-FU6-F2)
+- `PXF18-FU6-F3` (1 commit; latest fc2545f7b): docs: provenance note for hand-edited challenge rows in ROUTE_AUTHZ_TABLE (PXF18-FU6-F3)
+- `PXF18DOC-F1` (1 commit; latest 09a10bc5e): test(handlers): pin M6/M7/M8 gaps and bool-fail false positive in PXF23-F2 sweep (PXF18DOC-F1, PXF18DOC-F2)
+- `PXF18DOC-F2` (1 commit; latest 20f09605c): docs(qa): err_error_class corrections PXF18DOC-F1..F6 (twins re-rendered)
+- `PXF18DOC-F3` (1 commit; latest 20f09605c): docs(qa): err_error_class corrections PXF18DOC-F1..F6 (twins re-rendered)
+- `PXF18DOC-F4` (1 commit; latest 20f09605c): docs(qa): err_error_class corrections PXF18DOC-F1..F6 (twins re-rendered)
+- `PXF18DOC-F5` (1 commit; latest 20f09605c): docs(qa): err_error_class corrections PXF18DOC-F1..F6 (twins re-rendered)
+- `PXF18DOC-F6` (1 commit; latest 20f09605c): docs(qa): err_error_class corrections PXF18DOC-F1..F6 (twins re-rendered)
+- `PXF23-F1` (2 commits; latest 3287ffc2c): monitoring: test that the logged health-check error is redacted (F7)
+- `PXF23-F2` (1 commit; latest c0508d772): test(handlers): PXF23-F2 source sweep sees an error value passed bare to a client sink, whatever it is called
+- `PXR-2` (2 commits; latest d776a2257): docs: PXR-2 README names only the real residuals (F5)
+- `RLW-FU1` (3 commits; latest e8d07b080): Merge batch B (PXF18-FU6-F1..F3, PXF18DOC-F1..F6, RLW-FU1; Opus round 1 GO-with-follow-ups; PROVISIONAL)
+- `RLW-FU2` (3 commits; latest 4275fad98): Merge rlw-fu2 (Retry-After on 429; Opus round 1 GO-with-follow-ups; PROVISIONAL)
+- `RLW-FU2-F1` (1 commit; latest 719db3b8b): fix(catalog-api): Retry-After on RateLimiter/pprof 429s; exact fixed-window test; real-path login-tier test
+- `RLW-FU2-F3` (1 commit; latest 719db3b8b): fix(catalog-api): Retry-After on RateLimiter/pprof 429s; exact fixed-window test; real-path login-tier test
+- `RLW-FU2-TIER` (3 commits; latest e2a65d5cb): Merge RLW-FU2-TIER rate-limit body/CORS/clock fixes (Opus GO-with-follow-ups; PROVISIONAL)
+- `SEC-WS-1` (2 commits; latest 141b49b25): Merge WSF2 follow-ups (F1 web failOpen, F3 per-user keying tests, F4 purge head index, N1/N2; Opus round 1 GO-with-follow-ups; PROVISIONAL)
+- `SEC-WS-1-F2` (7 commits; latest 6b67141ae): Merge SEC-WS-1 F2 api-client + Android ticket clients (709e5ae67, 08eb2d0f2; same landing unit; PROVISIONAL)
+- `SECQ1C-FU` (3 commits; latest 429b46d5d): Merge SECQ1C-FU create-time WebDAV class test + step-up/limiter/SSE tests (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSE-F1` (3 commits; latest e5ac577e0): Merge SSE-F1..F3 (fail-closed admin tests, openapi 503 on sync GETs, authz doc corrections; Opus round 1 GO-with-follow-ups; PROVISIONAL)
+- `SSE-F2` (2 commits; latest e5ac577e0): Merge SSE-F1..F3 (fail-closed admin tests, openapi 503 on sync GETs, authz doc corrections; Opus round 1 GO-with-follow-ups; PROVISIONAL)
+- `SSE-F3` (2 commits; latest e5ac577e0): Merge SSE-F1..F3 (fail-closed admin tests, openapi 503 on sync GETs, authz doc corrections; Opus round 1 GO-with-follow-ups; PROVISIONAL)
+- `SSE-F4` (3 commits; latest a45ca2f48): Merge SSE-F4 (hide Sync tab and disable sync queries for non-admins; Opus round 1 GO-with-follow-ups; PROVISIONAL)
+- `SSE-F4-R` (5 commits; latest 5552dda01): Merge SSE-F4-R Settings real-auth tests + AuthContext/tab fallback (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSE-OPQ-1` (7 commits; latest 87124fde1): Merge SSE-OPQ-1 test follow-ups F1/F2/F3/F5 (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEF4R-API` (2 commits; latest 25beebbb2): Merge SSEF4R-API: api-client permission matcher + envelope unwrap (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEF4R-API-FU1` (2 commits; latest 82dec7a41): Merge test-hygiene bundle: PG role leak, F6 -count, R5/N3/N4, api-client getPermissions cases (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEF4R-FD` (7 commits; latest 79fc662c2): Merge SSEF4R-FD: web route gates use server permission vocabulary (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEF4R-FD-F2` (3 commits; latest 7827dd00f): Merge SSEF4R-FD-F2/F3: /identities requireAdmin, /conversion conversion.view/create/manage (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEF4R-FD-F3` (3 commits; latest 7827dd00f): Merge SSEF4R-FD-F2/F3: /identities requireAdmin, /conversion conversion.view/create/manage (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEF4R-FD-m1` (3 commits; latest 4806f4046): Merge SSEF4R-FD-m1: route-gate completeness check (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEF4R-FD-m1-FU1` (1 commit; latest d218a55b4): test: WEB-TEST-BUNDLE-1 route-gate golden cases, header wording, FUTB-N3 timer advance
+- `SSEF4R-FD-m1-FU3` (1 commit; latest d218a55b4): test: WEB-TEST-BUNDLE-1 route-gate golden cases, header wording, FUTB-N3 timer advance
+- `SSEF4R-FU` (5 commits; latest 855ee46d0): Merge SSEF4R-FU UI isAdmin from /auth/status permissions (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEFU-F1` (2 commits; latest 004eb302c): docs(api): SSEFU-F4/F5 consistent 503 wording on sync GETs, $ref Error for sync 500s, success on Error schema (PROVISIONAL)
+- `SSEFU-F1..F5` (2 commits; latest 5504f20b8): Merge SSEFU-F1..F5 (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEFU-F2` (2 commits; latest 004eb302c): docs(api): SSEFU-F4/F5 consistent 503 wording on sync GETs, $ref Error for sync 500s, success on Error schema (PROVISIONAL)
+- `SSEFU-F3` (2 commits; latest 004eb302c): docs(api): SSEFU-F4/F5 consistent 503 wording on sync GETs, $ref Error for sync 500s, success on Error schema (PROVISIONAL)
+- `SSEFU-F4` (3 commits; latest 05460c33e): Merge SSEFU-F4/F5: consistent sync-GET 503 wording, Error schema refs (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEFU-F5` (3 commits; latest 05460c33e): Merge SSEFU-F4/F5: consistent sync-GET 503 wording, Error schema refs (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEFU2-F1 SSEFU2-F2 SSEFU2-F3` (1 commit; latest 909edffa6): test(handlers,middleware): kill SSEFU2 survivors (uid pass-through, (true,err) deny, pinned DB-failure bodies)
+- `SSEFU2-F3` (1 commit; latest 4d936f547): SSEFU2-F3: pin exact 503 body of RequireAdmin check failure (JSONEq)
+- `SSEFUR-i5` (1 commit; latest 9d73a17d5): docs: register SSEFU-F4/F5 review follow-ups
+- `SSEFUR-m1` (3 commits; latest a22d9fa0b): Merge SSEFUR-m1/m2/n3/n4: sync docs 503/403 alignment, admin-only Auth lines, 500 example (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEFUR-m2` (3 commits; latest a22d9fa0b): Merge SSEFUR-m1/m2/n3/n4: sync docs 503/403 alignment, admin-only Auth lines, 500 example (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEFUR-n3` (3 commits; latest a22d9fa0b): Merge SSEFUR-m1/m2/n3/n4: sync docs 503/403 alignment, admin-only Auth lines, 500 example (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEFUR-n4` (3 commits; latest a22d9fa0b): Merge SSEFUR-m1/m2/n3/n4: sync docs 503/403 alignment, admin-only Auth lines, 500 example (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEFURR-m1` (4 commits; latest 84f602053): Merge SSEFURR-m1/n2: openapi 503 wording aligned to real gate strings (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEFURR-n2` (3 commits; latest 84f602053): Merge SSEFURR-m1/n2: openapi 503 wording aligned to real gate strings (Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEFURRR` (1 commit; latest 9625a5015): Merge ssefurrr-docs: openapi 503 precision for gated operations (SSEFURRR-m1/m2/m3; Opus GO-with-follow-ups; PROVISIONAL)
+- `SSEFURRR-m1` (1 commit; latest 492f3e7ba): docs(api): precise 503 gate wording for 30 gated operations; Error.error text/plain wording (SSEFURRR-m1/m2/m3)
+- `SSEFURRR-m2` (1 commit; latest 492f3e7ba): docs(api): precise 503 gate wording for 30 gated operations; Error.error text/plain wording (SSEFURRR-m1/m2/m3)
+- `SSEFURRR-m3` (1 commit; latest 492f3e7ba): docs(api): precise 503 gate wording for 30 gated operations; Error.error text/plain wording (SSEFURRR-m1/m2/m3)
+- `SSEFURRRR` (1 commit; latest 6af5ce16f): docs: register SSEFURRRR review follow-ups
+- `STATS-SCANS-ERR-1` (1 commit; latest cada4debc): fix(catalog-api): admin-only /sync/* GETs; fixed error text for non-admin /stats/scans
+- `SYNC-ADMIN-1` (3 commits; latest 0ed6495e0): Merge fix/stats-scans-err-sync-admin (STATS-SCANS-ERR-1, SYNC-ADMIN-1; Opus round 1 GO-with-follow-ups; PROVISIONAL)
+- `SYNOLOGY-LIVE-1` (2 commits; latest 2635b3e2e): Merge SYNOLOGY-LIVE-1: live Synology evidence 2026-11-15 (Opus GO-with-follow-ups; PROVISIONAL)
+- `TEST-HYGIENE-BUNDLE-2` (3 commits; latest aff954c69): Merge TEST-HYGIENE-BUNDLE-2: PG test gating, single-connection F7 test, Delete rollback pin (Opus GO-with-follow-ups; PROVISIONAL)
+- `TEST-HYGIENE-BUNDLE-3` (3 commits; latest 7fed296bd): Merge TEST-HYGIENE-BUNDLE-3: deadlock guards and tightened SQL pins (Opus GO-with-follow-ups; PROVISIONAL)
+- `TH2-MINOR-1` (3 commits; latest 9827ba2a2): Merge TH2-MINOR-1: sole-admin LockAccount single-connection test (Opus GO-with-follow-ups; PROVISIONAL)
+- `TH3-follow-ups` (3 commits; latest 8250ae116): Merge TH3/WTB1 follow-ups: runWithin value hand-off, anchored SQL pins, multi-gate extractor case (Opus GO-with-follow-ups; PROVISIONAL)
+- `TIERFU-PGLA-TESTS` (3 commits; latest aedab3d3d): Merge TIERFU-PGLA-TESTS CORS expose + Retry-After + LockAccount classification tests (Opus GO-with-follow-ups; PROVISIONAL)
+- `TIERPGLA-F3` (1 commit; latest 28720f5e6): docs(cors): TIERPGLA-F3 state that X-RateLimit-Algorithm has no production emitter today
+- `TIERTEST-RLW-F1` (3 commits; latest 872f6ba88): Merge tiertest-rlw-f1-f4 (flake fixes, pprof stale window, injectable bucket clock; Opus round 1 GO-with-follow-ups; PROVISIONAL)
+- `TIERTEST-RLW-F2` (1 commit; latest a150a542e): fix(catalog-api/middleware): de-flake tier/RLW tests, pprof guard stale-window read (TIERTEST-RLW-F1..F4)
+- `TIERTEST-RLW-F3` (1 commit; latest a150a542e): fix(catalog-api/middleware): de-flake tier/RLW tests, pprof guard stale-window read (TIERTEST-RLW-F1..F4)
+- `TIERTEST-RLW-F4` (1 commit; latest a150a542e): fix(catalog-api/middleware): de-flake tier/RLW tests, pprof guard stale-window read (TIERTEST-RLW-F1..F4)
+- `V250-GATES` (1 commit; latest bbe6c2bed): docs(release): v2.5.0 gate checklist rev 3 against main ae1d2ae45 (re-derived G1..G12; 0 of 12 satisfied)
+- `V2_5_0_GATE_CHECKLIST` (4 commits; latest bc58945b6): Merge gate checklist Rev 3 refresh against main ae1d2ae45 (0 of 12 gates satisfied; Opus GO after round 2; PROVISIONAL)
+- `WBF1-m2` (3 commits; latest 5c11ba839): Merge WBF1-m3/m2: MediaPlayer useLayoutEffect ticket fix + deterministic test + web submodule guard (Opus GO r3; PROVISIONAL)
+- `WBF1-m3` (5 commits; latest 5c11ba839): Merge WBF1-m3/m2: MediaPlayer useLayoutEffect ticket fix + deterministic test + web submodule guard (Opus GO r3; PROVISIONAL)
+- `WEB-BASE-FAIL-1` (1 commit; latest 784c576eb): docs: register WEB-BASE-FAIL-1 investigation result
+- `WEB-TEST-BUNDLE-1` (3 commits; latest f8407c04a): Merge WEB-TEST-BUNDLE-1: route-gate golden cases + Settings fake-timer test (Opus GO-with-follow-ups; PROVISIONAL)
+- `WSF2-B` (4 commits; latest 7976e1180): docs: register WSF2BR review follow-ups
+- `WSF2-R2-F1` (1 commit; latest e67d73985): fix(ws): SEC-WS-1 F2 review follow-ups (WSF2-R2-F1, F3, F4, N1, N2) PROVISIONAL
+- `WSF2-R2-F2` (3 commits; latest 5531c0721): Merge WSF2-R2-F2 Android listener fix (Opus GO-with-follow-ups; PROVISIONAL)
+- `WSF2-R2-F3` (1 commit; latest e67d73985): fix(ws): SEC-WS-1 F2 review follow-ups (WSF2-R2-F1, F3, F4, N1, N2) PROVISIONAL
+- `WSF2-R2-F4` (1 commit; latest e67d73985): fix(ws): SEC-WS-1 F2 review follow-ups (WSF2-R2-F1, F3, F4, N1, N2) PROVISIONAL
+- `WSF2-R2-N1` (1 commit; latest e67d73985): fix(ws): SEC-WS-1 F2 review follow-ups (WSF2-R2-F1, F3, F4, N1, N2) PROVISIONAL
+- `WSF2-R2-N2` (1 commit; latest e67d73985): fix(ws): SEC-WS-1 F2 review follow-ups (WSF2-R2-F1, F3, F4, N1, N2) PROVISIONAL
+- `WSF2B2-F1` (4 commits; latest af8e37c2f): docs: register WSF2B2R review follow-ups
+- `WSF2B2-F2` (2 commits; latest 532c08944): Merge WSF2B2-F1/F2: Android WS attempt cancellation + minter timeout handling (Opus GO-with-follow-ups; PROVISIONAL)
+- `WSF2B2R` (1 commit; latest 5fd99a487): Merge wsf2b2r-fu: Android WS cancelled-attempt silence fix + tests, Bearer test flake fix (WSF2B2R-m1..m4, WSF2BR-m3; Opus GO-with-follow-ups; host JVM unit only; PROVISIONAL)
+- `WSF2B2R-m1` (1 commit; latest ee3bd63fa): fix(android): WSF2B2R follow-ups m1-m4 (cancelled mint attempt neither publishes Error nor reconnects; Bearer-header test no longer flaky)
+- `WSF2B2R-m2` (1 commit; latest ee3bd63fa): fix(android): WSF2B2R follow-ups m1-m4 (cancelled mint attempt neither publishes Error nor reconnects; Bearer-header test no longer flaky)
+- `WSF2B2R-m3` (1 commit; latest ee3bd63fa): fix(android): WSF2B2R follow-ups m1-m4 (cancelled mint attempt neither publishes Error nor reconnects; Bearer-header test no longer flaky)
+- `WSF2B2R-m4` (1 commit; latest ee3bd63fa): fix(android): WSF2B2R follow-ups m1-m4 (cancelled mint attempt neither publishes Error nor reconnects; Bearer-header test no longer flaky)
+- `WSF2B2RR` (4 commits; latest 0691c756b): Merge wsf2b2rr-fu: stale 401 and cancelled-attempt failures publish no Error, 5 lifecycle tests (WSF2B2RR-m1,m2; Opus GO-with-follow-ups; PROVISIONAL)
+- `WSF2B2RRR` (3 commits; latest c7fa65dea): Merge wsf2b2rrr-fu: sequence-recording Android lifecycle tests (WSF2B2RRR-f1,n1; Opus GO-with-follow-ups; PROVISIONAL)
+- `WSF2BR-m3` (1 commit; latest ee3bd63fa): fix(android): WSF2B2R follow-ups m1-m4 (cancelled mint attempt neither publishes Error nor reconnects; Bearer-header test no longer flaky)
+- `WSFU-I1` (4 commits; latest e0c7e6797): Merge WSFU-I1 (repair stale WebSocketContext.connectionStatus test; Opus GO-with-follow-ups, follow-up commit implements reviewer fix; PROVISIONAL)
+- `WTB1-follow-ups` (1 commit; latest a11079c6c): test(web): pin per-occurrence route-gate reporting, reword timer comment (WTB1-m1/n1; PROVISIONAL)
+
 ## [2.4.3] - 2026-11-14 (pre-release, not production-ready)
 
 Release class: **pre-release** (provisional-eligible, constitution 11.4.290(G)). Prepared on branch `release/v2.4.3-prep` from `main` `b43f5370` (328 commits since the `v2.4.2` tag; the annotated tag object is `26f2e1df` and its commit is `fc8dcf27e`; `git log v2.4.2..b43f5370`). Not tagged, not published. Versioning is SemVer. Version files bumped to 2.4.3: `versions.json` (global 2.4.3), `docs/api/openapi.yaml`, `catalog-web`, `catalogizer-desktop` and `installer-wizard` (package.json, package-lock.json, tauri.conf.json, Cargo.toml), Android `versionName` 2.4.3 / `versionCode` 9 (was 8), Android TV `versionName` 2.4.3 / `versionCode` 11 (was 10), the two Android `CLAUDE.md` version lines, the installer-wizard AppImage file name in `challenges/scripts/desktop_appimage_launch_challenge.sh`, and the version mentions in `README.md`, `docs/CONTRIBUTING.md` and `docs/DEPLOYMENT_GUIDE.md`.
