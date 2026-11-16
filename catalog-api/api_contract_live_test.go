@@ -58,6 +58,7 @@ type cOp struct {
 	Method, Path string
 	Public       bool
 	Responses    map[string]interface{}
+	AdminGated   bool // x-catalogizer-admin-gated: true on the operation (ADMD1F1-S1)
 	Params       []cParam
 	Body         interface{} // JSON request schema or nil
 	BodyRequired bool
@@ -138,7 +139,7 @@ func loadSpec(t *testing.T, path string) *cSpec {
 			if od == nil {
 				continue
 			}
-			op := &cOp{Method: strings.ToUpper(m), Path: p, Responses: asMap(od["responses"]), Summary: fmt.Sprint(od["summary"])}
+			op := &cOp{Method: strings.ToUpper(m), Path: p, Responses: asMap(od["responses"]), AdminGated: adminGatedOp(od), Summary: fmt.Sprint(od["summary"])}
 			sec, has := od["security"]
 			if !has {
 				sec = global
@@ -765,7 +766,7 @@ func (w *sweep) runOp(op *cOp) {
 	// --- non-admin ---
 	if d403, ok := op.Responses["403"]; ok && !op.Public {
 		desc := fmt.Sprint(asMap(d403)["description"])
-		gated := admin403Gated(desc)
+		gated := op.AdminGated
 		if gated || op.Method == "GET" {
 			st, _, _ := w.call(w.plainC, op.Method, valid, w.plain, body, "")
 			w.record(rec, "nonadmin", st)

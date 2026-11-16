@@ -3187,6 +3187,7 @@ paths:
 
   /api/v1/copy/storage:
     post:
+      x-catalogizer-admin-gated: true
       tags: [copy]
       summary: Copy to storage
       security:
@@ -3207,6 +3208,7 @@ paths:
 
   /api/v1/copy/local:
     post:
+      x-catalogizer-admin-gated: true
       tags: [copy]
       summary: Copy to local filesystem
       security:
@@ -3227,6 +3229,7 @@ paths:
 
   /api/v1/copy/upload:
     post:
+      x-catalogizer-admin-gated: true
       tags: [copy]
       summary: Upload file
       security:
@@ -3999,6 +4002,7 @@ paths:
 
   /api/v1/storage/list/{path}:
     get:
+      x-catalogizer-admin-gated: true
       tags: [storage]
       summary: List storage path
       description: |
@@ -4071,6 +4075,7 @@ paths:
 
   /api/v1/storage/roots:
     get:
+      x-catalogizer-admin-gated: true
       tags: [storage]
       summary: List storage roots
       description: Returns all configured storage roots with their connection data (host, path, username, domain). Admin only (SSE-OPQ-1); /api/v1/browse/roots is the authenticated-user listing and carries no connection data.
@@ -4093,6 +4098,7 @@ paths:
         '503':
           description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
     post:
+      x-catalogizer-admin-gated: true
       tags: [storage]
       summary: Create storage root
       description: |
@@ -4158,6 +4164,7 @@ paths:
 
   /api/v1/storage/roots/{id}/approved-class:
     put:
+      x-catalogizer-admin-gated: true
       tags: [storage]
       summary: Change the address class a storage root is approved for
       description: |
@@ -4245,6 +4252,7 @@ paths:
 
   /api/v1/storage-roots:
     get:
+      x-catalogizer-admin-gated: true
       tags: [storage]
       summary: List storage roots (alias)
       description: Alias of GET /api/v1/storage/roots. Admin only (SSE-OPQ-1).
@@ -4500,6 +4508,7 @@ paths:
 
   /api/v1/smb/discover:
     post:
+      x-catalogizer-admin-gated: true
       tags: [smb]
       summary: Discover SMB shares
       security:
@@ -4517,6 +4526,7 @@ paths:
         '200':
           description: Discovered shares
     get:
+      x-catalogizer-admin-gated: true
       tags: [smb]
       summary: Discover SMB shares (GET, retired)
       description: Retired (SECQ-5). Credentials in a URL are never accepted; the handler answers 410 without reading any parameter. Use the POST form with a JSON body.
@@ -4533,6 +4543,7 @@ paths:
 
   /api/v1/smb/test:
     post:
+      x-catalogizer-admin-gated: true
       tags: [smb]
       summary: Test SMB connection
       security:
@@ -4550,6 +4561,7 @@ paths:
         '200':
           description: Connection test result
     get:
+      x-catalogizer-admin-gated: true
       tags: [smb]
       summary: Test SMB connection (GET, retired)
       description: Retired (SECQ-5). Credentials in a URL are never accepted; the handler answers 410 without reading any parameter. Use the POST form with a JSON body.
@@ -4566,6 +4578,7 @@ paths:
 
   /api/v1/smb/browse:
     post:
+      x-catalogizer-admin-gated: true
       tags: [smb]
       summary: Browse SMB share
       security:
@@ -4585,6 +4598,7 @@ paths:
 
   /api/v1/scans:
     post:
+      x-catalogizer-admin-gated: true
       tags: [scans]
       summary: Queue a new scan
       description: Queues a scan job for the specified storage root.
@@ -4888,6 +4902,7 @@ paths:
 
   /api/v1/admin/system-info:
     get:
+      x-catalogizer-admin-gated: true
       tags: [admin]
       summary: Get system runtime information
       description: |
@@ -4920,6 +4935,7 @@ paths:
 
   /api/v1/admin/users:
     get:
+      x-catalogizer-admin-gated: true
       tags: [admin]
       summary: List all users (admin view)
       description: |
@@ -4955,6 +4971,7 @@ paths:
 
   /api/v1/admin/users/{id}:
     put:
+      x-catalogizer-admin-gated: true
       tags: [admin]
       summary: Update user (admin)
       description: |
@@ -5022,6 +5039,7 @@ paths:
 
   /api/v1/admin/storage:
     get:
+      x-catalogizer-admin-gated: true
       tags: [admin]
       summary: Get storage overview
       description: |
@@ -5049,6 +5067,7 @@ paths:
 
   /api/v1/admin/storage/scan:
     post:
+      x-catalogizer-admin-gated: true
       tags: [admin]
       summary: Trigger storage scan (admin)
       description: |
@@ -5091,6 +5110,7 @@ paths:
 
   /api/v1/admin/backups:
     get:
+      x-catalogizer-admin-gated: true
       tags: [admin]
       summary: List database backups
       description: |
@@ -5114,6 +5134,7 @@ paths:
         '503':
           description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
     post:
+      x-catalogizer-admin-gated: true
       tags: [admin]
       summary: Create database backup
       description: |
@@ -5144,6 +5165,7 @@ paths:
 
   /api/v1/admin/backups/{id}/restore:
     post:
+      x-catalogizer-admin-gated: true
       tags: [admin]
       summary: Restore database from backup
       description: |
@@ -5185,6 +5207,7 @@ paths:
 
   /api/v1/users:
     post:
+      x-catalogizer-admin-gated: true
       tags: [users]
       summary: Create user
       description: "Needs `user.create`; a caller without `system.admin` may not assign a role that carries `system.admin` (403). The password is stored with the same versioned hash the login verifies, so the created user can log in immediately (fixed; rows created earlier by the old SHA-256 code are accepted once and upgraded at that login)."
@@ -5273,6 +5296,7 @@ paths:
         '500':
           description: "Repository or permission-check error."
     delete:
+      x-catalogizer-admin-gated: true
       tags: [users]
       summary: Delete user
       security:
@@ -5299,6 +5323,7 @@ paths:
           description: "Repository or permission-check error."
   /api/v1/users/{id}/reset-password:
     post:
+      x-catalogizer-admin-gated: true
       tags: [users]
       summary: Reset user password
       security:
@@ -5335,6 +5360,7 @@ paths:
           description: "Service error."
   /api/v1/users/{id}/lock:
     post:
+      x-catalogizer-admin-gated: true
       tags: [users]
       summary: Lock user account
       security:
@@ -5374,6 +5400,7 @@ paths:
           description: "Service error. Includes a failed session revocation after the lock was written: the lock stays in place."
   /api/v1/users/{id}/unlock:
     post:
+      x-catalogizer-admin-gated: true
       tags: [users]
       summary: Unlock user account
       security:
@@ -5427,6 +5454,7 @@ paths:
 
   /api/v1/roles/{id}:
     get:
+      x-catalogizer-admin-gated: true
       tags: [roles]
       summary: Get role
       security:
@@ -5452,6 +5480,7 @@ paths:
         '500':
           description: "Repository or permission-check error."
     put:
+      x-catalogizer-admin-gated: true
       tags: [roles]
       summary: Update role
       security:
@@ -5484,6 +5513,7 @@ paths:
         '500':
           description: "Repository or permission-check error. While any stored role's permissions are corrupt, an update whose new permissions lack `system.admin` can fail here (see the Administrator Guide)."
     delete:
+      x-catalogizer-admin-gated: true
       tags: [roles]
       summary: Delete role
       security:
@@ -5573,6 +5603,7 @@ paths:
           description: "Unauthenticated (JWT middleware)."
   /api/v1/configuration/wizard/step/{step_id}/validate:
     post:
+      x-catalogizer-admin-gated: true
       tags: [configuration]
       summary: Validate wizard step
       security:
@@ -5599,6 +5630,7 @@ paths:
           description: "Unauthenticated (JWT middleware)."
   /api/v1/configuration/wizard/step/{step_id}/save:
     post:
+      x-catalogizer-admin-gated: true
       tags: [configuration]
       summary: Save wizard step progress
       security:
@@ -5635,6 +5667,7 @@ paths:
 
   /api/v1/configuration/wizard/complete:
     post:
+      x-catalogizer-admin-gated: true
       tags: [configuration]
       summary: Complete wizard
       security:
@@ -5689,6 +5722,7 @@ paths:
 
   /api/v1/errors/reports/{id}:
     get:
+      x-catalogizer-admin-gated: true
       tags: [errors]
       summary: Get error report
       security:
@@ -5713,6 +5747,7 @@ paths:
           description: "No such report, or any other service error (the body carries the service error text)."
   /api/v1/errors/reports/{id}/status:
     put:
+      x-catalogizer-admin-gated: true
       tags: [errors]
       summary: Update error report status
       security:
@@ -5747,6 +5782,7 @@ paths:
 
   /api/v1/errors/crashes/{id}:
     get:
+      x-catalogizer-admin-gated: true
       tags: [errors]
       summary: Get crash report
       security:
@@ -5771,6 +5807,7 @@ paths:
           description: "No such crash report, or any other service error (the body carries the service error text)."
   /api/v1/errors/crashes/{id}/status:
     put:
+      x-catalogizer-admin-gated: true
       tags: [errors]
       summary: Update crash report status
       security:
@@ -5860,6 +5897,7 @@ paths:
 
   /api/v1/logs/collections/{id}:
     get:
+      x-catalogizer-admin-gated: true
       tags: [logs]
       summary: Get log collection
       security:
@@ -5884,6 +5922,7 @@ paths:
           description: "No such collection, or any other service error (fixed body `Not found`; the service error text is not returned)."
   /api/v1/logs/collections/{id}/entries:
     get:
+      x-catalogizer-admin-gated: true
       tags: [logs]
       summary: Get log entries
       security:
@@ -5908,6 +5947,7 @@ paths:
           description: "Service error."
   /api/v1/logs/collections/{id}/export:
     post:
+      x-catalogizer-admin-gated: true
       tags: [logs]
       summary: Export logs
       security:
@@ -5939,6 +5979,7 @@ paths:
           description: "Service error while exporting."
   /api/v1/logs/collections/{id}/analyze:
     get:
+      x-catalogizer-admin-gated: true
       tags: [logs]
       summary: Analyze logs
       security:
@@ -5963,6 +6004,7 @@ paths:
           description: "Service error while analysing."
   /api/v1/logs/share:
     post:
+      x-catalogizer-admin-gated: true
       tags: [logs]
       summary: Create log share
       security:
@@ -6024,6 +6066,7 @@ paths:
         '401':
           description: "Unauthenticated (JWT middleware)."
     delete:
+      x-catalogizer-admin-gated: true
       tags: [logs]
       summary: Revoke log share
       description: |
@@ -6734,6 +6777,7 @@ paths:
 
   /api/v1/challenges:
     get:
+      x-catalogizer-admin-gated: true
       tags: [challenges]
       summary: List all challenges
       description: Returns all registered challenge definitions.
@@ -6762,6 +6806,7 @@ paths:
 
   /api/v1/challenges/{id}:
     get:
+      x-catalogizer-admin-gated: true
       tags: [challenges]
       summary: Get challenge details
       security:
@@ -6784,6 +6829,7 @@ paths:
 
   /api/v1/challenges/{id}/run:
     post:
+      x-catalogizer-admin-gated: true
       tags: [challenges]
       summary: Run a single challenge
       security:
@@ -6813,6 +6859,7 @@ paths:
 
   /api/v1/challenges/run:
     post:
+      x-catalogizer-admin-gated: true
       tags: [challenges]
       summary: Run all challenges
       description: |
@@ -6852,6 +6899,7 @@ paths:
 
   /api/v1/challenges/run/category/{category}:
     post:
+      x-catalogizer-admin-gated: true
       tags: [challenges]
       summary: Run challenges by category
       security:
@@ -6872,6 +6920,7 @@ paths:
 
   /api/v1/challenges/results:
     get:
+      x-catalogizer-admin-gated: true
       tags: [challenges]
       summary: Get stored challenge results
       security:
@@ -7208,6 +7257,7 @@ paths:
 
   /api/v1/sync/endpoints:
     post:
+      x-catalogizer-admin-gated: true
       tags: [sync]
       summary: Create sync endpoint
       description: |
@@ -7269,6 +7319,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
     get:
+      x-catalogizer-admin-gated: true
       tags: [sync]
       summary: List user sync endpoints
       description: Returns all sync endpoints belonging to the authenticated user.
@@ -7311,6 +7362,7 @@ paths:
 
   /api/v1/sync/endpoints/{id}:
     get:
+      x-catalogizer-admin-gated: true
       tags: [sync]
       summary: Get sync endpoint
       description: Returns a specific sync endpoint by ID. Only accessible by the endpoint owner.
@@ -7575,6 +7627,7 @@ paths:
 
   /api/v1/sync/sessions:
     get:
+      x-catalogizer-admin-gated: true
       tags: [sync]
       summary: List user sync sessions
       description: Returns sync sessions for the authenticated user with pagination.
@@ -7630,6 +7683,7 @@ paths:
 
   /api/v1/sync/sessions/{id}:
     get:
+      x-catalogizer-admin-gated: true
       tags: [sync]
       summary: Get sync session
       description: Returns a specific sync session by ID. Only accessible by the session owner.
@@ -7751,6 +7805,7 @@ paths:
 
   /api/v1/sync/statistics:
     get:
+      x-catalogizer-admin-gated: true
       tags: [sync]
       summary: Get sync statistics
       description: |
@@ -7806,6 +7861,7 @@ paths:
 
   /api/v1/sync/cleanup:
     post:
+      x-catalogizer-admin-gated: true
       tags: [sync]
       summary: Cleanup old sync sessions
       description: Deletes sync sessions older than the specified number of days. Defaults to 30 days.
@@ -7852,6 +7908,7 @@ paths:
 
   /api/v1/admin/config:
     get:
+      x-catalogizer-admin-gated: true
       tags:
       - admin
       summary: Get system configuration (admin alias)
@@ -7882,6 +7939,7 @@ paths:
           description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
   /api/v1/admin/errors:
     get:
+      x-catalogizer-admin-gated: true
       tags:
       - admin
       summary: List error reports (admin alias)
@@ -7912,6 +7970,7 @@ paths:
           description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
   /api/v1/admin/health:
     get:
+      x-catalogizer-admin-gated: true
       tags:
       - admin
       summary: Get system health (admin alias)
@@ -7942,6 +8001,7 @@ paths:
           description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
   /api/v1/admin/logs:
     get:
+      x-catalogizer-admin-gated: true
       tags:
       - admin
       summary: List log collections (admin alias)
@@ -7972,6 +8032,7 @@ paths:
           description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
   /api/v1/admin/covers/generate-thumbnails:
     post:
+      x-catalogizer-admin-gated: true
       tags:
       - admin
       summary: Generate missing video thumbnails
@@ -8020,6 +8081,7 @@ paths:
           description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
   /api/v1/admin/image-quality/revalidate:
     post:
+      x-catalogizer-admin-gated: true
       tags:
       - admin
       summary: Revalidate stale image-quality records
@@ -8223,6 +8285,7 @@ paths:
                 $ref: '#/components/schemas/Error'
   /api/v1/analytics/system:
     get:
+      x-catalogizer-admin-gated: true
       tags:
       - analytics
       summary: Get system-wide analytics
@@ -10277,6 +10340,7 @@ paths:
                 $ref: '#/components/schemas/Error'
   /api/v1/reports/usage:
     get:
+      x-catalogizer-admin-gated: true
       tags:
       - reports
       summary: Usage report
@@ -10327,6 +10391,7 @@ paths:
                 $ref: '#/components/schemas/Error'
   /api/v1/reports/performance:
     get:
+      x-catalogizer-admin-gated: true
       tags:
       - reports
       summary: Performance report
@@ -10377,6 +10442,7 @@ paths:
                 $ref: '#/components/schemas/Error'
   /api/v1/smb/identities:
     get:
+      x-catalogizer-admin-gated: true
       tags:
       - smb
       summary: List configured SMB identities
@@ -10404,6 +10470,7 @@ paths:
                 $ref: '#/components/schemas/Error'
   /api/v1/smb/probe:
     post:
+      x-catalogizer-admin-gated: true
       tags:
       - smb
       summary: Probe an SMB host
@@ -10447,6 +10514,7 @@ paths:
                 $ref: '#/components/schemas/Error'
   /api/v1/smb/probe-and-ingest:
     post:
+      x-catalogizer-admin-gated: true
       tags:
       - smb
       summary: Probe an SMB host and persist the bindings
@@ -10490,6 +10558,7 @@ paths:
                 $ref: '#/components/schemas/Error'
   /api/v1/sync/conflicts:
     get:
+      x-catalogizer-admin-gated: true
       tags:
       - sync
       summary: List sync conflicts
@@ -10519,6 +10588,7 @@ paths:
                 $ref: '#/components/schemas/Error'
   /api/v1/sync/devices:
     get:
+      x-catalogizer-admin-gated: true
       tags:
       - sync
       summary: List sync devices
@@ -10548,6 +10618,7 @@ paths:
                 $ref: '#/components/schemas/Error'
   /api/v1/sync/status:
     get:
+      x-catalogizer-admin-gated: true
       tags:
       - sync
       summary: Sync status
@@ -10593,6 +10664,7 @@ paths:
                 $ref: '#/components/schemas/Error'
   /api/v1/sync/providers:
     get:
+      x-catalogizer-admin-gated: true
       tags:
       - sync
       summary: List sync providers
@@ -10633,6 +10705,7 @@ paths:
                 $ref: '#/components/schemas/Error'
   /api/v1/sync/history:
     get:
+      x-catalogizer-admin-gated: true
       tags:
       - sync
       summary: List sync history
