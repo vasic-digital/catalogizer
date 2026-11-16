@@ -3062,3 +3062,10 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 - WSF2BR-n4: `WsClient.onOpen` still calls `send(subscribe...)` after the stale listener closed it (harmless via onError filter; whether send() throws UNCONFIRMED).
 - WSF2BR-n5: `RecSocket.connects`/`made` are companion static mutable state; fragile under parallel test runs.
 - WSF2BR-n6: commit evidence said RED 3 of 44; reviewer reproduced 4 of 45 (P1, P2, both F1 onOpen tests).
+
+## ADMD1RR review follow-ups (Opus GO-with-follow-ups; PROVISIONAL)
+- ADMD1RR-ma: live legs never exercise the classifier on a non-unique error (mutant "classifier always true" survives the live PG leg; killed only by the unit table and TestPGLAXFUF2). Add a live negative (FK or other failing write).
+- ADMD1RR-mb: ADMIN_GUIDE sentence on `PUT /users/{id}/settings` ("reads no roles") is overstated: editing another user calls `CheckPermission(user.manage)` (user_handler.go ~776) reading the caller's role. Add "read from code" and narrow to the target's corrupt role.
+- ADMD1RR-mc: "Unlocking ... still work" claim in the same paragraph needs a "read from code" marker.
+- ADMD1RR-md: same class remains: handlers/user_handler.go:395 and :411 match only SQLite "UNIQUE constraint failed" for the update "Username or email already exists" 409 (500 on PostgreSQL, UNCONFIRMED live). Reuse a dialect-neutral classifier (cf. service_handlers.go:418, external_metadata_repository.go:151) + PG leg.
+- ADMD1RR-n1: malformed DSN can echo fragments of the connection string in test failure output. n2: lib/pq in stdlib import group; test imports lib/pq twice (staticcheck ST1019). n3: "duplicate key value" and "violates unique constraint" checks redundant.
