@@ -106,3 +106,6 @@ Answered 2026-11-14 21:20 CET: SSE-OPQ-1 redact scans + admin-only roots; disk c
 ### BG-OPQ-2026-11-15 - operator decision sweep 5 (received 2026-11-15 22:07 CET, status: DONE for asked items)
 Operator order: gather every operator-blocked item, decision point, blocker and show-stopper and present them as interactive questions with options. Blocker: none (asked in-session via AskUserQuestion).
 Answered 2026-11-15 22:15 CET: F2 web admin-only; F3 conversion.view; allow-list stays required (class pinning SMB/FTP/NFS follow-up); corrupt role JSON document-only; Jev state_text recording approved; unfs3 image build now; Codeberg token present in ~/api_keys.sh (CODEBERG_GITEA_TOKEN); Synology drives back online; LLMCTL key rotation authorised; SonarQube docker-login still pending on operator; m3w mirror down (git.m3w.org:2222 refused), not removed.
+
+### BG-OPQ-2026-11-16 - operator decision sweep 6 (received 2026-11-16 14:02 CET, status: QUEUED until answered)
+Operator order: gather every operator-blocked item, decision point, blocker and show-stopper and present them as interactive questions with options. Blocker: awaiting operator answers (asked in-session via AskUserQuestion).
