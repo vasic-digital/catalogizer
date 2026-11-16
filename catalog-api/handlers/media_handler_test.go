@@ -244,6 +244,9 @@ func TestUpdateFavoriteStatus_HappyPath(t *testing.T) {
 		t.Fatalf("run migrations: %v", err)
 	}
 
+	if _, err := db.ExecContext(ctx, `INSERT INTO users (id, username, email, password_hash, salt, role_id) VALUES (7, 'u7', 'u7@example.test', 'x', 'x', 2)`); err != nil {
+		t.Fatalf("seed users: %v", err)
+	}
 	// Seed one media_item via the migration-v8 entity schema.
 	if _, err := db.ExecContext(ctx, `
 		INSERT INTO media_items (media_type_id, title, status)
@@ -254,6 +257,7 @@ func TestUpdateFavoriteStatus_HappyPath(t *testing.T) {
 
 	handler := NewAndroidTVMediaHandler(db)
 	r := gin.New()
+	r.Use(func(c *gin.Context) { c.Set("user_id", 7) })
 	r.PUT("/api/v1/media/:id/favorite", handler.UpdateFavoriteStatus)
 
 	body := bytes.NewBufferString(`{"favorite": true}`)
@@ -267,11 +271,11 @@ func TestUpdateFavoriteStatus_HappyPath(t *testing.T) {
 
 	var got int
 	if err := db.QueryRowContext(ctx,
-		`SELECT is_favorite FROM media_items WHERE id = 1`,
+		`SELECT COUNT(*) FROM user_favorites WHERE user_id = 7 AND media_id = 1`,
 	).Scan(&got); err != nil {
 		t.Fatalf("read back is_favorite: %v", err)
 	}
-	assert.Equal(t, 1, got, "is_favorite must be 1 after UPDATE")
+	assert.Equal(t, 1, got, "user 7 must have a user_favorites row after favoriting")
 
 	body = bytes.NewBufferString(`{"favorite": false}`)
 	req = httptest.NewRequest("PUT", "/api/v1/media/1/favorite", body)
@@ -281,11 +285,11 @@ func TestUpdateFavoriteStatus_HappyPath(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	if err := db.QueryRowContext(ctx,
-		`SELECT is_favorite FROM media_items WHERE id = 1`,
+		`SELECT COUNT(*) FROM user_favorites WHERE user_id = 7 AND media_id = 1`,
 	).Scan(&got); err != nil {
 		t.Fatalf("read back is_favorite: %v", err)
 	}
-	assert.Equal(t, 0, got, "is_favorite must be 0 after toggle-off")
+	assert.Equal(t, 0, got, "user 7 row must be gone after toggle-off")
 }
 
 func TestUpdateFavoriteStatus_MediaNotFound(t *testing.T) {
@@ -305,6 +309,7 @@ func TestUpdateFavoriteStatus_MediaNotFound(t *testing.T) {
 
 	handler := NewAndroidTVMediaHandler(db)
 	r := gin.New()
+	r.Use(func(c *gin.Context) { c.Set("user_id", 7) })
 	r.PUT("/api/v1/media/:id/favorite", handler.UpdateFavoriteStatus)
 
 	body := bytes.NewBufferString(`{"favorite": true}`)

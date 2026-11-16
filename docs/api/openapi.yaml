@@ -3381,6 +3381,10 @@ paths:
     put:
       tags: [media]
       summary: Update favorite status
+      description: >-
+        Sets or clears the CALLER's own favorite flag for the media item (stored per user in user_favorites since
+        CAT-HAUTHZ-F2). It never reads or changes another user's flag, and GET /api/v1/media/{id} returns is_favorite
+        for the caller only. The legacy global media_items.is_favorite column is ignored.
       security:
         - BearerAuth: []
       parameters:
@@ -3394,12 +3398,15 @@ paths:
           application/json:
             schema:
               type: object
+              required: [favorite]
               properties:
-                is_favorite:
+                favorite:
                   type: boolean
       responses:
         '200':
           description: Favorite status updated
+        '404':
+          description: Media item not found
 
   /api/v1/media/recent:
     get:

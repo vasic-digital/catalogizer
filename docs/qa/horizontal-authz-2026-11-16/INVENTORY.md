@@ -27,7 +27,7 @@ Sweep test: `catalog-api/horizontal_authz_binary_test.go` (`TestHorizontalAuthz_
 | 15 | POST /api/v1/favorites | main.go:1350 | SELF create | (setup) |
 | 16 | DELETE /api/v1/favorites/:entity_type/:entity_id | main.go:1351 | SELF (row keyed by caller) | favorite remove |
 | 17 | GET /api/v1/favorites/check/:entity_type/:entity_id | main.go:1352 | SELF | favorite check |
-| 18 | PUT /api/v1/media/:id/favorite | main.go:1063 | per-item GLOBAL flag | **FINDING HAUTHZ-F2** (gated test) |
+| 18 | PUT /api/v1/media/:id/favorite | main.go:1063 | per-item GLOBAL flag | HAUTHZ-F2 FIXED (CAT-HAUTHZ-F2): per-user `user_favorites`; `TestHorizontalAuthz_MediaFavoriteFlag` |
 | 19 | PUT /api/v1/media/:id/progress | main.go:1062 | validated no-op, nothing persisted (handlers/media_handler.go UpdateWatchProgress) | not exercisable: no state to leak |
 | 20 | GET /api/v1/media/:id | main.go:1061 | shared catalogue, but returns the global `is_favorite` | via F2 |
 | 21 | PUT /api/v1/entities/:id/user-metadata | main.go:1309 | SELF write (user id from token, handlers/media_entity_handler.go:1192) | NOT exercised by the binary sweep (no read route returns user metadata: `GET /entities/:id` and `/metadata` never carry it, so the old `usermeta` cases could not fail). Covered at store level by `handlers/horizontal_authz_unit_test.go` `TestHorizontalAuthzUnit_UserMetadataOwnerFromTokenNotBody` (real handler, real SQLite, read back through `UserMetadataRepository`); the binary sweep keeps only the owner-write positive controls |
