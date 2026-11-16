@@ -3031,3 +3031,9 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 - SSEFUR-n3 (nit): status/providers 500 schemas lost `example: database query failed`.
 - SSEFUR-n4 (nit): Error.error description "default envelope is only {error: ...}" awkward next to new `success`.
 - SSEFUR-i5 (info): scripts/check_api_route_vs_spec.py exits 3 (blind, unknown-receiver main.go aliases) on main too; track separately. No offline OpenAPI validator available (UNCONFIRMED schema validity).
+
+## ENV-F1 review (Opus GO-with-follow-ups, PROVISIONAL; RED on parent reproduced on this host, handlers 837s ok + services ok on merged tree, 8 mutants killed)
+- ENVR-m1 (minor): internal/services/smb_test.go own-interface fallback for fixtureHost is unverified and misleading: VetSMBHostIPs/smbIPBlocked does not refuse own addresses; loop matches only *net.IPNet (misses *net.IPAddr). Drop loop and fix comment, or reuse shared helper + test.
+- ENVR-n2 (nit): mutant fixture host = real LAN host survives (equivalent, redirect means no packet); optionally pin the vetted host string.
+- ENVR-n3 (nit): sec_dial1 fallback-dropped mutant survives on this host (192.168.1.20 not owned); covered by TestFirstUnownedAddr.
+- ENVR-i4 (info): services tests deliberately dial TEST-NET-1 192.0.2.1:445 (smb_dialvetted_test.go:224/236), a SYN toward default route; pre-existing.
