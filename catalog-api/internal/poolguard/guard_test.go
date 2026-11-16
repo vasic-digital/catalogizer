@@ -124,7 +124,7 @@ var sanctioned = map[string]map[string]string{
 
 var corpora = []string{
 	"testdata/positive", "testdata/negative", "testdata/shapes", "testdata/rev4", "testdata/rev4mod",
-	"testdata/rev4/nm", "testdata/rev5", "testdata/rev5mod", "testdata/rev6", "testdata/zrev", "testdata/zrevmod", "testdata/zr2", "../..",
+	"testdata/rev4/nm", "testdata/rev5", "testdata/rev5mod", "testdata/rev6", "testdata/zrev", "testdata/zrevmod", "testdata/zr2", "testdata/zr3", "../..",
 }
 
 // The type-aware head must flag exactly what the by-name base flags on every corpus (reviewer shapes
@@ -174,6 +174,7 @@ func TestPoolClassGuard_ReviewerShapesStayFlagged(t *testing.T) {
 		"testdata/zr2": {"N01AliasChain", "N02GenericEmbedding", "N03Recursive", "N04PtrToHolder", "N05MethodExpr",
 			"N06WindowsSuffix", "N07UnreliablePkgIface", "N08Vendored", "N10GenericUnresolvedArg", "N11CgoFileOnlyDecl",
 			"N12DotImport"},
+		"testdata/zr3":  {"M1RawStringCgoImport", "M2CgoFileSortsLast"},
 		"testdata/rev5": {"R35TaggedStructFirst", "R36SamePkgExactReachesPooled", "R37InvalidEmbeddingShadow", "R38RangeOverFuncCallback", "R39OpenOneLevelDown", "R40DepthBound", "R42RedeclaredType"},
 	}
 	for root, fns := range want {

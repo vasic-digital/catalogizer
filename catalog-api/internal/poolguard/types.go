@@ -30,6 +30,7 @@ import (
 	"go/types"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -387,7 +388,11 @@ func (tp *typedPkg) rangesOverFunc(r *ast.RangeStmt) bool {
 // importsC reports whether f is a cgo file (it imports the pseudo-package "C").
 func importsC(f *ast.File) bool {
 	for _, im := range f.Imports {
-		if im.Path != nil && im.Path.Value == `"C"` {
+		if im.Path == nil {
+			continue
+		}
+		// The literal may be interpreted ("C") or raw (`C`): compare the unquoted value.
+		if v, err := strconv.Unquote(im.Path.Value); err == nil && v == "C" {
 			return true
 		}
 	}
