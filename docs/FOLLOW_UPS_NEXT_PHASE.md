@@ -3013,3 +3013,8 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 - TH3R-m2 (minor, test-instrumentation): nothing covers the Fatalf path of withinDeadlockGuard (mutant R4: ignore !ok survives); add a subtest with a blocking fn, short deadline and a recording testing.TB.
 - TH3R-n3 (nit): example regex anchored at the end only (prefix-injected variants still match); production string is a constant, low value. Trailing `;` would break the pin (deliberate).
 - TH3R-i4 (info): -race runs on handlers LastAdmin|LockAccount|PGLA|RunWithin (188 s), whole internal/tests/examples, repository PGLAX1F7 and 2 vitest files all pass; TH3-m1 (live PG 409, wider -race) and TH3-m2 stay open.
+
+## PGR3R/ELFUR follow-ups review (Opus GO-with-follow-ups, PROVISIONAL)
+- PGR3RR-m1 (minor): sentinelName bare `Err` acceptance mutant survives; add golden-bad case `e.Err.Error()` (1 hit) to TestNameHeuristicsStayTight.
+- PGR3RR-m2 (minor): guard_test.go `importsCOf(t, "C")` labelled unicode-escaped actually passes `"C"` (duplicate of first assertion); change literal to the escaped form.
+- PGR3RR-n3 (nit): testdata/zr3/esc/a.go comment says M1, should say M3.
