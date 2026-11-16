@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"time"
 
@@ -136,6 +137,12 @@ func (h *ProbeAndIngestHandler) ProbeAndIngest(c *gin.Context) {
 
 	result, err := h.discoveryService.ProbeVettedIPsWithIdentities(c.Request.Context(), req.Host, ips, identities)
 	if err != nil {
+		if errors.Is(err, services.ErrInvalidSMBInput) {
+			// CPN1R2-c: a blocked or unresolvable address is a client input error, not a server failure.
+			h.logger.Warn("Blocked probe to disallowed host", zap.String("host", req.Host))
+			c.JSON(http.StatusBadRequest, gin.H{"error": hostAllowedErr})
+			return
+		}
 		h.logger.Error("SMB probe failed",
 			zap.String("host", req.Host),
 			zap.Error(err))
@@ -159,9 +166,13 @@ func (h *ProbeAndIngestHandler) ProbeAndIngest(c *gin.Context) {
 			h.logger.Error("Failed to ingest probe result",
 				zap.String("host", req.Host),
 				zap.Error(ingestErr))
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": "Failed to persist bindings",
-			})
+			body := gin.H{"error": "Failed to persist bindings"}
+			if ingestResult != nil && (ingestResult.BoundShares > 0 || ingestResult.NewRoots > 0) {
+				body["partial"] = true
+				body["bound_shares"] = ingestResult.BoundShares
+				body["new_roots"] = ingestResult.NewRoots
+			}
+			c.JSON(http.StatusInternalServerError, body)
 			return
 		}
 

@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -24,6 +25,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"go.uber.org/zap/zaptest/observer"
 )
 
 type cpn1Stored struct {
@@ -31,6 +34,7 @@ type cpn1Stored struct {
 	db     *database.DB
 	r      *gin.Engine
 	mu     sync.Mutex
+	shares []services.SMBShareInfo
 	dialed [][]string // addresses handed to the probe, per attempt
 }
 
@@ -53,6 +57,9 @@ func newCPN1Stored(t *testing.T) *cpn1Stored {
 		s.mu.Lock()
 		s.dialed = append(s.dialed, a)
 		s.mu.Unlock()
+		if s.shares != nil {
+			return s.shares, nil
+		}
 		return []services.SMBShareInfo{{ShareName: "media"}}, nil
 	})
 	h := NewProbeAndIngestHandler(disc, services.NewBindingIngester(db, logger), logger)
@@ -101,6 +108,8 @@ func TestCPN1Stored_ConfirmedPrivateIsPrivateOperator(t *testing.T) {
 	code, out := s.post(map[string]interface{}{"host": "192.168.77.50", "confirm_private_network": true})
 	require.Equal(t, http.StatusOK, code, out)
 	require.Equal(t, [][3]string{{"private", "operator", "192.168.77.50"}}, s.stored())
+	_, hasPartial := out["partial"]
+	require.False(t, hasPartial, "partial must be absent on success")
 }
 
 // M1 + M3: a public host is stored public, source auto, with no confirmation asked.
@@ -156,4 +165,86 @@ func TestCPN1Stored_PrivateNameNeedsConfirmationAndIsNotDialledWithout(t *testin
 	require.Equal(t, http.StatusOK, code, out)
 	require.Equal(t, [][3]string{{"private", "operator", "mixed.rebind.test"}}, s.stored())
 	require.Equal(t, [][]string{{"8.8.4.4", "10.1.2.3"}}, s.dialed)
+}
+
+// CPN1R-m1: re-ingesting an existing root leaves its approved class untouched (never widens, never narrows). A name that was public the first
+// time and private the second, re-ingested with the confirmation, must keep public/auto.
+func TestCPN1Stored_ReingestLeavesExistingRootClassUntouched(t *testing.T) {
+	var mu sync.Mutex
+	ip := "8.8.4.4"
+	withSMBResolver(t, func(string) ([]net.IP, error) {
+		mu.Lock()
+		defer mu.Unlock()
+		return []net.IP{net.ParseIP(ip)}, nil
+	})
+	s := newCPN1Stored(t)
+	code, out := s.post(map[string]interface{}{"host": "nas.flip.test"})
+	require.Equal(t, http.StatusOK, code, out)
+	require.Equal(t, [][3]string{{"public", "auto", "nas.flip.test"}}, s.stored())
+
+	mu.Lock()
+	ip = "192.168.77.9"
+	mu.Unlock()
+	code, out = s.post(map[string]interface{}{"host": "nas.flip.test", "confirm_private_network": true})
+	require.Equal(t, http.StatusOK, code, out)
+	require.Nil(t, out["new_roots"], "the existing root is not new (omitted when zero)")
+	require.Equal(t, [][3]string{{"public", "auto", "nas.flip.test"}}, s.stored(), "existing approval must be untouched")
+}
+
+// CPN1R-m2: when the class cannot be stored the freshly inserted root is removed again and the failure is logged, not swallowed.
+func TestCPN1Stored_ClassStoreFailureRemovesRootAndIsLogged(t *testing.T) {
+	s := newCPN1Stored(t)
+	core, logs := observer.New(zapcore.DebugLevel)
+	bi := services.NewBindingIngester(s.db, zap.New(core))
+	_, err := bi.IngestProbeResultWithClass(context.Background(),
+		&services.SMBProbeResult{Host: "h.test", Authenticated: true, Shares: []services.SMBShareInfo{{ShareName: "a"}}},
+		services.ApprovedClassAssignment{Class: netguard.ClassPublic, Source: "bogus-source"})
+	require.Error(t, err)
+	require.Empty(t, s.stored(), "no root may be left behind with an approval nobody made")
+	require.Equal(t, 1, logs.FilterMessageSnippet("approved class could not be stored").Len(), "the rollback must be logged")
+}
+
+// CPN1R-m2: a failing rollback delete is reported in the log, never swallowed. The delete is made to fail by a trigger.
+func TestCPN1Stored_RollbackDeleteFailureIsLogged(t *testing.T) {
+	s := newCPN1Stored(t)
+	_, err := s.db.Exec(`CREATE TRIGGER no_del BEFORE DELETE ON storage_roots BEGIN SELECT RAISE(ABORT,'delete blocked'); END`)
+	require.NoError(t, err)
+	core, logs := observer.New(zapcore.DebugLevel)
+	bi := services.NewBindingIngester(s.db, zap.New(core))
+	_, err = bi.IngestProbeResultWithClass(context.Background(),
+		&services.SMBProbeResult{Host: "h.test", Authenticated: true, Shares: []services.SMBShareInfo{{ShareName: "a"}}},
+		services.ApprovedClassAssignment{Class: netguard.ClassPublic, Source: "bogus-source"})
+	require.Error(t, err)
+	require.Equal(t, 1, logs.FilterMessageSnippet("rollback delete failed").Len(), "a failed rollback delete must be logged")
+}
+
+// CPN1R-m4 (decision, documented): a multi-share ingest is per-share, not all-or-nothing. A class-store failure on a later share removes
+// only that share's root; earlier roots stay, each with its own correct approval (no root ever lacks its approval). The error response
+// reports what was committed (partial=true, bound_shares, new_roots) so the operator is not told nothing happened.
+func TestCPN1Stored_PartialMultiShareIsReported(t *testing.T) {
+	s := newCPN1Stored(t)
+	s.shares = []services.SMBShareInfo{{ShareName: "good"}, {ShareName: "bad"}}
+	_, err := s.db.Exec(`CREATE TRIGGER fail_bad BEFORE UPDATE OF approved_class ON storage_roots WHEN NEW.name LIKE '%:bad' BEGIN SELECT RAISE(ABORT,'class store blocked'); END`)
+	require.NoError(t, err)
+	code, out := s.post(map[string]interface{}{"host": "8.8.8.8"})
+	require.Equal(t, http.StatusInternalServerError, code, out)
+	require.Equal(t, true, out["partial"])
+	require.EqualValues(t, 2, out["bound_shares"])
+	require.EqualValues(t, 1, out["new_roots"])
+	require.Equal(t, [][3]string{{"public", "auto", "8.8.8.8"}}, s.stored(), "only the share whose approval was stored remains")
+}
+
+// CPN1R2-c: an ErrInvalidSMBInput coming back from the vetted-IP probe is a client input error: 400 with the host-not-allowed text, not 500.
+func TestCPN1Stored_ProbeInvalidInputIs400(t *testing.T) {
+	s := newCPN1Stored(t)
+	disc := services.NewSMBDiscoveryService(zap.NewNop()).WithProbeSeam(func(context.Context, string, []net.IP, services.SMBIdentity) ([]services.SMBShareInfo, error) {
+		return nil, fmt.Errorf("%w: port not allowed", services.ErrInvalidSMBInput)
+	})
+	h := NewProbeAndIngestHandler(disc, services.NewBindingIngester(s.db, zap.NewNop()), zap.NewNop())
+	s.r = gin.New()
+	s.r.POST("/api/v1/smb/probe-and-ingest", h.ProbeAndIngest)
+	code, out := s.post(map[string]interface{}{"host": "8.8.8.8"})
+	require.Equal(t, http.StatusBadRequest, code, out)
+	require.Equal(t, hostAllowedErr, out["error"])
+	require.Empty(t, s.stored())
 }
