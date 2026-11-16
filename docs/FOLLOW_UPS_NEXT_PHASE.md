@@ -3142,3 +3142,11 @@ Evidence: RED 3 of 48 on parent source with the new tests, GREEN 48/48; full :ap
 
 ## NFS3RDFUFUFU (review of NFS3RDFUFU-fu, Opus GO-with-follow-ups, PROVISIONAL)
 - NFS3RDFUFUFU-n1 (nit, process-doc): comment "pages <= limit+3 < maxPages" in pkg/nfs3/client.go is false when MaxEntries >= math.MaxInt-8 (maxPages saturates); unreachable in practice. Qualify the comment ("except at MaxInt saturation").
+
+## ADMD1RRRRRRRRRR (review of ADMD1RRRRRRRRR-fu, Opus GO-with-follow-ups, PROVISIONAL)
+- ADMD1RRRRRRRRRR-m1 (minor, test-instrumentation): pin test uses a literal for the owner-branch error message, not the real SyncHandler.GetEndpoint/GetSession output (reviewer mutant R1 "Failed to fetch" survives). Drive the real handler with a sync service returning "unauthorized".
+- ADMD1RRRRRRRRRR-n1 (nit): int32 range check tested only with 1<<40; add boundaries 2147483647/2147483648 and negative bound (R3 survives).
+- ADMD1RRRRRRRRRR-n2 (nit): add positive control integer+int32 accepted and int32/int64 format on non-integer type rejected (R4,R5 survive).
+- ADMD1RRRRRRRRRR-n3 (nit): pin test drives RequireAdmin's role_id fallback, production uses live adminCheck (main_jwtwire.go:18).
+- ADMD1RRRRRRRRRR-n4 (nit, process-doc): owner-branch 403 also fires when CheckPermission errors (auth_service.go:508-517); doc says only "lacks".
+- ADMD1RRRRRRRRRR-n5 (nit): admin403Gated body-string shortcut would classify any description quoting that body (e.g. "never returns") as gated; none today.
