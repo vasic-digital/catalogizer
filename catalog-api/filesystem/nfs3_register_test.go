@@ -467,15 +467,15 @@ func TestNFS3FloatPortsFromJSONSettings(t *testing.T) {
 		t.Fatalf("direct float64 port only: %+v err=%v, want NFSPort=MountPort=2049", cfg, err)
 	}
 	withNFS3(t)
-	c, err := NewDefaultClientFactory().CreateClient(nfs3Cfg(map[string]interface{}{"host": "nas.example", "path": "/e", "port": float64(2049)}))
+	c, err := NewDefaultClientFactory().CreateClient(nfs3Cfg(map[string]interface{}{"host": "nas.example", "path": "/e", "port": float64(2049), "mount_port": float64(20048), "portmap_port": float64(1111)}))
 	if err != nil {
-		t.Fatalf("factory float64 port: %v", err)
+		t.Fatalf("factory float64 ports: %v", err)
 	}
 	got, ok := c.GetConfig().(nfs3.Config)
 	if !ok {
 		t.Fatalf("GetConfig type %T", c.GetConfig())
 	}
-	if got.NFSPort != 2049 || got.MountPort != 2049 {
-		t.Fatalf("factory float64 port: NFSPort=%d MountPort=%d, want 2049/2049", got.NFSPort, got.MountPort)
+	if got.NFSPort != 2049 || got.MountPort != 20048 || got.PortmapPort != 1111 {
+		t.Fatalf("factory float64 ports: NFSPort=%d MountPort=%d PortmapPort=%d, want 2049/20048/1111", got.NFSPort, got.MountPort, got.PortmapPort)
 	}
 }
