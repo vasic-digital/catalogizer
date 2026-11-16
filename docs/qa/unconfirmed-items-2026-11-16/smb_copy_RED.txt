@@ -1,0 +1,10 @@
+--- FAIL: TestLiveSMBCopy_SamePathRefusedSourceIntact (0.03s)
+--- FAIL: TestLiveSMBCopy_CaseAliasKeepsSourceBytes (0.15s)
+--- PASS: TestLiveSMBCopy_ReplacesExistingDestinationNoTempLeft (0.05s)
+--- PASS: TestLiveSMBCopy_MissingSourceLeavesDestinationAlone (0.07s)
+--- FAIL: TestLiveSMBCopy_DestinationDirectoryRefused (0.06s)
+--- FAIL: TestLiveSMBCopy_SourceDirectoryRefused (0.03s)
+--- PASS: TestLiveSMBCopy_CancelledContextLeavesDestination (0.11s)
+FAIL
+FAIL	catalogizer/filesystem	0.528s
+FAIL
