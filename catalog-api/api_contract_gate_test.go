@@ -28,22 +28,24 @@ var (
 	quoteVerbs     = `(?:return(?:s|ed|ing)?|send(?:s|ing)?|sent|get(?:s|ting)?|got|refus(?:e|es|ed|ing)|reject(?:s|ed|ing)?|serv(?:e|es|ed|ing)|emit(?:s|ted|ting)?|produc(?:e|es|ed|ing)|respond(?:s|ed|ing)?|answer(?:s|ed|ing)?|yield(?:s|ed|ing)?|show(?:s|n|ed|ing)?|includ(?:e|es|ed|ing)|carr(?:y|ies|ied|ying)|quot(?:e|es|ed|ing)|document(?:s|ed|ing)?|receiv(?:e|es|ed|ing))`
 	// negation (word, contraction or "cannot") immediately before, optionally through a copula/adverb, a quote-introducing verb
 	negatedVerbBefore = regexp.MustCompile(`(?i)(?:\b(?:never|not|neither|nor|without)|n't|\bcannot)\s+(?:(?:be|been|being|longer|ever|also|normally|ordinarily|to)\s+)*` + quoteVerbs + `(?:\s+with)?\s*$`)
-	// predicate negation right after the quotation: `body {...} is never sent`, `... isn't returned`
-	negatedAfter = regexp.MustCompile(`(?i)^\s*(?:(?:is|are|was|were|will|would|does|do|did|can|could|has|have)\s+)?(?:never|not|no\s+longer)\b|^\s*(?:\w+)?n't\b|^\s*cannot\b`)
+	// predicate negation right after the quotation, only when a quote verb follows it: `body {...} is never sent`, `... isn't returned`.
+	// "not the generic error", "cannot be retried", "don't retry" are affirmative continuations and do not negate the quotation.
+	negatedAfter = regexp.MustCompile(`(?i)^\s*(?:(?:is|are|was|were|will|would|does|do|did|can|could|has|have)\s+)?(?:never|not|no\s+longer|\w+n't|cannot)\s+(?:(?:be|been|being|longer|ever|also|normally|ordinarily|to)\s+)*` + quoteVerbs + `\b`)
 )
 
 // adminBodyDocumented reports whether desc quotes the admin body in at least one clause where the quotation is not negated.
+// Honest note on F3 (dots in identifiers): negatedVerbBefore is anchored to the verb right before the quotation, so text earlier in
+// the clause, and therefore where a dot splits it, cannot change a verdict; the dot rule is kept for clarity but is not independently
+// pinned by a test (splitting on every dot is behaviour-equivalent). Known limit: a negation separated from its verb by a
+// comma-delimited interjection ("does not, for owners, return body {...}") is read as affirmative (the conservative direction).
 func adminBodyDocumented(desc string) bool {
+	desc = strings.NewReplacer("\u2019", "'", "\u2018", "'").Replace(desc)
 	for _, loc := range adminBodyQuote.FindAllStringIndex(desc, -1) {
 		before := desc[:loc[0]]
 		if cuts := clauseBoundary.FindAllStringIndex(before, -1); len(cuts) > 0 {
 			before = before[cuts[len(cuts)-1][1]:]
 		}
-		after := desc[loc[1]:]
-		if cut := clauseBoundary.FindStringIndex(after); cut != nil {
-			after = after[:cut[0]]
-		}
-		if negatedVerbBefore.MatchString(before) || negatedAfter.MatchString(after) {
+		if negatedVerbBefore.MatchString(before) || negatedAfter.MatchString(desc[loc[1]:]) {
 			continue
 		}
 		return true

@@ -126,3 +126,37 @@ func TestADMD1RRRRRRRRRRR_Admin403ClassifierNegationScope(t *testing.T) {
 	require.False(t, admin403Gated(`Forbidden; body `+q+` isn't sent here (owner session only)`), "contraction after the quotation")
 	require.False(t, admin403Gated(`Forbidden; this route does not return body `+q+` and owner session only`), "plain not before verb")
 }
+
+// ADMD1RRRRRRRRRRR round 2: a negation right after the quotation negates it only when a quote verb follows ("is never sent"); other
+// continuations ("not the generic error", "cannot be retried") are affirmative statements about the same clause.
+func TestADMD1RRRRRRRRRRR_Admin403AfterQuoteNegationNeedsQuoteVerb(t *testing.T) {
+	const q = `{"success":false,"error":"Admin role required"}`
+	for _, tail := range []string{
+		`callers get body ` + q + ` not the generic error`,
+		`callers get body ` + q + ` not the owner error`,
+		`callers get body ` + q + ` is not cached`,
+		`the session holder gets body ` + q + ` never the owner error`,
+		`a non-owner gets body ` + q + ` cannot be retried`,
+		`callers get body ` + q + ` no longer the session error`,
+		`callers get body ` + q + ` don't retry`,
+		`callers get body ` + q + ` won't be cached`,
+		`callers get body ` + q + ` not only for the owner`,
+	} {
+		require.True(t, admin403Gated("Forbidden; "+tail), tail)
+	}
+	// still negated: a quote verb follows the negation
+	require.False(t, admin403Gated(`Forbidden; body `+q+` is never sent for the session owner`))
+	require.False(t, admin403Gated(`Forbidden; body `+q+` isn't returned here`))
+	require.False(t, admin403Gated(`Forbidden; body `+q+` is not to be sent to owners`))
+	require.False(t, admin403Gated(`Forbidden; body `+q+` is no longer returned`))
+	// curly apostrophe is normalised
+	require.False(t, admin403Gated("Forbidden; this route doesn’t return body "+q))
+	require.False(t, admin403Gated("Forbidden; body "+q+" isn’t sent here"))
+}
+
+// Known limit (documented, not fixed): a negation separated from its verb by a comma-delimited interjection is read as affirmative,
+// i.e. the conservative direction for a gate (the non-admin 403 keeps being asserted).
+func TestADMD1RRRRRRRRRRR_Admin403CommaInterjectionKnownLimit(t *testing.T) {
+	const q = `{"success":false,"error":"Admin role required"}`
+	require.True(t, admin403Gated(`Forbidden; this route does not, for owners, return body `+q))
+}
