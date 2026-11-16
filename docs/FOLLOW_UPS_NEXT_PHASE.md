@@ -3133,3 +3133,9 @@ Evidence: RED 3 of 48 on parent source with the new tests, GREEN 48/48; full :ap
 - ADMD1RRRRRRRR-m1 (minor): oneOf exclusivity never exercised (reviewer mutant C `matches != 1` -> `matches == 0` survives). Add a synthetic two-branch overlapping oneOf negative control asserting "2 branches match".
 - ADMD1RRRRRRRR-n1 (nit): contract-test validator silently skips keywords (type, format, additionalProperties, non-string/integer property types); add an unknown-keyword guard so the coverage claim is mechanical.
 - ADMD1RRRRRRRR-n2 (nit): docs/api/openapi.yaml has duplicate `403` response keys (~7358 and ~7679); yaml.v3 refuses to decode it. Pre-existing; fix or track as its own item.
+
+## ADMD1RRRRRRRRR (review of ADMD1RRRRRRRR-fu, Opus GO-with-follow-ups, PROVISIONAL)
+- ADMD1RRRRRRRRR-m1 (minor, test-instrumentation): merged 403 descriptions on GET /sync/endpoints/{id} and /sync/sessions/{id} contain "owner"/"session", which hit the "not an admin gate" regexes in api_contract_live_test.go:542-543,770-778, so the live sweep's non-admin leg never asserts 403 there. Reword or extend the regexes and add a test.
+- ADMD1RRRRRRRRR-m2 (minor, process-doc): owner-branch wording omits "and lacks the view-shares permission" (PermissionViewShares, sync_service.go:116-120); the 403 does not quote its two body strings.
+- ADMD1RRRRRRRRR-n1 (nit, test-instrumentation): guard still silently passes array-valued `type` (3.1 style), non-map property schemas and `format`.
+- ADMD1RRRRRRRRR-n2 (nit, test-instrumentation): nothing guards content/schema of the merged 403 (reviewer mutant M4 survived).
