@@ -35,7 +35,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -539,9 +538,6 @@ type opRecord struct {
 	Notes         map[string]string `json:"notes,omitempty"`
 }
 
-var adminGate403 = regexp.MustCompile(`(?i)admin|lacks|system\.configure|user\.manage|report\.`)
-var nonGate403 = regexp.MustCompile(`(?i)registration|pending|owner|not the caller|neither|visible but|share|job|domain not allowed|another user|session`)
-
 type sweep struct {
 	t       *testing.T
 	srv     *liveSrv
@@ -769,7 +765,7 @@ func (w *sweep) runOp(op *cOp) {
 	// --- non-admin ---
 	if d403, ok := op.Responses["403"]; ok && !op.Public {
 		desc := fmt.Sprint(asMap(d403)["description"])
-		gated := adminGate403.MatchString(desc) && !nonGate403.MatchString(desc)
+		gated := admin403Gated(desc)
 		if gated || op.Method == "GET" {
 			st, _, _ := w.call(w.plainC, op.Method, valid, w.plain, body, "")
 			w.record(rec, "nonadmin", st)

@@ -7,17 +7,22 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 
 	"catalogizer/internal/netguard"
+	"catalogizer/middleware"
+	"catalogizer/models"
 )
 
 type oaDoc map[string]interface{}
@@ -74,8 +79,8 @@ var (
 	oaSchemaEnforced = map[string]bool{"$ref": true, "allOf": true, "oneOf": true, "not": true, "required": true, "properties": true}
 	// intentionally ignored: documentation-only, or a type the body (a decoded JSON object) satisfies by construction
 	oaSchemaIgnored = map[string]bool{"description": true, "example": true, "title": true, "type": true}
-	oaPropEnforced  = map[string]bool{"enum": true}
-	oaPropIgnored   = map[string]bool{"description": true, "example": true, "format": true, "type": true}
+	oaPropEnforced  = map[string]bool{"enum": true, "format": true} // format: only integer int32/int64 (checked by unsupported + validateInner)
+	oaPropIgnored   = map[string]bool{"description": true, "example": true, "type": true}
 	oaPropTypes     = map[string]bool{"string": true, "integer": true, "boolean": true}
 )
 
@@ -88,8 +93,12 @@ func (d oaDoc) unsupported(t *testing.T, schema map[string]interface{}, where st
 			out = append(out, fmt.Sprintf("%s: unsupported schema keyword %q", where, k))
 		}
 	}
-	if ty, ok := schema["type"].(string); ok && ty != "object" {
-		out = append(out, fmt.Sprintf("%s: unsupported top-level type %q (only object bodies are validated)", where, ty))
+	if rawTy, has := schema["type"]; has {
+		if ty, isStr := rawTy.(string); !isStr {
+			out = append(out, fmt.Sprintf("%s: unsupported non-string top-level type %v (only object bodies are validated)", where, rawTy))
+		} else if ty != "object" {
+			out = append(out, fmt.Sprintf("%s: unsupported top-level type %q (only object bodies are validated)", where, ty))
+		}
 	}
 	if ref, ok := schema["$ref"].(string); ok && !seen[ref] {
 		seen[ref] = true
@@ -107,14 +116,28 @@ func (d oaDoc) unsupported(t *testing.T, schema map[string]interface{}, where st
 	}
 	if props, ok := schema["properties"].(map[string]interface{}); ok {
 		for name, ps := range props {
-			p, _ := ps.(map[string]interface{})
+			p, isMap := ps.(map[string]interface{})
+			if !isMap {
+				out = append(out, fmt.Sprintf("%s.%s: unsupported non-map property schema %T", where, name, ps))
+				continue
+			}
 			for k := range p {
 				if !oaPropEnforced[k] && !oaPropIgnored[k] {
 					out = append(out, fmt.Sprintf("%s.%s: unsupported property keyword %q", where, name, k))
 				}
 			}
-			if ty, ok := p["type"].(string); ok && !oaPropTypes[ty] {
-				out = append(out, fmt.Sprintf("%s.%s: unsupported property type %q", where, name, ty))
+			if f, has := p["format"]; has {
+				fs, _ := f.(string)
+				if p["type"] != "integer" || (fs != "int32" && fs != "int64") {
+					out = append(out, fmt.Sprintf("%s.%s: unsupported format %v on type %v (only integer int32/int64 is enforced)", where, name, f, p["type"]))
+				}
+			}
+			if rawTy, has := p["type"]; has {
+				if ty, isStr := rawTy.(string); !isStr {
+					out = append(out, fmt.Sprintf("%s.%s: unsupported non-string property type %v", where, name, rawTy))
+				} else if !oaPropTypes[ty] {
+					out = append(out, fmt.Sprintf("%s.%s: unsupported property type %q", where, name, ty))
+				}
 			}
 		}
 	}
@@ -185,6 +208,8 @@ func (d oaDoc) validateInner(t *testing.T, schema map[string]interface{}, body m
 			case "integer":
 				if f, ok := v.(float64); !ok || f != float64(int64(f)) {
 					errs = append(errs, k+": want integer")
+				} else if p["format"] == "int32" && (f > 2147483647 || f < -2147483648) {
+					errs = append(errs, k+": out of int32 range")
 				}
 			}
 			if en, ok := p["enum"].([]interface{}); ok {
@@ -299,6 +324,16 @@ func TestADMD1RRRRRRRRfu_ValidatorUnknownKeywordGuard(t *testing.T) {
 	require.NotEmpty(t, mk(map[string]interface{}{"properties": map[string]interface{}{"p": map[string]interface{}{"type": "string", "minLength": 1}}}), "unknown property keyword")
 	require.NotEmpty(t, mk(map[string]interface{}{"properties": map[string]interface{}{"p": map[string]interface{}{"type": "array"}}}), "unsupported property type")
 	require.NotEmpty(t, mk(map[string]interface{}{"type": "array"}), "unsupported top-level type")
+	// ADMD1RRRRRRRRR-n1: array-valued type (3.1 style), non-map property schema and format are no longer silently passed
+	require.NotEmpty(t, mk(map[string]interface{}{"properties": map[string]interface{}{"p": map[string]interface{}{"type": []interface{}{"string", "null"}}}}), "array-valued property type")
+	require.NotEmpty(t, mk(map[string]interface{}{"type": []interface{}{"object", "null"}}), "array-valued top-level type")
+	require.NotEmpty(t, mk(map[string]interface{}{"properties": map[string]interface{}{"p": "string"}}), "non-map property schema")
+	require.NotEmpty(t, mk(map[string]interface{}{"properties": map[string]interface{}{"p": nil}}), "nil property schema")
+	require.NotEmpty(t, mk(map[string]interface{}{"properties": map[string]interface{}{"p": map[string]interface{}{"type": "string", "format": "uuid"}}}), "property format on a string type")
+	require.NotEmpty(t, mk(map[string]interface{}{"properties": map[string]interface{}{"p": map[string]interface{}{"type": "integer", "format": "float"}}}), "integer with an unknown format")
+	require.Empty(t, mk(map[string]interface{}{"properties": map[string]interface{}{"p": map[string]interface{}{"type": "integer", "format": "int64"}}}), "negative control: integer int64 is enforced")
+	require.NotEmpty(t, d.validateInner(t, map[string]interface{}{"properties": map[string]interface{}{"p": map[string]interface{}{"type": "integer", "format": "int32"}}}, map[string]interface{}{"p": float64(1 << 40)}), "int32 range enforced")
+	require.Empty(t, mk(map[string]interface{}{"type": "object", "properties": map[string]interface{}{"p": map[string]interface{}{"type": "string", "description": "d"}}}), "negative control: a supported schema stays quiet")
 	// the guard reaches through $ref
 	d2 := oaDoc{"components": map[string]interface{}{"schemas": map[string]interface{}{"X": map[string]interface{}{"format": "uuid"}}}}
 	require.NotEmpty(t, d2.unsupported(t, map[string]interface{}{"$ref": "#/components/schemas/X"}, "s", map[string]bool{}))
@@ -344,4 +379,47 @@ func TestADMD1RRRRRRRRfu_OpenAPIHasNoDuplicateKeys(t *testing.T) {
 	require.Empty(t, oaDuplicateKeys(&n, ""))
 	var strict map[string]interface{}
 	require.NoError(t, yaml.Unmarshal(raw, &strict), "yaml.v3 must decode the spec into a map")
+}
+
+// ADMD1RRRRRRRRR-n2/m2: pins the content and schema of the merged 403 on GET /sync/endpoints/{id} and /sync/sessions/{id}: both branches,
+// the exact body strings the REAL middleware and handler emit, the permission the service checks, and the Error schema reference.
+func TestADMD1RRRRRRRRR_SyncMerged403ContentPinnedToRealBodies(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	// real admin-gate body (RequireAdmin without a live checker: role_id 2 is refused)
+	jm := middleware.NewJWTMiddleware("k")
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest("GET", "/x", nil)
+	c.Set("role_id", 2)
+	jm.RequireAdmin()(c)
+	require.Equal(t, http.StatusForbidden, w.Code)
+	var adminBody, ownerBody map[string]interface{}
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &adminBody))
+	// real owner-branch body (syncFail with the service's "unauthorized" error)
+	w2 := httptest.NewRecorder()
+	c2, _ := gin.CreateTestContext(w2)
+	c2.Request = httptest.NewRequest("GET", "/x", nil)
+	syncFail(c2, http.StatusForbidden, "Failed to get sync endpoint", fmt.Errorf("unauthorized to view this endpoint"))
+	require.NoError(t, json.Unmarshal(w2.Body.Bytes(), &ownerBody))
+	require.Equal(t, "Admin role required", adminBody["error"])
+	require.Equal(t, "not permitted", ownerBody["details"])
+
+	d := loadOpenAPI(t)
+	paths := d["paths"].(map[string]interface{})
+	for _, tc := range []struct{ path, owner, msg string }{
+		{"/api/v1/sync/endpoints/{id}", "endpoint owner", "Failed to get sync endpoint"},
+		{"/api/v1/sync/sessions/{id}", "session owner", "Failed to get sync session"},
+	} {
+		r := paths[tc.path].(map[string]interface{})["get"].(map[string]interface{})["responses"].(map[string]interface{})["403"].(map[string]interface{})
+		desc := r["description"].(string)
+		require.Contains(t, desc, `"error":"`+adminBody["error"].(string)+`"`, "%s: admin branch body", tc.path)
+		require.Contains(t, desc, `"error":"`+tc.msg+`"`, "%s: owner branch body", tc.path)
+		require.Contains(t, desc, `"details":"`+ownerBody["details"].(string)+`"`, "%s: owner branch details", tc.path)
+		require.Contains(t, desc, "not an administrator", tc.path)
+		require.Contains(t, desc, "not the "+tc.owner, tc.path)
+		require.Contains(t, desc, "view-shares permission", tc.path)
+		require.Contains(t, desc, models.PermissionViewShares, tc.path)
+		sch := r["content"].(map[string]interface{})["application/json"].(map[string]interface{})["schema"].(map[string]interface{})
+		require.Equal(t, "#/components/schemas/Error", sch["$ref"], tc.path)
+	}
 }
