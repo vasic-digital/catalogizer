@@ -8,9 +8,11 @@ package main
 //	spec markers  \  table RequireAdmin rows  ⊆  permissionGatedMarkedExceptions   (explicit, reasoned, reviewed list)
 //	code per-route admin registrations  ⊆  table RequireAdmin rows   (a new admin route cannot skip the table)
 //
-// Limits (UNCONFIRMED beyond them): group-level gates (`group.Use(adminGate)`) and multi-line registrations are not seen by the code
-// scan; they rest on the table's own provenance (static extraction + live probe). /metrics and /debug/pprof/* are not in the spec and
-// are not marked (tracked follow-up ADMD1F1-S1-FU-NONSPEC-ADMIN).
+// The code scan (api_contract_gate_codescan_test.go) is AST based over every discovered file and fail closed: a gin route call whose
+// receiver, full path or admin-looking middleware it cannot resolve is reported in routeScan.unresolved and fails the real-source
+// test. Paths are compared in full, both directions. Limit (UNCONFIRMED beyond it): a gate form it does not model AND that does not
+// look like "admin" in its text is counted ungated; the converse direction then fails only when the table already has a RequireAdmin
+// row for the route. /metrics and /debug/pprof/* are not in the spec and are not marked (tracked follow-up ADMD1F1-S1-FU-NONSPEC-ADMIN).
 
 import (
 	"bufio"
@@ -130,51 +132,27 @@ func routeTableViolations(rows []tableRow, marked []string) []string {
 	return out
 }
 
-var codeAdminReg = regexp.MustCompile(`\.(GET|POST|PUT|DELETE|PATCH)\("([^"]*)",(.*)`)
-var codeAdminGate = regexp.MustCompile(`adminGate|RequireAdmin\(\)`)
-
-// codeAdminRegistrations returns "method suffix" for every single-line per-route admin registration in the given sources.
-func codeAdminRegistrations(t *testing.T, files ...string) [][2]string {
-	t.Helper()
-	var out [][2]string
-	for _, f := range files {
-		raw, err := os.ReadFile(f)
-		require.NoError(t, err)
-		for _, l := range strings.Split(string(raw), "\n") {
-			if m := codeAdminReg.FindStringSubmatch(l); m != nil && codeAdminGate.MatchString(m[3]) {
-				out = append(out, [2]string{strings.ToLower(m[1]), m[2]})
-			}
+func codeVsTableViolations(code [][2]string, rows []tableRow) []string {
+	have := map[string]bool{}
+	for _, r := range rows {
+		if strings.HasPrefix(r.gate, "RequireAdmin (") {
+			have[normFull(r.method, r.path)] = true
 		}
 	}
-	return out
-}
-
-func codeVsTableViolations(code [][2]string, rows []tableRow) []string {
 	var out []string
 	for _, c := range code {
-		found := false
-		for _, r := range rows {
-			if strings.HasPrefix(r.gate, "RequireAdmin (") && strings.ToLower(r.method) == c[0] && strings.HasSuffix(normPathOnly(r.path), normPathOnly(c[1])) {
-				found = true
-				break
-			}
-		}
-		if !found {
+		if !have[normFull(c[0], c[1])] {
 			out = append(out, "code registers an admin route with no RequireAdmin table row: "+c[0]+" "+c[1])
 		}
 	}
 	return out
 }
 
-func normPathOnly(p string) string { return strings.SplitN(normRoute("x", p), " ", 2)[1] }
-
-var codeSources = []string{"main.go", filepath.Join("handlers", "storage_routes.go"), filepath.Join("handlers", "subtitle_routes.go")}
-
 func TestADMD1F1S1_MarkersEqualCodeDerivedAdminRoutes(t *testing.T) {
 	rows := readAuthzTable(t)
 	marked := adminGatedSet(loadRealSpec(t))
 	require.Empty(t, routeTableViolations(rows, marked))
-	require.Empty(t, codeVsTableViolations(codeAdminRegistrations(t, codeSources...), rows))
+	require.Empty(t, codeVsTableViolations(codeAdminRoutes(scanRouteSources(t, realRouteFiles(t))), rows))
 }
 
 // control needles: the instrument finds a known admin route, does not find a known user route or a fabricated one.
@@ -188,9 +166,9 @@ func TestADMD1F1S1_RouteTableInstrumentControlNeedles(t *testing.T) {
 	require.False(t, admin[normRoute("get", "/api/v1/browse")], "known user route")
 	require.False(t, admin[normRoute("get", "/api/v1/zz/fabricated")], "fabricated route")
 	require.False(t, admin[normRoute("get", "/metrics")], "excluded by design")
-	code := codeAdminRegistrations(t, codeSources...)
-	require.GreaterOrEqual(t, len(code), 30)
-	require.Contains(t, code, [2]string{"put", "/endpoints/:id"})
+	code := codeAdminRoutes(scanRouteSources(t, realRouteFiles(t)))
+	require.GreaterOrEqual(t, len(code), 60)
+	require.Contains(t, code, [2]string{"put", "/api/v1/sync/endpoints/:id"})
 }
 
 func TestADMD1F1S1_RouteTableMutantsAreKilled(t *testing.T) {
@@ -226,7 +204,7 @@ func TestADMD1F1S1_RouteTableMutantsAreKilled(t *testing.T) {
 		require.NotEmpty(t, routeTableViolations(rows, m2))
 	})
 	t.Run("N5 admin registration in code with no table row", func(t *testing.T) {
-		v := codeVsTableViolations(append(codeAdminRegistrations(t, codeSources...), [2]string{"post", "/zz-new-admin"}), rows)
+		v := codeVsTableViolations(append(codeAdminRoutes(scanRouteSources(t, realRouteFiles(t))), [2]string{"post", "/api/v1/zz-new-admin"}), rows)
 		require.Len(t, v, 1)
 	})
 	t.Run("N6 exception whose table gate is RequireAdmin-unrelated", func(t *testing.T) {

@@ -1,0 +1,193 @@
+--- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported (0.02s)
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/N7f_defer_of_unscanned_call (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/N7f_defer_of_unscanned_call
+            	Messages:   	silent drop: routes=[]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/N11_receiver_named_like_an_imported_package (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/N11_receiver_named_like_an_imported_package
+            	Messages:   	silent drop: routes=[]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/E5_return_value (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/E5_return_value
+            	Messages:   	silent drop: routes=[]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/N19_conditional_Use (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/N19_conditional_Use
+            	Messages:   	silent drop: routes=[GET /api/op gated]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/N19d_Use_in_a_switch_case (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/N19d_Use_in_a_switch_case
+            	Messages:   	silent drop: routes=[GET /api/op gated]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/N7c_resolved_group_var_passed_out (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/N7c_resolved_group_var_passed_out
+            	Messages:   	silent drop: routes=[]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/E1_composite_literal_element (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/E1_composite_literal_element
+            	Messages:   	silent drop: routes=[]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/E2_slice_literal_element (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/E2_slice_literal_element
+            	Messages:   	silent drop: routes=[]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/E3_map_literal_element (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/E3_map_literal_element
+            	Messages:   	silent drop: routes=[]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/E4_index_assignment (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/E4_index_assignment
+            	Messages:   	silent drop: routes=[]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/N19b_Use_in_a_loop (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/N19b_Use_in_a_loop
+            	Messages:   	silent drop: routes=[GET /api/op gated]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/N19c_Use_in_a_closure (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/N19c_Use_in_a_closure
+            	Messages:   	silent drop: routes=[GET /api/op gated]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/N7g_go_statement (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/N7g_go_statement
+            	Messages:   	silent drop: routes=[]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/N2_method_value (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/N2_method_value
+            	Messages:   	silent drop: routes=[]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/E6_channel_send (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/E6_channel_send
+            	Messages:   	silent drop: routes=[]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/E7_append (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/E7_append
+            	Messages:   	silent drop: routes=[]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/E8_star/address_assignment (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/E8_star/address_assignment
+            	Messages:   	silent drop: routes=[]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/N7_call_to_package_function_outside_scanned_set (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/N7_call_to_package_function_outside_scanned_set
+            	Messages:   	silent drop: routes=[]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/N7b_call_to_interface_method_outside_scanned_set (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/N7b_call_to_interface_method_outside_scanned_set
+            	Messages:   	silent drop: routes=[]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/N7e_group_passed_to_a_scanned_func_in_non-group_slot (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/N7e_group_passed_to_a_scanned_func_in_non-group_slot
+            	Messages:   	silent drop: routes=[GET /api/op open]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/N2b_method_value_passed_as_argument (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/N2b_method_value_passed_as_argument
+            	Messages:   	silent drop: routes=[]
+    --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported/N17b_Use_chain_then_escape (0.00s)
+        api_contract_gate_codescan_escape_test.go:47: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:47
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R3_GroupEscapeIsReported/N17b_Use_chain_then_escape
+            	Messages:   	silent drop: routes=[]
+--- FAIL: TestADMD1F1S1R3_UseChainGatesTheRoute (0.00s)
+    api_contract_gate_codescan_escape_test.go:56: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:56
+        	Error:      	Not equal: 
+        	            	expected: []string{"GET /api/op gated"}
+        	            	actual  : []string{"GET /api/op open"}
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1,3 +1,3 @@
+        	            	 ([]string) (len=1) {
+        	            	- (string) (len=17) "GET /api/op gated"
+        	            	+ (string) (len=16) "GET /api/op open"
+        	            	 }
+        	Test:       	TestADMD1F1S1R3_UseChainGatesTheRoute
+--- FAIL: TestADMD1F1S1R3_RealNamesStillResolve (0.00s)
+    api_contract_gate_codescan_escape_test.go:70: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:70
+        	Error:      	Not equal: 
+        	            	expected: []string{"GET /op gated"}
+        	            	actual  : []string(nil)
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1,4 +1,2 @@
+        	            	-([]string) (len=1) {
+        	            	- (string) (len=13) "GET /op gated"
+        	            	-}
+        	            	+([]string) <nil>
+        	            	 
+        	Test:       	TestADMD1F1S1R3_RealNamesStillResolve
+--- FAIL: TestADMD1F1S1R3_AllowListPinned (0.00s)
+    api_contract_gate_codescan_escape_test.go:81: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g.tFdYKr/repo/catalog-api/api_contract_gate_codescan_escape_test.go:81
+        	Error:      	elements differ
+        	            	
+        	            	extra elements in list A:
+        	            	([]interface {}) (len=3) {
+        	            	 (string) (len=20) "verifyAuthRouteTable",
+        	            	 (string) (len=19) "applyTrustedProxies",
+        	            	 (string) (len=17) "setTrustedProxies"
+        	            	}
+        	            	
+        	            	
+        	            	listA:
+        	            	([]string) (len=3) {
+        	            	 (string) (len=20) "verifyAuthRouteTable",
+        	            	 (string) (len=19) "applyTrustedProxies",
+        	            	 (string) (len=17) "setTrustedProxies"
+        	            	}
+        	            	
+        	            	
+        	            	listB:
+        	            	([]string) <nil>
+        	Test:       	TestADMD1F1S1R3_AllowListPinned
+FAIL
+FAIL	catalogizer	0.257s
+FAIL
