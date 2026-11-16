@@ -309,6 +309,12 @@ func (h *AuthHandler) RegisterGin(c *gin.Context, userRepo *repository.UserRepos
 
 	userID, err := userRepo.Create(user)
 	if err != nil {
+		// ADMD1RRR-I1: the existence checks above are check-then-insert; two concurrent registrations of one
+		// username/email both pass them and the loser hits the unique constraint (not a server fault).
+		if isUniqueViolation(err) {
+			c.JSON(http.StatusConflict, gin.H{"error": "Username or email already exists"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 		return
 	}

@@ -390,6 +390,10 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 				c.JSON(http.StatusConflict, gin.H{"error": "The last administrator cannot be demoted or deactivated"})
 				return
 			}
+			if isUniqueViolation(gerr) {
+				c.JSON(http.StatusConflict, gin.H{"error": "Username or email already exists"})
+				return
+			}
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
 			return
 		}
@@ -398,6 +402,10 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 			return
 		}
 	} else if err := h.userRepo.Update(user); err != nil {
+		if isUniqueViolation(err) {
+			c.JSON(http.StatusConflict, gin.H{"error": "Username or email already exists"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
 		return
 	}
