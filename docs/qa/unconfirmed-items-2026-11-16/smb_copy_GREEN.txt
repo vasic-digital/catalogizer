@@ -1,8 +1,0 @@
---- PASS: TestLiveSMBCopy_SamePathRefusedSourceIntact (0.03s)
---- PASS: TestLiveSMBCopy_CaseAliasKeepsSourceBytes (0.04s)
---- PASS: TestLiveSMBCopy_ReplacesExistingDestinationNoTempLeft (0.04s)
---- PASS: TestLiveSMBCopy_MissingSourceLeavesDestinationAlone (0.03s)
---- PASS: TestLiveSMBCopy_DestinationDirectoryRefused (0.02s)
---- PASS: TestLiveSMBCopy_SourceDirectoryRefused (0.02s)
---- PASS: TestLiveSMBCopy_CancelledContextLeavesDestination (0.09s)
-ok  	catalogizer/filesystem	0.295s
