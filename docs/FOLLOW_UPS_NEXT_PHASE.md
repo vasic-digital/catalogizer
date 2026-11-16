@@ -3095,3 +3095,9 @@ Evidence: RED 3 of 48 on parent source with the new tests, GREEN 48/48; full :ap
 - SSEFURRRR-n3: Error.error wording calls wrapped-handler errors text/plain; GET /configuration/status 501 is JSON (configuration_handler.go:254-257) and gate responses on /admin aliases and the config wizard are JSON; say "handler-level errors".
 - SSEFURRRR-n4 (pre-existing): openapi ~line 2367 cites main.go:1106-1108 for "Overall status is unhealthy"; those lines are /stats registrations (stale).
 - SSEFURRRR-n5: the "236" http.Error count excludes stdError (7 configuration, 15 error_reporting) calls; state it as literal http.Error calls wherever cited.
+- ADMD1RRRR-m1: openapi PUT /admin/users/{id} 409 description lacks the duplicate-email cause; POST /storage/roots 409 description lacks duplicate name (sequential and racing).
+- ADMD1RRRR-m2: register and storage-root have no non-unique negative control (mutants "any create error becomes 409" survive); add a test where the insert fails for a non-unique reason and must stay 500.
+- ADMD1RRRR-m3: mutants M4/M5/M7 are killed only with CAT_TEST_PG_DSN set (NUL byte negative); add a SQLite-reachable non-unique failure (NOT NULL/CHECK/closed DB).
+- ADMD1RRRR-m4: storage-root race test is SQLite only; add a live PG leg (InsertReturningID + 23505).
+- ADMD1RRRR-n1: racing storage-root 409 body lacks existing_id that the sequential 409 has.
+- ADMD1RRRR-n2 (pre-existing): 409 hint points at nonexistent PUT /api/v1/storage/roots/{id}.
