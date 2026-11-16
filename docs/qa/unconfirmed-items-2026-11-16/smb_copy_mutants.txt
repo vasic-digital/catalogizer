@@ -1,0 +1,18 @@
+M1 same-path
+--- FAIL: SamePathRefusedSourceIntact (0.02s) 
+M2 regular
+--- FAIL: SourceDirectoryRefused (0.03s) 
+M3 dirdst
+--- FAIL: DestinationDirectoryRefused (0.05s) 
+M4 tmp-not-removed
+--- FAIL: CancelMidTransferKeepsDestinationNoTemp (4.74s) 
+M5 no-ctx-final-check
+ok  	catalogizer/filesystem	7.034s 
+M6 direct-write
+--- FAIL: CaseAliasKeepsSourceBytes (0.06s) --- FAIL: CancelMidTransferKeepsDestinationNoTemp (5.28s) 
+M7 no-chunk-ctx
+ok  	catalogizer/filesystem	14.109s 
+M8 keep-tmp-after-rename-no
+--- FAIL: ReplacesExistingDestinationNoTempLeft (0.06s) --- FAIL: CancelMidTransferKeepsDestinationNoTemp (4.54s) 
+FINAL
+ok  	catalogizer/filesystem	4.950s 

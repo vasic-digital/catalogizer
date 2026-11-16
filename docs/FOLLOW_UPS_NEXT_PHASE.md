@@ -3272,3 +3272,18 @@ HAUTHZ-F3 CLOSED PROVISIONAL (ErrReportNotFound -> 404, identical to GET; FU2-M1
 - **HAUTHZ-F3R-m1 (minor, test-instrumentation):** "real internal error stays 500" unpinned (reviewer mutant R1: handler returns 404 for every error survives). Add handler unit tests with MockErrorReportingService: generic error -> 500, ErrReportNotFound -> 404, wrapped sentinel -> 404 (both handlers).
 - **HAUTHZ-F3R-m2 (minor, test-instrumentation):** nothing pins that the foreign-owner path carries no owner detail into error text/logs (R6 survives); service-level test asserting err == ErrReportNotFound for foreign and missing.
 - **HAUTHZ-F3R-n1 (nit, pre-existing):** GET routes still map every service error incl. DB failure to 404; PUT now 500; asymmetric (not an oracle).
+
+## GATE-CHECKLIST Rev 4 review follow-ups (Opus, 2026-11-16, PROVISIONAL)
+- GATECHK4-m1: G12 "316 vs 315 UNCONFIRMED" resolved: commit 8d367fd58 has an inline `Roadmap-Item:`; anchored vs unanchored match.
+- GATECHK4-m3: reword "No rc exemption is recorded" to apply to v2.5.0 only (rc.1 relaxation is recorded).
+- GATECHK4-m4: PKGC-FU4-F2 short id 2c799a9f resolves (merge fix/chpw-rl-3); drop "not re-resolved".
+- GATECHK4-n1: "all merges Opus GO" is 24 of 25 (one sync merge).
+- GATECHK4-NEXT: next revision adds HAUTHZ-F3/FU2-M1..M3 (8e717b477), CPN1-M1..M3 (8a4fcdf6a), SSEFU2-F3 (af4ab5216), G10 parity bd86adcad, updated G12 counts; G2 wording to six products and protocol-level host legs (host-agnostic generalisation, operator decision 2026-11-16, CAT-GENERIC-HOSTS-1: a server exposing storage protocols is not a product; gate_api.rec generated afterwards).
+
+## CAT-SMB-COPY-1 review follow-ups (Opus, 2026-11-16, PROVISIONAL)
+- SMBCOPYR-m1: read-only destination is now overwritten (go-smb2 Share.Remove chmod-retries); destination identity (ACL, times, file id, hard links) not preserved. Decide + document.
+- SMBCOPYR-m2: same-path guard compares raw strings; `./x` vs `x` returns nil not ErrCopySameFile. Fix: path.Clean both.
+- SMBCOPYR-m3: temp cleanup runs on expired deadline context and can leak the temp file.
+- SMBCOPYR-m4: leftover `.copy-*.tmp` visible to scans; path in error text.
+- SMBCOPYR-m5: REPORT.md cites b91ecc76d for LOGSHARE-TOK-1-F1 but that commit introduced the collision; renumber landed via aed566da5/3a33fb054. Correct citation.
+- SMBCOPYR-M5/R2-R7: surviving mutants (final ctx check, srcFile.Close, temp location, stat-error, deadline, chunk write error, temp Close error); need an injectable writer seam. Chunk-cancel test adopted (smb_copy_chunk_cancel_test.go, kills M7).
