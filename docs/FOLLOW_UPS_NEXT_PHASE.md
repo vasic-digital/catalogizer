@@ -3075,3 +3075,10 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 - ADMD1RRR-m1: mutant "create site back to SQLite-only text" survives: add a duplicate user create step on PostgreSQL to dupUserUpdateChecks.
 - ADMD1RRR-m2: mutant "plain Update branch maps any error to 409" survives: send the NUL first_name negative through the plain router too.
 - ADMD1RRR-n1: test header comment says FK violation, code uses NUL byte. n2: untidy import block. n3: isRoleNameConflict is a one-line alias with a stale doc comment.
+
+## GATECHK-R3 review follow-ups (Opus GO after round 2; PROVISIONAL)
+- GATECHK-R3-m1: G9 list incomplete: PGLAX1-F7 (follow-ups ~L2872, landed PROVISIONAL e9fe1c5bc) and older important lines F5 L408, F1/F2 L807-808, CS-N1 L1178, R3-1 L2482 missing.
+- GATECHK-R3-m3: register line drift: CAT-PREEXIST-1..10 are at register L88-98, doc cites L90-97.
+- GATECHK-R3-m5: G12 "Distance to release" overstates "VERIFIED count 0 measured"; per-item count is UNCONFIRMED; no tracked workable-items DB exists in the repo (a §11.4.95 gap); FOLLOW_UPS VERIFIED-DONE hits (L1381 D1..D6) are pre-tag.
+- GATECHK-R3-m7: checklist has no §11.4.65 twins (.html/.pdf) and no "Last modified" row (§11.4.44); several table rows lack the trailing `|`.
+- GATECHK-R3-i8: baseline-v2.4.2 and synology-live SHA256SUMS list gitignored files (*.out, *.log) a clone can never have; make the manifests list only committed files or un-ignore the evidence.
