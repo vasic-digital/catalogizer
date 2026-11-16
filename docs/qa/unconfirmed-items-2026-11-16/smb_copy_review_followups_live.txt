@@ -1,0 +1,11 @@
+--- PASS: TestLiveSMBCopy_SamePathRefusedSourceIntact (0.21s)
+--- PASS: TestLiveSMBCopy_CaseAliasKeepsSourceBytes (0.06s)
+--- PASS: TestLiveSMBCopy_ReplacesExistingDestinationNoTempLeft (0.12s)
+--- PASS: TestLiveSMBCopy_MissingSourceLeavesDestinationAlone (0.13s)
+--- PASS: TestLiveSMBCopy_DestinationDirectoryRefused (0.14s)
+--- PASS: TestLiveSMBCopy_SourceDirectoryRefused (0.02s)
+--- PASS: TestLiveSMBCopy_CancelledContextLeavesDestination (0.52s)
+--- PASS: TestLiveSMBCopy_CancelMidTransferKeepsDestinationNoTemp (11.81s)
+--- PASS: TestLiveSMBCopy_SamePathUncleanedSpellingRefused (0.08s)
+--- PASS: TestLiveSMBCopy_ReadOnlyDestinationRefused (0.06s)
+ok  	catalogizer/filesystem	13.289s
