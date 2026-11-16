@@ -5274,7 +5274,7 @@ List sync conflicts.
 
 **Response:** 501 — Not implemented (JSON error object; no rows are fabricated)
 
-**Errors:** 401 (unauthorized), 403 (not an administrator), 501 (not implemented), 503 (admin role could not be verified)
+**Errors:** 401 (unauthorized), 403 (not an administrator), 501 (not implemented), 503 (`Could not verify admin role`)
 
 ---
 ### GET /api/v1/sync/devices
@@ -5287,7 +5287,7 @@ List sync devices.
 
 **Response:** 501 — Not implemented (JSON error object; no rows are fabricated)
 
-**Errors:** 401 (unauthorized), 403 (not an administrator), 501 (not implemented), 503 (admin role could not be verified)
+**Errors:** 401 (unauthorized), 403 (not an administrator), 501 (not implemented), 503 (`Could not verify admin role`)
 
 ---
 ### GET /api/v1/sync/history

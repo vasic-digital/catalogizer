@@ -105,6 +105,9 @@ components:
     Error:
       type: object
       properties:
+        success:
+          type: boolean
+          description: "Present (false) on errors written by the shared error helper, for example the 503 'Could not verify admin role'; absent on the bare {error: ...} envelope"
         error:
           type: string
           description: "Human-readable message; the default error envelope is only {error: ...}"
@@ -10431,7 +10434,7 @@ paths:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '503':
-          description: Could not verify the admin role (the live database admin check failed; RequireAdmin fails closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
           content:
             application/json:
               schema:
@@ -10460,7 +10463,7 @@ paths:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '503':
-          description: Could not verify the admin role (the live database admin check failed; RequireAdmin fails closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
           content:
             application/json:
               schema:
@@ -10489,7 +10492,7 @@ paths:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '503':
-          description: Could not verify admin role (the live database admin check failed; RequireAdmin fails closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
           content:
             application/json:
               schema:
@@ -10499,11 +10502,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: database query failed
+                $ref: '#/components/schemas/Error'
         '200':
           description: Status
           content:
@@ -10536,7 +10535,7 @@ paths:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '503':
-          description: Could not verify admin role (the live database admin check failed; RequireAdmin fails closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
           content:
             application/json:
               schema:
@@ -10546,11 +10545,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: database query failed
+                $ref: '#/components/schemas/Error'
         '200':
           description: Providers
           content:
@@ -10591,7 +10586,7 @@ paths:
         '403':
           description: Caller is not an administrator (decided from the database on every request)
         '503':
-          description: Could not verify the admin role (the live database admin check failed; RequireAdmin fails closed)
+          description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
           content:
             application/json:
               schema:
