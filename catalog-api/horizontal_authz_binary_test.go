@@ -260,6 +260,18 @@ func TestHorizontalAuthz_RealBinary(t *testing.T) {
 		e.ok("usermeta read B own", "GET", fmt.Sprintf("/api/v1/entities/%d/user-metadata", m1), e.b, nil, "hzmark-b-m1-note")
 		e.ok("usermeta read A own", "GET", fmt.Sprintf("/api/v1/entities/%d/user-metadata", m0), e.a, nil, "hzmark-a-note")
 		e.denied("usermeta read foreign (A reads B's m1)", "GET", fmt.Sprintf("/api/v1/entities/%d/user-metadata", m1), e.a, nil, "hzmark-b-m1-note", "hzmark-b-note")
+		// HAUTHZ-O1 review m-1: the foreign read must be EXACTLY 404 and byte-identical to the read of a nonexistent entity
+		// (no oracle for another user's row); an anonymous read is 401.
+		e.t.Run("strict/usermeta foreign vs missing vs anonymous", func(t *testing.T) {
+			fcode, fraw := e.c.do("GET", fmt.Sprintf("/api/v1/entities/%d/user-metadata", m1), e.a, nil)
+			mcode, mraw := e.c.do("GET", "/api/v1/entities/999999999/user-metadata", e.a, nil)
+			t.Logf("HZ|usermeta strict|foreign=%d missing=%d", fcode, mcode)
+			assert.Equal(t, 404, fcode, "foreign read must be exactly 404: %.300s", fraw)
+			assert.Equal(t, 404, mcode, "missing-entity read must be exactly 404: %.300s", mraw)
+			assert.Equal(t, string(mraw), string(fraw), "foreign and missing bodies must be byte-identical")
+			acode, araw := e.c.do("GET", fmt.Sprintf("/api/v1/entities/%d/user-metadata", m1), "", nil)
+			assert.Equal(t, 401, acode, "anonymous read must be 401: %.300s", araw)
+		})
 	})
 
 	// ---- playback sessions / progress / history ----------------------------------------------------------------------------

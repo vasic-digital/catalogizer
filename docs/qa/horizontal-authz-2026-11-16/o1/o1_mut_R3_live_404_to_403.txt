@@ -1,0 +1,20 @@
+--- FAIL: TestHorizontalAuthz_RealBinary (37.23s)
+    --- FAIL: TestHorizontalAuthz_RealBinary/strict/usermeta_foreign_vs_missing_vs_anonymous (0.00s)
+        horizontal_authz_binary_test.go:268: HZ|usermeta strict|foreign=403 missing=403
+        horizontal_authz_binary_test.go:269: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/umeta2.MGAO/c/catalog-api/horizontal_authz_binary_test.go:269
+            	Error:      	Not equal: 
+            	            	expected: 404
+            	            	actual  : 403
+            	Test:       	TestHorizontalAuthz_RealBinary/strict/usermeta_foreign_vs_missing_vs_anonymous
+            	Messages:   	foreign read must be exactly 404: {"success":false,"error":"User metadata not found"}
+        horizontal_authz_binary_test.go:270: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/umeta2.MGAO/c/catalog-api/horizontal_authz_binary_test.go:270
+            	Error:      	Not equal: 
+            	            	expected: 404
+            	            	actual  : 403
+            	Test:       	TestHorizontalAuthz_RealBinary/strict/usermeta_foreign_vs_missing_vs_anonymous
+            	Messages:   	missing-entity read must be exactly 404: {"success":false,"error":"User metadata not found"}
+FAIL
+FAIL	catalogizer	37.594s
+FAIL

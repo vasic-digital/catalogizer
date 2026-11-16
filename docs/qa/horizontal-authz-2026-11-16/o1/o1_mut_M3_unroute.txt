@@ -1,0 +1,27 @@
+--- FAIL: TestHorizontalAuthz_RealBinary (38.49s)
+    --- FAIL: TestHorizontalAuthz_RealBinary/control/usermeta_read_B_own (0.00s)
+        horizontal_authz_binary_test.go:75: HZ|usermeta read B own|404|POSITIVE-CONTROL
+        horizontal_authz_binary_test.go:76: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/umeta2.MGAO/c/catalog-api/horizontal_authz_binary_test.go:76
+            	Error:      	"404" is not less than "300"
+            	Test:       	TestHorizontalAuthz_RealBinary/control/usermeta_read_B_own
+            	Messages:   	GET /api/v1/entities/2/user-metadata: 404 page not found
+    --- FAIL: TestHorizontalAuthz_RealBinary/control/usermeta_read_A_own (0.00s)
+        horizontal_authz_binary_test.go:75: HZ|usermeta read A own|404|POSITIVE-CONTROL
+        horizontal_authz_binary_test.go:76: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/umeta2.MGAO/c/catalog-api/horizontal_authz_binary_test.go:76
+            	Error:      	"404" is not less than "300"
+            	Test:       	TestHorizontalAuthz_RealBinary/control/usermeta_read_A_own
+            	Messages:   	GET /api/v1/entities/1/user-metadata: 404 page not found
+    --- FAIL: TestHorizontalAuthz_RealBinary/strict/usermeta_foreign_vs_missing_vs_anonymous (0.00s)
+        horizontal_authz_binary_test.go:268: HZ|usermeta strict|foreign=404 missing=404
+        horizontal_authz_binary_test.go:273: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/umeta2.MGAO/c/catalog-api/horizontal_authz_binary_test.go:273
+            	Error:      	Not equal: 
+            	            	expected: 401
+            	            	actual  : 404
+            	Test:       	TestHorizontalAuthz_RealBinary/strict/usermeta_foreign_vs_missing_vs_anonymous
+            	Messages:   	anonymous read must be 401: 404 page not found
+FAIL
+FAIL	catalogizer	39.024s
+FAIL

@@ -1,0 +1,4 @@
+# catalogizer/handlers [catalogizer/handlers.test]
+handlers/media_entity_handler.go:1237:2: declared and not used: userID
+FAIL	catalogizer/handlers [build failed]
+FAIL

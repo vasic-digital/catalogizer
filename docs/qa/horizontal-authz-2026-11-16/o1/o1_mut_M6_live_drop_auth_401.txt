@@ -1,0 +1,30 @@
+--- FAIL: TestHorizontalAuthzUnit_UserMetadataReadCallerScoped (0.62s)
+    horizontal_authz_unit_test.go:162: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/umeta2.MGAO/c/catalog-api/handlers/horizontal_authz_unit_test.go:162
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 200
+        	Test:       	TestHorizontalAuthzUnit_UserMetadataReadCallerScoped
+        	Messages:   	A has no row on item 7: must be 404, got: {"id":1,"media_item_id":7,"user_id":2,"user_rating":9,"personal_notes":"hzmark-b-note","favorite":false,"created_at":"2026-11-17T00:20:03.872932502+01:00","updated_at":"2026-11-17T00:20:03.872932502+01:00"}
+    horizontal_authz_unit_test.go:163: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/umeta2.MGAO/c/catalog-api/handlers/horizontal_authz_unit_test.go:163
+        	Error:      	"{\"id\":1,\"media_item_id\":7,\"user_id\":2,\"user_rating\":9,\"personal_notes\":\"hzmark-b-note\",\"favorite\":false,\"created_at\":\"2026-11-17T00:20:03.872932502+01:00\",\"updated_at\":\"2026-11-17T00:20:03.872932502+01:00\"}" should not contain "hzmark-b-note"
+        	Test:       	TestHorizontalAuthzUnit_UserMetadataReadCallerScoped
+        	Messages:   	B's note must never reach A
+    horizontal_authz_unit_test.go:167: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/umeta2.MGAO/c/catalog-api/handlers/horizontal_authz_unit_test.go:167
+        	Error:      	Not equal: 
+        	            	expected: "{\"success\":false,\"error\":\"User metadata not found\"}"
+        	            	actual  : "{\"id\":1,\"media_item_id\":7,\"user_id\":2,\"user_rating\":9,\"personal_notes\":\"hzmark-b-note\",\"favorite\":false,\"created_at\":\"2026-11-17T00:20:03.872932502+01:00\",\"updated_at\":\"2026-11-17T00:20:03.872932502+01:00\"}"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-{"success":false,"error":"User metadata not found"}
+        	            	+{"id":1,"media_item_id":7,"user_id":2,"user_rating":9,"personal_notes":"hzmark-b-note","favorite":false,"created_at":"2026-11-17T00:20:03.872932502+01:00","updated_at":"2026-11-17T00:20:03.872932502+01:00"}
+        	Test:       	TestHorizontalAuthzUnit_UserMetadataReadCallerScoped
+        	Messages:   	foreign and missing bodies must be identical
+FAIL
+FAIL	catalogizer/handlers	0.795s
+FAIL

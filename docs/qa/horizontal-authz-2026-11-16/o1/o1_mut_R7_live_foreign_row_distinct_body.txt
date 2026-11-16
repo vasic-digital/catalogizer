@@ -1,0 +1,20 @@
+--- FAIL: TestHorizontalAuthz_RealBinary (33.50s)
+    --- FAIL: TestHorizontalAuthz_RealBinary/strict/usermeta_foreign_vs_missing_vs_anonymous (0.00s)
+        horizontal_authz_binary_test.go:268: HZ|usermeta strict|foreign=404 missing=404
+        horizontal_authz_binary_test.go:271: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/umeta2.MGAO/c/catalog-api/horizontal_authz_binary_test.go:271
+            	Error:      	Not equal: 
+            	            	expected: "{\"success\":false,\"error\":\"User metadata not found\"}"
+            	            	actual  : "{\"success\":false,\"error\":\"User metadata held by another user\"}"
+            	            	
+            	            	Diff:
+            	            	--- Expected
+            	            	+++ Actual
+            	            	@@ -1 +1 @@
+            	            	-{"success":false,"error":"User metadata not found"}
+            	            	+{"success":false,"error":"User metadata held by another user"}
+            	Test:       	TestHorizontalAuthz_RealBinary/strict/usermeta_foreign_vs_missing_vs_anonymous
+            	Messages:   	foreign and missing bodies must be byte-identical
+FAIL
+FAIL	catalogizer	33.899s
+FAIL
