@@ -1,10 +1,13 @@
 package services
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 	"time"
 
@@ -249,8 +252,7 @@ func TestErrorReportingService_UpdateErrorStatus_AccessDenied(t *testing.T) {
 	require.NoError(t, err)
 
 	err = service.UpdateErrorStatus(created.ID, 2, models.ErrorStatusResolved)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "access denied")
+	assert.ErrorIs(t, err, ErrReportNotFound)
 }
 
 func TestErrorReportingService_UpdateCrashStatus_Integration(t *testing.T) {
@@ -289,8 +291,7 @@ func TestErrorReportingService_UpdateCrashStatus_AccessDenied(t *testing.T) {
 	require.NoError(t, err)
 
 	err = service.UpdateCrashStatus(created.ID, 2, models.CrashStatusResolved)
-	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "access denied")
+	assert.ErrorIs(t, err, ErrReportNotFound)
 }
 
 func TestErrorReportingService_GetErrorReportsByUser_Integration(t *testing.T) {
@@ -3615,4 +3616,57 @@ func TestSyncService_GetSyncStatistics_WithUser(t *testing.T) {
 	stats, err := service.GetSyncStatistics(&userID, start, end)
 	require.NoError(t, err)
 	assert.NotNil(t, stats)
+}
+
+// HAUTHZ-F3R-m2: a foreign-owner report and a missing report are indistinguishable: the very same sentinel value,
+// and neither the error text nor the logs carry the owner id or the report id (reviewer mutant R6).
+func TestErrorReportingService_UpdateStatus_ForeignAndMissingIndistinguishable(t *testing.T) {
+	const ownerID = 734219
+	const callerID = 918273
+	db := setupTestDB(t)
+	errorRepo := repository.NewErrorReportingRepository(db)
+	crashRepo := repository.NewCrashReportingRepository(db)
+	service := NewErrorReportingService(errorRepo, crashRepo)
+
+	for _, id := range []int{ownerID, callerID} {
+		_, err := db.Exec(`INSERT INTO users (id, username, email, password_hash, salt, is_active) VALUES (?, ?, ?, 'x', 'x', 1)`,
+			id, fmt.Sprintf("u%d", id), fmt.Sprintf("u%d@example.test", id))
+		require.NoError(t, err)
+	}
+
+	var logBuf bytes.Buffer
+	log.SetOutput(&logBuf)
+	defer log.SetOutput(os.Stderr)
+
+	createdErr, err := service.ReportError(ownerID, &models.ErrorReportRequest{Level: "error", Message: "owned", ErrorCode: "E", Component: "c"})
+	require.NoError(t, err)
+	createdCrash, err := service.ReportCrash(ownerID, &models.CrashReportRequest{Signal: "SIGSEGV", Message: "owned crash"})
+	require.NoError(t, err)
+
+	type op func(id int) error
+	ops := map[string]struct{ foreign, missing op }{
+		"error": {
+			foreign: func(int) error { return service.UpdateErrorStatus(createdErr.ID, callerID, models.ErrorStatusResolved) },
+			missing: func(int) error { return service.UpdateErrorStatus(999999, callerID, models.ErrorStatusResolved) },
+		},
+		"crash": {
+			foreign: func(int) error {
+				return service.UpdateCrashStatus(createdCrash.ID, callerID, models.CrashStatusResolved)
+			},
+			missing: func(int) error { return service.UpdateCrashStatus(999999, callerID, models.CrashStatusResolved) },
+		},
+	}
+	for name, o := range ops {
+		t.Run(name, func(t *testing.T) {
+			foreignErr, missingErr := o.foreign(0), o.missing(0)
+			require.Error(t, foreignErr)
+			require.Error(t, missingErr)
+			// Identity, not just errors.Is: no wrapping that could carry detail.
+			assert.True(t, foreignErr == ErrReportNotFound, "foreign must be the bare sentinel, got %#v", foreignErr)
+			assert.True(t, missingErr == ErrReportNotFound, "missing must be the bare sentinel, got %#v", missingErr)
+			assert.Equal(t, missingErr.Error(), foreignErr.Error())
+			assert.NotContains(t, foreignErr.Error(), strconv.Itoa(ownerID))
+		})
+	}
+	assert.NotContains(t, logBuf.String(), strconv.Itoa(ownerID), "logs must not carry the owner id")
 }
