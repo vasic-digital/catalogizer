@@ -1,7 +1,9 @@
 package filesystem
 
 import (
+	"context"
 	"fmt"
+	"net"
 	"sync"
 
 	"digital.vasic.filesystem/pkg/nfs3"
@@ -55,6 +57,11 @@ func nfs3ConfigFromSettings(settings map[string]interface{}) (nfs3.Config, error
 		Host: host, Export: export,
 		MountPort: port, NFSPort: port,
 		UID: uint32(uid), GID: uint32(gid),
+		// SEC-DIAL-1: every connection (portmapper, MOUNT, NFS) goes through the operator-class dialer, pinned to the vetted address; the
+		// closure reads storageDialContext at dial time so tests can observe or replace it. The reserved-port option is never used.
+		Dial: func(ctx context.Context, network, addr string, _ bool) (net.Conn, error) {
+			return storageDial(ctx, network, addr)
+		},
 	}, nil
 }
 

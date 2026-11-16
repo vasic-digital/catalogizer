@@ -2,13 +2,17 @@ package filesystem
 
 import (
 	"context"
+	"errors"
 	"net"
 	"os"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
+	"catalogizer/internal/netguard"
+	"catalogizer/models"
 	"digital.vasic.filesystem/pkg/nfs3"
 )
 
@@ -99,6 +103,7 @@ func TestNFS3FactoryRejectsBadSettings(t *testing.T) {
 // LIVE failure leg (real client, real TCP to a port nothing listens on): Connect fails honestly, state stays disconnected, Disconnect is safe.
 func TestNFS3LifecycleConnectFailureReal(t *testing.T) {
 	withNFS3(t)
+	allowLoopbackDial(t)
 	l, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatal(err)
@@ -122,14 +127,15 @@ func TestNFS3LifecycleConnectFailureReal(t *testing.T) {
 	}
 }
 
-// LIVE: factory -> Connect -> list -> read -> Disconnect against a REAL NFS server (the unfs3 emulator container of
-// scripts/test-infra/nfs_emulator_live.sh). Without NFS_EMU_ADDR it SKIPs; no stand-in server is used.
+// LIVE: factory -> Connect -> list -> Disconnect against a REAL NFS server (the unfs3 emulator container; run by
+// scripts/test-infra/nfs_emulator_live.sh, which sets NFS_EMU_ADDR and runs this test). Without NFS_EMU_ADDR it SKIPs; no stand-in server is used.
 func TestNFS3FactoryLifecycleLive(t *testing.T) {
 	addr := os.Getenv("NFS_EMU_ADDR")
 	if addr == "" {
 		t.Skip("NFS_EMU_ADDR not set: no real NFS server (unfs3 emulator) available; live leg SKIPPED, not stubbed")
 	}
 	withNFS3(t)
+	allowLoopbackDial(t) // the emulator listens on loopback; the operator-class policy would refuse it
 	host, ps, err := net.SplitHostPort(addr)
 	if err != nil {
 		t.Fatal(err)
@@ -179,5 +185,127 @@ func TestNFS3FactorySettingsReachClient(t *testing.T) {
 	}
 	if got.Host != "nas.example" || got.Export != "/vol/v" || got.NFSPort != 2049 || got.MountPort != 2049 || got.UID != 1000 || got.GID != 1001 {
 		t.Fatalf("settings did not reach the client: %+v", got)
+	}
+}
+
+// allowLoopbackDial replaces the operator-class dialer by a plain one for tests whose real server is on loopback.
+func allowLoopbackDial(t *testing.T) {
+	t.Helper()
+	old := storageDialContext
+	storageDialContext = (&net.Dialer{Timeout: 10 * time.Second}).DialContext
+	t.Cleanup(func() { storageDialContext = old })
+}
+
+// SEC-DIAL-1: the nfs3 client dials through the operator-class dialer (storageDialContext), never a plain net.Dialer.
+func TestNFS3DialsThroughStorageDialer(t *testing.T) {
+	withNFS3(t)
+	var dialed []string
+	old := storageDialContext
+	storageDialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
+		dialed = append(dialed, addr)
+		return nil, errors.New("dial observed")
+	}
+	t.Cleanup(func() { storageDialContext = old })
+	c, err := NewDefaultClientFactory().CreateClient(nfs3Cfg(map[string]interface{}{"host": "nas.example", "path": "/export", "port": 2049}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	if err := c.Connect(ctx); err == nil {
+		t.Fatal("Connect must fail when the dialer refuses")
+	}
+	if len(dialed) == 0 {
+		t.Fatal("nfs3 never dialled through storageDialContext (SEC-DIAL-1 bypass)")
+	}
+	for _, a := range dialed {
+		if !strings.HasPrefix(a, "nas.example:") {
+			t.Errorf("unexpected dial target %q", a)
+		}
+	}
+}
+
+// With the real operator-class dialer, a loopback server is never connected to (a listener on it sees zero connections), and a cloud-metadata
+// address is refused too.
+func TestNFS3RealPolicyRefusesLoopbackAndMetadata(t *testing.T) {
+	withNFS3(t)
+	t.Setenv(netguard.AllowCIDRsEnv, "")
+	port, accepted := secDialListener(t)
+	for _, host := range []string{"127.0.0.1", "169.254.169.254"} {
+		p := port
+		if host != "127.0.0.1" {
+			p = 2049
+		}
+		c, err := NewDefaultClientFactory().CreateClient(nfs3Cfg(map[string]interface{}{"host": host, "path": "/export", "port": p}))
+		if err != nil {
+			t.Fatal(err)
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+		err = c.Connect(ctx)
+		cancel()
+		if err == nil || c.IsConnected() {
+			t.Fatalf("%s: Connect succeeded under the operator-class policy", host)
+		}
+		if !errors.Is(err, netguard.ErrBlocked) {
+			t.Errorf("%s: want a policy refusal, got %v", host, err)
+		}
+	}
+	time.Sleep(100 * time.Millisecond)
+	if n := atomic.LoadInt32(accepted); n != 0 {
+		t.Fatalf("nfs3 connected to the loopback listener %d times", n)
+	}
+}
+
+func TestNFS3SettingsSyntaxRefused(t *testing.T) {
+	withNFS3(t)
+	for name, s := range map[string]map[string]interface{}{
+		"host with port":  {"host": "evil:1234", "path": "/e"},
+		"host with slash": {"host": "a/b", "path": "/e"},
+		"dash host":       {"host": "-oProxy", "path": "/e"},
+		"dash export":     {"host": "h", "path": "-o x"},
+		"control export":  {"host": "h", "path": "/a\nb"},
+		"server list":     {"host": "h", "path": "/a,evil:/b"},
+	} {
+		if err := ValidateSettings("nfs3", s); err == nil {
+			t.Errorf("%s: ValidateSettings accepted it", name)
+		}
+		if c, err := NewDefaultClientFactory().CreateClient(nfs3Cfg(s)); err == nil {
+			t.Errorf("%s: factory created %v", name, c)
+		}
+	}
+	if err := ValidateSettings("nfs3", map[string]interface{}{"host": "nas.example", "path": "/volume1/My Videos"}); err != nil {
+		t.Errorf("legal value refused: %v", err)
+	}
+}
+
+func TestNFS3VetStorageRoot(t *testing.T) {
+	t.Setenv(netguard.AllowCIDRsEnv, "") // the package TestMain re-admits loopback for fixtures; the policy under test must be the real one
+	str := func(s string) *string { return &s }
+	root := func(h string) *models.StorageRoot {
+		return &models.StorageRoot{Protocol: "nfs3", Host: str(h), Path: str("/export")}
+	}
+	for _, h := range []string{"169.254.169.254", "127.0.0.1", "localhost", "evil:1234", "-x"} {
+		err := VetStorageRoot(context.Background(), root(h))
+		if !errors.Is(err, ErrStorageHostRefused) {
+			t.Errorf("host %q: want ErrStorageHostRefused, got %v", h, err)
+		}
+	}
+	if err := VetStorageRoot(context.Background(), root("192.168.1.20")); err != nil {
+		t.Errorf("private LAN host refused: %v", err)
+	}
+}
+
+// F4: the Required key list is enforced at root creation (ValidateRoot).
+func TestNFS3ValidateRootRequiredKeys(t *testing.T) {
+	withNFS3(t)
+	str := func(s string) *string { return &s }
+	if err := ValidateRoot(&models.StorageRoot{Protocol: "nfs3", Host: str("h"), Path: str("/e")}); err != nil {
+		t.Fatalf("complete root refused: %v", err)
+	}
+	if err := ValidateRoot(&models.StorageRoot{Protocol: "nfs3", Host: str("h")}); err == nil {
+		t.Error("root without path accepted")
+	}
+	if err := ValidateRoot(&models.StorageRoot{Protocol: "nfs3", Path: str("/e")}); err == nil {
+		t.Error("root without host accepted")
 	}
 }
