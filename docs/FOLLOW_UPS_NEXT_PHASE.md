@@ -3350,3 +3350,10 @@ HAUTHZ-F2 fixed: PUT /media/:id/favorite and GET /media/:id use the new `user_fa
 - AFAV-5 (minor): on IOException the optimistic local favorite update is not reverted nor queued for retry.
 - AFAV-6 (nit): remaining mock-only CatalogizerApiTest cases prove nothing.
 - Android unit tests NOT run (no Gradle at load ~49).
+
+### ecopy review follow-ups (Opus GO-with-follow-ups; PROVISIONAL, 2026-11-17)
+- ECOPY-1 (minor, docs): openapi + API_DOCUMENTATION must state the 403/409/422 copy responses cannot occur yet (SMBService never yields ErrCopy*; CopyFile only used by rename tracker).
+- ECOPY-2 (minor, openapi): 403 description should quote admin body `{"success":false,"error":"Admin role required"}` vs `{"error":"Destination is read-only"}`.
+- ECOPY-3 (nit): openapi lacks 400/401 on the copy routes.
+- ECOPY-4 (nit, test): no combined admin-gate + copy test for the 403 collision.
+- ECOPY-5 (nit, docs): HAUTHZ-O1-FU1 heading says CLOSED while body says PROVISIONAL; reword so CLOSED is not read as VERIFIED.
