@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http/httptest"
 	"strconv"
 	"testing"
@@ -715,4 +716,45 @@ func TestErrorReportingHandler_ExportReports(t *testing.T) {
 	assert.Equal(t, 200, rr.Code)
 	mockAuthService.AssertExpectations(t)
 	mockErrorService.AssertExpectations(t)
+}
+
+// HAUTHZ-F3R-m1: pin the PUT status error mapping. Only the not-found sentinel (also when wrapped) maps to 404;
+// every other service error stays a 500 (reviewer mutant R1: 404 for every error).
+func TestErrorReportingHandler_UpdateStatus_ErrorMapping(t *testing.T) {
+	cases := []struct {
+		name string
+		err  error
+		want int
+	}{
+		{"generic internal error stays 500", errors.New("database is locked"), 500},
+		{"sentinel maps to 404", services.ErrReportNotFound, 404},
+		{"wrapped sentinel maps to 404", fmt.Errorf("lookup: %w", services.ErrReportNotFound), 404},
+		{"wrapped generic error stays 500", fmt.Errorf("lookup: %w", errors.New("disk I/O error")), 500},
+	}
+	for _, kind := range []string{"UpdateErrorStatus", "UpdateCrashStatus"} {
+		for _, tc := range cases {
+			t.Run(kind+"/"+tc.name, func(t *testing.T) {
+				mockSvc := new(MockErrorReportingService)
+				mockAuth := new(MockErrorReportingAuthService)
+				h := &ErrorReportingHandler{errorReportingService: mockSvc, authService: mockAuth}
+				mockAuth.On("CheckPermission", 1, models.PermissionReportCreate).Return(true, nil)
+				mockSvc.On(kind, 1, 1, "resolved").Return(tc.err)
+
+				req := httptest.NewRequest("PUT", "/report/1/status", bytes.NewBufferString(`{"status": "resolved"}`))
+				req = req.WithContext(context.WithValue(context.Background(), "user_id", 1))
+				req = mux.SetURLVars(req, map[string]string{"id": "1"})
+				rr := httptest.NewRecorder()
+				if kind == "UpdateErrorStatus" {
+					h.UpdateErrorStatus(rr, req)
+				} else {
+					h.UpdateCrashStatus(rr, req)
+				}
+				assert.Equal(t, tc.want, rr.Code)
+				// The client body is the fixed status text, never the error text.
+				assert.NotContains(t, rr.Body.String(), "database is locked")
+				assert.NotContains(t, rr.Body.String(), "disk I/O")
+				mockSvc.AssertExpectations(t)
+			})
+		}
+	}
 }

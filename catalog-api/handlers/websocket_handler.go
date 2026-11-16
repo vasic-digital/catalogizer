@@ -263,6 +263,10 @@ func (h *WebSocketHandler) authorize(wc *wsConn) bool {
 // authorizeMessage is the throttled per-inbound-message recheck: a flood of frames
 // costs at most one pair of DB lookups per MessageRecheckMinInterval.
 func (h *WebSocketHandler) authorizeMessage(wc *wsConn) bool {
+	// Token expiry is a pure in-memory comparison, so it is never throttled: a frame is not accepted past exp.
+	if !wc.tokenExp.IsZero() && !time.Now().Before(wc.tokenExp) {
+		return false
+	}
 	min := h.config.MessageRecheckMinInterval
 	if min <= 0 {
 		min = DefaultMessageRecheckMinInterval

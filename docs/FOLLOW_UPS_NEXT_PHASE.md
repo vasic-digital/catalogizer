@@ -2256,7 +2256,7 @@ Class-wide enumeration with a control-needled go/ast instrument (`catalog-api/in
 
 ### Reviewer follow-ups for fix/sec-ws-1-f3 (Opus round 2, GO-with-follow-ups, 2026-11-13) - PROVISIONAL
 - SEC-WS-1F3FU-7 (minor): assert seed-refusal path closes the connection and restores connCount (kills mutants R3/R6).
-- SEC-WS-1F3FU-8 (minor): check tokenExp before the per-message throttle shortcut (frames accepted up to 1 s past JWT expiry).
+- SEC-WS-1F3FU-8 (minor) - CLOSED PROVISIONAL: `authorizeMessage` checks tokenExp before the throttle shortcut; `TestSEC_WS_1F3FU8_ExpiredTokenRefusedInsideThrottleWindow` RED before, GREEN after, revert-mutant RED: check tokenExp before the per-message throttle shortcut (frames accepted up to 1 s past JWT expiry).
 - FU-4 update: reviewer ran `-race -run TestF3_ .` clean (8.5 s); live edge/nginx run still owed.
 - nit: flood-test bound (<=8 checker calls) is wall-clock sensitive on a very slow host.
 
@@ -3271,8 +3271,8 @@ CPN1-M1 (stored class/source), M2 (vetted IPs classified+dialled once) and M3 (s
 ## HAUTHZ-F3 fix review follow-ups (Opus GO-with-follow-ups, 2026-11-16; PROVISIONAL)
 
 HAUTHZ-F3 CLOSED PROVISIONAL (ErrReportNotFound -> 404, identical to GET; FU2-M1/M2/M3 closed).
-- **HAUTHZ-F3R-m1 (minor, test-instrumentation):** "real internal error stays 500" unpinned (reviewer mutant R1: handler returns 404 for every error survives). Add handler unit tests with MockErrorReportingService: generic error -> 500, ErrReportNotFound -> 404, wrapped sentinel -> 404 (both handlers).
-- **HAUTHZ-F3R-m2 (minor, test-instrumentation):** nothing pins that the foreign-owner path carries no owner detail into error text/logs (R6 survives); service-level test asserting err == ErrReportNotFound for foreign and missing.
+- **HAUTHZ-F3R-m1 (minor, test-instrumentation) - CLOSED PROVISIONAL: `TestErrorReportingHandler_UpdateStatus_ErrorMapping` (both handlers; mutant R1 observed RED, restored):** "real internal error stays 500" unpinned (reviewer mutant R1: handler returns 404 for every error survives). Add handler unit tests with MockErrorReportingService: generic error -> 500, ErrReportNotFound -> 404, wrapped sentinel -> 404 (both handlers).
+- **HAUTHZ-F3R-m2 (minor, test-instrumentation) - CLOSED PROVISIONAL: `TestErrorReportingService_UpdateStatus_ForeignAndMissingIndistinguishable` (bare sentinel identity, no owner id in text or log; owner-in-error and owner-in-log mutants observed RED, restored; stale "access denied" assertions in the two `*_AccessDenied` tests corrected to `ErrReportNotFound`):** nothing pins that the foreign-owner path carries no owner detail into error text/logs (R6 survives); service-level test asserting err == ErrReportNotFound for foreign and missing.
 - **HAUTHZ-F3R-n1 (nit, pre-existing):** GET routes still map every service error incl. DB failure to 404; PUT now 500; asymmetric (not an oracle).
 
 ## HAUTHZ-F2 per-user media favorite (CAT-HAUTHZ-F2, PROVISIONAL)
