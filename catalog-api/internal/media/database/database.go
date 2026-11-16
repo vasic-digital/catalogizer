@@ -325,6 +325,21 @@ CREATE TABLE IF NOT EXISTS external_metadata (
     UNIQUE(media_item_id, provider)
 );
 
+CREATE TABLE IF NOT EXISTS user_metadata (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    media_item_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL DEFAULT 0,
+    user_rating REAL,
+    watched_status TEXT,
+    watched_date DATETIME,
+    personal_notes TEXT,
+    tags TEXT,
+    favorite BOOLEAN DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (media_item_id) REFERENCES media_items(id)
+);
+
 CREATE TABLE IF NOT EXISTS directory_analysis (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     directory_path TEXT NOT NULL UNIQUE,

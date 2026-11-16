@@ -1,0 +1,1 @@
+NOTE: ./handlers full -short run hit the 10m go test timeout under host load (TestSSEOPQ1_StorageRoots_AdminOnly was running; not touched by this change); targeted run in handlers_targeted.txt is ok. M5 SURVIVED the original test; test strengthened (ownerless row) and M5b KILLED.

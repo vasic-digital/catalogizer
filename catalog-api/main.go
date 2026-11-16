@@ -1306,6 +1306,7 @@ func main() {
 			entityGroup.GET("/:id/pdf-pages/:n", pdfPagesHandler.GetPdfPage)
 			entityGroup.GET("/:id/install-info", mediaEntityHandler.GetInstallInfo)
 			entityGroup.POST("/:id/metadata/refresh", adminGate, mediaEntityHandler.RefreshEntityMetadata)
+			entityGroup.GET("/:id/user-metadata", mediaEntityHandler.GetUserMetadata)
 			entityGroup.PUT("/:id/user-metadata", mediaEntityHandler.UpdateUserMetadata)
 			entityGroup.POST("/:id/user-metadata", mediaEntityHandler.UpdateUserMetadata)
 			entityGroup.POST("/enrich", adminGate, mediaEntityHandler.EnrichAllEntities)

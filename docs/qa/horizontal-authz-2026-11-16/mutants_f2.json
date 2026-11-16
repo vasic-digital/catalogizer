@@ -1,0 +1,5 @@
+{"item":"CAT-HAUTHZ-F2","test":"TestHorizontalAuthz_MediaFavoriteFlag (real binary)","mutants":[
+{"id":"M1","change":"GetMediaByID EXISTS subquery no longer filters uf.user_id = caller","result":"FAIL (killed)","file":"f2_mutant_M1_read_unscoped.txt"},
+{"id":"M2","change":"toggle-off DELETE drops the user_id condition (A clears B's row)","result":"FAIL (killed)","file":"f2_mutant_M2_delete_unscoped.txt"},
+{"id":"M3","change":"toggle-on INSERT attributes the row to fixed user 1 instead of the caller","result":"FAIL (killed)","file":"f2_mutant_M3_write_wrong_user.txt"}],
+"note":"each mutant applied to handlers/media_handler.go in the scratch clone, binary test run, file restored (cmp-verified)."}

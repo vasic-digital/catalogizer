@@ -1312,7 +1312,7 @@ components:
           type: boolean
           description: |
             Required when the destination is on a private network or cannot be resolved now; without it the request is refused
-            with 409 private_network_confirmation_required.
+            with 400 private_network_confirmation_required.
 
     UpdateSyncEndpointRequest:
       type: object
@@ -3381,6 +3381,10 @@ paths:
     put:
       tags: [media]
       summary: Update favorite status
+      description: >-
+        Sets or clears the CALLER's own favorite flag for the media item (stored per user in user_favorites since
+        CAT-HAUTHZ-F2). It never reads or changes another user's flag, and GET /api/v1/media/{id} returns is_favorite
+        for the caller only. The legacy global media_items.is_favorite column is ignored.
       security:
         - BearerAuth: []
       parameters:
@@ -3394,12 +3398,19 @@ paths:
           application/json:
             schema:
               type: object
+              required: [favorite]
               properties:
-                is_favorite:
+                favorite:
                   type: boolean
       responses:
         '200':
           description: Favorite status updated
+        '400':
+          description: Invalid media id, invalid JSON body, or the `favorite` field is missing
+        '401':
+          description: Authentication required (checked before the id and body are parsed)
+        '404':
+          description: Media item not found
 
   /api/v1/media/recent:
     get:
@@ -6772,6 +6783,29 @@ paths:
           description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
 
   /api/v1/entities/{id}/user-metadata:
+    get:
+      tags: [entities]
+      summary: Get the caller's own user metadata for an entity
+      description: Returns only the authenticated caller's row (looked up by entity id and token user id). A caller without a row of its own, including when another user holds the only row or the entity does not exist, receives the same 404 (no oracle for foreign rows).
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The caller's user metadata
+        '400':
+          description: Invalid entity id
+        '401':
+          description: Authentication required
+        '404':
+          description: No user metadata for the caller on this entity
+        '500':
+          description: Internal error
     put:
       tags: [entities]
       summary: Update user metadata for entity
@@ -7328,7 +7362,7 @@ paths:
                   data:
                     $ref: '#/components/schemas/SyncEndpoint'
         '400':
-          description: Invalid request body or endpoint configuration
+          description: Invalid request body or endpoint configuration, or private-network confirmation required (code private_network_confirmation_required; no endpoint was stored)
           content:
             application/json:
               schema:
@@ -7341,12 +7375,6 @@ paths:
                 $ref: '#/components/schemas/Error'
         '500':
           description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '409':
-          description: Private-network confirmation required (code private_network_confirmation_required); no endpoint was stored
           content:
             application/json:
               schema:
@@ -7485,12 +7513,6 @@ paths:
       responses:
         '503':
           description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
-        '409':
-          description: Private-network confirmation required for the new URL (code private_network_confirmation_required)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
         '429':
           description: Too many failed step-up attempts (code step_up_throttled)
           headers:
@@ -7514,7 +7536,7 @@ paths:
                   data:
                     $ref: '#/components/schemas/SyncEndpoint'
         '400':
-          description: Invalid request body or endpoint configuration
+          description: Invalid request body or endpoint configuration, or private-network confirmation required for the new URL (code private_network_confirmation_required)
           content:
             application/json:
               schema:
@@ -10603,11 +10625,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '500':
-          description: Internal server error
+          description: 'Internal server error. When persisting bindings fails after some shares were already committed, the body also carries `partial` (true), `bound_shares` and `new_roots`, the counts committed before the failure (the failing share keeps its binding; its new root is removed). The ingest is per share, not all-or-nothing. Clients must not blindly retry: a retry is idempotent (bindings are upserted, root names are UNIQUE), but the cause of the failure must be fixed first.'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                allOf:
+                - $ref: '#/components/schemas/Error'
+                - type: object
+                  properties:
+                    partial:
+                      type: boolean
+                    bound_shares:
+                      type: integer
+                    new_roots:
+                      type: integer
   /api/v1/sync/conflicts:
     get:
       x-catalogizer-admin-gated: true

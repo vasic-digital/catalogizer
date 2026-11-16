@@ -405,7 +405,8 @@ func copyFileOn(ctx context.Context, newFS func(context.Context) copyFS, srcPath
 		defer ccancel()
 		_ = newFS(cctx).Remove(name)
 	}
-	if path.Clean(srcR) == path.Clean(dstR) {
+	norm := func(p string) string { return path.Clean(strings.ReplaceAll(p, `\`, "/")) }
+	if norm(srcR) == norm(dstR) {
 		return fmt.Errorf("%w: %s and %s", ErrCopySameFile, srcPath, dstPath)
 	}
 	srcFile, err := share.Open(srcR)

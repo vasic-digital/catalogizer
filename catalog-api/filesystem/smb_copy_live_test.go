@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"path"
 	"strings"
 	"testing"
 	"time"
@@ -23,7 +24,20 @@ func smbCopyClient(t *testing.T) (*SmbClient, context.Context) {
 	c := NewSmbClient(liveCfg(t, envOr("SMB_LIVE_COPYSHARE", "testshare")))
 	require.NoError(t, c.Connect(ctx))
 	t.Cleanup(func() { _ = c.Disconnect(context.Background()) })
+	t.Cleanup(func() { removeCopyTemps(c, "") }) // F5: a failed copy must not leave .copy-*.tmp that cascades into later tests
 	return c, ctx
+}
+
+func removeCopyTemps(c *SmbClient, dir string) {
+	l, err := c.ListDirectory(context.Background(), dir)
+	if err != nil {
+		return
+	}
+	for _, e := range l {
+		if strings.HasPrefix(e.Name, ".copy-") && strings.HasSuffix(e.Name, ".tmp") {
+			_ = c.share.Remove(c.resolvePath(path.Join(dir, e.Name)))
+		}
+	}
 }
 
 func smbPut(t *testing.T, c *SmbClient, p, body string) {
@@ -155,4 +169,24 @@ func TestLiveSMBCopy_ReadOnlyDestinationRefused(t *testing.T) {
 	err := c.CopyFile(ctx, "copy1_ro_src.txt", "copy1_ro_dst.txt")
 	require.True(t, errors.Is(err, ErrCopyDestReadOnly), "got %v", err)
 	require.Equal(t, "protected", smbGet(t, c, "copy1_ro_dst.txt"))
+}
+
+// F2: the temp is created beside the destination in a sub-directory and the copy lands there. UNCONFIRMED live: needs a share (not run here).
+func TestLiveSMBCopy_SubdirectoryDestinationNoTempLeft(t *testing.T) {
+	c, ctx := smbCopyClient(t)
+	require.NoError(t, c.share.MkdirAll(c.resolvePath("copy1_sub/inner"), 0o755))
+	t.Cleanup(func() {
+		removeCopyTemps(c, "copy1_sub/inner")
+		_ = c.share.Remove(c.resolvePath("copy1_sub/inner"))
+		_ = c.share.Remove(c.resolvePath("copy1_sub"))
+	})
+	smbPut(t, c, "copy1_sub_src.txt", "sub content")
+	smbPut(t, c, "copy1_sub/inner/d.txt", "old")
+	require.NoError(t, c.CopyFile(ctx, "copy1_sub_src.txt", "copy1_sub/inner/d.txt"))
+	require.Equal(t, "sub content", smbGet(t, c, "copy1_sub/inner/d.txt"))
+	l, err := c.ListDirectory(ctx, "copy1_sub/inner")
+	require.NoError(t, err)
+	for _, e := range l {
+		require.False(t, strings.HasSuffix(e.Name, ".tmp"), "temp file left behind: %s", e.Name)
+	}
 }

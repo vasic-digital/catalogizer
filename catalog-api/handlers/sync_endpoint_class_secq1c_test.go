@@ -43,7 +43,7 @@ func (s *SyncHandlerTestSuite) TestSECQ1C_CreatePrivateEndpointNeedsConfirmation
 	srv := openDavSecq1c(s.T())
 	body := s.davBody(srv.URL)
 	w := s.doRequest("POST", "/sync/endpoints", body, true)
-	require.Equal(s.T(), http.StatusConflict, w.Code, "%s", w.Body.String())
+	require.Equal(s.T(), http.StatusBadRequest, w.Code, "%s", w.Body.String())
 	require.Contains(s.T(), w.Body.String(), "private_network_confirmation_required")
 	var n int
 	require.NoError(s.T(), s.db.QueryRow(`SELECT COUNT(*) FROM sync_endpoints`).Scan(&n))
@@ -102,7 +102,7 @@ func (s *SyncHandlerTestSuite) TestSECQ1C_UpdateToPrivateURLNeedsConfirmation() 
 	require.Equal(s.T(), http.StatusCreated, s.doRequest("POST", "/sync/endpoints", body, true).Code)
 	other := openDavSecq1c(s.T())
 	w := s.doRequest("PUT", "/sync/endpoints/1", map[string]interface{}{"url": other.URL}, true)
-	require.Equal(s.T(), http.StatusConflict, w.Code, "%s", w.Body.String())
+	require.Equal(s.T(), http.StatusBadRequest, w.Code, "%s", w.Body.String())
 	require.Contains(s.T(), w.Body.String(), "private_network_confirmation_required")
 }
 

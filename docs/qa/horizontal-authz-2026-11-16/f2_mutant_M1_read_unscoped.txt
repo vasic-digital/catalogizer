@@ -1,0 +1,13 @@
+--- FAIL: TestHorizontalAuthz_MediaFavoriteFlag (28.03s)
+    --- FAIL: TestHorizontalAuthz_MediaFavoriteFlag/noleak/media_favorite_flag_is_per_user (0.01s)
+        horizontal_authz_binary_test.go:507: HZ|media favorite flag|200|BODY-CHECKED
+        horizontal_authz_binary_test.go:508: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/favs.8KjWYO/repo/catalog-api/horizontal_authz_binary_test.go:508
+            	Error:      	Not equal: 
+            	            	expected: false
+            	            	actual  : true
+            	Test:       	TestHorizontalAuthz_MediaFavoriteFlag/noleak/media_favorite_flag_is_per_user
+            	Messages:   	B's favorite flag must not be visible to A: {"id":2,"title":"hzclip-bravo","media_type":"movie","year":null,"description":null,"cover_image":null,"rating":null,"quality":null,"file_size":null,"duration":0,"directory_path":"","smb_path":null,"created_at":"2026-11-16T23:31:34.592164832+01:00","updated_at":"2026-11-16T23:31:34.592164832+01:00","external_metadata":[],"versions":[],"is_favorite":true,"watch_progress":0,"last_watched":null,"is_downloaded":false}
+FAIL
+FAIL	catalogizer	28.337s
+FAIL

@@ -68,6 +68,10 @@ type ApprovedClassAssignment struct {
 // IngestProbeResultWithClass is IngestProbeResult that also stores the approved network class on every storage root it CREATES (CPN1-M1).
 // A root that already exists is left untouched: re-ingesting must neither widen nor narrow an existing approval. If the class cannot be
 // stored the new row is removed again and the error returned, so no root is left behind with an approval nobody made.
+//
+// Multi-share behaviour (CPN1R-m4, decided): the ingest is per share, not all-or-nothing. On an error the returned IngestionResult is
+// NON-NIL and counts what was committed before the failure (earlier shares keep their binding and their correctly approved root; the
+// failing share's root is removed, but its binding stays committed, so BoundShares can exceed NewRoots). Callers must report that partial state alongside the error.
 func (bi *BindingIngester) IngestProbeResultWithClass(ctx context.Context, result *SMBProbeResult, a ApprovedClassAssignment) (*IngestionResult, error) {
 	return bi.ingest(ctx, result, &a)
 }
@@ -98,7 +102,7 @@ func (bi *BindingIngester) ingest(ctx context.Context, result *SMBProbeResult, a
 			IdentityLabel: result.IdentityLabel,
 		}
 		if err := bi.bindingRepo.Upsert(ctx, binding); err != nil {
-			return nil, fmt.Errorf("ingester: upsert binding for %s/%s: %w",
+			return &out, fmt.Errorf("ingester: upsert binding for %s/%s: %w",
 				result.Host, share.ShareName, err)
 		}
 		out.BoundShares++
@@ -114,7 +118,7 @@ func (bi *BindingIngester) ingest(ctx context.Context, result *SMBProbeResult, a
 
 		created, err := bi.insertStorageRootOnce(ctx, rootName, result.Host, share.ShareName, result.IdentityIndex, assign)
 		if err != nil {
-			return nil, err
+			return &out, err // CPN1R-m4: out holds what was committed before the failure
 		}
 		if created {
 			out.NewRoots++
@@ -159,7 +163,12 @@ func (bi *BindingIngester) insertStorageRootOnce(ctx context.Context, name, host
 		if err := bi.db.SetApprovedClass(ctx, database.TableStorageRoots, newID, assign.Class, assign.Source); err != nil {
 			cctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 			defer cancel()
-			_, _ = bi.db.ExecContext(cctx, `DELETE FROM storage_roots WHERE id = ?`, newID)
+			bi.logger.Error("Storage root approved class could not be stored; rolling the new root back",
+				zap.String("name", name), zap.Int64("id", newID), zap.Error(err))
+			if _, delErr := bi.db.ExecContext(cctx, `DELETE FROM storage_roots WHERE id = ?`, newID); delErr != nil {
+				bi.logger.Error("Storage root rollback delete failed; a root without an approval may remain",
+					zap.String("name", name), zap.Int64("id", newID), zap.Error(delErr))
+			}
 			return false, fmt.Errorf("ingester: store approved class for %s: %w", name, err)
 		}
 	}
