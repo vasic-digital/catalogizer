@@ -3041,3 +3041,7 @@ RESOLVED: PGLAX1-F7 (SQLite user-write guards UpdateGuarded, LockAccount, SetSus
 ## SSEFUR docs review (Opus GO-with-follow-ups, PROVISIONAL; 252 operations unchanged, schema validity UNCONFIRMED: no offline validator)
 - SSEFURR-m1 (minor): six sync mutation operations (POST/PUT/DELETE /sync/endpoints*, POST /sync/endpoints/{id}/sync, POST /sync/schedules, POST /sync/cleanup) and other admin-gated operations (/copy/*, /storage*, /smb/*, /recommendations/personalized) in openapi.yaml still describe 503 as "Could not verify the caller's permissions (lookup failed)"; real body from RequireAdmin is {"success":false,"error":"Could not verify admin role"}; align.
 - SSEFURR-n2 (nit): Error.error description "Always present" is UNCONFIRMED as a global claim for every body using the shared Error schema.
+
+## PGR3RR/ENVR follow-ups review (Opus GO-with-follow-ups, PROVISIONAL; poolguard/errleak/services whole packages ok, 7 reviewer mutants, 2 survive as explained)
+- PGRRR-n1 (nit): sweep.go:108 comment credits sentinelName with treating bare `Err` as error value, but errName("Err") guarantees it redundantly (mutant 'sentinelName accepts bare Err' is equivalent); reword comment or add direct sentinelName("Err") assertion. Closes PGR3RR-m1 as pinned-by-behaviour.
+- PGRRR-n2 (nit): smb_test.go fixtureHost value (10.254.254.1) is not pinned (mutant set to real LAN host 192.168.1.100 survives); the withSMBDialer redirect (vetted-host assertion) is the guard; document.
