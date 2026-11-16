@@ -282,6 +282,31 @@ describe('MediaPlayer ticket lifecycle', () => {
     expect(video.play).toHaveBeenCalledTimes(1)
   })
 
+  // WBF1-m3: the element starts loading the moment the src attribute changes, but the player only marked itself "reloading" in a
+  // passive effect that runs after paint. An error landing in that gap (a MutationObserver callback runs right after the commit,
+  // before any passive effect) overwrote the resume target with 0/paused. Deterministic, no timing dependence.
+  it('WBF1-m3: an error that lands between the src commit and the reload effect does not lose the resume position', async () => {
+    const { container, video, st } = await setup()
+    playing(video, st); st.time = 30
+    st.paused = true; st.code = 2
+    let injected = false
+    const mo = new MutationObserver(() => {
+      if (injected || !(video.getAttribute('src') ?? '').includes('t2.')) return
+      injected = true
+      st.time = 0 // what load() does to the element
+      fireEvent.error(video) // lands before the passive effect that used to set reloadingRef
+    })
+    mo.observe(video, { attributes: true, attributeFilter: ['src'] })
+    fireEvent.error(video)
+    await recoverTo(container, 2)
+    await new Promise((r) => setTimeout(r, 50))
+    mo.disconnect()
+    st.code = null
+    fireEvent(video, new Event('loadedmetadata'))
+    expect(injected).toBe(true)
+    expect(st.time).toBe(30)
+  })
+
   describe('no timer, lazy refresh', () => {
     beforeEach(() => { vi.useFakeTimers({ shouldAdvanceTime: true }) })
     afterEach(() => { vi.useRealTimers() })

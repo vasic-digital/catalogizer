@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import {
@@ -152,7 +152,9 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
 
   // A changed source does not reload an element by itself. The single loadedmetadata listener (events effect below) restores
   // position and play state once the new source is ready.
-  useEffect(() => {
+  // Layout effect, not a passive one: the element starts loading as soon as the src attribute is committed, so the "reloading"
+  // flag must be set in the same commit. A passive effect left a gap in which an error overwrote the resume target with 0/paused.
+  useLayoutEffect(() => {
     const v = videoRef.current
     if (!v || !ticketSrc) return
     reloadingRef.current = true
