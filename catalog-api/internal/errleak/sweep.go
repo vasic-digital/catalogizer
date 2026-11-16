@@ -28,12 +28,13 @@ var sinkNames = map[string]bool{"Error": true, "JSON": true, "String": true, "Ab
 // mappers turn an error into authored client text (each is unit-tested elsewhere).
 var mappers = map[string]bool{"validationText": true, "paramRequiredText": true, "localRootMessage": true,
 	"rootURLMessage": true, "authClientMessage": true, "sentinelText": true, "syncDetails": true, "rootSpecMessage": true,
-	"clientErrorText": true, "clientValidationDetails": true, "ScrubErrorFor": true}
+	"clientErrorText": true, "clientValidationDetails": true}
 
-// pkgMappers lists the sanctioned mappers that live in another package, with the import-path element that must
-// qualify them (ERRLEAK-FU-D): `services.ScrubErrorFor` counts only when `services` is an imported package whose
-// path ends in /services, not a local variable, not another package that merely uses the same name.
-var pkgMappers = map[string]string{"ScrubErrorFor": "services"}
+// pkgMappers lists the sanctioned mappers that live in another package, with the EXACT import path that must
+// qualify them (ERRLEAK-FU-D, ELFU-m1): `services.ScrubErrorFor` counts only when the qualifier is an imported
+// package whose path is exactly catalogizer/internal/services, not a local variable, not a look-alike path
+// (catalogizer/services, x/services, a vendored copy).
+var pkgMappers = map[string]string{"ScrubErrorFor": "catalogizer/internal/services"}
 
 // fileCtx carries what the single file tells us about identity: the local name of every import and its path.
 type fileCtx struct{ imports map[string]string }
@@ -64,14 +65,14 @@ func sanctionedIdent(id *ast.Ident) bool {
 	return isDecl
 }
 
-// sanctionedPkgSel reports whether s is `pkg.Name` where pkg is an unshadowed import whose path ends in want.
+// sanctionedPkgSel reports whether s is `pkg.Name` where pkg is an unshadowed import whose path is exactly want.
 func (c *fileCtx) sanctionedPkgSel(s *ast.SelectorExpr, want string) bool {
 	x, ok := s.X.(*ast.Ident)
 	if !ok || x.Obj != nil { // a local/parameter/var of that name is not the package
 		return false
 	}
 	path, imported := c.imports[x.Name]
-	return imported && (path == want || strings.HasSuffix(path, "/"+want))
+	return imported && path == want
 }
 
 // isMapperCall: a call whose callee is a sanctioned mapper by identity, not by bare name.
