@@ -22,7 +22,7 @@ import (
 // ErrStorageHostRefused is wrapped by every refusal of a storage host by the operator-class policy. Its text carries no address or DNS detail.
 var ErrStorageHostRefused = errors.New("storage host is not allowed")
 
-// storageDialContext is the dialer of every network storage connector (smb, ftp). Tests replace it to observe what is dialled.
+// storageDialContext is the dialer of every network storage connector (smb, ftp, nfs3). Tests replace it to observe what is dialled.
 var storageDialContext = netguard.OperatorDialContext
 
 // storageOperatorResolve is the resolver of the NFS mount path. Tests replace it.
@@ -228,6 +228,15 @@ var nfsAddrOptions = map[string]bool{"addr": true, "mountaddr": true}
 // ValidateRoot and the client factory both refuse a malformed value.
 func validateStorageSyntax(protocol string, settings map[string]interface{}) error {
 	switch protocol {
+	case "nfs3":
+		if h, ok := settings[KeyHost].(string); ok {
+			if err := ValidateStorageHostSyntax(h); err != nil {
+				return err
+			}
+		}
+		if p, ok := settings[KeyPath].(string); ok {
+			return ValidateNFSExport(p)
+		}
 	case "smb", "ftp":
 		if h, ok := settings[KeyHost].(string); ok {
 			return ValidateStorageHostSyntax(h)
@@ -257,7 +266,7 @@ func validateStorageSyntax(protocol string, settings map[string]interface{}) err
 // wraps ErrStorageHostRefused and never names an address.
 func VetStorageRoot(ctx context.Context, root *models.StorageRoot) error {
 	switch root.Protocol {
-	case "smb", "ftp", "nfs":
+	case "smb", "ftp", "nfs", "nfs3":
 	default:
 		return nil
 	}

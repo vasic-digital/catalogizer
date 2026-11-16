@@ -255,7 +255,7 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 
 	// SEC-DIAL-1: a smb / ftp / nfs root names a HOST; the operator-class policy (the same one a WebDAV / S3 URL gets) refuses a loopback,
 	// link-local, cloud-metadata or reserved host here with a generic message. The clients check the dialled address again on every connection.
-	if req.Protocol == "smb" || req.Protocol == "ftp" || req.Protocol == "nfs" {
+	if req.Protocol == "smb" || req.Protocol == "ftp" || req.Protocol == "nfs" || req.Protocol == "nfs3" {
 		vctx, vcancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
 		verr := filesystem.VetStorageRoot(vctx, candidate)
 		vcancel()

@@ -264,6 +264,10 @@ func main() {
 		fmt.Fprintf(os.Stderr, "register s3 storage protocol: %v\n", err)
 		os.Exit(1)
 	}
+	if err := filesystem.RegisterNFS3Protocol(); err != nil {
+		fmt.Fprintf(os.Stderr, "register nfs3 storage protocol: %v\n", err)
+		os.Exit(1)
+	}
 	startTime := time.Now()
 
 	// Parse command line flags
