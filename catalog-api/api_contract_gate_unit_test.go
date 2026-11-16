@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -159,4 +160,125 @@ func TestADMD1RRRRRRRRRRR_Admin403AfterQuoteNegationNeedsQuoteVerb(t *testing.T)
 func TestADMD1RRRRRRRRRRR_Admin403CommaInterjectionKnownLimit(t *testing.T) {
 	const q = `{"success":false,"error":"Admin role required"}`
 	require.True(t, admin403Gated(`Forbidden; this route does not, for owners, return body `+q))
+}
+
+// ADMD1RRRRRRRRRRR round 3 (structural): the negation-scope class enumerated as a GENERATED matrix. The expectation of every cell
+// comes from how the cell was BUILT (an independent plain-language oracle), never from the classifier's regexes:
+//
+//	RULE  a quotation `body {...}` is negated only when a negation directly governs the verb that introduces it:
+//	      (before-adjacent) the negation sits immediately before that verb, any auxiliary/adverb allowed in between;
+//	      (after-adjacent)  the negation follows the quotation immediately AND is a predicate negation: an auxiliary
+//	                        (is/are/was/were/does/did/will) + never/not/no longer + verb, or a contraction (isn't, doesn't),
+//	                        or "cannot", + verb. A bare "never sent" with no auxiliary is ambiguous and is read AFFIRMATIVE.
+//	      "without" negates only before-adjacent ("without returning body {...}").
+//	      A negation anywhere else (non-adjacent before/after, another clause) never negates the quotation.
+//	HARD RULE a false negative (oracle says gated, classifier says not gated) can NEVER be allow-listed. Only the conservative
+//	      direction (oracle says negated, classifier says gated) may appear in matrixAllowList, each with a reason.
+type matrixVerb struct{ base, third, ing, part string }
+
+var matrixVerbs = []matrixVerb{
+	{"return", "returns", "returning", "returned"},
+	{"send", "sends", "sending", "sent"},
+	{"get", "gets", "getting", "got"},
+	{"refuse", "refuses", "refusing", "refused"},
+	{"show", "shows", "showing", "shown"},
+}
+
+type matrixNeg struct {
+	kind string // word | contraction | cannot | without
+	text string // as written before a base verb
+}
+
+var matrixNegs = []matrixNeg{
+	{"word", "never"}, {"word", "not"}, {"word", "no longer"},
+	{"contraction", "doesn't"}, {"contraction", "don't"}, {"contraction", "won't"}, {"contraction", "isn't"}, {"contraction", "wasn't"},
+	{"cannot", "cannot"}, {"without", "without"},
+}
+
+var matrixAllowList = map[string]string{}
+
+func TestADMD1RRRRRRRRRRR_Admin403NegationScopeMatrix(t *testing.T) {
+	const q = `{"success":false,"error":"Admin role required"}`
+	type cell struct {
+		name, desc string
+		negated    bool
+	}
+	var cells []cell
+	add := func(name, desc string, negated bool) {
+		cells = append(cells, cell{name, "Forbidden; " + desc, negated})
+	}
+	for _, n := range matrixNegs {
+		for _, v := range matrixVerbs {
+			id := n.text + "/" + v.base
+			// before-adjacent: negation directly before the introducing verb
+			switch n.kind {
+			case "without":
+				add("before-adj/"+id, "callers are refused without "+v.ing+" body "+q, true)
+			case "word":
+				add("before-adj/"+id+"/aux", "this route does "+strings.Replace(n.text, "no longer", "not", 1)+" "+v.base+" body "+q, true)
+				add("before-adj/"+id+"/noaux", "this route "+n.text+" "+v.third+" body "+q, true)
+			default:
+				add("before-adj/"+id, "this route "+n.text+" "+v.base+" body "+q, true)
+			}
+			// before-non-adjacent: the negation governs a different verb; the introducing verb is the affirmative "gets"
+			add("before-nonadj/"+id, "a caller who "+n.text+" "+v.base+" the role gets body "+q+" for the session", false)
+			// after-adjacent
+			switch n.kind {
+			case "word":
+				for _, aux := range []string{"is", "was", "does", "will"} {
+					form := v.part
+					if aux == "does" || aux == "will" {
+						form = v.base
+					}
+					add("after-adj/"+id+"/aux-"+aux, "callers get body "+q+" "+aux+" "+n.text+" "+form, true)
+				}
+				add("after-adj/"+id+"/noaux", "callers get body "+q+" "+n.text+" "+v.part+" to anyone else", false)
+			case "contraction", "cannot":
+				add("after-adj/"+id, "callers get body "+q+" "+n.text+" "+v.base, n.kind == "cannot" || n.text == "doesn't" || n.text == "don't" || n.text == "won't" || n.text == "isn't" || n.text == "wasn't")
+			case "without":
+				add("after-adj/"+id, "callers get body "+q+" without "+v.ing+" more", false)
+			}
+			// after-non-adjacent and other-clause
+			add("after-nonadj/"+id, "callers get body "+q+" for everyone "+n.text+" "+v.part, false)
+			add("after-otherclause/"+id, "callers get body "+q+" and owners "+n.text+" "+v.base+" it", false)
+			add("before-otherclause/"+id, "owners "+n.text+" "+v.base+" it; callers get body "+q, false)
+		}
+	}
+	require.Greater(t, len(cells), 300)
+	for _, c := range cells {
+		got := admin403Gated(c.desc)
+		wantGated := !c.negated
+		if got == wantGated {
+			continue
+		}
+		reason, allowed := matrixAllowList[c.name]
+		if wantGated && !got {
+			t.Errorf("FALSE NEGATIVE (never allow-listable) %s: %q", c.name, c.desc)
+			continue
+		}
+		if !allowed {
+			t.Errorf("mismatch %s: classifier gated=%v oracle gated=%v: %q", c.name, got, wantGated, c.desc)
+		} else {
+			require.NotEmpty(t, reason)
+		}
+	}
+}
+
+// ADMD1RRRRRRRRRRR round 3: the reviewer's concrete descriptions, pinned verbatim next to the generated matrix.
+func TestADMD1RRRRRRRRRRR_Admin403ReviewerPhrasings(t *testing.T) {
+	const q = `{"success":false,"error":"Admin role required"}`
+	for _, tail := range []string{
+		"callers get body " + q + " not shown to owners",
+		"callers get body " + q + " never sent to the session owner",
+		"callers get body " + q + " not included in the audit log",
+		"callers get body " + q + " not returned by v1 servers",
+		"callers get body " + q + " no longer returned as 401",
+		"callers get body " + q + " not documented elsewhere",
+		"a caller who never received the role gets body " + q,
+		"callers get body " + q + " and owners never receive it",
+	} {
+		require.True(t, admin403Gated("Forbidden; "+tail), tail)
+	}
+	require.False(t, admin403Gated("Forbidden; body "+q+" is never sent for the session owner"))
+	require.False(t, admin403Gated("Forbidden; this route doesnʼt return body "+q))
 }
