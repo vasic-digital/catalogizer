@@ -3176,3 +3176,7 @@ Evidence: RED 3 of 48 on parent source with the new tests, GREEN 48/48; full :ap
 - NFS3W-FU-n1 (nit, test-instrumentation): m1 test asserts only 400 + zero rows, not the "storage host is not allowed" message.
 - NFS3W-FU-n2 (nit, process-doc): TestNFS3ConfigSplitPorts header says each defaults to port; portmap_port defaults to 0 (111).
 - NFS3W-FU-n3 (nit, process-doc): docs/NFS3_CLIENT.md should say mount_port/portmap_port are factory-only (not from stored root or API).
+
+## WSF2B2RRR-fu reviews (round 1 Opus GO-with-follow-ups, PROVISIONAL; host JVM only, on-device UNCONFIRMED)
+- WSF2B2RRRR-n1 (nit, test-instrumentation): test "WSF2B2RRR-n1 a clientFactory failure after disconnect records no Error" largely repeats WSF2B2RR-m2 factory test and survives the mutant outer-catch guard `intentional` instead of `!isActive` (on the disconnect path both are true); retitle or drop the "second discriminating" claim.
+- WSF2B2RRRR-n2 (nit, test-instrumentation): the 401 guard has no disconnect-path sequence test (a mint that calls disconnect() then throws a 401); mutant 401 guard `intentional` is killed only on the connect path.
