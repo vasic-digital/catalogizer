@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Revision | 5 (review round 1 fixes applied, merged with `main` `b0066508a`) |
+| Revision | 6 (Rev 6 note: rc.1 operator exception 2026-11-17, text only, no gate changed; Rev 5 was: review round 1 fixes applied, merged with `main` `b0066508a`) |
 | Created | 2026-11-14 |
 | Based on | `main` `62ee38f00` for the G rows, then merged with `main` `b0066508a` (2026-11-17, scratch clone `gatechk5`, read-mostly; range since Rev 4 `868b0d379..62ee38f00` = 34 commits, and `62ee38f00..b0066508a` = 20 commits merged in afterwards; G12 and Evidence counts re-measured at `b0066508a`). The `v2.4.3` tag still points at `25cb9e40c`. Commands executed for this revision: git queries (`log`, `rev-list`, `--grep`), `grep` over `docs/FOLLOW_UPS_NEXT_PHASE.md` (L3209-3281), `scripts/release/check_release_consistency.sh --version 2.5.0 --prev-tag v2.4.3` (G6/G11, read-only), and `git ls-remote` (read-only) on the 15 remotes of the main checkout (G10). No test, build, scan or live run was executed. See `docs/release/RC1_PREP_AUDIT_20261116.md` for the rc.1 gate audit |
 | Status | DRAFT. Rev 5 is NOT independently reviewed (Rev 4 was reviewed 2026-11-16, Opus GO-with-follow-ups; its follow-ups GATECHK4-m1/m3/m4/n1 are folded in below). 0 of 12 gates satisfied. Every state below is "as of the repo text now" unless a command is named |
@@ -124,3 +124,7 @@ Gates satisfied: **0 of 12** (no gate has a machine record of a pass; re-stated 
 2. G12 (all contained items VERIFIED-DONE or moved out) and the Sonar scope decision (G5), before anything else is built or run. Then G11 + G8, then G6 on the candidate commit.
 3. G1 retest, G5 scan, G4 live /ws, G3 Vision, G2 live run + comparison + gate record, all on the same candidate fingerprint.
 4. G7 manual QA confirmation, then tag and push serially to all G10 remotes; verify parity.
+
+## Rev 6 note: rc.1 exception (2026-11-17, PROVISIONAL)
+
+Operator decisions 2026-11-17 (relayed, identifier UNCONFIRMED): rc.1 may ship as a labelled pre-release with G2, G5 and G9 relaxed, a recorded operator exception to 11.4.298(E) for rc.1 ONLY. v2.5.0 is unchanged: all of G1..G12 and the per-product live run on connected hardware stay required; this note relaxes nothing for v2.5.0. The per-product gate record stays `BLOCKED-NO-HARDWARE` (five products) and `BLOCKED-NO-BASELINE` (web); the rc.1 tag carries the pre-release label and cites the exception (see `docs/release/RC1_PREP_AUDIT_20261116.md`, section "Operator exception for rc.1"). Emulator runs are NON-GATE dry-run pre-checks only (`docs/release/RC1_DRYRUN_PLAN_20261117.md`) and never count for any gate. The number "0 of 12 gates satisfied" is unchanged.
