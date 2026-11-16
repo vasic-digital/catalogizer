@@ -3196,3 +3196,12 @@ Evidence: RED 3 of 48 on parent source with the new tests, GREEN 48/48; full :ap
 - **NFS3W-FU2-FU2 (minor, test-instrumentation):** mutant N6 (float64 `port` silently becomes 0) survives; add a case passing float64 2049 through `nfs3ConfigFromSettings`/factory expecting NFSPort=MountPort=2049.
 - **NFS3W-FU2-FU3 (nit):** `TestNFS3FactoryPortContract` should use `withNFS3(t)` instead of an unconditional `defer UnregisterProtocol("nfs3")`.
 - **NFS3W-FU2-FU4 (nit):** an unindented fake line `--- PASS: TestNFS3FactoryLifecycleLive (fake` is accepted by the emulator check; `[ -s ]` guard redundant; bash-only; the live container leg is still not run (UNCONFIRMED).
+
+## ADMD1 F1 classifier review follow-ups (Opus GO-with-follow-ups round 5, 2026-11-16; PROVISIONAL)
+
+Census old==new over the 93 real 403s (73 gated, diff=0). Structural change: after-quote negation removed; ambiguity resolves to gated.
+- **ADMD1F1-S1 (structural successor, recommended):** replace description parsing of `admin403Gated` with an explicit machine marker (e.g. `x-admin-gated: true`) on the operation in openapi.yaml; removes the whole false-negative class below.
+- **ADMD1F1-F1 (minor, test-instrumentation):** double negative directly before the verb ("impossible not to be refused with body Q", "never not returns body Q") reads as negated (false negative; base only gated by accident); pin as known limit or resolved by S1. Real-spec impact zero.
+- **ADMD1F1-F2 (minor, process-doc):** stale comments: api_contract_gate_test.go lines ~20-24 and ~30-31 still describe the removed after-quote regex; classifier doc example "not for owners, gets body Q" is actually gated; unit test comments ("still negated: a quote verb follows the negation", matrixAux, KnownLimitsPinned "only false negatives", ClassifierNegationScope header "after the quotation").
+- **ADMD1F1-F3 (minor, test-instrumentation):** mutants N2 (drop `be` from adverb chain) and N7 (drop `(?i)` from negatedVerbBefore) survive (false-positive direction only); add pre-quote "not be <participle>" and upper-case negation matrix cells.
+- **ADMD1F1-F4 (nit):** pre-existing scope-restricted ("only owners do not receive body Q") and bare-JSON-with-session-words false negatives only partly pinned (same verdict as base).
