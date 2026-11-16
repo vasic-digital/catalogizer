@@ -5,7 +5,7 @@
 | Revision | 3 |
 | Created | 2026-10-07 |
 | Last modified | 2026-10-08 |
-| Status | the revision-2 state is COMMITTED: `submodules/filesystem` 83c0ac1 (main repository e9d6883d). Revision 3 (this text) describes the third fix pass, which closes the independent re-review `WF24` and sits as an UNCOMMITTED working-tree change on top of 83c0ac1 when this was written (the conductor commits it; own-org submodule). Not yet wired into the factory. See "Review history" |
+| Status | the revision-2 state is COMMITTED: `submodules/filesystem` 83c0ac1 (main repository e9d6883d). Revision 3 (this text) describes the third fix pass, which closes the independent re-review `WF24` and sits as an UNCOMMITTED working-tree change on top of 83c0ac1 when this was written (the conductor commits it; own-org submodule). Wired into the storage factory as protocol `nfs3` (`catalog-api/filesystem/nfs3_register.go`, registered in `main`; settings `host`, `path` = export, `port`, `uid`, `gid`); live factory lifecycle against a real server is UNCONFIRMED until the unfs3 emulator leg runs; NFS root-config API/UI is not done (NFS3-WIRE-1 phase 2 remainder). See "Review history" |
 | Task | WP-12 PA-06 (`specs/001-full-project-audit-remediation/evidence/wp12/protocol-analysis/REPORT.md` sections 2.3, 3, 4) |
 | Evidence | `specs/001-full-project-audit-remediation/evidence/wp12/nfs3/` |
 | Licence | own code, Apache-2.0 |
