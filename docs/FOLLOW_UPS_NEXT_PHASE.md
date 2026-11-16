@@ -3124,3 +3124,7 @@ Evidence: RED 3 of 48 on parent source with the new tests, GREEN 48/48; full :ap
 - NFS3RDFUFU-n1 (nit): comment on ...AllNoentCannotBypassMaxEntries says READDIRPLUS-without-attributes path but it sets PlusStatus=NotSupp (fallback path).
 - NFS3RDFUFU-n2 (nit): cap error "has more than %d entries" can fire for offered-but-vanished entries; reword "offered more than".
 - NFS3RDFUFU-n3 (nit, existing): cap error quotes path with %q but no test pins it (mutant %s survives); add control-character path test.
+- ADMD1RRRRRRR-m1 (minor): the insert-path test passes under mutant "hook before pre-check with fabricated sql.ErrNoRows"; also set storageRootAfterConflictHook in it and assert it ran once so the 409 is shown to come from the insert-time violation.
+- ADMD1RRRRRRR-m2 (minor): no automated contract test validates real POST /storage/roots 409 bodies (dup with/without existing_id, private-network) against the openapi oneOf; add one (reviewer's oa.py/vs.py ad-hoc check as template).
+- ADMD1RRRRRRR-n1 (nit): oneOf exclusivity depends on the duplicate body never carrying code; add `not: {required: [code]}` to StorageRootConflict and an enum/const for StorageRootPrivateConfirmation.code.
+- ADMD1RRRRRRR-n2 (nit): failed-lookup test control needle checks only NotNil(existing_id); assert it equals the winner's id.
