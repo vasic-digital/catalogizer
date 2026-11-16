@@ -169,11 +169,14 @@ func validateRootURL(protocol string, raw *string) error {
 	return nil
 }
 
+// storageRootConflictHint is the 409 hint of a duplicate storage-root name (ADMD1RRRR-n2): no endpoint updates a root's
+// connection fields, so the hint names the existing root instead of a route that does not exist.
+const storageRootConflictHint = "choose a different name, or use the root named by existing_id"
+
 // CreateStorageRoot handles POST /api/v1/storage/roots.
 // Strictly creates a new storage root. If a row with the same name
-// already exists, returns 409 Conflict (CATAPI-DEFECT-005). For
-// idempotent upsert semantics the caller should use PUT
-// /api/v1/storage/roots/{id} instead.
+// already exists, returns 409 Conflict (CATAPI-DEFECT-005) naming the
+// existing root (existing_id); there is no upsert endpoint.
 //
 // Validates Protocol against supportedStorageProtocol
 // (CATAPI-DEFECT-004). Unknown protocols return 400 with an
@@ -272,7 +275,7 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 			"error":       "storage root with this name already exists",
 			"name":        req.Name,
 			"existing_id": existingID,
-			"hint":        "use PUT /api/v1/storage/roots/{id} to update an existing root",
+			"hint":        storageRootConflictHint,
 		})
 		return
 	}
@@ -287,11 +290,18 @@ func (h *ScanHandler) CreateStorageRoot(c *gin.Context) {
 		// ADMD1RRR-I1: the name check above is check-then-insert; the loser of a concurrent create hits the unique
 		// constraint on storage_roots.name and must see the same 409 as the sequential duplicate.
 		if isUniqueViolation(insertErr) {
-			c.JSON(http.StatusConflict, gin.H{
+			body := gin.H{
 				"error": "storage root with this name already exists",
 				"name":  req.Name,
-				"hint":  "use PUT /api/v1/storage/roots/{id} to update an existing root",
-			})
+				"hint":  storageRootConflictHint,
+			}
+			// ADMD1RRRR-n1: name the winner of the race like the sequential 409 does; a failed lookup only omits the field.
+			var winnerID int64
+			if lerr := h.db.QueryRowContext(c.Request.Context(),
+				"SELECT id FROM storage_roots WHERE name = ?", req.Name).Scan(&winnerID); lerr == nil {
+				body["existing_id"] = winnerID
+			}
+			c.JSON(http.StatusConflict, body)
 			return
 		}
 		respondInternal(c, http.StatusInternalServerError, "failed to create storage root", insertErr)
