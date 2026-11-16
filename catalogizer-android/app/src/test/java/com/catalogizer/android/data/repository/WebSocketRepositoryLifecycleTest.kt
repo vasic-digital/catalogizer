@@ -3,7 +3,9 @@ package com.catalogizer.android.data.repository
 import com.catalogizer.android.data.repository.WebSocketRepository.WebSocketEvent
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -307,5 +309,88 @@ class WebSocketRepositoryLifecycleTest {
         r.connect(); runCurrent()
         assertEquals(WebSocketEvent.Error("boom"), r.events.value)
         r.disconnect()
+    }
+
+    /** Records every value the repository publishes, in order (StateFlow conflation avoided by an unconfined collector). */
+    private fun TestScope.record(r: WebSocketRepository): MutableList<WebSocketEvent> {
+        val seen = mutableListOf<WebSocketEvent>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { r.events.collect { seen.add(it) } }
+        return seen
+    }
+
+    private fun errors(seen: List<WebSocketEvent>) = seen.filterIsInstance<WebSocketEvent.Error>().map { it.message }
+
+    // WSF2B2RRR-f1: ordered sequences. A stale failure must never appear; the superseding attempt still publishes its own.
+    @Test fun `WSF2B2RRR-f1 stale 401 then live 401 records only the live Error in order`() = runTest {
+        lateinit var r: WebSocketRepository
+        val m = object : WsTicketMinter {
+            var calls = 0
+            override suspend fun mint(token: String): String {
+                calls++
+                if (calls == 1) { r.connect(); throw WsTicketUnauthorizedException("stale-401") }
+                throw WsTicketUnauthorizedException("live-401")
+            }
+        }
+        r = repo(this, m)
+        val seen = record(r)
+        r.connect(); runCurrent()
+        advanceTimeBy(60_000); runCurrent()
+        assertEquals(listOf<WebSocketEvent>(WebSocketEvent.Disconnected, WebSocketEvent.Error("live-401")), seen.toList())
+        assertEquals("a 401 is final: no reconnect mint", 2, m.calls)
+        r.disconnect()
+    }
+
+    @Test fun `WSF2B2RRR-f1 stale factory failure then live factory failure records only the live Error`() = runTest {
+        val m = GateMinter(); val r = repo(this, m)
+        var n = 0
+        r.clientFactory = { _, _ ->
+            n++
+            if (n == 1) { r.connect(); throw IllegalStateException("stale-factory") }
+            throw IllegalStateException("live-factory")
+        }
+        val seen = record(r)
+        r.connect(); runCurrent()
+        advanceTimeBy(60_000); runCurrent()
+        assertEquals(listOf("live-factory"), errors(seen))
+        assertEquals(WebSocketEvent.Error("live-factory"), seen.last())
+        r.disconnect()
+    }
+
+    // WSF2B2RRR-n1: second discriminating tests per guard.
+    @Test fun `WSF2B2RRR-n1 a live 401 publishes Error once and mints no more`() = runTest {
+        val m = object : WsTicketMinter {
+            var calls = 0
+            override suspend fun mint(token: String): String { calls++; throw WsTicketUnauthorizedException("live-401") }
+        }
+        val r = repo(this, m)
+        val seen = record(r)
+        r.connect(); runCurrent()
+        advanceTimeBy(60_000); runCurrent()
+        assertEquals(listOf("live-401"), errors(seen))
+        assertEquals(1, m.calls)
+        r.disconnect()
+    }
+
+    @Test fun `WSF2B2RRR-n1 a clientFactory failure after disconnect records no Error`() = runTest {
+        val m = GateMinter(); val r = repo(this, m)
+        r.clientFactory = { _, _ -> r.disconnect(); throw IllegalStateException("factory raced disconnect") }
+        val seen = record(r)
+        r.connect(); runCurrent()
+        advanceTimeBy(60_000); runCurrent()
+        assertEquals(emptyList<String>(), errors(seen))
+        assertEquals(WebSocketEvent.Disconnected, r.events.value)
+        assertEquals(1, m.calls)
+    }
+
+    @Test fun `WSF2B2RRR-n1 a plain mint failure after disconnect records no Error even though the scope stays active`() = runTest {
+        val m = object : WsTicketMinter {
+            override suspend fun mint(token: String): String { r0.disconnect(); throw java.io.IOException("x") }
+            lateinit var r0: WebSocketRepository
+        }
+        val r = repo(this, m); m.r0 = r
+        val seen = record(r)
+        r.connect(); runCurrent()
+        advanceTimeBy(60_000); runCurrent()
+        assertEquals(emptyList<String>(), errors(seen))
     }
 }
