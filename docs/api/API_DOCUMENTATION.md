@@ -1068,7 +1068,9 @@ Copy a file from a remote storage (SMB) to local filesystem.
 | `destination_path` | string | Yes | Local destination path |
 | `overwrite` | bool | No | Overwrite existing files (default: false) |
 
-**Errors:** 400 (invalid source format), 409 (file exists and overwrite=false)
+**Errors:** 400 (invalid source format), 403 (destination is read-only), 409 (file exists and overwrite=false, source and destination are the same file, or the destination is an existing directory), 422 (source is not a regular file), 500 (any other failure)
+
+The 403/409/422 refusals come from the typed copy errors of the filesystem layer (`ErrCopyDestReadOnly`, `ErrCopySameFile`, `ErrCopyDestIsDirectory`, `ErrCopySourceNotRegular`); the body is `{"error": "<fixed text>"}` and never contains a path. A 403 with the body `Destination is read-only` is a refusal of the copy, not an admin check failure.
 
 ---
 
@@ -1100,6 +1102,8 @@ Upload a file from local filesystem to SMB storage.
   "size": 1048576
 }
 ```
+
+**Errors:** 400 (missing file, bad destination), 403 (destination is read-only), 409 (destination exists and overwrite is not `"true"`, same file, or destination is a directory), 422 (source is not a regular file), 500 (any other failure). Same fixed-text bodies as `/copy/local`.
 
 ---
 

@@ -38,6 +38,9 @@ func NewCopyHandler(catalogService *services.CatalogService, smbService *service
 // @Produce json
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 409 {object} map[string]string
+// @Failure 422 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /api/v1/copy/local [post]
 func (h *CopyHandler) CopyToLocal(c *gin.Context) {
@@ -104,6 +107,10 @@ func (h *CopyHandler) CopyToLocal(c *gin.Context) {
 			zap.String("source", req.SourcePath),
 			zap.String("destination", destPath),
 			zap.Error(err))
+		if st, msg, ok := copyErrorStatus(err); ok {
+			c.JSON(st, gin.H{"error": msg})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Copy operation failed"})
 		return
 	}
@@ -129,6 +136,9 @@ func (h *CopyHandler) CopyToLocal(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} map[string]string
+// @Failure 403 {object} map[string]string
+// @Failure 409 {object} map[string]string
+// @Failure 422 {object} map[string]string
 // @Failure 500 {object} map[string]string
 // @Router /api/v1/copy/upload [post]
 func (h *CopyHandler) CopyFromLocal(c *gin.Context) {
@@ -203,6 +213,10 @@ func (h *CopyHandler) CopyFromLocal(c *gin.Context) {
 			zap.String("filename", header.Filename),
 			zap.String("destination", destination),
 			zap.Error(err))
+		if st, msg, ok := copyErrorStatus(err); ok {
+			c.JSON(st, gin.H{"error": msg})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Upload to SMB failed"})
 		return
 	}
