@@ -3216,3 +3216,10 @@ Round 1 NO-GO fixed: POST /smb/probe-and-ingest now requires `confirm_private_ne
 - **CPN1-N2 (nit, doc):** other /smb routes that dial (/smb/discover, /test, /browse, /probe) store nothing and need no confirmation; record.
 - **CPN1-F2 (minor, operator decision):** sync endpoints still answer 409 `private_network_confirmation_required` while storage roots answer 400; align?
 - **CPN1-F5/F6 (nit):** rebinding refusal hints repeat-with-flag even when flag was true; web `mediaApi` calls update/delete/test storage-root routes the server does not register (dead client calls); no web create form exists.
+
+## CAT-HAUTHZ-1 follow-up-commit review follow-ups (Opus GO-with-follow-ups, 2026-11-16; PROVISIONAL)
+
+- **HAUTHZ-FU-F1 (minor, test-instrumentation):** in `OwnershipLookupErrorFailsClosed` the End leg is not discriminating: `repository.End` re-reads `user_id` in the same transaction, so a corrupt cell makes End 500 anyway; a fail-open lookup only on End (mutant R5) survives. Correct the comment and assert End never reached the repository.
+- **HAUTHZ-FU-F2 (minor, process-doc):** INVENTORY §2: error/crash report list, statistics and export calls are scoped by caller id (per-user resources) yet are classed "not horizontal by design" and not swept; move to the per-user table with a sweep or a tracked gap, or state the exemption.
+- **HAUTHZ-FU-F3 (nit):** `configuration_repository.go:90` citation should be `:94`.
+- **HAUTHZ-FU-O1 (observation, §11.4.124):** `internal/handlers/media.go:570` `getUserMetadata` reads `WHERE media_item_id = ?` with no user filter; unwired today (`NewMediaHandler` has no callers); would leak across users if routed — investigate history, track.
