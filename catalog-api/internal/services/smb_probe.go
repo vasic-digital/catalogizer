@@ -123,13 +123,28 @@ func (s *SMBDiscoveryService) ProbeHostWithIdentities(ctx context.Context, host 
 	if err != nil {
 		return &SMBProbeResult{Host: host}, err
 	}
+	return s.ProbeVettedIPsWithIdentities(ctx, host, ips, identities)
+}
+
+// ProbeVettedIPsWithIdentities is ProbeHostWithIdentities for a caller that already resolved and vetted the host (VetSMBHostIPs) and
+// classified exactly these addresses: every attempt dials ips and nothing is resolved again (CPN1-M2). ips MUST come from VetSMBHostIPs.
+func (s *SMBDiscoveryService) ProbeVettedIPsWithIdentities(ctx context.Context, host string, ips []net.IP, identities []SMBIdentity) (*SMBProbeResult, error) {
+	if len(ips) == 0 {
+		return &SMBProbeResult{Host: host}, fmt.Errorf("%w: host does not resolve", ErrInvalidSMBInput)
+	}
 	candidates := make([]SMBIdentity, 0, len(identities)+1)
 	candidates = append(candidates, SMBIdentity{Index: 0, Kind: "guest", Username: "guest"})
 	candidates = append(candidates, identities...)
 
 	var lastErr error
 	for _, id := range candidates {
-		shares, err := s.dialAndEnumerate(ctx, host, ips, id)
+		var shares []SMBShareInfo
+		var err error
+		if s.probeSeam != nil {
+			shares, err = s.probeSeam(ctx, host, ips, id)
+		} else {
+			shares, err = s.dialAndEnumerate(ctx, host, ips, id)
+		}
 		if err != nil {
 			lastErr = err
 			s.logger.Debug("SMB probe identity did not authenticate",

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"strings"
 	"time"
 
@@ -49,6 +50,17 @@ type SMBDiscoveryService struct {
 	// openShare is a unit-class seam: it replaces only dial + session + mount. Everything above it
 	// (validation, SplitShare, confinement) is the real code. nil means the real SMB network path.
 	openShare func(ctx context.Context, cfg SMBConnectionConfig, shareName string) (ShareAPI, func(), error)
+	// probeSeam is a unit-class seam for the probe: it replaces only the SMB session (dial + NTLM + share listing) of ONE identity attempt.
+	// Host vetting and the choice of addresses stay real; the seam receives exactly the vetted addresses a real dial would use. nil means
+	// the real network path.
+	probeSeam func(ctx context.Context, host string, ips []net.IP, id SMBIdentity) ([]SMBShareInfo, error)
+}
+
+// WithProbeSeam installs a unit-class replacement for the SMB session of a probe attempt (see probeSeam) and returns s. Tests only;
+// production never calls it.
+func (s *SMBDiscoveryService) WithProbeSeam(fn func(ctx context.Context, host string, ips []net.IP, id SMBIdentity) ([]SMBShareInfo, error)) *SMBDiscoveryService {
+	s.probeSeam = fn
+	return s
 }
 
 // ErrInvalidSMBInput marks a request the caller got wrong (admin or malformed share, parent-directory path, port other than 445). Handlers

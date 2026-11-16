@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"catalogizer/database"
 	root_handlers "catalogizer/handlers"
 	"catalogizer/internal/netguard"
 	"catalogizer/internal/services"
@@ -91,23 +92,39 @@ func (h *ProbeAndIngestHandler) ProbeAndIngest(c *gin.Context) {
 		return
 	}
 
-	if !isHostAllowed(req.Host) {
+	// CPN1-M2: resolve and vet the host ONCE; classify exactly those addresses and dial exactly those addresses. A second lookup (the old
+	// isHostAllowed + classifier + probe each resolved on their own) lets a name that was public when classified be private when dialled.
+	ips, vetErr := services.VetSMBHostIPs(req.Host)
+	if vetErr != nil {
 		h.logger.Warn("Blocked probe to disallowed host", zap.String("host", req.Host))
 		c.JSON(http.StatusBadRequest, gin.H{"error": hostAllowedErr})
 		return
 	}
 
 	// CAT-CPN-1: this route stores storage roots, so it applies the same private-LAN rule as POST /storage/roots, before any probe.
+	// The class of the host is the widest class of its vetted addresses (IP literals: the classifier does not look anything up again).
+	class := netguard.ClassPublic
 	cctx, ccancel := context.WithTimeout(c.Request.Context(), 10*time.Second)
-	class, refused := root_handlers.ClassifyStorageDestination(cctx, req.Host, "")
-	ccancel()
-	if refused {
-		c.JSON(http.StatusBadRequest, gin.H{"error": hostAllowedErr})
-		return
+	for _, ip := range ips {
+		ipClass, refused := root_handlers.ClassifyStorageDestination(cctx, ip.String(), "")
+		if refused {
+			ccancel()
+			c.JSON(http.StatusBadRequest, gin.H{"error": hostAllowedErr})
+			return
+		}
+		if ipClass != netguard.ClassPublic {
+			class = netguard.ClassPrivate
+		}
 	}
+	ccancel()
 	if class != netguard.ClassPublic && !req.ConfirmPrivateNetwork {
 		root_handlers.RespondPrivateConfirmationRequired(c)
 		return
+	}
+	// CPN1-M1: the stored approval is what the operator was told: public/auto for a public host, private/operator for a confirmed private one.
+	assignment := services.ApprovedClassAssignment{Class: netguard.ClassPublic, Source: database.ApprovedSourceAuto}
+	if class != netguard.ClassPublic {
+		assignment = services.ApprovedClassAssignment{Class: netguard.ClassPrivate, Source: database.ApprovedSourceOperator}
 	}
 
 	h.logger.Info("Probing SMB host with configured identities",
@@ -117,7 +134,7 @@ func (h *ProbeAndIngestHandler) ProbeAndIngest(c *gin.Context) {
 	h.logger.Debug("Loaded SMB identities from environment",
 		zap.Int("count", len(identities)))
 
-	result, err := h.discoveryService.ProbeHostWithIdentities(c.Request.Context(), req.Host, identities)
+	result, err := h.discoveryService.ProbeVettedIPsWithIdentities(c.Request.Context(), req.Host, ips, identities)
 	if err != nil {
 		h.logger.Error("SMB probe failed",
 			zap.String("host", req.Host),
@@ -137,7 +154,7 @@ func (h *ProbeAndIngestHandler) ProbeAndIngest(c *gin.Context) {
 		resp.IdentityLabel = result.IdentityLabel
 		resp.Shares = len(result.Shares)
 
-		ingestResult, ingestErr := h.bindingIngester.IngestProbeResult(c.Request.Context(), result)
+		ingestResult, ingestErr := h.bindingIngester.IngestProbeResultWithClass(c.Request.Context(), result, assignment)
 		if ingestErr != nil {
 			h.logger.Error("Failed to ingest probe result",
 				zap.String("host", req.Host),
