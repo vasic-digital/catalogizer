@@ -3265,3 +3265,10 @@ CPN1-M1 (stored class/source), M2 (vetted IPs classified+dialled once) and M3 (s
 - **CPN1R-m4 (minor):** multi-share ingest with a class-store failure on a later share leaves earlier roots approved while the response is an error; partial success unreported.
 - **CPN1R-n1 (nit):** `WithProbeSeam` is exported API; make test-only mechanical (build tag/lint).
 - Out of scope noted: stored root keeps the host name and later scans re-resolve; depends on dial-time approved-class enforcement (netguard.Class.Permits), not reviewed here.
+
+## HAUTHZ-F3 fix review follow-ups (Opus GO-with-follow-ups, 2026-11-16; PROVISIONAL)
+
+HAUTHZ-F3 CLOSED PROVISIONAL (ErrReportNotFound -> 404, identical to GET; FU2-M1/M2/M3 closed).
+- **HAUTHZ-F3R-m1 (minor, test-instrumentation):** "real internal error stays 500" unpinned (reviewer mutant R1: handler returns 404 for every error survives). Add handler unit tests with MockErrorReportingService: generic error -> 500, ErrReportNotFound -> 404, wrapped sentinel -> 404 (both handlers).
+- **HAUTHZ-F3R-m2 (minor, test-instrumentation):** nothing pins that the foreign-owner path carries no owner detail into error text/logs (R6 survives); service-level test asserting err == ErrReportNotFound for foreign and missing.
+- **HAUTHZ-F3R-n1 (nit, pre-existing):** GET routes still map every service error incl. DB failure to 404; PUT now 500; asymmetric (not an oracle).
