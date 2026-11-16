@@ -3150,3 +3150,13 @@ Evidence: RED 3 of 48 on parent source with the new tests, GREEN 48/48; full :ap
 - ADMD1RRRRRRRRRR-n3 (nit): pin test drives RequireAdmin's role_id fallback, production uses live adminCheck (main_jwtwire.go:18).
 - ADMD1RRRRRRRRRR-n4 (nit, process-doc): owner-branch 403 also fires when CheckPermission errors (auth_service.go:508-517); doc says only "lacks".
 - ADMD1RRRRRRRRRR-n5 (nit): admin403Gated body-string shortcut would classify any description quoting that body (e.g. "never returns") as gated; none today.
+
+## NFS3-WIRE-1 slice 1 reviews (round 1 NO-GO fixed; round 2 Opus GO-with-follow-ups, PROVISIONAL)
+- NFS3-WIRE-1-m1 (minor, test-instrumentation): handler test does not catch removal of the nfs3 VetStorageRoot gate in CreateStorageRoot (reviewer mutant M4 survives; other layers still refuse). Add a case only the VetStorageRoot leg can refuse (stub classifyDestination to public) and assert 400.
+- NFS3-WIRE-1-n1 (nit, process-doc): nfs3_register.go comment says dialer is "pinned to the vetted address"; it re-resolves and re-checks ClassPrivate per dial. Stored approved_class does not tighten smb/ftp/nfs3 dials (pre-existing).
+- NFS3-WIRE-1-n2 (nit, process-doc): docs/NFS3_CLIENT.md header revision/last-modified not bumped (§11.4.44); status cell still says revision 3 UNCOMMITTED on 83c0ac1 (stale; pin is 7b58084 now).
+- NFS3-WIRE-1-n3 (nit, test-instrumentation): nfs_emulator_live.sh counts a SKIP of TestNFS3FactoryLifecycleLive as success; require `--- PASS: TestNFS3FactoryLifecycleLive` in go_test.txt.
+- NFS3-WIRE-1-f5 (follow-up): single `port` sets both MountPort and NFSPort; split into mount_port/portmap_port for NAS servers.
+- NFS3-WIRE-1-f6 (follow-up): assert effective uid via client config readback (uid=0 -> 65534).
+- NFS3-WIRE-1-p3 (phase 2 remaining): uid/gid from stored root (columns), NFS root-config UI, scan/crawl integration tests, Synology-offline SKIP.
+- OBSERVATION (out of scope, not investigated): in the harness private LAN roots (smb and nfs3) were created with 201 without confirm_private_network.
