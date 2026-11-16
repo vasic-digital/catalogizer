@@ -14,6 +14,10 @@ const (
 	// KeyUID and KeyGID are the AUTH_SYS identity sent to the server. Absent or 0 means the client default (65534, nobody), never root.
 	KeyUID = "uid"
 	KeyGID = "gid"
+	// KeyMountPort and KeyPortmapPort are optional per-service ports for servers that run MOUNT / the portmapper off the NFS port. Each
+	// defaults to nothing of its own: mount_port falls back to port, portmap_port to the client default (111).
+	KeyMountPort   = "mount_port"
+	KeyPortmapPort = "portmap_port"
 )
 
 var nfs3RegisterMu sync.Mutex
@@ -28,10 +32,11 @@ func RegisterNFS3Protocol() error {
 	}
 	return RegisterProtocol(ProtocolSpec{
 		Name: "nfs3",
-		// host = server, path = exported path (the export to MOUNT), port = the NFS and MOUNT port when the server has no portmapper
-		// (absent: ask the portmapper), uid / gid = AUTH_SYS identity.
+		// host = server, path = exported path (the export to MOUNT), port = the NFS port and, unless mount_port is set, the MOUNT port when
+		// the server has no portmapper (absent: ask the portmapper), mount_port / portmap_port = optional split ports, uid / gid = AUTH_SYS identity.
 		Keys: map[string]KeyType{
 			KeyHost: KeyString, KeyPort: KeyInt, KeyPath: KeyString, KeyUID: KeyInt, KeyGID: KeyInt,
+			KeyMountPort: KeyInt, KeyPortmapPort: KeyInt,
 		},
 		Required: []string{KeyHost, KeyPath},
 		New:      newNFS3FromSettings,
@@ -53,11 +58,18 @@ func nfs3ConfigFromSettings(settings map[string]interface{}) (nfs3.Config, error
 		return nfs3.Config{}, fmt.Errorf("nfs3: uid and gid must not be negative")
 	}
 	port := IntSetting(settings, KeyPort, 0)
+	mountPort := IntSetting(settings, KeyMountPort, port)
+	portmapPort := IntSetting(settings, KeyPortmapPort, 0)
+	for name, v := range map[string]int{KeyMountPort: mountPort, KeyPortmapPort: portmapPort} {
+		if v < 0 || v > 65535 {
+			return nfs3.Config{}, fmt.Errorf("nfs3: %s must be 1-65535", name)
+		}
+	}
 	return nfs3.Config{
 		Host: host, Export: export,
-		MountPort: port, NFSPort: port,
+		MountPort: mountPort, NFSPort: port, PortmapPort: portmapPort,
 		UID: uint32(uid), GID: uint32(gid),
-		// SEC-DIAL-1: every connection (portmapper, MOUNT, NFS) goes through the operator-class dialer, pinned to the vetted address; the
+		// SEC-DIAL-1: every connection (portmapper, MOUNT, NFS) goes through the operator-class dialer, which re-resolves and re-checks the address class on every dial; the
 		// closure reads storageDialContext at dial time so tests can observe or replace it. The reserved-port option is never used.
 		Dial: func(ctx context.Context, network, addr string, _ bool) (net.Conn, error) {
 			return storageDial(ctx, network, addr)

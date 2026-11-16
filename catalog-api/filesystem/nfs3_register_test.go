@@ -309,3 +309,72 @@ func TestNFS3ValidateRootRequiredKeys(t *testing.T) {
 		t.Error("root without host accepted")
 	}
 }
+
+// NFS3-WIRE-1-f5: mount_port / portmap_port are optional and each defaults to port; one `port` still sets mount and NFS.
+func TestNFS3ConfigSplitPorts(t *testing.T) {
+	base := func(extra map[string]interface{}) map[string]interface{} {
+		m := map[string]interface{}{"host": "nas.example", "path": "/e"}
+		for k, v := range extra {
+			m[k] = v
+		}
+		return m
+	}
+	for _, c := range []struct {
+		name                string
+		in                  map[string]interface{}
+		mount, nfs, portmap int
+	}{
+		{"port only", base(map[string]interface{}{"port": 2049}), 2049, 2049, 0},
+		{"mount_port overrides", base(map[string]interface{}{"port": 2049, "mount_port": 20048}), 20048, 2049, 0},
+		{"portmap_port set", base(map[string]interface{}{"port": 2049, "portmap_port": 1111}), 2049, 2049, 1111},
+		{"mount_port without port", base(map[string]interface{}{"mount_port": 20048}), 20048, 0, 0},
+		{"none", base(nil), 0, 0, 0},
+	} {
+		cfg, err := nfs3ConfigFromSettings(c.in)
+		if err != nil {
+			t.Fatalf("%s: %v", c.name, err)
+		}
+		if cfg.MountPort != c.mount || cfg.NFSPort != c.nfs || cfg.PortmapPort != c.portmap {
+			t.Errorf("%s: mount=%d nfs=%d portmap=%d, want %d/%d/%d", c.name, cfg.MountPort, cfg.NFSPort, cfg.PortmapPort, c.mount, c.nfs, c.portmap)
+		}
+	}
+	for _, bad := range []map[string]interface{}{base(map[string]interface{}{"mount_port": 0 + 70000}), base(map[string]interface{}{"portmap_port": -1})} {
+		if _, err := nfs3ConfigFromSettings(bad); err == nil {
+			t.Errorf("out-of-range port %v must be refused", bad)
+		}
+	}
+	// the keys are accepted by the registered spec (factory path)
+	withNFS3(t)
+	if err := ValidateSettings("nfs3", base(map[string]interface{}{"mount_port": 20048, "portmap_port": 111})); err != nil {
+		t.Fatalf("spec must accept mount_port/portmap_port: %v", err)
+	}
+}
+
+// NFS3-WIRE-1-f6: the identity the real client carries (GetConfig readback), uid 0 / gid 0 -> 65534 (never root), explicit ids kept.
+func TestNFS3EffectiveIdentityReadback(t *testing.T) {
+	withNFS3(t)
+	read := func(extra map[string]interface{}) nfs3.Config {
+		s := map[string]interface{}{"host": "127.0.0.1", "path": "/export", "port": 12049}
+		for k, v := range extra {
+			s[k] = v
+		}
+		c, err := NewDefaultClientFactory().CreateClient(nfs3Cfg(s))
+		if err != nil {
+			t.Fatal(err)
+		}
+		cfg, ok := c.GetConfig().(nfs3.Config)
+		if !ok {
+			t.Fatalf("GetConfig type %T", c.GetConfig())
+		}
+		return cfg
+	}
+	if cfg := read(map[string]interface{}{"uid": 0, "gid": 0}); cfg.UID != 65534 || cfg.GID != 65534 || cfg.AsRoot {
+		t.Fatalf("uid/gid 0 must become 65534, never root: %+v", cfg)
+	}
+	if cfg := read(nil); cfg.UID != 65534 || cfg.GID != 65534 {
+		t.Fatalf("absent uid/gid must be 65534: %+v", cfg)
+	}
+	if cfg := read(map[string]interface{}{"uid": 1000, "gid": 1001}); cfg.UID != 1000 || cfg.GID != 1001 {
+		t.Fatalf("explicit ids kept: %+v", cfg)
+	}
+}
