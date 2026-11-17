@@ -3376,6 +3376,17 @@ paths:
     put:
       tags: [media]
       summary: Update watch progress
+      description: >-
+        Stores the CALLER's own watch position for the media item in media_progress (per user; never reads or changes
+        another user's row). Send progress (fraction 0.0-1.0) and/or position+duration (seconds, floats allowed, as the
+        desktop and api-client PlaybackProgress body does: progress is optional when position and duration are both
+        present). A new row is only created, in seconds, when the duration is known from the body. An existing row keeps
+        its unit (seconds/pages/events) and its stored duration; position (seconds) is used only for a seconds row and is
+        clamped to the duration; a seconds row with an unknown duration only learns the duration from the body. The write is a compare-and-set on the row
+        that was read (unit and duration unchanged), re-planned up to 3 times, so it never overwrites a unit or duration
+        that a concurrent playback-session end just wrote. A request
+        that cannot be stored without guessing a unit or duration (for example a fraction with no known duration) answers
+        200 with persisted=false and a reason. media_id and timestamp (string or number) and unknown fields are ignored.
       security:
         - BearerAuth: []
       parameters:
@@ -3389,13 +3400,42 @@ paths:
           application/json:
             schema:
               type: object
+              description: progress, or position and duration, is required
               properties:
                 progress:
                   type: number
                   format: float
+                  minimum: 0
+                  maximum: 1
+                position:
+                  type: number
+                  description: seconds, fractional allowed (rounded)
+                  minimum: 0
+                duration:
+                  type: number
+                  description: seconds, fractional allowed (rounded)
+                  minimum: 0
+                media_id:
+                  type: integer
+                  description: ignored (the id comes from the path)
+                timestamp:
+                  description: ignored; string or number
       responses:
         '200':
-          description: Progress updated
+          description: >-
+            Stored (persisted true), or accepted but not stored (persisted false with a reason, for example
+            unknown_duration)
+        '400':
+          description: Invalid media id or body, progress outside 0..1, negative or out-of-range position or duration, or neither progress nor position+duration
+        '401':
+          description: Not authenticated
+        '404':
+          description: Media not found
+        '409':
+          description: >-
+            The row kept changing under the request (a playback-session end or another PUT committed between the read and
+            the write on each of 3 bounded attempts). Body has persisted=false and reason=concurrent_update; nothing was
+            stored, the client may retry.
 
   /api/v1/media/{id}/favorite:
     put:

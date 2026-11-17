@@ -1,0 +1,82 @@
+$ GOMAXPROCS=2 nice -n 10 go test -p 1 ./handlers -run TestWatchProgress -count=1  # RED on base af02b7c35
+--- FAIL: TestWatchProgress_PersistsPerUser (0.04s)
+    media_watch_progress_test.go:76: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_test.go:76
+        	Error:      	Not equal: 
+        	            	expected: true
+        	            	actual  : false
+        	Test:       	TestWatchProgress_PersistsPerUser
+        	Messages:   	the write must really be stored
+    media_watch_progress_test.go:79: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_test.go:79
+        	Error:      	Received unexpected error:
+        	            	sql: no rows in result set
+        	Test:       	TestWatchProgress_PersistsPerUser
+        	Messages:   	user 1 must have a media_progress row
+--- FAIL: TestWatchProgress_ClientBodyShapes (0.03s)
+    media_watch_progress_test.go:125: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_test.go:125
+        	Error:      	Not equal: 
+        	            	expected: 200
+        	            	actual  : 400
+        	Test:       	TestWatchProgress_ClientBodyShapes
+        	Messages:   	android full: map[error:Invalid request body success:false]
+    media_watch_progress_test.go:125: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_test.go:125
+        	Error:      	Not equal: 
+        	            	expected: 200
+        	            	actual  : 400
+        	Test:       	TestWatchProgress_ClientBodyShapes
+        	Messages:   	android no pos: map[error:Invalid request body success:false]
+--- FAIL: TestWatchProgress_StatusCodes (0.02s)
+    media_watch_progress_test.go:135: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_test.go:135
+        	Error:      	Not equal: 
+        	            	expected: 401
+        	            	actual  : 200
+        	Test:       	TestWatchProgress_StatusCodes
+        	Messages:   	no user in context -> 401 before anything is parsed
+    media_watch_progress_test.go:137: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_test.go:137
+        	Error:      	Not equal: 
+        	            	expected: 401
+        	            	actual  : 400
+        	Test:       	TestWatchProgress_StatusCodes
+    media_watch_progress_test.go:148: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_test.go:148
+        	Error:      	Not equal: 
+        	            	expected: 400
+        	            	actual  : 200
+        	Test:       	TestWatchProgress_StatusCodes
+        	Messages:   	null progress is missing
+    media_watch_progress_test.go:156: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_test.go:156
+        	Error:      	Not equal: 
+        	            	expected: 400
+        	            	actual  : 200
+        	Test:       	TestWatchProgress_StatusCodes
+        	Messages:   	negative position
+--- FAIL: TestWatchProgress_KeepsSecondsRow (0.02s)
+    media_watch_progress_test.go:178: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_test.go:178
+        	Error:      	Not equal: 
+        	            	expected: 3600
+        	            	actual  : 100
+        	Test:       	TestWatchProgress_KeepsSecondsRow
+    media_watch_progress_test.go:184: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_test.go:184
+        	Error:      	Not equal: 
+        	            	expected: 4000
+        	            	actual  : 100
+        	Test:       	TestWatchProgress_KeepsSecondsRow
+    media_watch_progress_test.go:189: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_test.go:189
+        	Error:      	Not equal: 
+        	            	expected: 7200
+        	            	actual  : 100
+        	Test:       	TestWatchProgress_KeepsSecondsRow
+        	Messages:   	position is clamped to the duration
+FAIL
+FAIL	catalogizer/handlers	0.388s
+FAIL
+exit=1

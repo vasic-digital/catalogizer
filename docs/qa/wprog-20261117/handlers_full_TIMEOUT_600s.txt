@@ -1,0 +1,17 @@
+$ go test -p 1 ./handlers -count=1 (full package, restored source)
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 220806 [select]:
+database/sql.(*DB).connectionOpener(0x724b2951380, {0x2f04390, 0x724b2c27950})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 220805
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 237196 [select]:
+database/sql.(*DB).connectionCleaner(0x724b2696a90, 0x7b2a89224308?)
+	/usr/lib/go-1.26/src/database/sql/sql.go:1104 +0x9e
+created by database/sql.(*DB).startCleanerLocked in goroutine 237216
+	/usr/lib/go-1.26/src/database/sql/sql.go:1091 +0x105
+FAIL	catalogizer/handlers	600.202s
+FAIL
+done

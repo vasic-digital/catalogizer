@@ -1,0 +1,11 @@
+R1-permille-insert: KILLED by TestWatchProgress_PutThenSessionEnd_NoPermille TestWatchProgress_RealClientShapes TestWatchProgress_PositionWithoutKnownDurationIgnored 
+R2-update-unscoped: KILLED by TestWatchProgress_SecondWriteDoesNotTouchOtherUser 
+R3-insert-fail-swallowed: KILLED by TestWatchProgress_FirstInsertFailureRetried TestWatchProgress_PersistentInsertFailureIs500 
+R3b-no-retry: KILLED by TestWatchProgress_FirstInsertFailureRetried 
+R4-position-unknown-duration: KILLED by TestWatchProgress_SessionEndThenPut_KeepsSecondsResumePoint 
+R5-unit-changed: KILLED by TestWatchProgress_SessionEndThenPut_KeepsSecondsResumePoint TestWatchProgress_KeepsSecondsRow 
+M-no-clamp: KILLED by TestWatchProgress_KeepsSecondsRow 
+M-overwrite-duration: KILLED by TestWatchProgress_RealClientShapes 
+M-progress-required: KILLED by TestWatchProgress_SessionEndThenPut_KeepsSecondsResumePoint TestWatchProgress_RealClientShapes TestWatchProgress_AcceptedBodyShapes 
+M-no-401: KILLED by TestWatchProgress_StatusCodes 
+M-int-position (float position/duration rejected like int-only binding): KILLED by TestWatchProgress_SessionEndThenPut_KeepsSecondsResumePoint TestWatchProgress_RealClientShapes TestWatchProgress_AcceptedBodyShapes 
