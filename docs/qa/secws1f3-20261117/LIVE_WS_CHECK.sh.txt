@@ -21,6 +21,12 @@
 #   within F3_BOUND; and the control socket is still open and answers a ping at the end. Anything unprovable is INCONCLUSIVE.
 # Timing: marker = epoch taken when SUSPEND_CMD returns (or on Enter); elapsed = probe close_epoch - marker, same host clock
 #   (a close in the few ms between the command's effect and its return reads as 'before suspension' = INCONCLUSIVE, never PASS).
+# Control hold (round 4, R3-1): after the victim socket closes the control socket is kept open for a further F3_BOUND seconds
+#   (>= one re-check interval + margin) and only then pinged, so "the control survived" covers a full re-check cycle.
+# Notes (round 4, R3-6): ONE refused leg (new login OR ticket mint) is enough to prove the suspension effective, the other leg may
+#   return anything except 2xx. The JWT exp check uses the LOCAL clock; clock skew between this host and the server beyond the 75 s
+#   margin is NOT covered. An empty / unparseable victim probe result (probe killed, OOM) is INCONCLUSIVE, never FAIL.
+# Exit 2 = usage / prerequisite / output-directory error (missing BASE or credential variable, unwritable OUT).
 # Verdict per check: PASS | FAIL | INCONCLUSIVE (INCONCLUSIVE = could not observe; never counted as PASS).
 # Overall exit: 0 all PASS, 1 any FAIL, 3 any INCONCLUSIVE and no FAIL, 2 usage/prereq.
 set -u
@@ -99,13 +105,17 @@ f3_verdict(){
 }
 if [ "${LIVE_WS_CHECK_SOURCE_ONLY:-0}" = 1 ]; then return 0 2>/dev/null || exit 0; fi
 
-: "${BASE:?}" "${ADMIN_USER:?}" "${ADMIN_PASS:?}" "${VICTIM_USER:?}" "${VICTIM_PASS:?}"
+for v in BASE ADMIN_USER ADMIN_PASS VICTIM_USER VICTIM_PASS; do
+  [ -n "${!v:-}" ] || { echo "usage: required variable $v is unset or empty (names: BASE ADMIN_USER ADMIN_PASS VICTIM_USER VICTIM_PASS)" >&2; exit 2; }
+done
 for t in curl jq python3; do
   command -v "$t" >/dev/null || { echo "prereq missing: $t (INCONCLUSIVE)"; exit 2; }
 done
 [ -f "$PROBE" ] || { echo "probe missing: $PROBE"; exit 2; }
-OUT="${OUT:-live_ws_$(date -u +%Y%m%dT%H%M%SZ)}"; mkdir -p "$OUT"
-WS="${BASE/http/ws}"; ORIGIN="${ORIGIN:-$BASE}"; : > "$OUT/results.txt"
+OUT="${OUT:-live_ws_$(date -u +%Y%m%dT%H%M%SZ)}"
+mkdir -p "$OUT" 2>/dev/null || { echo "cannot create output directory '$OUT'" >&2; exit 2; }
+WS="${BASE/http/ws}"; ORIGIN="${ORIGIN:-$BASE}"
+{ : > "$OUT/results.txt"; } 2>/dev/null || { echo "output directory '$OUT' is not writable" >&2; exit 2; }
 
 # ---- target fields (11.4.289(D)) ----
 H="$(hostonly "$BASE")"
@@ -195,15 +205,18 @@ else
       expc=ok
       case "$rem" in none|"") expc="victim JWT exp unreadable";; *) [ "$rem" -gt "$need" ] || expc="victim JWT has ${rem}s left, need > ${need}s";; esac
       for _ in $(seq 1 $(( (F3_BOUND+5)*2 ))); do kill -0 "$WP" 2>/dev/null || break; sleep 0.5; done
+      # R3-1: keep the control socket held for a full F3_BOUND after the victim is gone, then stop it (it sends the final ping)
+      if ! kill -0 "$WP" 2>/dev/null; then sleep "$F3_BOUND"; fi
       kill "$WP" "$CP" 2>/dev/null; wait "$WP" 2>/dev/null; wait "$CP" 2>/dev/null
       CC=$(jq -r '.close_code' "$OUT/f3_probe.json" 2>/dev/null); END=$(jq -r '.end' "$OUT/f3_probe.json" 2>/dev/null)
       CE=$(jq -r '.close_epoch // empty' "$OUT/f3_probe.json" 2>/dev/null); RS=$(jq -r '.close_reason' "$OUT/f3_probe.json" 2>/dev/null)
       CEND=$(jq -r '.end' "$OUT/f3_control.json" 2>/dev/null); CFP=$(jq -r '.final_pong' "$OUT/f3_control.json" 2>/dev/null)
-      [ -z "$END" ] && END=timeout
+      # R3-2: no / unparseable victim probe JSON (probe killed, OOM) = no observation, never "socket still open"
+      if ! jq -e . "$OUT/f3_probe.json" >/dev/null 2>&1; then END=noprobe; CC=""; fi
       ctrl="$CEND/final_pong=$CFP"; [ "$CFP" = true ] && [ "$CEND" = stopped ] && ctrl=pong
       if [ -n "$CE" ]; then EL=$(awk -v c="$CE" -v s="$SUSP_EPOCH" 'BEGIN{printf "%.2f", c-s}'); else EL=0; fi
       res="$(f3_verdict "$CC" "$EL" "$F3_BOUND" "$END" "$ctrl" "$susp" "$expc")"
-      record "$F3L (code 1008, reason='$RS')" "${res%%|*}" "${res#*|}"
+      record "$F3L (close code ${CC:-none}, reason='$RS')" "${res%%|*}" "${res#*|}"
     fi
   fi
   record "F3 audience filter (admin-only events not delivered to non-admin)" INCONCLUSIVE "NOT COVERED by this script: manual / uncovered"

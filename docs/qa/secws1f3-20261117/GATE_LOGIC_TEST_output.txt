@@ -33,13 +33,21 @@ UNIT-PASS scenario:control-closes exit (3)
 UNIT-PASS scenario:control-closes F3 verdict (INCONCLUSIVE)
 UNIT-PASS scenario:short-exp exit (3)
 UNIT-PASS scenario:short-exp F3 verdict (INCONCLUSIVE)
+UNIT-PASS scenario:control-later exit (3)
+UNIT-PASS scenario:control-later F3 verdict (INCONCLUSIVE)
+UNIT-PASS scenario:probe-killed exit (3)
+UNIT-PASS scenario:probe-killed F3 verdict (INCONCLUSIVE)
+UNIT-PASS usage: BASE unset exit (2)
+UNIT-PASS usage: VICTIM_USER empty exit (2)
+UNIT-PASS unwritable OUT exit (2)
+UNIT-PASS unwritable OUT message
 --- good results.txt ---
 PASS | unauthenticated /ws refused | observed=401 expect=401
 PASS | invalid JWT in ?token= refused (F2) | observed=401 expect=401
 PASS | bad Origin with valid ticket refused | observed=403 expect=403
 PASS | ticket reuse refused (single-use) | observed=401 expect=401
 post-suspension victim login status=403 ticket status=403
-PASS | F3 socket closed because of suspension (code 1008, reason='authorization ended') | close 1008 1.18s after suspension (bound 20s)
+PASS | F3 socket closed because of suspension (close code 1008, reason='authorization ended') | close 1008 1.37s after suspension (bound 20s)
 INCONCLUSIVE | F3 audience filter (admin-only events not delivered to non-admin) | NOT COVERED by this script: manual / uncovered
 live_proven=NO (answering-process identity: MISSING, UNCONFIRMED)
 summary: PASS=5 FAIL=0 INCONCLUSIVE=1
@@ -49,7 +57,7 @@ PASS | invalid JWT in ?token= refused (F2) | observed=401 expect=401
 PASS | bad Origin with valid ticket refused | observed=403 expect=403
 PASS | ticket reuse refused (single-use) | observed=401 expect=401
 post-suspension victim login status=200 ticket status=200
-INCONCLUSIVE | F3 socket closed because of suspension (code 1008, reason='authorization ended') | suspension not proven effective (victim still able to log in / mint a ticket after SUSPEND_CMD (login=200 ticket=200): suspension had no effect)
+INCONCLUSIVE | F3 socket closed because of suspension (close code 1008, reason='authorization ended') | suspension not proven effective (victim still able to log in / mint a ticket after SUSPEND_CMD (login=200 ticket=200): suspension had no effect)
 INCONCLUSIVE | F3 audience filter (admin-only events not delivered to non-admin) | NOT COVERED by this script: manual / uncovered
 live_proven=NO (answering-process identity: MISSING, UNCONFIRMED)
 summary: PASS=4 FAIL=0 INCONCLUSIVE=2
@@ -59,7 +67,7 @@ PASS | invalid JWT in ?token= refused (F2) | observed=401 expect=401
 PASS | bad Origin with valid ticket refused | observed=403 expect=403
 PASS | ticket reuse refused (single-use) | observed=401 expect=401
 post-suspension victim login status=403 ticket status=403
-INCONCLUSIVE | F3 socket closed because of suspension (code 1008, reason='authorization ended') | control (non-suspended) socket did not stay open and answer a ping (state=close/final_pong=null): cannot attribute the close to the suspension
+INCONCLUSIVE | F3 socket closed because of suspension (close code 1008, reason='authorization ended') | control (non-suspended) socket did not stay open and answer a ping (state=close/final_pong=null): cannot attribute the close to the suspension
 INCONCLUSIVE | F3 audience filter (admin-only events not delivered to non-admin) | NOT COVERED by this script: manual / uncovered
 live_proven=NO (answering-process identity: MISSING, UNCONFIRMED)
 summary: PASS=4 FAIL=0 INCONCLUSIVE=2

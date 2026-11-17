@@ -43,5 +43,24 @@ run suspend-fails  never-close       3 INCONCLUSIVE 'false'
 run ignore-susp    ignore-suspension 3 INCONCLUSIVE 'touch TRIG'
 run control-closes control-closes-too 3 INCONCLUSIVE 'touch TRIG'
 run short-exp      short-exp         3 INCONCLUSIVE 'touch TRIG'
+run control-later  control-later     3 INCONCLUSIVE 'touch TRIG'
+# 14. victim probe SIGKILLed mid-run (no JSON): wrapper PROBE kills the victim's hold probe after 3 s
+cat > "$S/killprobe.py" <<'PYEOF'
+import os, subprocess, sys, time
+real = os.environ["REAL_PROBE"]
+args = sys.argv[1:]
+p = subprocess.Popen([sys.executable, "-I", real] + args)
+if "hold" in args and os.environ.get("WS_TICKET", "").startswith("tc_"):
+    time.sleep(3); p.kill(); p.wait(); sys.exit(137)
+sys.exit(p.wait())
+PYEOF
+run probe-killed   good              3 INCONCLUSIVE 'touch TRIG' PROBE="$S/killprobe.py" REAL_PROBE="$HERE/ws_probe.py.txt"
+# 15. usage / output-directory errors must exit 2 (not 1)
+set +e
+env -u BASE ADMIN_USER=a ADMIN_PASS=b VICTIM_USER=c VICTIM_PASS=d OUT="$S/out_nobase" bash "$HERE/LIVE_WS_CHECK.sh.txt" >/dev/null 2>&1 </dev/null; expect "usage: BASE unset exit" "$?" 2
+BASE=http://127.0.0.1:1 ADMIN_USER=a ADMIN_PASS=b VICTIM_USER="" VICTIM_PASS=d OUT="$S/out_novu" bash "$HERE/LIVE_WS_CHECK.sh.txt" >/dev/null 2>&1 </dev/null; expect "usage: VICTIM_USER empty exit" "$?" 2
+: > "$S/afile"
+BASE=http://127.0.0.1:1 ADMIN_USER=a ADMIN_PASS=b VICTIM_USER=c VICTIM_PASS=d OUT="$S/afile/sub" bash "$HERE/LIVE_WS_CHECK.sh.txt" >"$S/log_unwritable.txt" 2>&1 </dev/null; expect "unwritable OUT exit" "$?" 2
+grep -q 'cannot create output directory' "$S/log_unwritable.txt" && echo "UNIT-PASS unwritable OUT message" || { echo "UNIT-FAIL unwritable OUT message"; fails=$((fails+1)); }
 for n in good ignore-susp control-closes; do echo "--- $n results.txt ---"; cat "$S/out_$n/results.txt"; done
 echo "gate-logic failures: $fails"; exit "$fails"

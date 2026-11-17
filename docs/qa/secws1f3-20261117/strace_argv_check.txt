@@ -1,0 +1,11 @@
+strace -f -e trace=execve argv check of LIVE_WS_CHECK.sh.txt run (round 4), GATE-LOGIC mock target (NOT live evidence). Passwords carried as needles PWneedleADMIN9 / PWneedleVICT7.
+execve lines captured: 81
+needle 'PWneedleADMIN9': argv hits=0 ; script stdout/log+out files hits=0
+needle 'PWneedleVICT7': argv hits=0 ; script stdout/log+out files hits=0
+needle 'eyJhbGciOiJub25l': argv hits=0 ; script stdout/log+out files hits=0
+needle 'Bearer ': argv hits=0 ; script stdout/log+out files hits=0
+ticket-shaped value in argv: 0
+POSITIVE control 1 (instrument sees argv): BASE url in argv hits=17 (>0 expected)
+POSITIVE control 2 (deliberate credential in argv: bash -c 'true PWneedleADMIN9'): hits=1 (>=1 expected)
+NEGATIVE control (fabricated needle never used): hits=0 (0 expected)
+run result: summary: PASS=5 FAIL=0 INCONCLUSIVE=1

@@ -6,7 +6,7 @@
 # Users: login user "c" is the victim (suspended when TRIGGER_FILE exists, except MODE ignore-suspension); "a" is the admin
 # control and is never suspended. Tokens are JWT-shaped with an exp claim; tickets are bound to the bearer's user.
 # MODES: good | wrong-code | never-close | refuse-ws | drop-after-101 | early-close | no-pong | late-close |
-#        ignore-suspension | control-closes-too | short-exp
+#        ignore-suspension | control-closes-too | control-later (victim 1008 at +1s, control 1008 at +5s) | short-exp
 import http.server, socketserver, struct, sys, os, time, threading, hashlib, base64, json
 
 PORT, MODE, TRIG = int(sys.argv[1]), sys.argv[2], sys.argv[3]
@@ -72,10 +72,11 @@ class H(http.server.BaseHTTPRequestHandler):
             if user == "c":
                 if MODE == "early-close" and time.time() - t0 > 0.6: return close(1008)
                 if MODE == "ignore-suspension" and time.time() - t0 > 3: return close(1008)
-                if trig_seen is not None and MODE in ("good", "short-exp", "control-closes-too") and time.time() - trig_seen > 1.0: return close(1008)
+                if trig_seen is not None and MODE in ("good", "short-exp", "control-closes-too", "control-later") and time.time() - trig_seen > 1.0: return close(1008)
                 if trig_seen is not None and MODE == "wrong-code" and time.time() - trig_seen > 1.0: return close(1000)
                 if trig_seen is not None and MODE == "late-close" and time.time() - trig_seen > 8.0: return close(1008)
             elif MODE == "control-closes-too" and trig_seen is not None and time.time() - trig_seen > 1.0: return close(1008)
+            elif MODE == "control-later" and trig_seen is not None and time.time() - trig_seen > 5.0: return close(1008)
 
 class S(socketserver.ThreadingMixIn, http.server.HTTPServer): daemon_threads = True
 S(("127.0.0.1", PORT), H).serve_forever()
