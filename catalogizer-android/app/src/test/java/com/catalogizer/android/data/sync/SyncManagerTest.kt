@@ -179,6 +179,75 @@ class SyncManagerTest {
         coVerify { mockSyncOperationDao.updateRetryCount(7L, 1) }
     }
 
+    private fun syncOp(type: SyncOperationType, data: String) = SyncOperation(
+        id = 8L, type = type, mediaId = 1L, data = data, timestamp = 1L
+    )
+
+    private fun stubSyncPlumbing(op: SyncOperation) {
+        coEvery { mockAuthRepository.isTokenValid() } returns true
+        coEvery { mockSyncOperationDao.getPendingOperations() } returns listOf(op)
+        coEvery { mockApi.getUpdatedMedia(any()) } returns Response.success(emptyList())
+        coEvery { mockApi.getUserPreferences() } returns Response.success(kotlinx.serialization.json.JsonObject(emptyMap()))
+    }
+
+    private val errBody get() = okhttp3.ResponseBody.create(null, "")
+
+    @Test
+    fun `watch progress sync keeps the operation queued when the server answers non-2xx`() = runTest {
+        stubSyncPlumbing(syncOp(SyncOperationType.UPDATE_PROGRESS, """{"mediaId":1,"progress":0.5,"timestamp":5}"""))
+        coEvery { mockApi.updateUserWatchProgress(any(), any()) } returns Response.error(500, errBody)
+
+        val result = syncManager.performManualSync()
+
+        coVerify(exactly = 0) { mockSyncOperationDao.deleteOperation(8L) }
+        coVerify { mockSyncOperationDao.updateRetryCount(8L, 1) }
+        assertEquals(1, result.failedItems)
+    }
+
+    @Test
+    fun `watch progress sync deletes the operation on 2xx`() = runTest {
+        stubSyncPlumbing(syncOp(SyncOperationType.UPDATE_PROGRESS, """{"mediaId":1,"progress":0.5,"timestamp":5}"""))
+        coEvery { mockApi.updateUserWatchProgress(any(), any()) } returns Response.success(Unit)
+
+        syncManager.performManualSync()
+
+        coVerify { mockSyncOperationDao.deleteOperation(8L) }
+        coVerify(exactly = 0) { mockSyncOperationDao.updateRetryCount(any(), any()) }
+    }
+
+    @Test
+    fun `rating sync keeps the operation queued when the server answers non-2xx`() = runTest {
+        stubSyncPlumbing(syncOp(SyncOperationType.UPLOAD_RATING, """{"mediaId":1,"rating":4.5}"""))
+        coEvery { mockApi.rateMedia(any(), any()) } returns Response.error(401, errBody)
+
+        val result = syncManager.performManualSync()
+
+        coVerify(exactly = 0) { mockSyncOperationDao.deleteOperation(8L) }
+        coVerify { mockSyncOperationDao.updateRetryCount(8L, 1) }
+        assertEquals(1, result.failedItems)
+        assertTrue(result.success)
+    }
+
+    @Test
+    fun `rating sync deletes the operation on 2xx`() = runTest {
+        stubSyncPlumbing(syncOp(SyncOperationType.UPLOAD_RATING, """{"mediaId":1,"rating":4.5}"""))
+        coEvery { mockApi.rateMedia(any(), any()) } returns Response.success(Unit)
+
+        syncManager.performManualSync()
+
+        coVerify { mockSyncOperationDao.deleteOperation(8L) }
+    }
+
+    @Test
+    fun `rating sync at max retries drops the operation after a non-2xx (existing policy)`() = runTest {
+        stubSyncPlumbing(syncOp(SyncOperationType.UPLOAD_RATING, """{"mediaId":1,"rating":4.5}""").copy(retryCount = 99))
+        coEvery { mockApi.rateMedia(any(), any()) } returns Response.error(500, errBody)
+
+        syncManager.performManualSync()
+
+        coVerify { mockSyncOperationDao.deleteOperation(8L) }
+    }
+
     @Test
     fun `queueRatingUpdate should insert operation and update count`() = runTest {
         coEvery { mockSyncOperationDao.insertOperation(any()) } returns 1L
