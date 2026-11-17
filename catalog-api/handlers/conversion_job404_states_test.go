@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"os"
 	"testing"
 
 	"catalogizer/models"
@@ -59,4 +60,28 @@ func TestJob404_ServiceErrorTextIdenticalEveryOperationAndState(t *testing.T) {
 			}
 		})
 	}
+}
+
+// JOB-404-F1 (reviewer mutant M7): a foreign DELETE of a COMPLETED job must not touch the output
+// file either; the row-existence check alone would let "remove output before the ownership check"
+// survive. Control: the owner's DELETE of the same kind of job does remove the file.
+func TestJob404_ForeignDeleteOfCompletedJobKeepsOutputFile(t *testing.T) {
+	s := newJob404Stack(t)
+	id := s.newJob(t, models.ConversionStatusCompleted, true)
+	job, err := s.repo.GetJob(id)
+	require.NoError(t, err)
+	_, err = os.Stat(job.TargetPath)
+	require.NoError(t, err, "precondition: the output file exists")
+
+	w := s.call("DELETE", "/jobs/"+convItoa(id), s.otherTok)
+	require.Equal(t, http.StatusNotFound, w.Code)
+	_, err = os.Stat(job.TargetPath)
+	assert.NoError(t, err, "a non-owner's DELETE must not remove the job's output file")
+	_, err = s.repo.GetJob(id)
+	assert.NoError(t, err, "a non-owner's DELETE must not remove the row")
+
+	ow := s.call("DELETE", "/jobs/"+convItoa(id), s.ownerTok)
+	require.Equal(t, http.StatusOK, ow.Code, ow.Body.String())
+	_, err = os.Stat(job.TargetPath)
+	assert.True(t, os.IsNotExist(err), "control: the owner's DELETE removes the output file")
 }

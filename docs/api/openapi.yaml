@@ -5056,13 +5056,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '403':
-          description: The job belongs to another user (without media.view), or the output lies outside the conversion roots
+          description: The output file of the caller's own job (or any job, for an administrator) lies outside the conversion roots. Another user's job never yields 403; it answers 404 like a nonexistent id
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
         '404':
-          description: Job not found
+          description: Job not found, or the job belongs to another user (identical response, no existence oracle)
           content:
             application/json:
               schema:
