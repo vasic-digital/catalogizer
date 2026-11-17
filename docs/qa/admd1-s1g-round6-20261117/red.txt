@@ -1,0 +1,8 @@
+# RED: round-6 tests vs the round-5 code (main 433cedd94); gate/scanner files unchanged at this point
+# cmd: GOMAXPROCS=4 nice -n 10 go test -p 1 -count=1 -run ADMD1F1S1R6 .
+--- FAIL: TestADMD1F1S1R6_RouteSetEqualsTableBothDirections (0.00s)
+--- FAIL: TestADMD1F1S1R6_RouteLevelHandlerBeforeGateIsReported (0.00s)
+--- FAIL: TestADMD1F1S1R6_GateIdentityComparesFullFilePath (0.00s)
+FAIL
+FAIL	catalogizer	0.303s
+FAIL

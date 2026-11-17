@@ -3393,3 +3393,12 @@ HAUTHZ-F2 fixed: PUT /media/:id/favorite and GET /media/:id use the new `user_fa
 - AFAV-10 (Bug, Important, latent): two favorites stores that never meet: `user_favorites` (PUT media/:id/favorite, GET media/:id is_favorite; Android) vs `favorites` (/favorites group; Android TV, web, smart rules). A favorite set on one client does not appear on another. Needs an operator decision on one store and a migration; add a cross-client live test. Answers AFAV-4.
 - AFAV-11 (Task): Android TV `recognizeMedia` (`POST api/v1/media/recognize`, `CatalogizerApi.kt:107`) has no server route and no caller; remove or implement.
 - AFAV-12 (Task, tooling): add an Android/TV Retrofit-vs-server-route gate (extend `poc/route_drift/route_drift.py`, which does not list per-call results and does not model the Android base-URL prefix; its `--json` flag does not exist) with a paired mutant, so AFAV-7-class doubled prefixes fail the build.
+
+### s1g round-6 status of the round-5 follow-ups (PROVISIONAL, 2026-11-17, scratch clone branch s1g5fu; evidence `docs/qa/admd1-s1g-round6-20261117/`)
+- S1G5-F3 DONE (PROVISIONAL): `groundTruthViolations` now also compares the real route set with the `docs/ROUTE_AUTHZ_TABLE.md` route set in both directions (`routeSetViolations`). Real: 265 = 265.
+- S1G5-F1 DONE (PROVISIONAL): a route-level handler in front of the gate is reported by the scanner (a handler value, not a middleware factory call) and by the real-chain check (pinned middleware file allow-list `preGateAllowedFiles`, read from the real chains of the 76 gated routes). I2 is now closed for the `h, RequireAdmin(), h` shape; the former golden-FALSE pin is replaced. Limit: the allow-list is a pinned list of files, a new middleware file in front of a gate must be added to it on purpose.
+- S1G5-F2 DONE (PROVISIONAL): gate identity compares the full defining file path.
+- S1G5-F4 DONE (PROVISIONAL): shadowed import alias probe added; old survivor #8 is now killed.
+- S1G5-F5 DONE: command lines in the green files, header + exit status in `vet_live.txt`.
+- S1G5-F6 DONE (PROVISIONAL): the `/metrics` wrapper closure is matched by symbol and file (`isWrapperClosure`).
+- R5-FU-1 and the live-sweep backstop stay open (UNCONFIRMED).
