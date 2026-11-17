@@ -182,7 +182,9 @@ func TestADMD1F1S1R5_GoldenFalseShapes(t *testing.T) {
 		})
 	}
 	ok("gate before the terminal handler", `func Run(m mw) { r := gin.New(); r.GET("/x", m.RequireAdmin(), h) }`, "GET /x gated")
-	ok("gate between two handlers", `func Run(m mw) { r := gin.New(); r.GET("/x", h, m.RequireAdmin(), h) }`, "GET /x gated")
+	// S1G5-F1: `h, RequireAdmin(), h` is NOT golden-FALSE (the first handler runs before the gate); it is reported, see R6 tests.
+	ok("middleware call then gate then handler", `func Run(m mw) { r := gin.New(); r.GET("/x", mkMw(), m.RequireAdmin(), h) }
+func mkMw() gin.HandlerFunc { return nil }`, "GET /x gated")
 	ok("gate variable declared once, used twice", `func Run(m mw) { r := gin.New(); gate := m.RequireAdmin(); r.GET("/x", gate, h); r.POST("/y", gate, h) }`, "GET /x gated", "POST /y gated")
 	ok("group Use then route, registrations in the same context", `func Run(m mw) { r := gin.New(); g := r.Group("/a"); g.Use(m.RequireAdmin()); g.GET("/x", h) }`, "GET /a/x gated")
 	ok("group compared with nil", `func Run() { r := gin.New(); g := r.Group("/a"); if g == nil { return }; g.GET("/x", h) }`, "GET /a/x open")

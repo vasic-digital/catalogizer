@@ -59,7 +59,45 @@ func pathTail(p string) string {
 }
 
 func isAdminGateFunc(h routeHandler) bool {
-	return adminGateClosureRe.MatchString(h.Name) && pathTail(h.File) == pathTail(adminGateIdentity().File)
+	// S1G5-F2: the FULL defining file path is compared (the build and the test process share the checkout), never the last two elements.
+	return adminGateClosureRe.MatchString(h.Name) && h.File == adminGateIdentity().File
+}
+
+// preGateAllowedFiles: the only files (relative to catalog-api) whose handlers may sit in front of the admin gate in a real chain
+// (S1G5-F1): they are the router-level and group-level middleware of the real tree, read from the real chains of the gated routes.
+// A route-level handler (or any other function) in front of the gate runs before the check, so it is reported.
+var preGateAllowedFiles = map[string]bool{
+	"internal/auth/middleware.go": true, "internal/middleware/middleware.go": true, "internal/middleware/compression.go": true,
+	"internal/middleware/recovery.go": true, "internal/firebase/firebase.go": true, "internal/metrics/middleware.go": true,
+	"middleware/request.go": true, "middleware/auth.go": true, "middleware/concurrency_limiter.go": true,
+	"middleware/input_validation.go": true, "middleware/timeout.go": true, "middleware/security_headers.go": true,
+	"middleware/cache_headers.go": true,
+}
+
+func preGateAllowed(h routeHandler) bool {
+	f := strings.ReplaceAll(h.File, "\\", "/")
+	if strings.Contains(f, "/github.com/gin-gonic/gin@") {
+		return true
+	}
+	i := strings.LastIndex(f, "/catalog-api/")
+	return i >= 0 && preGateAllowedFiles[f[i+len("/catalog-api/"):]]
+}
+
+// handlersBeforeGateViolations lists the handlers in front of the first admin gate of a chain that are not pinned middleware.
+func handlersBeforeGateViolations(chain []routeHandler) []routeHandler {
+	var out []routeHandler
+	for i, n := range chain {
+		if !isAdminGateFunc(n) {
+			continue
+		}
+		for _, p := range chain[:i] {
+			if !preGateAllowed(p) {
+				out = append(out, p)
+			}
+		}
+		break
+	}
+	return out
 }
 
 // realGateState: gated = a gate handler sits before the terminal handler; gateAtOrAfterTerminal = a gate handler is the terminal
@@ -116,6 +154,9 @@ func groundTruthViolations(real []realRoute, scan *routeScan, rows []tableRow) [
 			continue
 		}
 		rg, after := realGateState(r.chain)
+		for _, p := range handlersBeforeGateViolations(r.chain) {
+			out = append(out, "route-level handler runs before the gate ("+p.Name+" in "+p.File+"): "+k)
+		}
 		if after {
 			out = append(out, "gate is the terminal handler (it runs after the handler it should protect, so it protects nothing): "+k)
 		}
@@ -124,7 +165,7 @@ func groundTruthViolations(real []realRoute, scan *routeScan, rows []tableRow) [
 			// itself. Accept only when BOTH wrapper closures are really in the chain, before the terminal handler.
 			n := 0
 			for i := 0; i+1 < len(r.chain); i++ {
-				if strings.Contains(r.chain[i].Name, wrappedGateSymbol) {
+				if isWrapperClosure(r.chain[i]) {
 					n++
 				}
 			}
@@ -146,6 +187,7 @@ func groundTruthViolations(real []realRoute, scan *routeScan, rows []tableRow) [
 		}
 	}
 	if rows != nil {
+		out = append(out, routeSetViolations(real, rows)...)
 		adminTable := tableAdminRoutes(rows)
 		realGated := map[string]bool{}
 		for _, r := range real {
@@ -180,6 +222,11 @@ var wrappedGateRoutes = map[string]string{
 }
 
 const wrappedGateSymbol = "metricsSkipIfScrape"
+
+// isWrapperClosure (S1G5-F6): the wrapper's closure by symbol AND defining file (main_metricsauth.go), not by a substring of the name.
+func isWrapperClosure(h routeHandler) bool {
+	return regexp.MustCompile(`\.`+wrappedGateSymbol+`\.func\d+(\.\d+)*$`).MatchString(h.Name) && filepath.Base(h.File) == "main_metricsauth.go"
+}
 
 func boolStr(b bool) string {
 	if b {
@@ -295,9 +342,9 @@ func TestADMD1F1S1R5_ComparatorDetectsEachDefectClass(t *testing.T) {
 	has([]realRoute{{"GET", "/x", []routeHandler{gateH, plain}}, {"GET", "/y", []routeHandler{gateH, plain}}}, good, "gate state differs")
 	fake := funcIdentity(fakeGateFactory())
 	has([]realRoute{{"GET", "/x", []routeHandler{fake, plain}}, realGood[1]}, good, "gate state differs")
-	adm := []tableRow{{"GET", "/x", "RequireAdmin (route)"}}
+	adm := []tableRow{{"GET", "/x", "RequireAdmin (route)"}, {"GET", "/y", "auth"}}
 	require.Empty(t, groundTruthViolations(realGood, good, adm), "table agrees")
-	require.Contains(t, strings.Join(groundTruthViolations(realGood, good, []tableRow{{"GET", "/y", "RequireAdmin (route)"}}), "\n"), "authorization table lists a RequireAdmin route that is not gated")
+	require.Contains(t, strings.Join(groundTruthViolations(realGood, good, []tableRow{{"GET", "/y", "RequireAdmin (route)"}, {"GET", "/x", "auth"}}), "\n"), "authorization table lists a RequireAdmin route that is not gated")
 	require.Contains(t, strings.Join(groundTruthViolations(realGood, good, []tableRow{{"GET", "/y", "RequireAdmin (route)"}}), "\n"), "real route is gated by RequireAdmin but the authorization table has no")
 }
 

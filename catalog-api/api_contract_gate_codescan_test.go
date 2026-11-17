@@ -988,6 +988,17 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 										report(j.fi.file, fname, call+" has the gate as its LAST handler (it protects nothing): "+exprStr(a))
 									} else {
 										gated = true
+										// S1G5-F1: a handler VALUE (identifier, selector or literal, not a middleware factory call) in front of the gate runs first
+										for _, pre := range handlers[:i] {
+											if isGate(pre) {
+												continue
+											}
+											switch ast.Unparen(pre).(type) {
+											case *ast.CallExpr:
+											default:
+												report(j.fi.file, fname, call+" has a route-level handler before the gate: "+exprStr(pre))
+											}
+										}
 									}
 								} else if _, isLit := a.(*ast.FuncLit); !isLit && i < len(handlers)-1 && strings.Contains(strings.ToLower(exprStr(a)), "admin") && !strings.Contains(exprStr(a), "RequireSelfOrAdmin") {
 									report(j.fi.file, fname, call+" has an admin-looking middleware the scanner cannot model: "+exprStr(a))
