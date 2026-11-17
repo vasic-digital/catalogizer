@@ -3617,3 +3617,10 @@ Premise confirmed: WebDAV storage-root client already guarded (OperatorTransport
 
 ## Operator decisions 2026-11-17 (sweep 8 part 2)
 CAT-LEGACY-MEDIAHANDLER-1: removal not approved; deep-dive of the whole legacy media system first (why never wired, unimplemented vs replaced, advertised-but-unbacked claims). PostgreSQL = supported; CAT-PG-SESSION-END-1 and CAT-PG-TX-SWEEP-1 are rc.1 blockers. Load policy: max agents; pause all agents for Vision/build phases then resume them all, with a sync record. SECQ-1: confirm_private_network model kept.
+
+## PGEND1 review (Opus, 2026-11-17) — GO-with-follow-ups, landed PROVISIONAL
+- PGEND1-R-m1 (minor): mutant R6 survives (media_progress UPDATE dropping media_item_id); add two-item/two-user test asserting other rows unchanged.
+- PGEND1-R-m2 (minor): racing first-ever Ends / PUT insert vs End collide on PK -> 500; consider portable ON CONFLICT upsert (go-sqlcipher support UNCONFIRMED).
+- PGEND1-R-m3 (minor): repeated End of ended session now 200 {ok:true} applying nothing; document in API contract.
+- PGEND1-R-m4 (minor): no PG test for End on a row created by the PUT handler.
+- PGEND1-R-n1/n2 (nit): comment "BOOLEAN-affinity" for SQLite completed is wrong (INTEGER); SUMMARY.md wrongly says Get/ListHistory are tx statements.
