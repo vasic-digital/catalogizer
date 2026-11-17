@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc 3.11" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>CONTINUATION — Catalogizer</title>
+  <title>CONTINUATION</title>
   <style>
     /* Default styles provided by pandoc.
     ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -174,35 +174,165 @@
   </style>
 </head>
 <body>
-<h1 id="continuation--catalogizer">CONTINUATION — Catalogizer</h1>
+<header id="title-block-header">
+<h1 class="title">CONTINUATION</h1>
+</header>
+<h1 id="continuation-catalogizer">CONTINUATION — Catalogizer</h1>
 <blockquote>
 <p>Live work-state document per Constitution <strong>§12.10
 (CONTINUATION)</strong> and <strong>§11.4.131</strong>. A fresh session
 that receives only the prompt <code>continue</code> MUST read this file
 first, then <code>docs/FOLLOW_UPS_NEXT_PHASE.md</code>, then resume the
-§11.4.126 loop with the steps in "RESUME ORDER".</p>
+§11.4.126 loop with the steps in “RESUME ORDER”.</p>
 </blockquote>
-<p><strong>Revision:</strong> 21 <strong>Last modified:</strong>
-2026-11-14 <strong>Exports:</strong> <code>CONTINUATION.html</code> /
-<code>CONTINUATION.pdf</code> regenerated at Rev 21 with
+<p><strong>Revision:</strong> 22 <strong>Last modified:</strong>
+2026-11-17 <strong>Exports:</strong> <code>CONTINUATION.html</code> /
+<code>CONTINUATION.pdf</code> regenerated at Rev 22 with
 <code>pandoc -s</code> (HTML) and <code>weasyprint</code> (PDF) from
 this file; this <code>.md</code> is authoritative.</p>
+<h2 id="rev-22-delta-since-rev-21-main-ec3af18f4">0.00000 Rev 22 delta
+(since Rev 21; main = <code>ec3af18f4</code>)</h2>
+<p><strong>On “continue”: read this section first, then
+<code>docs/release/V2_5_0_GATE_CHECKLIST.md</code> (Rev 7 last section),
+<code>docs/release/RC1_PREP_AUDIT_20261116.md</code>,
+<code>docs/FOLLOW_UPS_NEXT_PHASE.md</code> (tail), then RESUME ORDER in
+section 5.</strong> Sections 1, 2, 4, 5 and 7a below are history from
+Rev 17..21 and are partly stale; where they disagree with this section,
+this section wins.</p>
+<ul>
+<li><strong>Release state.</strong> Tags <code>v2.4.0</code>,
+<code>v2.4.1</code>, <code>v2.4.2</code>, <code>v2.4.3</code> exist
+(v2.4.3 = commit <code>25cb9e40c</code>, 2026-11-14); the Rev 21 “v2.4.3
+prepared, not tagged” text is superseded. <code>v2.5.0-rc.1</code> is
+NOT tagged and NOT published: only prepared text exists
+(<code>docs/release/RELEASE_NOTES_v2.5.0-rc.1.md</code>,
+<code>docs/release/RC1_TAG_AND_PUBLISH.sh.txt</code>). <code>main</code>
+is 521 commits after <code>v2.4.3</code>.</li>
+<li><strong>Operator decisions 2026-11-16 / 2026-11-17</strong>
+(relayed, identifiers UNCONFIRMED; none pending): getUserMetadata of an
+own item with no row = 404; legacy global <code>is_favorite</code>
+ignored, no migration; vendor terms prose-only (stable ids kept); legacy
+<code>MediaHandler</code> kept unrouted with a removal item; HAUTHZ-O1
+closed by routing a MediaEntityHandler user-metadata route; SMB
+read-only destination keeps refusal and maps <code>ErrCopy*</code> to
+403/409; sync stays 403; first per-product baseline = live run of
+v2.4.2/v2.4.3; <strong>rc.1 may ship as a labelled pre-release with G2,
+G5, G9 relaxed (recorded operator exception to 11.4.298(E), rc.1 only;
+v2.5.0 keeps G1..G12)</strong>; once the non-relaxed gates are
+satisfied, agents may cut <code>v2.5.0-rc.1</code>, push the tag to all
+remotes and create release pages on GitHub/GitLab/Codeberg through the
+constitution forge tool (tags only on GitFlic/GitVerse/m3w) without
+asking again; with no hardware, emulators run only as non-gate dry-run
+pre-checks and every emulator runs via the Containers submodule in
+rootless Podman (never bare host); Android/TV Gradle in plain rootless
+podman (<code>eclipse-temurin:17-jdk</code>) is acceptable for unit-test
+evidence as a recorded deviation, release artifacts must build via the
+Containers submodule (11.4.173/.76); Sonar (G5) and Vision (G3) run
+sequenced, one at a time, only while load &lt; ~15; the Android Retrofit
+<code>@Body</code> bug is fixed on <code>main</code> now and included in
+rc.1.</li>
+<li><strong>Landed on <code>main</code> since Rev 21 (all
+PROVISIONAL-DONE; reviews Opus GO-with-follow-ups unless
+noted).</strong> Merges after <code>5242d0617</code> (28 commits):
+<code>720b3bf07</code> rc1relax (rc.1 exception record + container
+dry-run plan, docs); <code>8af6155de</code> favclients (clients use
+<code>PUT /media/:id/favorite {favorite}</code>); <code>da6b64a96</code>
+androidfav (Android <code>toggleFavorite</code> via PUT, dead
+<code>user/favorites</code> Retrofit calls removed);
+<code>92aeb22b0</code> ecopy (<code>ErrCopy*</code> -&gt; 403/409/422 on
+<code>/copy/local</code> and <code>/copy/upload</code>, HAUTHZ-O1
+closed); <code>2e3e7d573</code> f3tests (HAUTHZ-F3R m1/m2,
+SEC-WS-1F3FU-8); <code>2f6010ccb</code> s1g5 (ADMD1F1-S1 admin-403 gate:
+real route-table ground truth + fail-closed scanner; round 5 = last
+budgeted round, GO-with-follow-ups, supersedes the earlier “I2 FIXED”
+overclaim); <code>58f40de93</code> androidut (Android/TV unit-test
+evidence at <code>433cedd94</code>, all green on host JVM in plain
+podman; deviation recorded); <code>ec3af18f4</code> rc1gates (gate
+checklist Rev 7, changelog counts refreshed, rc.1 notes and tag/publish
+script as TEXT). Follow-up registrations are in
+<code>docs/FOLLOW_UPS_NEXT_PHASE.md</code> under the 2026-11-17 headings
+(favclients, androidfav, ecopy, f3tests, s1g round-5, androidut
+finding). Earlier in the same window (before <code>5242d0617</code>, not
+re-listed): version bump to 2.5.0 (19/19 files, Android versionCode 10,
+TV 12) and the <code>[2.5.0]</code> changelog section.</li>
+<li><strong>In flight (per the conductor’s brief; branch state NOT
+verified here: no matching refs exist in this clone, and the scratch
+clones were not inspected, so every row is UNCONFIRMED):</strong> (1)
+<code>s1g5fu</code> = independent review of the s1g round-5 follow-ups;
+(2) <code>retrofixmap</code> = Android fix for ANDROID-RETROFIT-MAP-1
+(real bug:
+<code>CatalogizerApi.setFavoriteStatus(@Body Map&lt;String, Any&gt;)</code>
+and <code>updateWatchProgress</code> cannot be invoked because Retrofit
+rejects wildcard types; found by the fubundle wire tests; decision: fix
+now and ship in rc.1; still OPEN on <code>main</code>, only registered
+in <code>fe5b7b7b9</code>); (3) <code>fubundle</code> = bundled
+follow-up work whose wire tests found that bug; (4)
+<code>g1retest</code> = the G1 (11.4.40) full-suite retest of the rc.1
+candidate. None of these has landed; do not treat any as done.</li>
+<li><strong>Gate states (checklist Rev 7, measured 2026-11-17 at
+<code>fe5b7b7b9</code> in a scratch clone; “0 of 12” for v2.5.0 is
+unchanged).</strong> rc.1: G1 OPEN (no new retest record; required); G2
+RELAXED by the operator exception (all six products
+<code>BLOCKED-NO-HARDWARE</code>); G3 OPEN (owed); G4 OPEN (owed, live
+/ws); G5 RELAXED; G6 SATISFIED on that clone
+(<code>VERDICT: PASS</code>, version_ok=19, sha_ok=64, unused_waivers=3,
+permanent_risks=1), must be re-run on the tag candidate; G7 OPEN (owed,
+operator QA team); G8 SATISFIED for rc.1 (section exists, identity in
+text not heading); G9 RELAXED; G10 OPEN (tag absent on forges;
+<code>release-ensure --dry-run</code> returned
+<code>tag_absent_on_forge</code> on GitHub, GitLab, Codeberg); G11
+SATISFIED (19/19 at 2.5.0); G12 not required for rc.1 (V = 0). The
+11.4.298 gate record per product: api, web, desktop, wizard, Android,
+Android TV all BLOCKED (no hardware live run; web baseline of v2.4.2
+exists but is not compared).</li>
+<li><strong>Still open / owed:</strong> G1 retest (blocks rc.1), G3, G4,
+G7, G10 (after the tag); everything for v2.5.0 (G1..G12, live hardware
+runs, VERIFIED-DONE for all contained items); ANDROID-RETROFIT-MAP-1;
+CAT-NFS-EMU-2, CAT-PREEXIST-9b, D8-F1, D9-F1, SEC-WS-1 follow-ups;
+HAUTHZ-F2 and CPN-1 follow-ups per the follow-ups file; NAS stays SKIP
+<code>hardware_not_present</code>. Rev 21 claims about the Rev 21
+partial retest remain PROVISIONAL history.</li>
+<li><strong>Resume steps:</strong> (1)
+<code>git fetch --all --prune --recurse-submodules=no</code> in
+<code>/home/milosvasic/Projects/catalogizer</code>, verify
+<code>main</code> parity across upstreams and the load (&lt; ~15 before
+Sonar/Vision). (2) Land the in-flight branches by the section 5 step 5
+procedure only after their reviews. (3) Run G1 on the rc.1 candidate
+(plain rootless podman allowed for Android unit tests, deviation
+recorded). (4) Re-run
+<code>scripts/release/check_release_consistency.sh --version 2.5.0 --prev-tag v2.4.3</code>
+on the candidate (must end <code>VERDICT: PASS</code>). (5) When the
+non-relaxed gates are satisfied, cut <code>v2.5.0-rc.1</code> with
+<code>docs/release/RC1_TAG_AND_PUBLISH.sh.txt</code> (text only today;
+operator pre-authorised, no new question), pushes serial and
+fast-forward, never force. (6) Then open the next candidate
+(11.4.230(F)).</li>
+<li><strong>Exports:</strong> the repo has no generator script for the
+CONTINUATION twins (searched <code>scripts</code> and the tree for a
+reference; only the three files exist). The HTML and PDF are produced by
+hand with <code>pandoc -s</code> and <code>weasyprint</code>, as the
+header says, and were regenerated at Rev 22.</li>
+<li>Not verified while writing Rev 22: upstream six/fifteen-remote
+parity of <code>main</code>, whether any stack 3 or test-server
+container is running, the state of the four in-flight branches, and
+whether the <code>v2.4.x</code> tags are on every forge.</li>
+</ul>
 <h2
-id="00000-rev-21-delta-since-rev-20-main--b43f5370-release-prep-branch-releasev243-prep">0.0000
+id="rev-21-delta-since-rev-20-main-b43f5370-release-prep-branch-releasev2.4.3-prep">0.0000
 Rev 21 delta (since Rev 20; main = <code>b43f5370</code>; release prep
 branch <code>release/v2.4.3-prep</code>)</h2>
 <ul>
 <li><strong>v2.4.2 is published</strong> (annotated tag object
 <code>26f2e1df</code>, commit <code>fc8dcf27e</code>, pre-release). The
-Rev 20 "prepared, not tagged" wording is superseded.</li>
+Rev 20 “prepared, not tagged” wording is superseded.</li>
 <li><strong>v2.4.3 content is prepared, not tagged, not pushed.</strong>
 Branch <code>release/v2.4.3-prep</code> (made from <code>main</code>
 <code>b43f5370</code> in a scratch clone) bumps every product version to
 2.4.3 (Android <code>versionCode</code> 9, Android TV 11), adds
 <code>[2.4.3]</code> to <code>docs/CHANGELOG.md</code> (VERIFIED /
 PROVISIONAL / REOPENED / OVERDUE separate),
-<code>docs/release/RELEASE_NOTES_v2.4.3.md</code>, the "v2.4.3
-additions" section 6 of
+<code>docs/release/RELEASE_NOTES_v2.4.3.md</code>, the “v2.4.3
+additions” section 6 of
 <code>docs/PROVISIONAL_VERIFICATION_PLAN.md</code> (jobs
 <code>VJ243-01..23</code>, due dates proposed by the preparer) and an
 upgrade section in <code>docs/UPGRADE_NOTES.md</code>. Release class:
@@ -221,7 +351,7 @@ Opus GO-with-follow-ups; list in <code>docs/CHANGELOG.md</code>
 <code>[2.4.3]</code>). Wave-1 landings on top: <code>2c799a9f</code>
 (CAT-CHPW-RL-2), <code>3a33fb05</code> (CAT-LOGIN-LOCK-2) and
 <code>b43f5370</code> (CAT-RETEST-STALE-1, NFS export refuses
-<code>,</code> followed by <code>:</code>). The "R_max NO-GO outcomes"
+<code>,</code> followed by <code>:</code>). The “R_max NO-GO outcomes”
 section of <code>docs/FOLLOW_UPS_NEXT_PHASE.md</code> still describes
 LOGIN-LOCK-2 and CHPW-RL-2 as not landed; <code>main</code> contains
 their merges.</li>
@@ -253,7 +383,7 @@ continuous release train opens the next candidate (11.4.230(F)).</li>
 the prep branch has been pushed anywhere (it has not).</li>
 </ul>
 <h2
-id="0000-rev-20-delta-since-rev-19-main--1538ef19-release-prep-branch-releasev242-prep">0.000
+id="rev-20-delta-since-rev-19-main-1538ef19-release-prep-branch-releasev2.4.2-prep">0.000
 Rev 20 delta (since Rev 19; main = <code>1538ef19</code>; release prep
 branch <code>release/v2.4.2-prep</code>)</h2>
 <ul>
@@ -296,7 +426,7 @@ the prep branch has been pushed anywhere (it has not been by this
 change).</li>
 </ul>
 <h2
-id="000-rev-19-delta-since-rev-18-main--1397d5b9-release-prep-branch-releasev241-prep">0.00
+id="rev-19-delta-since-rev-18-main-1397d5b9-release-prep-branch-releasev2.4.1-prep">0.00
 Rev 19 delta (since Rev 18; main = <code>1397d5b9</code>; release prep
 branch <code>release/v2.4.1-prep</code>)</h2>
 <ul>
@@ -325,14 +455,13 @@ control, evidence
 <code>docs/qa/smb-subdir-20261110/live-run-20261111T121104Z/</code>
 (checksums verify) = VERIFIED for that target. (2)
 <code>4640ed37</code>: the host Samba <code>Public/Testing</code>
-("Anton"), main <code>e5817850</code>, TestLiveSMBSubdir and
+(“Anton”), main <code>e5817850</code>, TestLiveSMBSubdir and
 TestLiveSMBServiceSubdir PASS, N=1, log committed in
 <code>652928dc</code>, <code>sha256sum -c go_test.log.sha256</code>
 passes (run from repo root); single run, N=1 = PROVISIONAL (N=1 &lt;
-required N&gt;=3). Neither is a bare-IP proof or a NAS run. The
-"Anton run held" wording in Rev 18 section 0.0 and in
-<code>[2.4.0]</code> is superseded by this paragraph; the stale notes in
-FOLLOW_UPS (SMB-FU-5),
+required N&gt;=3). Neither is a bare-IP proof or a NAS run. The “Anton
+run held” wording in Rev 18 section 0.0 and in <code>[2.4.0]</code> is
+superseded by this paragraph; the stale notes in FOLLOW_UPS (SMB-FU-5),
 <code>docs/PROVISIONAL_VERIFICATION_PLAN.md</code> 2.4 and section 4b
 were annotated.</li>
 <li>Landed on <code>main</code> after the first Rev 19 draft: the 16
@@ -346,8 +475,8 @@ landed: the 2 API go:S3923 bugs have a fix in <code>79547302</code>
 (merge <code>b304304b</code>), PROVISIONAL, Sonar re-run owed (follow-up
 CAT-QA-SONAR-5, an operator decision on an ignored wizard
 template).</li>
-<li>NAS stays SKIP (<code>hardware_not_present</code>), drives off
-since 2026-11-05.</li>
+<li>NAS stays SKIP (<code>hardware_not_present</code>), drives off since
+2026-11-05.</li>
 <li>Held/owed: live <code>stack3/up.sh</code> through the Containers
 backend; two more Anton runs with committed logs (N=1 &lt; N&gt;=3);
 bare-IP SMB live leg; Tauri native GUI; Android real login;
@@ -362,7 +491,7 @@ full-suite retest, manual QA, then decide tag <code>v2.4.1</code>
 running, and whether the prep branch has been pushed anywhere (it has
 not been by this change).</li>
 </ul>
-<h2 id="00-rev-18-delta-history-since-rev-17-main--031045eb">0.0 Rev 18
+<h2 id="rev-18-delta-history-since-rev-17-main-031045eb">0.0 Rev 18
 delta (history) (since Rev 17; main = <code>031045eb</code>)</h2>
 <ul>
 <li><strong><code>v2.4.0</code> is released as a labelled
@@ -400,14 +529,14 @@ and SMB-FU-9b/11/13/17/18/19 (see
 only after the PROVISIONAL items above are VERIFIED, the full-suite
 retest passes, and §11.4.185 manual QA confirms.</li>
 <li>Supersedes: the <code>release/v2.4.0-prep</code> HELD row in section
-2 and the "tag only after live validation" text in sections 1 and 5 step
+2 and the “tag only after live validation” text in sections 1 and 5 step
 6 (decision 5 of Rev 17); the tag now exists.</li>
 <li>Not verified while writing Rev 18: six-upstream branch parity of
 <code>main</code> after the Rev 18 commit, and the presence of the
 scratch clones named in sections 2 and 6.</li>
 </ul>
-<h2 id="0-rev-17-delta-history-since-rev-16-e3683a37-main--e933ec5c">0.
-Rev 17 delta (history) (since Rev 16, <code>e3683a37</code>; main =
+<h2 id="rev-17-delta-history-since-rev-16-e3683a37-main-e933ec5c">0. Rev
+17 delta (history) (since Rev 16, <code>e3683a37</code>; main =
 <code>e933ec5c</code>)</h2>
 <ul>
 <li>Landed on <code>main</code> (all PROVISIONAL-DONE, each merge
@@ -431,8 +560,8 @@ refused); <code>73d1f825</code> merge feat/stack3-containers-lifecycle
 (measured 2026-11-11, recorded in
 <code>docs/qa/lib/podman_env.sh</code>)</strong>: the harness exports
 <code>DBUS_SESSION_BUS_ADDRESS='unix:path=/run/user/1000/bus,guid=&lt;hex&gt;'</code>;
-the <code>,guid=</code> suffix makes crun's sd-bus call fail with "OCI
-permission denied". Fix: strip <code>guid=</code>
+the <code>,guid=</code> suffix makes crun’s sd-bus call fail with “OCI
+permission denied”. Fix: strip <code>guid=</code>
 (<code>qa_podman_env_normalize</code> in
 <code>docs/qa/lib/podman_env.sh</code>, which also defaults
 <code>XDG_RUNTIME_DIR</code>) or
@@ -449,11 +578,11 @@ and gitignore
 <code>e933ec5c</code>, while <code>installer-wizard/.gitignore</code>
 already ignores its own copy). (5) <code>v2.4.0</code> is published as a
 labelled pre-release now, with the PROVISIONAL items listed in the
-changelog (this supersedes the "tag only after live validation" hold in
+changelog (this supersedes the “tag only after live validation” hold in
 section 1 and the HELD <code>release/v2.4.0-prep</code> row; CHANGELOG
 must list VERIFIED, PROVISIONAL, REOPENED, OVERDUE separately per
-§11.4.290). (6) NAS: honest SKIP <code>hardware_not_present</code>,
-ship without it. (7) SonarQube scan (CAT-QA-SONAR-1), the Anton
+§11.4.290). (6) NAS: honest SKIP <code>hardware_not_present</code>, ship
+without it. (7) SonarQube scan (CAT-QA-SONAR-1), the Anton
 <code>Public/Testing</code> SMB run and the Vision/HelixQA UI QA are to
 run when host load allows (load was about 30 when Rev 17 was written;
 hold while above ~12).</li>
@@ -466,7 +595,7 @@ it.</li>
 whether <code>release/v2.4.0-prep</code> still exists in the scratch
 clone.</li>
 </ul>
-<h2 id="0b-rev-16-delta-history-since-rev-15-70d10721">0b. Rev 16 delta
+<h2 id="b.-rev-16-delta-history-since-rev-15-70d10721">0b. Rev 16 delta
 (history) (since Rev 15, <code>70d10721</code>)</h2>
 <ul>
 <li>Landed on <code>main</code> (all PROVISIONAL-DONE):
@@ -490,8 +619,8 @@ GO-with-follow-ups.</li>
 SMB-FU-1..8 in <code>docs/FOLLOW_UPS_NEXT_PHASE.md</code>.</li>
 <li><strong>Host LAN IP changed</strong>: 192.168.1.115 -&gt;
 <strong>192.168.1.17</strong> (verified with <code>ip addr</code>).
-Sections 2, 4, 4b and 5 below were updated at Rev 17 to say "current LAN
-IP"; read the current LAN IP (the QA scripts now auto-detect it;
+Sections 2, 4, 4b and 5 below were updated at Rev 17 to say “current LAN
+IP”; read the current LAN IP (the QA scripts now auto-detect it;
 override only via <code>QA_LAN_IP</code>).</li>
 <li><strong>Containers do NOT survive a reboot.</strong> Recovery:
 <code>docs/qa/stack3/up.sh &lt;tag&gt;</code>;
@@ -514,7 +643,7 @@ override only via <code>QA_LAN_IP</code>).</li>
 <li>(Superseded at Rev 17: the section 2 Tauri row now reflects the
 merge.)</li>
 </ul>
-<h2 id="1-state-at-stop">1. State at stop</h2>
+<h2 id="state-at-stop">1. State at stop</h2>
 <ul>
 <li><code>main</code> = <code>031045eb</code> at Rev 18 (Rev 17 start:
 <code>e933ec5c</code>) (Rev 16: <code>7498b212</code>) + the Rev 17 doc
@@ -542,14 +671,14 @@ nginx XFF on every proxied location; round 2 GO-with-follow-ups;
 PROVISIONAL, compose files only rendered + throwaway project, never
 brought up as real stacks); workable-items register Rev 2; disk prune
 (18 dangling images, ~18 GB reclaimed).</li>
-<li>The front-door "shared login bucket" is explained as a same-host
+<li>The front-door “shared login bucket” is explained as a same-host
 artefact (pasta alias 169.254.1.2); remote-LAN isolation UNCONFIRMED
 (needs a second LAN host, = QA-MON-FU-4).
 <code>CAT-FRONTDOOR-RATELIMIT-1</code> stays open.</li>
 <li><strong>Tauri desktop/installer native QA agent</strong>: see
 section 2 for its exact state at stop.</li>
-<li><strong>NAS drives are OFF</strong> (operator 2026-11-05 19:09
-CET): NAS SMB/FTP/NFS live tests = SKIP
+<li><strong>NAS drives are OFF</strong> (operator 2026-11-05 19:09 CET):
+NAS SMB/FTP/NFS live tests = SKIP
 <code>hardware_not_present</code>.</li>
 <li>Constitution pin 92a9ecf8 (v73.2). Periodic fetch still owed.</li>
 <li>Binding rules: memory
@@ -566,8 +695,14 @@ credentials (Yandex WebDAV creds only in scratchpad
 podman only; do not touch stacks catqa1/catqa2 or shared
 aardvark-dns.</li>
 </ul>
-<h2 id="2-not-on-main">2. NOT ON MAIN</h2>
+<h2 id="not-on-main">2. NOT ON MAIN</h2>
 <table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
 <thead>
 <tr>
 <th>Branch</th>
@@ -591,7 +726,7 @@ Open: wizard live GREEN runs (TAURI-R1-FU-7), desktop re-verify on the
 current binary, secret-scan of the wizard evidence in
 <code>/home/milosvasic/.cache/claude-tmp/evidence-archive/tauri-native-20261106/</code>.
 QA displays:
-<code>QA_BIND=&lt;current LAN IP&gt; scripts/tauri/run-qa.sh desktop|wizard &lt;out&gt;</code>.</td>
+<code>QA_BIND=&lt;current LAN IP&gt; scripts/tauri/run-qa.sh desktop\|wizard &lt;out&gt;</code>.</td>
 </tr>
 <tr>
 <td>(LANDED at Rev 18, <code>031045eb</code>)
@@ -607,7 +742,7 @@ before landing; no git tags exist yet.</td>
 </tr>
 </tbody>
 </table>
-<h2 id="3-landed-all-provisional-done-until-live-rerun">3. Landed (all
+<h2 id="landed-all-provisional-done-until-live-rerun">3. Landed (all
 PROVISIONAL-DONE until live rerun)</h2>
 <p>Since Rev 11 (<code>109acde2</code>): D7 remaining contrast
 <code>c78c654a</code>; HelixQA stack-3 API smoke wrapper
@@ -623,8 +758,8 @@ boot tooling (<code>109acde2</code>), SECQ-1/3/4/5/6, WD-F1, NEW-1,
 stack-3 verify pack. Follow-ups are in
 <code>docs/FOLLOW_UPS_NEXT_PHASE.md</code> (the authoritative pending
 list).</p>
-<h2 id="4-stack-3-containers-do-not-survive-reboot">4. Stack 3
-(containers do NOT survive reboot)</h2>
+<h2 id="stack-3-containers-do-not-survive-reboot">4. Stack 3 (containers
+do NOT survive reboot)</h2>
 <p>Running at stop (if the host was not rebooted): pod catqa3 (images
 <code>localhost/catqa3-api|web:main-17ec3c1f</code>, do NOT contain the
 D7-R4 fixes or the TRUSTED_PROXIES hardening) and pod catqa3mon
@@ -646,7 +781,7 @@ fixes, TRUSTED_PROXIES). Inactive throwaway users <code>qa_thrw_*</code>
 exist (CAT-QA-THRW-CLEAN-1). <code>verify.py</code> has 3 stale
 LAN-NOT-reachable assertions (CAT-VERIFY-LANBIND-1).</p>
 <h2
-id="4b-live-test-servers--anton-smb-corpus-added-rev-15-containers-do-not-survive-reboot">4b.
+id="b.-live-test-servers-anton-smb-corpus-added-rev-15-containers-do-not-survive-reboot">4b.
 Live test servers + Anton SMB corpus (added Rev 15; containers do NOT
 survive reboot)</h2>
 <ul>
@@ -666,7 +801,7 @@ Credentials (user <code>catsvc</code>) only in
 NFS probe mount (undone); logged in
 <code>evidence/sudo_actions.log</code>. Catalogizer SMB non-445 port
 read from code, NOT yet run live.</li>
-<li>Anton SMB (this host's own samba :445): <code>Public/Testing</code>
+<li>Anton SMB (this host’s own samba :445): <code>Public/Testing</code>
 corpus, evidence <code>docs/qa/anton-smb-20261106/</code>.
 CAT-SMB-SUBDIR-1: sub-directory scoping is implemented; live runs are in
 the Rev 19 delta (cattsrv-smb 3/3; Anton N=1, log committed in
@@ -675,8 +810,8 @@ the Rev 19 delta (cattsrv-smb 3/3; Anton N=1, log committed in
 (<code>docs/qa/second-host-20261106/</code>); real remote NIC
 UNCONFIRMED.</li>
 </ul>
-<h2 id="5-resume-order-what-continue-means">5. RESUME ORDER (what
-"continue" means)</h2>
+<h2 id="resume-order-what-continue-means">5. RESUME ORDER (what
+“continue” means)</h2>
 <ol type="1">
 <li><code>cd /home/milosvasic/Projects/catalogizer &amp;&amp; git fetch --all --prune --recurse-submodules=no</code>;
 confirm six-upstream parity of <code>main</code>;
@@ -720,7 +855,7 @@ follow-ups to docs/FOLLOW_UPS_NEXT_PHASE.md; commit with
 <code>Roadmap-Item:</code> +
 <code>Co-Authored-By: Claude Sonnet 5.5 &lt;noreply@anthropic.com&gt;</code>;
 push SERIALLY to six upstreams with <code>sleep 4</code> (parallel push
-fails "failed to lock"); verify
+fails “failed to lock”); verify
 <code>git ls-remote &lt;r&gt; refs/heads/main</code> parity; delete any
 wip branch on every upstream after landing.</li>
 <li>Remaining release scope (memory
@@ -729,14 +864,14 @@ follow-ups + subtitles panel; responsive/a11y live matrix across
 devices/browsers; desktop+installer wizard; Android/Android TV; HelixQA
 with Vision; performance/security/chaos; N&gt;=3 determinism ledger;
 retire stacks catqa1/catqa2 (docs note only); LV3-1..5; D5 bursty-audio
-fixture; NAS idle-deadline/cut-recovery live and NAS
-SMB/FTP/NFS live tests (SKIP <code>hardware_not_present</code> while the
-drives are OFF); PostgreSQL last-admin race; key-rotation waiver =
-operator-accepted open risk, no expiry, never invent a date;
-<code>versions.json</code> 2.3.0 -&gt; 2.4.0 + changelog (VERIFIED /
-PROVISIONAL / REOPENED / OVERDUE separately); test GITHUB_TOKEN / GitLab
-release permission with a real create at release time; tag
-<code>v2.4.0</code> on all upstreams only after live validation.</li>
+fixture; NAS idle-deadline/cut-recovery live and NAS SMB/FTP/NFS live
+tests (SKIP <code>hardware_not_present</code> while the drives are OFF);
+PostgreSQL last-admin race; key-rotation waiver = operator-accepted open
+risk, no expiry, never invent a date; <code>versions.json</code> 2.3.0
+-&gt; 2.4.0 + changelog (VERIFIED / PROVISIONAL / REOPENED / OVERDUE
+separately); test GITHUB_TOKEN / GitLab release permission with a real
+create at release time; tag <code>v2.4.0</code> on all upstreams only
+after live validation.</li>
 <li>Queue: every open item is a registered workable item in
 <code>docs/WORKABLE_ITEMS_REGISTER.md</code> (Part A = existing
 follow-up ids with pointers into
@@ -744,6 +879,10 @@ follow-up ids with pointers into
 Rev 13). Do not keep a parallel list here.</li>
 </ol>
 <table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
 <thead>
 <tr>
 <th>Group</th>
@@ -789,11 +928,11 @@ TAURI-FU-1..7, D11-R2-2..5, D7-R3-FU1/M1/M3, LV3-1..5</td>
 </tr>
 </tbody>
 </table>
-<h2 id="6-disk">6. Disk</h2>
+<h2 id="disk">6. Disk</h2>
 <p>Operator decision 2026-11-05: prune APPROVED for Go build/module
 caches, Android SDK system images, and NAMED unused podman
 images/volumes. NEVER a blanket prune (<code>podman system prune</code>
-is forbidden); other projects' dirs and anything not named stay
+is forbidden); other projects’ dirs and anything not named stay
 untouched. Re-run the idempotent guarded scratchpad
 <code>run_prune.sh</code> for the earlier approved set. Scratch under
 <code>/home/milosvasic/.cache/claude-tmp/</code> (survives reboot):
@@ -802,28 +941,28 @@ untouched. Re-run the idempotent guarded scratchpad
 deletable with guarded <code>${D:?}</code> paths after confirming main
 has them), <code>andqa.Lo6bOU</code> (Android, ~7 GB),
 <code>d7b.PybOvV</code> (empty), reviewer roots <code>rvroot</code>.</p>
-<h2 id="7-open-operator-decisions">7. Open operator decisions</h2>
+<h2 id="open-operator-decisions">7. Open operator decisions</h2>
 <p>Decided 2026-11-05: SonarQube = on-demand QA service with minimal
 tokens; prune scope (section 6); Prometheus LAN-only; live S3 on Garage;
 throwaway pre-release tag test; Tauri confirm on URL change (done).
 Still open: tag form (default <code>v2.4.0</code>); horizontal-authz /
-second-LAN-host measurement; when the NAS drives are powered back
-on; Docker Hub access method for the SonarQube images (login, mirror, or
+second-LAN-host measurement; when the NAS drives are powered back on;
+Docker Hub access method for the SonarQube images (login, mirror, or
 wait).</p>
 <h2
-id="7a-operator-decisions-2026-11-12-answered-interactively-bg-opdec-2026-11-12">7a.
+id="a.-operator-decisions-2026-11-12-answered-interactively-bg-opdec-2026-11-12">7a.
 Operator decisions 2026-11-12 (answered interactively;
 BG-OPDEC-2026-11-12)</h2>
 <ol type="1">
 <li>Release: v2.4.2 pre-release is ALREADY published (tag + GitHub
-pre-release 2026-11-12); the Rev 20 "prepared, not tagged" text is
+pre-release 2026-11-12); the Rev 20 “prepared, not tagged” text is
 stale. Next release also a labelled pre-release until retest + manual
 QA.</li>
 <li>Redis limiter: outage falls back to in-memory tiers; /login and
 /register stay in-memory (branch fix/opdec-a, in progress).</li>
 <li>SECQ-1: apply netguard to the WebDAV storage-root client +
 CATALOGIZER_OUTBOUND_ALLOW_CIDRS (fix/opdec-b, in progress).</li>
-<li>R2-N7: another user's job id returns 403 (KEEP current; operator
+<li>R2-N7: another user’s job id returns 403 (KEEP current; operator
 chose 403 over the recommended 404).</li>
 <li>Roles: subset rule also compares role 2 (fix/opdec-a). 6. API image
 size 761 MB: accepted for now.</li>
