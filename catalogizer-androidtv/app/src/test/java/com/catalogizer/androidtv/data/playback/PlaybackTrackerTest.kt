@@ -74,10 +74,10 @@ class PlaybackTrackerTest {
 
         coVerify {
             api.startPlaybackSession(match { body ->
-                body["media_item_id"] == 42L &&
-                body["file_id"] == 7L &&
-                body["position_unit"] == "pages" &&
-                body["start_position"] == 100L
+                body.media_item_id == 42L &&
+                body.file_id == 7L &&
+                body.position_unit == "pages" &&
+                body.start_position == 100L
             })
         }
     }
@@ -94,7 +94,7 @@ class PlaybackTrackerTest {
 
         coVerify {
             api.startPlaybackSession(match { body ->
-                !body.containsKey("file_id")
+                body.file_id == null
             })
         }
     }
@@ -111,8 +111,8 @@ class PlaybackTrackerTest {
 
         coVerify {
             api.startPlaybackSession(match { body ->
-                body["position_unit"] == "seconds" &&
-                body["start_position"] == 0L
+                body.position_unit == "seconds" &&
+                body.start_position == 0L
             })
         }
     }
@@ -222,10 +222,10 @@ class PlaybackTrackerTest {
         assertFalse(tracker.isActive())
         coVerify {
             api.endPlaybackSession(match { body ->
-                body["session_id"] == 10L &&
-                body["end_position"] == 3600L &&
-                body["total_amount"] == 3600L &&
-                body["completed"] == true
+                body.session_id == 10L &&
+                body.end_position == 3600L &&
+                body.total_amount == 3600L &&
+                body.completed == true
             })
         }
     }
@@ -345,9 +345,9 @@ class PlaybackTrackerTest {
 
         coVerify(atLeast = 1) {
             api.progressPlaybackSession(match { body ->
-                body["session_id"] == 10L &&
-                body["end_position"] == 500L &&
-                body["total_amount"] == 500L
+                body.session_id == 10L &&
+                body.end_position == 500L &&
+                body.total_amount == 500L
             })
         }
         tracker.stopProgressTicker()
@@ -397,10 +397,10 @@ class PlaybackTrackerTest {
         advanceTimeBy(1100L)
 
         coVerify {
-            api.progressPlaybackSession(match { it["end_position"] == 100L })
+            api.progressPlaybackSession(match { it.end_position == 100L })
         }
         coVerify {
-            api.progressPlaybackSession(match { it["end_position"] == 200L })
+            api.progressPlaybackSession(match { it.end_position == 200L })
         }
         tracker.stopProgressTicker()
     }
@@ -457,7 +457,7 @@ class PlaybackTrackerTest {
         advanceTimeBy(2100L)
 
         coVerify {
-            api.progressPlaybackSession(match { it["end_position"] == 200L })
+            api.progressPlaybackSession(match { it.end_position == 200L })
         }
         tracker.stopProgressTicker()
     }

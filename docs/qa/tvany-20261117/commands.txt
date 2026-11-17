@@ -1,0 +1,8 @@
+All gradle runs: plain rootless podman eclipse-temurin:17-jdk (recorded deviation, §11.4.173/.76 UNCONFIRMED), one at a time:
+podman run --rm --userns=keep-id --memory=8g --cpus=4 -v <clone>:/work -v ~/Android/Sdk:/opt/sdk -v <gh>:/gh -e GRADLE_USER_HOME=/gh -e ANDROID_HOME=/opt/sdk -w /work/catalogizer-androidtv eclipse-temurin:17-jdk nice -n 10 ./gradlew --no-daemon --max-workers=1 <args>
+Untracked scratch (ignored, not committed): app/google-services.json (copy of .example), local.properties (sdk.dir=/opt/sdk).
+01 RED: original main code (git checkout of src/main) + RetrofitProxyGuardTest with an EMPTY ratchet + TvRetrofitWireResponseTest: 7 tests, 6 failed (guard + 5 wire).
+02 GREEN targeted on the fix: RetrofitProxyGuardTest, TvRetrofitWire*, PlaybackTrackerTest, MediaRepositoryTest, CatalogizerApiTest rc=0.
+03 mutants (guard only): getOverallStats response re-set to Map<String, Any> AND "getScans" (parseable) added to the ratchet -> guard RED: expected [getScans, recognizeMedia] but was [getOverallStats, recognizeMedia] (both directions; XML 03_..._result.xml).
+04 GREEN full :app:testDebugUnitTest rc=0: 1290 tests, 0 failures, 0 errors, 0 skipped (from result XML).
+Not run: request-body RED on the original (those methods cannot be loaded there: the guard RED shows them; the Body test cannot compile against the original types); live device/server.

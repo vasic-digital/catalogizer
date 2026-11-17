@@ -1,0 +1,139 @@
+openjdk version "17.0.21" 2026-10-20
+OpenJDK Runtime Environment Temurin-17.0.21+9 (build 17.0.21+9)
+OpenJDK 64-Bit Server VM Temurin-17.0.21+9 (build 17.0.21+9, mixed mode, sharing)
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.11.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :app
+WARNING: The option setting 'android.defaults.buildfeatures.buildconfig=true' is deprecated.
+The current default is 'false'.
+It will be removed in version 9.0 of the Android Gradle plugin.
+You can resolve this warning in Android Studio via `Refactor` > `Migrate BuildConfig to Gradle Build Files`
+Warning: SDK processing. This version only understands SDK XML versions up to 3 but an SDK XML file of version 4 was encountered. This can happen if you use versions of Android Studio and the command-line tools that were released at different times.
+
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugBuildConfig FROM-CACHE
+> Task :app:checkDebugAarMetadata
+> Task :app:injectCrashlyticsMappingFileIdDebug
+> Task :app:processDebugGoogleServices FROM-CACHE
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources FROM-CACHE
+> Task :app:packageDebugResources FROM-CACHE
+> Task :app:parseDebugLocalResources FROM-CACHE
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug FROM-CACHE
+> Task :app:processDebugMainManifest FROM-CACHE
+> Task :app:processDebugManifest FROM-CACHE
+> Task :app:processDebugManifestForPackage FROM-CACHE
+> Task :app:processDebugResources FROM-CACHE
+> Task :app:kaptGenerateStubsDebugKotlin
+> Task :app:kaptDebugKotlin
+> Task :app:compileDebugKotlin
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/DependencyContainer.kt:61:67 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/data/discovery/NetworkDiscoveryService.kt:180:34 Parameter 'attempt' is never used, could be renamed to _
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/data/sync/SyncService.kt:96:43 Parameter 'container' is never used
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/data/tv/ChannelProgramMapper.kt:96:65 Unnecessary non-null assertion (!!) on a non-null receiver of type Long
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/data/tv/ChannelProgramMapper.kt:98:94 Unnecessary non-null assertion (!!) on a non-null receiver of type Long
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/player/VLCPlayer.kt:434:17 Variable 'videoLayout' is never used
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/components/MediaCarousel.kt:71:42 'TvLazyRow(Modifier = ..., TvLazyListState = ..., PaddingValues = ..., Boolean = ..., Arrangement.Horizontal = ..., Alignment.Vertical = ..., Boolean = ..., PivotOffsets = ..., TvLazyListScope.() -> Unit): Unit' is deprecated. LazyRow will, by default, set the position of focused item while scrolling on Tv. BringIntoViewSpec should be used to control the position.
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/player/VLCPlayerActivity.kt:606:5 Parameter 'volume' is never used
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/player/VLCPlayerActivity.kt:609:5 Parameter 'onVolumeChange' is never used
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/category/CategoryBrowseScreen.kt:107:46 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/home/HomeScreen.kt:269:17 'TvLazyColumn(Modifier = ..., TvLazyListState = ..., PaddingValues = ..., Boolean = ..., Arrangement.Vertical = ..., Alignment.Horizontal = ..., Boolean = ..., PivotOffsets = ..., TvLazyListScope.() -> Unit): Unit' is deprecated. LazyColumn will, by default, set the position of focused item while scrolling on Tv. BringIntoViewSpec should be used to control the position.
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/login/LoginScreen.kt:96:73 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/login/LoginScreen.kt:139:9 Variable 'accentGlow' is never used
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/login/LoginScreen.kt:157:13 Variable 'elevation' is never used
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/login/LoginScreen.kt:525:13 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/login/LoginScreen.kt:819:13 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/login/LoginScreen.kt:879:44 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/media/MediaDetailScreen.kt:322:21 Variable 'isBookLeaf' is never used
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/media/MediaDetailScreen.kt:383:58 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/media/MediaDetailScreen.kt:516:82 'MenuBook: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.MenuBook
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/media/MediaDetailScreen.kt:661:70 'TvLazyRow(Modifier = ..., TvLazyListState = ..., PaddingValues = ..., Boolean = ..., Arrangement.Horizontal = ..., Alignment.Vertical = ..., Boolean = ..., PivotOffsets = ..., TvLazyListScope.() -> Unit): Unit' is deprecated. LazyRow will, by default, set the position of focused item while scrolling on Tv. BringIntoViewSpec should be used to control the position.
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/player/MediaPlayerScreen.kt:296:50 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/player/MediaPlayerScreen.kt:359:29 'LinearProgressIndicator(Float, Modifier = ..., Color = ..., Color = ..., StrokeCap = ...): Unit' is deprecated. Use the overload that takes `progress` as a lambda
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/search/SearchScreen.kt:67:5 Parameter 'onNavigateBack' is never used
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/search/SearchScreen.kt:78:9 Variable 'scope' is never used
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/settings/SettingsScreen.kt:220:13 'TvLazyColumn(Modifier = ..., TvLazyListState = ..., PaddingValues = ..., Boolean = ..., Arrangement.Vertical = ..., Alignment.Horizontal = ..., Boolean = ..., PivotOffsets = ..., TvLazyListScope.() -> Unit): Unit' is deprecated. LazyColumn will, by default, set the position of focused item while scrolling on Tv. BringIntoViewSpec should be used to control the position.
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/viewer/BookReaderScreen.kt:388:38 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/viewer/ComicReaderScreen.kt:384:38 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/viewer/ImageViewerScreen.kt:360:38 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/utils/FormatUtils.kt:84:27 'capitalize(): String' is deprecated. Use replaceFirstChar instead.
+
+> Task :app:javaPreCompileDebug FROM-CACHE
+> Task :app:compileDebugJavaWithJavac
+> Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:kaptGenerateStubsDebugUnitTestKotlin
+> Task :app:kaptDebugUnitTestKotlin
+> Task :app:compileDebugUnitTestKotlin
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/local/ConvertersTest.kt:16:26 Unnecessary non-null assertion (!!) on a non-null receiver of type String
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/local/ConvertersTest.kt:17:26 Unnecessary non-null assertion (!!) on a non-null receiver of type String
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/local/ConvertersTest.kt:26:38 Unnecessary non-null assertion (!!) on a non-null receiver of type List<String>
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/local/ConvertersTest.kt:27:37 Unnecessary non-null assertion (!!) on a non-null receiver of type List<String>
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/local/ConvertersTest.kt:28:40 Unnecessary non-null assertion (!!) on a non-null receiver of type List<String>
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/local/ConvertersTest.kt:71:43 Unnecessary non-null assertion (!!) on a non-null receiver of type List<ExternalMetadata>
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/local/ConvertersTest.kt:72:38 Unnecessary non-null assertion (!!) on a non-null receiver of type List<ExternalMetadata>
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/local/ConvertersTest.kt:73:43 Unnecessary non-null assertion (!!) on a non-null receiver of type List<ExternalMetadata>
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/local/ConvertersTest.kt:94:39 Unnecessary non-null assertion (!!) on a non-null receiver of type List<MediaVersion>
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/local/ConvertersTest.kt:95:38 Unnecessary non-null assertion (!!) on a non-null receiver of type List<MediaVersion>
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/local/ConvertersTest.kt:96:46 Unnecessary non-null assertion (!!) on a non-null receiver of type List<MediaVersion>
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryTest.kt:232:13 Variable 'isFavorite' is never used
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryTest.kt:262:13 Variable 'isFavorite' is never used
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/tv/CatalogizerTvProviderImplTest.kt:71:13 Variable 'result' is never used
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/tv/WatchNextManagerTest.kt:10:9 Name contains characters which can cause problems on Windows: %
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/tv/WatchNextManagerTest.kt:34:9 Name contains characters which can cause problems on Windows: %
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/tv/WatchNextManagerTest.kt:41:9 Name contains characters which can cause problems on Windows: %
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/tv/WatchNextManagerTest.kt:65:9 Name contains characters which can cause problems on Windows: %
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/tv/WatchNextManagerTest.kt:71:9 Name contains characters which can cause problems on Windows: %
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/ui/screens/login/LoginScreenSafeTest.kt:50:13 Variable 'password' is never used
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/ui/screens/login/LoginScreenSafeTest.kt:67:13 Variable 'password' is never used
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/ui/screens/media/MediaDetailScreenTest.kt:301:30 Variable 'error' initializer is redundant
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/ui/screens/media/MediaDetailScreenTest.kt:302:25 Variable 'isLoading' initializer is redundant
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/ui/screens/player/MediaPlayerScreenTest.kt:144:29 Variable 'showSpeedMenu' initializer is redundant
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/ui/screens/player/MediaPlayerScreenTest.kt:145:29 Variable 'showAudioMenu' initializer is redundant
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/ui/screens/player/MediaPlayerScreenTest.kt:146:32 Variable 'showSubtitleMenu' initializer is redundant
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/ui/screens/player/MediaPlayerScreenTest.kt:159:29 Variable 'showSpeedMenu' initializer is redundant
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/ui/screens/player/MediaPlayerScreenTest.kt:160:29 Variable 'showAudioMenu' initializer is redundant
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/ui/screens/player/MediaPlayerScreenTest.kt:161:32 Variable 'showSubtitleMenu' initializer is redundant
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/ui/screens/player/MediaPlayerScreenTest.kt:174:29 Variable 'showSpeedMenu' initializer is redundant
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/ui/screens/player/MediaPlayerScreenTest.kt:175:29 Variable 'showAudioMenu' initializer is redundant
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/ui/screens/player/MediaPlayerScreenTest.kt:176:32 Variable 'showSubtitleMenu' initializer is redundant
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/ui/screens/player/MediaPlayerScreenTest.kt:196:13 The value 'false' assigned to 'var showAudioMenu: Boolean defined in com.catalogizer.androidtv.ui.screens.player.MediaPlayerScreenTest.`back key closes menus before navigating`' is never used
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/ui/screens/player/MediaPlayerScreenTest.kt:197:13 The value 'false' assigned to 'var showSubtitleMenu: Boolean defined in com.catalogizer.androidtv.ui.screens.player.MediaPlayerScreenTest.`back key closes menus before navigating`' is never used
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/ui/screens/player/MediaPlayerScreenTest.kt:214:13 The value 'false' assigned to 'var showSpeedMenu: Boolean defined in com.catalogizer.androidtv.ui.screens.player.MediaPlayerScreenTest.`back key navigates when no menus open`' is never used
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/ui/screens/player/MediaPlayerScreenTest.kt:215:13 The value 'false' assigned to 'var showAudioMenu: Boolean defined in com.catalogizer.androidtv.ui.screens.player.MediaPlayerScreenTest.`back key navigates when no menus open`' is never used
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/ui/screens/player/MediaPlayerScreenTest.kt:216:13 The value 'false' assigned to 'var showSubtitleMenu: Boolean defined in com.catalogizer.androidtv.ui.screens.player.MediaPlayerScreenTest.`back key navigates when no menus open`' is never used
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/ui/screens/player/MediaPlayerScreenTest.kt:331:36 Variable 'streamError' initializer is redundant
+w: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/ui/screens/player/MediaPlayerScreenTest.kt:332:27 Variable 'resolvedUrl' initializer is redundant
+
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileDebugUnitTest FROM-CACHE
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets FROM-CACHE
+> Task :app:packageDebugUnitTestForUnitTest FROM-CACHE
+> Task :app:generateDebugUnitTestConfig
+> Task :app:processDebugJavaRes
+> Task :app:processDebugUnitTestJavaRes
+> Task :app:restoreOutputDirRoborazzi SKIPPED
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+> Task :app:testDebugUnitTest
+
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+> Task :app:finalizeTestRoborazziDebug SKIPPED
+[Incubating] Problems report is available at: file:///work/catalogizer-androidtv/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.11.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 4m 54s
+32 actionable tasks: 18 executed, 14 from cache
+rc=0

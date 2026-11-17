@@ -12,8 +12,8 @@ import retrofit2.Retrofit
 
 /**
  * ANDROID-RETROFIT-MAP-1 guard for the TV client: every method must be accepted by a real Retrofit proxy
- * (a `Map<String, Any>` @Body without @JvmSuppressWildcards throws at call time), and no new un-parseable method may appear beyond the tracked ratchet list below
- * (RFM-R1-4: this sentence was truncated before).
+ * (a `Map<String, Any>` @Body or response throws at call time), and no new un-parseable method may appear beyond the
+ * tracked ratchet list below.
  */
 class RetrofitProxyGuardTest {
     private lateinit var server: MockWebServer
@@ -32,26 +32,17 @@ class RetrofitProxyGuardTest {
     fun tearDown() = server.shutdown()
 
     /**
-     * Ratchet: methods known to be un-callable today (tracked as ANDROID-RETROFIT-RESPONSE-ANY-1: they use
-     * `Map<String, Any>` in a body or response position, which the kotlinx converter cannot serialise). The test
-     * fails if ANY other method is un-parseable, and also if a listed method has become parseable (shrink the list).
+     * Ratchet: methods known to be un-callable today, each with its reason. Fixed in ANDROID-RETROFIT-RESPONSE-ANY-1 (typed
+     * request models / JsonObject responses): addFavorite, addPlaylistItem, createPlaylist, endPlaybackSession, getCollection,
+     * getCollections, getOverallStats, getPlaylists, getScans, getSubtitleLanguages, getSubtitles, listFavorites,
+     * progressPlaybackSession, startPlaybackSession. The remaining one is pinned, NOT deleted (§11.4.122):
+     * `recognizeMedia` has NO server route (docs/qa/client-route-drift-20261117/REPORT.md, AFAV-11), so there is no real
+     * request/response shape to type; it keeps `Map<String, Any>` and stays un-parseable until AFAV-11 is decided
+     * (route added, or the client method removed by an operator decision). The test fails if ANY other method is
+     * un-parseable, and also if the listed one becomes parseable (shrink the list).
      */
     private val knownBroken = setOf(
-        "addFavorite",
-        "addPlaylistItem",
-        "createPlaylist",
-        "endPlaybackSession",
-        "getCollection",
-        "getCollections",
-        "getOverallStats",
-        "getPlaylists",
-        "getScans",
-        "getSubtitleLanguages",
-        "getSubtitles",
-        "listFavorites",
-        "progressPlaybackSession",
-        "recognizeMedia",
-        "startPlaybackSession"
+        "recognizeMedia"
     )
 
     @Test
