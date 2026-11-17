@@ -1,0 +1,8 @@
+bash -n: parse-clean
+      1 SC2016 (info)
+      2 SC2086 (info)
+      1 SC2317 (info)
+      1 SC2329 (info)
+run1: 251 UNIT-PASS, gate-logic failures: 0, real	20m58.783s
+run2: 251 UNIT-PASS, gate-logic failures: 0, real	20m41.041s
+run3: 251 UNIT-PASS, gate-logic failures: 0, real	19m42.948s

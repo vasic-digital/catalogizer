@@ -1,0 +1,142 @@
+#!/usr/bin/env python3
+# Minimal stdlib RFC6455 client used by LIVE_WS_CHECK.sh.txt (no websocat needed).
+# Modes: handshake (prints HTTP status, closes) | hold (after 101: ping/pong liveness proof, then read until
+# close frame / EOF / --max-seconds / SIGTERM; then, if the socket is still open, sends a FINAL ping and reports
+# whether a pong came back as final_pong). Last stdout line is one JSON object.
+# The upgrade response is validated: status 101 AND a correct Sec-WebSocket-Accept, else handshake=0 (no observation).
+# Server frames with the mask bit set are unmasked (tolerated). Timing: close_epoch is time.time() when the close
+# frame / EOF was received by this process (same host clock as the caller's markers).
+# Secrets: the ticket may be passed by env (--ticket-env NAME), so it never appears in argv; the query is never echoed.
+# Env INSECURE=1 disables TLS verification (test hosts only).
+import argparse, base64, hashlib, json, os, signal, socket, ssl, struct, time
+from urllib.parse import urlsplit
+
+GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+STOP = False
+def _term(*_):
+    global STOP
+    STOP = True
+
+def parse(buf):
+    """-> (op, payload, rest) or None if incomplete."""
+    if len(buf) < 2: return None
+    op = buf[0] & 0x0F; masked = bool(buf[1] & 0x80); ln = buf[1] & 0x7F; off = 2
+    if ln == 126:
+        if len(buf) < 4: return None
+        ln = struct.unpack(">H", buf[2:4])[0]; off = 4
+    elif ln == 127:
+        if len(buf) < 10: return None
+        ln = struct.unpack(">Q", buf[2:10])[0]; off = 10
+    mk = b""
+    if masked:
+        if len(buf) < off + 4: return None
+        mk = buf[off:off + 4]; off += 4
+    if len(buf) < off + ln: return None
+    pl = buf[off:off + ln]
+    if masked: pl = bytes(b ^ mk[i % 4] for i, b in enumerate(pl))
+    return op, pl, buf[off + ln:]
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("url"); ap.add_argument("--origin", default="")
+    ap.add_argument("--mode", choices=["handshake", "hold"], default="handshake")
+    ap.add_argument("--max-seconds", type=float, default=60)
+    ap.add_argument("--ready-file", default="")
+    ap.add_argument("--ticket-env", default="", help="name of an env var holding the ws ticket (appended as ?ticket=)")
+    a = ap.parse_args()
+    signal.signal(signal.SIGTERM, _term)
+    res = {"handshake": 0, "alive": False, "close_code": None, "close_reason": None,
+           "close_epoch": None, "end": "error", "frames": 0, "final_pong": None}
+    try:
+        u = urlsplit(a.url); tls = u.scheme in ("wss", "https")
+        port = u.port or (443 if tls else 80)
+        q = u.query
+        if a.ticket_env:
+            t = os.environ.get(a.ticket_env, "")
+            if not t: res["end"] = "error:no-ticket-in-env"; return res
+            q = (q + "&" if q else "") + "ticket=" + t
+        s = socket.create_connection((u.hostname, port), timeout=10)
+        if tls:
+            ctx = ssl.create_default_context()
+            if os.environ.get("INSECURE") == "1":
+                ctx.check_hostname = False; ctx.verify_mode = ssl.CERT_NONE
+            s = ctx.wrap_socket(s, server_hostname=u.hostname)
+        path = (u.path or "/") + ("?" + q if q else "")
+        key = base64.b64encode(os.urandom(16)).decode()
+        req = ("GET %s HTTP/1.1\r\nHost: %s\r\nConnection: Upgrade\r\nUpgrade: websocket\r\n"
+               "Sec-WebSocket-Version: 13\r\nSec-WebSocket-Key: %s\r\n" % (path, u.netloc, key))
+        if a.origin: req += "Origin: %s\r\n" % a.origin
+        s.sendall((req + "\r\n").encode())
+        buf = b""; s.settimeout(10)
+        while b"\r\n\r\n" not in buf:
+            c = s.recv(4096)
+            if not c: break
+            buf += c
+        head, _, buf = buf.partition(b"\r\n\r\n")
+        try: status = int(head.split(b" ", 2)[1])
+        except Exception: status = 0
+        if status == 101:
+            want = base64.b64encode(hashlib.sha1((key + GUID).encode()).digest()).decode()
+            got = ""
+            for line in head.split(b"\r\n")[1:]:
+                k, _, v = line.partition(b":")
+                if k.strip().lower() == b"sec-websocket-accept": got = v.strip().decode("latin1")
+            if got != want:
+                res["end"] = "bad-accept"; return res  # handshake stays 0: no valid observation
+        res["handshake"] = status
+        if status != 101 or a.mode == "handshake":
+            res["end"] = "handshake-only" if status == 101 else "refused"
+            return res
+        def send(op, payload=b""):
+            m = os.urandom(4)
+            s.sendall(bytes([0x80 | op, 0x80 | len(payload)]) + m + bytes(b ^ m[i % 4] for i, b in enumerate(payload)))
+        def drain(want_final):
+            """consume complete frames from buf; returns True if the connection ended (close frame)."""
+            nonlocal buf
+            while True:
+                p = parse(buf)
+                if p is None: return False
+                op, pl, buf = p; res["frames"] += 1
+                if op == 10:
+                    if want_final and pl == b"f": res["final_pong"] = True
+                    elif not want_final: 
+                        res["alive"] = True
+                        if a.ready_file: open(a.ready_file, "w").write(str(time.time()))
+                elif op == 9: send(10, pl)
+                elif op == 8:
+                    res["close_epoch"] = time.time(); res["end"] = "close"
+                    if len(pl) >= 2: res["close_code"] = struct.unpack(">H", pl[:2])[0]
+                    res["close_reason"] = pl[2:].decode("utf-8", "replace")
+                    return True
+        send(9, b"p")  # ping: a pong proves the server side is alive
+        deadline = time.time() + a.max_seconds; s.settimeout(0.5)
+        while time.time() < deadline and not STOP:
+            if drain(False): return res
+            try:
+                c = s.recv(4096)
+            except socket.timeout:
+                continue
+            if not c:
+                res["close_epoch"] = time.time(); res["end"] = "eof"; return res
+            buf += c
+        res["end"] = "stopped" if STOP else "timeout"
+        # final liveness proof: socket still open at the end must answer a fresh ping
+        try:
+            send(9, b"f"); fin = time.time() + 3; res["final_pong"] = False
+            while time.time() < fin:
+                if drain(True): res["final_pong"] = False; return res  # closed meanwhile (end=close recorded)
+                if res["final_pong"]: break
+                try:
+                    c = s.recv(4096)
+                except socket.timeout:
+                    continue
+                if not c: res["close_epoch"] = time.time(); res["end"] = "eof"; break
+                buf += c
+        except OSError:
+            res["final_pong"] = False
+    except Exception as e:
+        res["end"] = "error:" + type(e).__name__
+    return res
+
+if __name__ == "__main__":
+    print(json.dumps(main()))

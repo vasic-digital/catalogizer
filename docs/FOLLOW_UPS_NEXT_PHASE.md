@@ -3511,6 +3511,9 @@ DO NOT use LIVE_WS_CHECK for the live G4 run until N1-N4 are fixed (they are rep
 - SECWS1F3D-N4 (must-fix): `probe-killed` scenario does not test R3-2 (victim already closed at kill; kill hits wrapper only); reverting L215 survives. Use reviewer's killprobe2.py approach.
 - SECWS1F3D-N5: SUSPEND_CMD in bash -c argv and saved output may leak admin token; pass via env, warn. N6: label prints `null` not `none`. N7: README "20 PASS" counts only top-level (-v has 28).
 - Reviewer repro files: /home/milosvasic/.cache/claude-tmp/r4review_secws1f3/ (myrun.sh, mock2.py, killprobe2.py).
+
+## secws1f3e fixes of round 4 (Sonnet author, round 5 = final round of the budget, PROVISIONAL; NOT live evidence)
+N1-N7 fixed in docs/qa/secws1f3-20261117/ on branch secws1f3e (see its README "Round 5"): JWT lifetime recomputed at the marker + SUSPEND_TIMEOUT bound (N1); SUSPEND_CMD start/return epochs, close-return <= bound < close-start INCONCLUSIVE (N2); sanitized results lines + `inject` scenario (N3); probe-killed2 + named mutants M-N4/M-N1N2/M-N2/M-N3 (N4); SUSPEND_CMD via env, output discarded by default, strace needle check 0 vs round-4 1 (N5); `none` label (N6); README counts 20 top-level / 28 with subtests (N7). Gate-logic suite 64 UNIT-PASS / 0 fail (RUN_SLOW=1). Honest limits: N1 alone is not independently killed by any scenario (N2 covers the same expiry close); a secret in SUSPEND_CMD is still readable via /proc/<pid>/environ; one unexplained first-run `short-exp` login failure (3 later runs green, UNCONFIRMED cause). Script still never run against a real server; G4 live part stays OPEN.
 ## g1fixfu3 (STRUCTURAL round, §11.4.276(E) / §11.4.250, PROVISIONAL, branch g1fixfu3)
 - Supersedes the g1fixfu2 branch's claims. Its "CLOSED class-wise" lines for G1FIXFU-R1-F1 and F3 were false: reviewer survivors X1 (index-assign via Interface+len inside routeChainFuncNames; runtime 401 to 200 bypass, AuthSurface suite still PASS), X9h (rebind of the allow-listed `walk` var), X10 (allow-listed helper funcIdentity doing reflect Set), X2/X3 (a body in main_routedump_off.go that walks the engine first), X4 (//go:linkname) and X5b (method value/expression of reflect Value.Call) showed that an AST name scanner cannot prove the two hook bodies read-only. The g1fixfu2 branch is not merged; do not treat its F1/F3 text as proven.
 - Redesign: the engine-walking code is not in the shipped binary at all. routeChainFuncNames, funcIdentity, routeChain, routeHandler (all reflect/unsafe route-dump code) are in main_routechains.go with `//go:build routedump`; routeDumpHook in the default build (main_routedump_off.go) must have an empty body in a file that holds nothing else. Unit tests keep a byte-identical copy in main_routechains_test.go (`!routedump`, _test.go, never shipped); TestRouteChainsLockstep refuses any difference.
@@ -3760,3 +3763,19 @@ Wizard SystemInfo copied os.Environ() with a password/secret/token deny-list. Re
 - WIZENV1-R-N1 (nit): `wizenv1_test.go:19` discards the `json.Marshal` error.
 - WIZENV1-R-N2 (nit): README "count=3" claim and RED-versus-mutant wording; capture -v with -count=3.
 - WIZENV1-R-D1 (operator decision, §11.4.124): `ConfigurationWizardService` is unwired (never routed per `git log -S`) but actively maintained (16 commits); wire it with this allow-list and a real-router test, or remove with this history as evidence. Not removed.
+## SECWS1F3F round 7 (2026-11-17) — fixes of the round-6 review (PROVISIONAL; awaiting independent review round 2)
+I1 (no -k unless INSECURE=1, non-https non-loopback BASE refused), I2 (.session_token first, mock returns the real AuthResult shape), M1 (RV1-RV6/RV8 adopted, all killed; mock modes susp-500/noexp/legacy-token), M2 (setsid + process-group kill, /dev/tty unreachable), M3 (>=1 for F3_BOUND/SUSPEND_TIMEOUT, F3_EXP_MARGIN 0 explicit), M4 (WP/CP/SP cleared), N1 (anchored F3 grep), N2 (VICTIM_REFUSED_STATUS validated, userinfo stripped from evidence). Not addressed: san lookalike (confusables). Evidence docs/qa/secws1f3f-20261117/ (green_run1..3 251/0 each). Script stays DO-NOT-USE for live G4 until reviewed; live-only unknowns unchanged.
+
+## SECWS1F3F review follow-ups (Opus review round 2, GO-with-follow-ups, 2026-11-17)
+
+Reviewer cleared the DO-NOT-USE marker for the live G4 run under conditions: BASE is https with no userinfo, INSECURE unset, SERVER_PID and SERVER_EXE_SHA256 supplied, VICTIM_REFUSED_STATUS set to the real 4xx. The run does not satisfy all of G4 (web/Android-through-edge leg, F1 and audience leg remain open). Still gate-logic evidence only until run live.
+
+- SECWS1F3F-R-1 (minor, test-instrumentation, X1): mutant `2??)` -> `9??)` at LIVE_WS_CHECK.sh.txt:263 survives; add mock mode `ticket-ok` (login 403, mint 200) expecting INCONCLUSIVE.
+- SECWS1F3F-R-2 (minor, test-instrumentation, X2): non-F3 checks (reuse, unauthenticated refused, invalid JWT, bad Origin; script :193-209) are not discriminated by the mock suite; add violating mock modes and per-record assertions.
+- SECWS1F3F-R-3 (minor, test-instrumentation, X3): add JWT-header/ticket needle grep over $OUT to the suite (echo-token mutant survives).
+- SECWS1F3F-R-4 (minor source): ws_probe.py.txt:67 Host header and :173 default ORIGIN carry BASE userinfo; use host:port only.
+- SECWS1F3F-R-5 (minor source): loopback_host accepts out-of-range octets (127.0.0.999); limit octets to 0-255.
+- SECWS1F3F-R-6 (nit): `read -ra <<<` reads only first line of VICTIM_REFUSED_STATUS.
+- SECWS1F3F-R-7 (nit): uppercase HTTPS:// refused (conservative).
+- SECWS1F3F-R-8 (process-doc): README.md:10 grandchild claim unconditional (setsid escapes); a 5xx listed in VICTIM_REFUSED_STATUS could be read as proof.
+- SECWS1F3F-R-9 (process-doc): README.md:99-100 shellcheck list incomplete (also SC2086 x2, SC2329).

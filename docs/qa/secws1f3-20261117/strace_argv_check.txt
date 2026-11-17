@@ -1,11 +1,23 @@
-strace -f -e trace=execve argv check of LIVE_WS_CHECK.sh.txt run (round 4), GATE-LOGIC mock target (NOT live evidence). Passwords carried as needles PWneedleADMIN9 / PWneedleVICT7.
-execve lines captured: 81
-needle 'PWneedleADMIN9': argv hits=0 ; script stdout/log+out files hits=0
-needle 'PWneedleVICT7': argv hits=0 ; script stdout/log+out files hits=0
-needle 'eyJhbGciOiJub25l': argv hits=0 ; script stdout/log+out files hits=0
-needle 'Bearer ': argv hits=0 ; script stdout/log+out files hits=0
-ticket-shaped value in argv: 0
-POSITIVE control 1 (instrument sees argv): BASE url in argv hits=17 (>0 expected)
-POSITIVE control 2 (deliberate credential in argv: bash -c 'true PWneedleADMIN9'): hits=1 (>=1 expected)
+strace -f -e trace=execve argv check (round 5), GATE-LOGIC mock target (NOT live evidence). Needles: PWneedleADMIN9 / PWneedleVICT7 (passwords), SUSPNEEDLE5 (secret placed in SUSPEND_CMD text, travels via env in round 5). NEW script first, then the round-4 script for contrast.
+execve lines captured: 163
+needle 'PWneedleADMIN9': argv hits=0 ; script stdout/log+evidence files hits=0
+needle 'PWneedleVICT7': argv hits=0 ; script stdout/log+evidence files hits=0
+needle 'SUSPNEEDLE5': argv hits=0 ; script stdout/log+evidence files hits=0
+needle 'eyJhbGciOiJub25l': argv hits=0 ; script stdout/log+evidence files hits=0
+needle 'Bearer ': argv hits=0 ; script stdout/log+evidence files hits=0
+POSITIVE control 1 (instrument sees argv): BASE url in argv hits=16 (>0 expected)
+POSITIVE control 2 (deliberate needle in argv: bash -c 'true SUSPNEEDLE5'): hits=1 (>=1 expected)
+NEGATIVE control (fabricated needle never used): hits=0 (0 expected)
+run result: summary: PASS=5 FAIL=0 INCONCLUSIVE=1
+
+ROUND-4 SCRIPT (ROUND4_SUPERSEDED_LIVE_WS_CHECK.sh.txt), same harness, for contrast (the needle SUSPNEEDLE5 in SUSPEND_CMD leaked into argv: hits=1):
+execve lines captured: 82
+needle 'PWneedleADMIN9': argv hits=0 ; script stdout/log+evidence files hits=0
+needle 'PWneedleVICT7': argv hits=0 ; script stdout/log+evidence files hits=0
+needle 'SUSPNEEDLE5': argv hits=1 ; script stdout/log+evidence files hits=0
+needle 'eyJhbGciOiJub25l': argv hits=0 ; script stdout/log+evidence files hits=0
+needle 'Bearer ': argv hits=0 ; script stdout/log+evidence files hits=0
+POSITIVE control 1 (instrument sees argv): BASE url in argv hits=16 (>0 expected)
+POSITIVE control 2 (deliberate needle in argv: bash -c 'true SUSPNEEDLE5'): hits=1 (>=1 expected)
 NEGATIVE control (fabricated needle never used): hits=0 (0 expected)
 run result: summary: PASS=5 FAIL=0 INCONCLUSIVE=1

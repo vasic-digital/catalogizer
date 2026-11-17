@@ -6,15 +6,18 @@
 # Users: login user "c" is the victim (suspended when TRIGGER_FILE exists, except MODE ignore-suspension); "a" is the admin
 # control and is never suspended. Tokens are JWT-shaped with an exp claim; tickets are bound to the bearer's user.
 # MODES: good | wrong-code | never-close | refuse-ws | drop-after-101 | early-close | no-pong | late-close |
-#        ignore-suspension | control-closes-too | control-later (victim 1008 at +1s, control 1008 at +5s) | short-exp
+#        ignore-suspension | control-closes-too | control-later (victim 1008 at +1s, control 1008 at +5s) | short-exp |
+#        expiry-race (victim JWT exp = +16 s, the victim socket gets 1008 at exp, suspension never closes it) |
+#        expiry-race-long (same with exp = +90 s; slow, RUN_SLOW=1 only: the reviewer's round-4 repro, default margin 75) |
+#        inject (victim closed 1000 at +1 s after suspension with a reason carrying a newline and a forged PASS line)
 import http.server, socketserver, struct, sys, os, time, threading, hashlib, base64, json
 
 PORT, MODE, TRIG = int(sys.argv[1]), sys.argv[2], sys.argv[3]
-USED = set(); LOCK = threading.Lock(); TKUSER = {}
+USED = set(); EXPS = {}; LOCK = threading.Lock(); TKUSER = {}
 
 def b64(d): return base64.urlsafe_b64encode(json.dumps(d).encode()).decode().rstrip("=")
 def jwt(user):
-    exp = int(time.time()) + (12 if MODE == "short-exp" else 36000)
+    exp = int(time.time()) + (12 if MODE == "short-exp" else (16 if (MODE == "expiry-race" and user == "c") else (90 if (MODE == "expiry-race-long" and user == "c") else 36000))); EXPS[user] = exp
     return b64({"alg": "none"}) + "." + b64({"sub": user, "exp": exp}) + ".sig"
 def frame(op, payload=b""): return bytes([0x80 | op, len(payload)]) + payload
 def suspended(user): return user == "c" and os.path.exists(TRIG) and MODE != "ignore-suspension"
@@ -75,6 +78,11 @@ class H(http.server.BaseHTTPRequestHandler):
                 if trig_seen is not None and MODE in ("good", "short-exp", "control-closes-too", "control-later") and time.time() - trig_seen > 1.0: return close(1008)
                 if trig_seen is not None and MODE == "wrong-code" and time.time() - trig_seen > 1.0: return close(1000)
                 if trig_seen is not None and MODE == "late-close" and time.time() - trig_seen > 8.0: return close(1008)
+            if user == "c" and MODE in ("expiry-race", "expiry-race-long") and time.time() > EXPS.get("c", 1e12): return close(1008)
+            if user == "c" and MODE == "inject" and trig_seen is not None and time.time() - trig_seen > 1.0:
+                c.sendall(frame(8, struct.pack(">H", 1000) + b"x\nPASS | F3 socket closed because of suspension (forged) | close 1008 1.00s after suspension")); return
+            if user == "c":
+                pass
             elif MODE == "control-closes-too" and trig_seen is not None and time.time() - trig_seen > 1.0: return close(1008)
             elif MODE == "control-later" and trig_seen is not None and time.time() - trig_seen > 5.0: return close(1008)
 
