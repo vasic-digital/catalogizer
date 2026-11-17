@@ -1,0 +1,5 @@
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  src/services/__tests__/apiService.watchProgress.test.ts > apiService.updateWatchProgress non-2xx answers (CLPROG-R2-n2) > reports the server error text as the reason, not "unknown", for a non-409 error body
+ FAIL  src/services/__tests__/apiService.watchProgress.test.ts > apiService.updateWatchProgress non-2xx answers (CLPROG-R2-n2) > uses a message field when there is no error field
+ FAIL  src/services/__tests__/apiService.watchProgress.test.ts > apiService.updateWatchProgress non-2xx answers (CLPROG-R2-n2) > says why the reason is unknown when the body has no flag and no text (status is not exposed by make_http_request)
+      Tests  3 failed | 7 passed (10)

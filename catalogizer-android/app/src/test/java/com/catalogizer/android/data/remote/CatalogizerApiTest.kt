@@ -161,12 +161,12 @@ class CatalogizerApiTest {
     fun `rateMedia sends PUT media-id-rating with rating as JSON`() = runBlocking {
         mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody("{}"))
 
-        val result = api.rateMedia(9L, RatingRequest(4.5))
+        val result = api.rateMedia(9L, RatingRequest(4))
 
         assertTrue(result.isSuccessful)
         val recorded = mockWebServer.takeRequest()
         assertEquals("/media/9/rating", recorded.path)
-        assertEquals("""{"rating":4.5}""", recorded.body.readUtf8())
+        assertEquals("""{"rating":4}""", recorded.body.readUtf8())
     }
 
     // --- Guard: no method of the interface may be un-callable (ANDROID-RETROFIT-MAP-1) ---

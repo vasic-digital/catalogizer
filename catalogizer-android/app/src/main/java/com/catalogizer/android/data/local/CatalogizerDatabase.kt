@@ -18,8 +18,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.decodeFromString
 
 @Database(
-    entities = [MediaItem::class, SearchHistory::class, DownloadItem::class, SyncOperation::class, WatchProgress::class, Favorite::class],
-    version = 1,
+    entities = [MediaItem::class, SearchHistory::class, DownloadItem::class, SyncOperation::class, WatchProgress::class, Favorite::class, UserRating::class],
+    version = 2,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -34,17 +34,20 @@ abstract class CatalogizerDatabase : RoomDatabase() {
     abstract fun syncOperationDao(): SyncOperationDao
     abstract fun watchProgressDao(): WatchProgressDao
     abstract fun favoriteDao(): FavoriteDao
+    abstract fun userRatingDao(): UserRatingDao
 
     companion object {
         @Volatile
         private var INSTANCE: CatalogizerDatabase? = null
 
-        // Define migrations here as the schema evolves
+        /** v2: the per-user rating table (RATING1-R-F3). Must equal the createSql in schemas/.../2.json. */
+        const val CREATE_USER_RATINGS_SQL =
+            "CREATE TABLE IF NOT EXISTS `user_ratings` (`media_id` INTEGER NOT NULL, `rating` INTEGER NOT NULL, " +
+                "`updated_at` INTEGER NOT NULL, PRIMARY KEY(`media_id`))"
+
         val MIGRATION_1_2: Migration = object : Migration(1, 2) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                // No schema changes in version 2, but this shows the pattern
-                // For actual schema changes, add SQL statements here
-                // Example: database.execSQL("ALTER TABLE MediaItem ADD COLUMN new_column TEXT")
+                database.execSQL(CREATE_USER_RATINGS_SQL)
             }
         }
 

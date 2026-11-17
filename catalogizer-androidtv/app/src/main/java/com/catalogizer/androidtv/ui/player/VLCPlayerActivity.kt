@@ -216,26 +216,22 @@ class VLCPlayerActivity : ComponentActivity() {
         }
     }
     
-    private suspend fun saveWatchProgress() {
+    /** [final] = the save at destroy: it must complete even though the activity's lifecycle scope is cancelled. */
+    private suspend fun saveWatchProgress(final: Boolean = false) {
         if (mediaId <= 0) return
-        
+
         val currentPosition = vlcPlayer.currentPosition.value
         val duration = vlcPlayer.duration.value
-        
-        val container = com.catalogizer.androidtv.DependencyContainer.getInstance(this)
-        lastSavedProgress = com.catalogizer.androidtv.data.playback.WatchProgressTick.run(
-            lastSavedProgress, currentPosition, duration,
-        ) { progress, posMs, durMs ->
-            val outcome = container.mediaRepository.saveWatchProgress(
-                mediaId, progress, positionMs = posMs, durationMs = durMs,
-            )
-            if (outcome is com.catalogizer.androidtv.data.repository.WatchProgressOutcome.NotStored) {
-                Log.w(TAG, "Watch progress NOT stored by the server: ${outcome.reason}")
-            }
-            outcome
+
+        val repository = com.catalogizer.androidtv.DependencyContainer.getInstance(this).mediaRepository
+        val tick = com.catalogizer.androidtv.data.playback.WatchProgressTick
+        lastSavedProgress = if (final) {
+            tick.finalSave(repository, mediaId, lastSavedProgress, currentPosition, duration)
+        } else {
+            tick.runWith(repository, mediaId, lastSavedProgress, currentPosition, duration)
         }
     }
-    
+
     private fun showErrorAndFinish(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show()
         finish()
@@ -268,17 +264,22 @@ class VLCPlayerActivity : ComponentActivity() {
         val completed = durationSec > 0 &&
             finalPositionSec >= (durationSec - 5L) // within 5s of end
 
-        lifecycleScope.launch {
-            if (::playbackTracker.isInitialized && playbackTracker.isActive()) {
-                playbackTracker.end(
-                    endPosition = finalPositionSec,
-                    totalAmount = finalPositionSec,
-                    completed = completed,
-                )
+        // lifecycleScope is cancelled by the time onDestroy runs, so the final save, the tracker end and the player
+        // release run in their own scope and are not cancellable (CLPROG-R2-n1).
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Main)
+            .launch {
+                kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
+                    if (::playbackTracker.isInitialized && playbackTracker.isActive()) {
+                        playbackTracker.end(
+                            endPosition = finalPositionSec,
+                            totalAmount = finalPositionSec,
+                            completed = completed,
+                        )
+                    }
+                    saveWatchProgress(final = true)
+                    vlcPlayer.release()
+                }
             }
-            saveWatchProgress()
-            vlcPlayer.release()
-        }
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {

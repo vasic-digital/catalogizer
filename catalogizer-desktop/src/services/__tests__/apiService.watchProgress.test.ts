@@ -65,6 +65,35 @@ describe('apiService.updateWatchProgress result (WPROG3-FU-3)', () => {
   })
 })
 
+describe('apiService.updateWatchProgress non-2xx answers (CLPROG-R2-n2)', () => {
+  beforeEach(() => mockInvoke.mockReset())
+
+  it('reports the server error text as the reason, not "unknown", for a non-409 error body', async () => {
+    bodies(['{"success":false,"error":"invalid duration"}'])
+    const r = await apiService.updateWatchProgress(1, body)
+    expect(r.persisted).toBe(false)
+    expect(r.reason).toBe('invalid duration')
+  })
+
+  it('uses a message field when there is no error field', async () => {
+    bodies(['{"success":false,"message":"forbidden"}'])
+    expect((await apiService.updateWatchProgress(1, body)).reason).toBe('forbidden')
+  })
+
+  it('says why the reason is unknown when the body has no flag and no text (status is not exposed by make_http_request)', async () => {
+    bodies(['{}'])
+    const r = await apiService.updateWatchProgress(1, body)
+    expect(r.persisted).toBe(false)
+    expect(r.reason).toBe('no_persisted_flag_http_status_not_exposed')
+  })
+
+  it('does not retry a non-409 error', async () => {
+    const n = bodies(['{"success":false,"error":"nope"}'])
+    await apiService.updateWatchProgress(1, body)
+    expect(n()).toBe(1)
+  })
+})
+
 describe('msToSeconds (VLC ms to server seconds)', () => {
   it('converts milliseconds to seconds', () => {
     expect(msToSeconds(125000)).toBe(125)

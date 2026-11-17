@@ -199,6 +199,42 @@ class CatalogizerDatabaseTest {
         assertEquals(2, migrations[0].endVersion)
     }
 
+    @Test
+    fun `MIGRATION_1_2 creates user_ratings, keeps existing data, and matches the exported v2 schema`() {
+        val ctx = RuntimeEnvironment.getApplication()
+        val helper = androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory().create(
+            androidx.sqlite.db.SupportSQLiteOpenHelper.Configuration.builder(ctx)
+                .name(null)
+                .callback(object : androidx.sqlite.db.SupportSQLiteOpenHelper.Callback(1) {
+                    override fun onCreate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                        db.execSQL("CREATE TABLE `favorites` (`media_id` INTEGER NOT NULL, PRIMARY KEY(`media_id`))")
+                        db.execSQL("INSERT INTO favorites (media_id) VALUES (5)")
+                    }
+                    override fun onUpgrade(db: androidx.sqlite.db.SupportSQLiteDatabase, o: Int, n: Int) {}
+                })
+                .build()
+        )
+        val db = helper.writableDatabase
+
+        CatalogizerDatabase.MIGRATION_1_2.migrate(db)
+
+        db.execSQL("INSERT INTO user_ratings (media_id, rating, updated_at) VALUES (1, 9, 1)")
+        db.query("SELECT rating FROM user_ratings WHERE media_id = 1").use {
+            assertTrue(it.moveToFirst()); assertEquals(9, it.getInt(0))
+        }
+        db.query("SELECT media_id FROM favorites").use {
+            assertTrue(it.moveToFirst()); assertEquals(5L, it.getLong(0))
+        }
+        helper.close()
+
+        // the SQL the migration runs must be the SQL Room expects for v2 (exported schema)
+        val schema = java.io.File(
+            "schemas/com.catalogizer.android.data.local.CatalogizerDatabase/2.json"
+        ).readText()
+        val expected = CatalogizerDatabase.CREATE_USER_RATINGS_SQL.replace("`user_ratings`", "`\${TABLE_NAME}`")
+        assertTrue("v2 schema must contain the migration SQL", schema.contains(expected))
+    }
+
     // --- Singleton pattern ---
 
     @Test

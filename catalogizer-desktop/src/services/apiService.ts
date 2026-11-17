@@ -25,6 +25,18 @@ export interface WatchProgressResult {
 
 export const WATCH_PROGRESS_MAX_ATTEMPTS = 3;
 
+/**
+ * Why a progress save was not persisted. make_http_request returns only the body text (the HTTP status is not
+ * exposed to the webview), so the reason is the server's own text: reason, then error, then message; a body
+ * with none of them says so explicitly instead of reporting an unexplained failure (CLPROG-R2-n2).
+ */
+function failureReason(resp: { reason?: unknown; error?: unknown; message?: unknown } | null | undefined): string {
+  for (const v of [resp?.reason, resp?.error, resp?.message]) {
+    if (typeof v === 'string' && v !== '') return v;
+  }
+  return 'no_persisted_flag_http_status_not_exposed';
+}
+
 /** VLC reports milliseconds; the progress route takes seconds (floats are accepted). */
 export function msToSeconds(ms: number): number {
   return ms / 1000;
@@ -126,13 +138,14 @@ class ApiService {
   async updateWatchProgress(mediaId: number, progress: PlaybackProgress | { progress: number }): Promise<WatchProgressResult> {
     let last: WatchProgressResult = { persisted: false, attempts: 0 };
     for (let attempt = 1; attempt <= WATCH_PROGRESS_MAX_ATTEMPTS; attempt++) {
-      const resp = await this.makeRequest<{ persisted?: boolean; reason?: string } | null>(
+      const resp = await this.makeRequest<{ persisted?: boolean; reason?: string; error?: string; message?: string } | null>(
         `/media/${mediaId}/progress`,
         { method: 'PUT', body: progress },
       );
+      const persisted = resp?.persisted === true;
       last = {
-        persisted: resp?.persisted === true,
-        reason: resp?.reason,
+        persisted,
+        reason: persisted ? resp?.reason : failureReason(resp),
         attempts: attempt,
       };
       if (last.persisted || last.reason !== 'concurrent_update') {

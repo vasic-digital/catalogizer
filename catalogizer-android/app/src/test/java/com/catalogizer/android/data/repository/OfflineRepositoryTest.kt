@@ -141,20 +141,6 @@ class OfflineRepositoryTest {
         coVerify { mockSyncManager.queueFavoriteToggle(1L, false) }
     }
 
-    // --- Rate Media Offline Tests ---
-
-    @Test
-    fun `rateMediaOffline should update rating and queue sync`() = runTest {
-        coEvery { mockMediaDao.updateRating(any(), any()) } just Runs
-        coEvery { mockSyncManager.queueRatingUpdate(any(), any()) } just Runs
-
-        mockMediaDao.updateRating(1L, 4.5)
-        mockSyncManager.queueRatingUpdate(1L, 4.5)
-
-        coVerify { mockMediaDao.updateRating(1L, 4.5) }
-        coVerify { mockSyncManager.queueRatingUpdate(1L, 4.5) }
-    }
-
     // --- Storage Management Tests ---
 
     @Test

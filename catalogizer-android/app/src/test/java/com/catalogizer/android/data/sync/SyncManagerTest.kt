@@ -38,6 +38,8 @@ class SyncManagerTest {
 
     @Before
     fun setup() {
+        mockkStatic(android.util.Log::class) // the rating-drop paths log; android.util.Log is not mocked in plain unit tests
+        every { android.util.Log.w(any<String>(), any<String>()) } returns 0
         every { mockDatabase.syncOperationDao() } returns mockSyncOperationDao
         every { mockDatabase.mediaDao() } returns mockMediaDao
         syncManager = SyncManager(mockDatabase, mockApi, mockAuthRepository, mockMediaRepository, mockContext)
@@ -45,6 +47,7 @@ class SyncManagerTest {
 
     @After
     fun tearDown() {
+        unmockkStatic(android.util.Log::class)
         clearAllMocks()
     }
 
@@ -217,7 +220,7 @@ class SyncManagerTest {
 
     @Test
     fun `rating sync keeps the operation queued when the server answers non-2xx`() = runTest {
-        stubSyncPlumbing(syncOp(SyncOperationType.UPLOAD_RATING, """{"mediaId":1,"rating":4.5}"""))
+        stubSyncPlumbing(syncOp(SyncOperationType.UPLOAD_RATING, """{"mediaId":1,"rating":4.0}"""))
         coEvery { mockApi.rateMedia(any(), any()) } returns Response.error(401, errBody)
 
         val result = syncManager.performManualSync()
@@ -230,7 +233,7 @@ class SyncManagerTest {
 
     @Test
     fun `rating sync deletes the operation on 2xx`() = runTest {
-        stubSyncPlumbing(syncOp(SyncOperationType.UPLOAD_RATING, """{"mediaId":1,"rating":4.5}"""))
+        stubSyncPlumbing(syncOp(SyncOperationType.UPLOAD_RATING, """{"mediaId":1,"rating":4.0}"""))
         coEvery { mockApi.rateMedia(any(), any()) } returns Response.success(Unit)
 
         syncManager.performManualSync()
@@ -239,8 +242,56 @@ class SyncManagerTest {
     }
 
     @Test
+    fun `rating sync sends the rating as an integer`() = runTest {
+        stubSyncPlumbing(syncOp(SyncOperationType.UPLOAD_RATING, """{"mediaId":1,"rating":7.0}"""))
+        coEvery { mockApi.rateMedia(any(), any()) } returns Response.success(Unit)
+
+        syncManager.performManualSync()
+
+        coVerify { mockApi.rateMedia(1L, com.catalogizer.android.data.models.RatingRequest(7)) }
+    }
+
+    @Test
+    fun `rating sync drops a 400 at once instead of retrying (RATING1-R-F3)`() = runTest {
+        stubSyncPlumbing(syncOp(SyncOperationType.UPLOAD_RATING, """{"mediaId":1,"rating":4.0}"""))
+        coEvery { mockApi.rateMedia(any(), any()) } returns Response.error(400, errBody)
+
+        val result = syncManager.performManualSync()
+
+        coVerify { mockSyncOperationDao.deleteOperation(8L) }
+        coVerify(exactly = 0) { mockSyncOperationDao.updateRetryCount(any(), any()) }
+        assertEquals(0, result.failedItems)
+    }
+
+    @Test
+    fun `an old queued fractional rating is dropped without calling the server`() = runTest {
+        stubSyncPlumbing(syncOp(SyncOperationType.UPLOAD_RATING, """{"mediaId":1,"rating":4.5}"""))
+
+        syncManager.performManualSync()
+
+        coVerify(exactly = 0) { mockApi.rateMedia(any(), any()) }
+        coVerify { mockSyncOperationDao.deleteOperation(8L) }
+    }
+
+    @Test
+    fun `an old queued out-of-range rating is dropped without calling the server`() = runTest {
+        stubSyncPlumbing(syncOp(SyncOperationType.UPLOAD_RATING, """{"mediaId":1,"rating":11.0}"""))
+
+        syncManager.performManualSync()
+
+        coVerify(exactly = 0) { mockApi.rateMedia(any(), any()) }
+        coVerify { mockSyncOperationDao.deleteOperation(8L) }
+    }
+
+    @Test
+    fun `queueRatingUpdate refuses a rating outside 0 to 10`() = runTest {
+        val e = runCatching { syncManager.queueRatingUpdate(1L, 11) }.exceptionOrNull()
+        assertTrue(e is IllegalArgumentException)
+    }
+
+    @Test
     fun `rating sync at max retries drops the operation after a non-2xx (existing policy)`() = runTest {
-        stubSyncPlumbing(syncOp(SyncOperationType.UPLOAD_RATING, """{"mediaId":1,"rating":4.5}""").copy(retryCount = 99))
+        stubSyncPlumbing(syncOp(SyncOperationType.UPLOAD_RATING, """{"mediaId":1,"rating":4.0}""").copy(retryCount = 99))
         coEvery { mockApi.rateMedia(any(), any()) } returns Response.error(500, errBody)
 
         syncManager.performManualSync()
@@ -253,7 +304,7 @@ class SyncManagerTest {
         coEvery { mockSyncOperationDao.insertOperation(any()) } returns 1L
         coEvery { mockSyncOperationDao.getPendingOperationsCount() } returns 1
 
-        syncManager.queueRatingUpdate(1L, 4.5)
+        syncManager.queueRatingUpdate(1L, 4)
 
         coVerify {
             mockSyncOperationDao.insertOperation(match {

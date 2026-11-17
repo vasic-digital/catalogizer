@@ -1,0 +1,30 @@
+       |                                                                    ^
+     81|   })
+     82| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/services/__tests__/apiService.watchProgress.test.ts > apiService.updateWatchProgress non-2xx answers (CLPROG-R2-n2) > says why the reason is unknown when the body has no flag and no text (status is not exposed by make_http_request)
+AssertionError: expected undefined to be 'no_persisted_flag_http_status_not_exp…' // Object.is equality
+
+- Expected: 
+"no_persisted_flag_http_status_not_exposed"
+
++ Received: 
+undefined
+
+ ❯ src/services/__tests__/apiService.watchProgress.test.ts:87:22
+     85|     const r = await apiService.updateWatchProgress(1, body)
+     86|     expect(r.persisted).toBe(false)
+     87|     expect(r.reason).toBe('no_persisted_flag_http_status_not_exposed')
+       |                      ^
+     88|   })
+     89| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 7 passed (10)
+   Start at  17:39:10
+   Duration  8.64s (transform 239ms, setup 934ms, collect 98ms, tests 32ms, environment 1.64s, prepare 231ms)
+

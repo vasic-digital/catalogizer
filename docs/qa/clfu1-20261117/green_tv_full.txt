@@ -1,0 +1,278 @@
+openjdk version "17.0.21" 2026-10-20
+OpenJDK Runtime Environment Temurin-17.0.21+9 (build 17.0.21+9)
+OpenJDK 64-Bit Server VM Temurin-17.0.21+9 (build 17.0.21+9, mixed mode, sharing)
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.11.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :app
+WARNING: The option setting 'android.defaults.buildfeatures.buildconfig=true' is deprecated.
+The current default is 'false'.
+It will be removed in version 9.0 of the Android Gradle plugin.
+You can resolve this warning in Android Studio via `Refactor` > `Migrate BuildConfig to Gradle Build Files`
+Warning: SDK processing. This version only understands SDK XML versions up to 3 but an SDK XML file of version 4 was encountered. This can happen if you use versions of Android Studio and the command-line tools that were released at different times.
+
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugBuildConfig UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:injectCrashlyticsMappingFileIdDebug UP-TO-DATE
+> Task :app:processDebugGoogleServices UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:kaptGenerateStubsDebugKotlin FROM-CACHE
+> Task :app:kaptDebugKotlin UP-TO-DATE
+> Task :app:compileDebugKotlin FROM-CACHE
+> Task :app:javaPreCompileDebug UP-TO-DATE
+> Task :app:compileDebugJavaWithJavac UP-TO-DATE
+> Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:kaptGenerateStubsDebugUnitTestKotlin FROM-CACHE
+> Task :app:kaptDebugUnitTestKotlin FROM-CACHE
+> Task :app:compileDebugUnitTestKotlin FROM-CACHE
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileDebugUnitTest UP-TO-DATE
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets UP-TO-DATE
+> Task :app:packageDebugUnitTestForUnitTest UP-TO-DATE
+> Task :app:generateDebugUnitTestConfig UP-TO-DATE
+> Task :app:processDebugJavaRes UP-TO-DATE
+> Task :app:processDebugUnitTestJavaRes UP-TO-DATE
+> Task :app:restoreOutputDirRoborazzi SKIPPED
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+> Task :app:testDebugUnitTest
+
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+System.logW: A resource was acquired at attached stack trace but never released. See java.io.Closeable for information on avoiding resource leaks.
+java.lang.Throwable: Explicit termination method 'close' not called
+	at dalvik.system.CloseGuard.$$robo$$dalvik_system_CloseGuard$open(CloseGuard.java:221)
+	at jdk.internal.reflect.GeneratedMethodAccessor43.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.robolectric.shadows.ShadowCloseGuard$CloseGuardReflector$$Reflector53.open(Unknown Source)
+	at org.robolectric.shadows.ShadowCloseGuard.open(ShadowCloseGuard.java:38)
+	at dalvik.system.CloseGuard.open(CloseGuard.java)
+	at android.database.sqlite.SQLiteConnectionPool.$$robo$$android_database_sqlite_SQLiteConnectionPool$open(SQLiteConnectionPool.java:215)
+	at android.database.sqlite.SQLiteConnectionPool.open(SQLiteConnectionPool.java)
+	at android.database.sqlite.SQLiteConnectionPool.$$robo$$android_database_sqlite_SQLiteConnectionPool$open(SQLiteConnectionPool.java:196)
+	at android.database.sqlite.SQLiteConnectionPool.open(SQLiteConnectionPool.java)
+	at android.database.sqlite.SQLiteDatabase.$$robo$$android_database_sqlite_SQLiteDatabase$openInner(SQLiteDatabase.java:880)
+	at android.database.sqlite.SQLiteDatabase.openInner(SQLiteDatabase.java)
+	at android.database.sqlite.SQLiteDatabase.$$robo$$android_database_sqlite_SQLiteDatabase$open(SQLiteDatabase.java:865)
+	at android.database.sqlite.SQLiteDatabase.open(SQLiteDatabase.java)
+	at android.database.sqlite.SQLiteDatabase.$$robo$$android_database_sqlite_SQLiteDatabase$openDatabase(SQLiteDatabase.java:739)
+	at android.database.sqlite.SQLiteDatabase.openDatabase(SQLiteDatabase.java)
+	at android.database.sqlite.SQLiteDatabase.$$robo$$android_database_sqlite_SQLiteDatabase$openDatabase(SQLiteDatabase.java:729)
+	at android.database.sqlite.SQLiteDatabase.openDatabase(SQLiteDatabase.java)
+	at android.database.sqlite.SQLiteOpenHelper.$$robo$$android_database_sqlite_SQLiteOpenHelper$getDatabaseLocked(SQLiteOpenHelper.java:355)
+	at android.database.sqlite.SQLiteOpenHelper.getDatabaseLocked(SQLiteOpenHelper.java)
+	at android.database.sqlite.SQLiteOpenHelper.$$robo$$android_database_sqlite_SQLiteOpenHelper$getReadableDatabase(SQLiteOpenHelper.java:322)
+	at android.database.sqlite.SQLiteOpenHelper.getReadableDatabase(SQLiteOpenHelper.java)
+	at com.catalogizer.androidtv.data.tv.CatalogizerTvProviderImpl.query(CatalogizerTvProviderImpl.kt:66)
+	at com.catalogizer.androidtv.data.tv.CatalogizerTvProviderImplTest.query empty media table returns empty cursor(CatalogizerTvProviderImplTest.kt:246)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:26)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.robolectric.RobolectricTestRunner$HelperTestRunner$1.evaluate(RobolectricTestRunner.java:588)
+	at org.robolectric.internal.SandboxTestRunner$2.lambda$evaluate$2(SandboxTestRunner.java:290)
+	at org.robolectric.internal.bytecode.Sandbox.lambda$runOnMainThread$0(Sandbox.java:101)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+System.logW: A resource was acquired at attached stack trace but never released. See java.io.Closeable for information on avoiding resource leaks.
+java.lang.Throwable: Explicit termination method 'close' not called
+	at dalvik.system.CloseGuard.$$robo$$dalvik_system_CloseGuard$open(CloseGuard.java:221)
+	at jdk.internal.reflect.GeneratedMethodAccessor43.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.robolectric.shadows.ShadowCloseGuard$CloseGuardReflector$$Reflector53.open(Unknown Source)
+	at org.robolectric.shadows.ShadowCloseGuard.open(ShadowCloseGuard.java:38)
+	at dalvik.system.CloseGuard.open(CloseGuard.java)
+	at android.database.sqlite.SQLiteConnection.$$robo$$android_database_sqlite_SQLiteConnection$__constructor__(SQLiteConnection.java:172)
+	at android.database.sqlite.SQLiteConnection.<init>(SQLiteConnection.java)
+	at android.database.sqlite.SQLiteConnection.$$robo$$android_database_sqlite_SQLiteConnection$open(SQLiteConnection.java:192)
+	at android.database.sqlite.SQLiteConnection.open(SQLiteConnection.java)
+	at android.database.sqlite.SQLiteConnectionPool.$$robo$$android_database_sqlite_SQLiteConnectionPool$openConnectionLocked(SQLiteConnectionPool.java:503)
+	at android.database.sqlite.SQLiteConnectionPool.openConnectionLocked(SQLiteConnectionPool.java)
+	at android.database.sqlite.SQLiteConnectionPool.$$robo$$android_database_sqlite_SQLiteConnectionPool$open(SQLiteConnectionPool.java:204)
+	at android.database.sqlite.SQLiteConnectionPool.open(SQLiteConnectionPool.java)
+	at android.database.sqlite.SQLiteConnectionPool.$$robo$$android_database_sqlite_SQLiteConnectionPool$open(SQLiteConnectionPool.java:196)
+	at android.database.sqlite.SQLiteConnectionPool.open(SQLiteConnectionPool.java)
+	at android.database.sqlite.SQLiteDatabase.$$robo$$android_database_sqlite_SQLiteDatabase$openInner(SQLiteDatabase.java:880)
+	at android.database.sqlite.SQLiteDatabase.openInner(SQLiteDatabase.java)
+	at android.database.sqlite.SQLiteDatabase.$$robo$$android_database_sqlite_SQLiteDatabase$open(SQLiteDatabase.java:865)
+	at android.database.sqlite.SQLiteDatabase.open(SQLiteDatabase.java)
+	at android.database.sqlite.SQLiteDatabase.$$robo$$android_database_sqlite_SQLiteDatabase$openDatabase(SQLiteDatabase.java:739)
+	at android.database.sqlite.SQLiteDatabase.openDatabase(SQLiteDatabase.java)
+	at android.database.sqlite.SQLiteDatabase.$$robo$$android_database_sqlite_SQLiteDatabase$openDatabase(SQLiteDatabase.java:729)
+	at android.database.sqlite.SQLiteDatabase.openDatabase(SQLiteDatabase.java)
+	at android.database.sqlite.SQLiteOpenHelper.$$robo$$android_database_sqlite_SQLiteOpenHelper$getDatabaseLocked(SQLiteOpenHelper.java:355)
+	at android.database.sqlite.SQLiteOpenHelper.getDatabaseLocked(SQLiteOpenHelper.java)
+	at android.database.sqlite.SQLiteOpenHelper.$$robo$$android_database_sqlite_SQLiteOpenHelper$getReadableDatabase(SQLiteOpenHelper.java:322)
+	at android.database.sqlite.SQLiteOpenHelper.getReadableDatabase(SQLiteOpenHelper.java)
+	at com.catalogizer.androidtv.data.tv.CatalogizerTvProviderImpl.query(CatalogizerTvProviderImpl.kt:66)
+	at com.catalogizer.androidtv.data.tv.CatalogizerTvProviderImplTest.query empty media table returns empty cursor(CatalogizerTvProviderImplTest.kt:246)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:26)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.robolectric.RobolectricTestRunner$HelperTestRunner$1.evaluate(RobolectricTestRunner.java:588)
+	at org.robolectric.internal.SandboxTestRunner$2.lambda$evaluate$2(SandboxTestRunner.java:290)
+	at org.robolectric.internal.bytecode.Sandbox.lambda$runOnMainThread$0(Sandbox.java:101)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+System.logW: A resource was acquired at attached stack trace but never released. See java.io.Closeable for information on avoiding resource leaks.
+java.lang.Throwable: Explicit termination method 'close' not called
+	at dalvik.system.CloseGuard.$$robo$$dalvik_system_CloseGuard$open(CloseGuard.java:221)
+	at jdk.internal.reflect.GeneratedMethodAccessor43.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.robolectric.shadows.ShadowCloseGuard$CloseGuardReflector$$Reflector53.open(Unknown Source)
+	at org.robolectric.shadows.ShadowCloseGuard.open(ShadowCloseGuard.java:38)
+	at dalvik.system.CloseGuard.open(CloseGuard.java)
+	at android.database.sqlite.SQLiteConnectionPool.$$robo$$android_database_sqlite_SQLiteConnectionPool$open(SQLiteConnectionPool.java:215)
+	at android.database.sqlite.SQLiteConnectionPool.open(SQLiteConnectionPool.java)
+	at android.database.sqlite.SQLiteConnectionPool.$$robo$$android_database_sqlite_SQLiteConnectionPool$open(SQLiteConnectionPool.java:196)
+	at android.database.sqlite.SQLiteConnectionPool.open(SQLiteConnectionPool.java)
+	at android.database.sqlite.SQLiteDatabase.$$robo$$android_database_sqlite_SQLiteDatabase$openInner(SQLiteDatabase.java:880)
+	at android.database.sqlite.SQLiteDatabase.openInner(SQLiteDatabase.java)
+	at android.database.sqlite.SQLiteDatabase.$$robo$$android_database_sqlite_SQLiteDatabase$open(SQLiteDatabase.java:865)
+	at android.database.sqlite.SQLiteDatabase.open(SQLiteDatabase.java)
+	at android.database.sqlite.SQLiteDatabase.$$robo$$android_database_sqlite_SQLiteDatabase$openDatabase(SQLiteDatabase.java:739)
+	at android.database.sqlite.SQLiteDatabase.openDatabase(SQLiteDatabase.java)
+	at android.database.sqlite.SQLiteDatabase.$$robo$$android_database_sqlite_SQLiteDatabase$openDatabase(SQLiteDatabase.java:729)
+	at android.database.sqlite.SQLiteDatabase.openDatabase(SQLiteDatabase.java)
+	at android.database.sqlite.SQLiteOpenHelper.$$robo$$android_database_sqlite_SQLiteOpenHelper$getDatabaseLocked(SQLiteOpenHelper.java:355)
+	at android.database.sqlite.SQLiteOpenHelper.getDatabaseLocked(SQLiteOpenHelper.java)
+	at android.database.sqlite.SQLiteOpenHelper.$$robo$$android_database_sqlite_SQLiteOpenHelper$getWritableDatabase(SQLiteOpenHelper.java:298)
+	at android.database.sqlite.SQLiteOpenHelper.getWritableDatabase(SQLiteOpenHelper.java)
+	at com.catalogizer.androidtv.data.tv.CatalogizerTvProviderImpl.insert(CatalogizerTvProviderImpl.kt:117)
+	at com.catalogizer.androidtv.data.tv.CatalogizerTvProviderImplTest.insert multiple media rows returns distinct URIs(CatalogizerTvProviderImplTest.kt:148)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:26)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.robolectric.RobolectricTestRunner$HelperTestRunner$1.evaluate(RobolectricTestRunner.java:588)
+	at org.robolectric.internal.SandboxTestRunner$2.lambda$evaluate$2(SandboxTestRunner.java:290)
+	at org.robolectric.internal.bytecode.Sandbox.lambda$runOnMainThread$0(Sandbox.java:101)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+System.logW: A resource was acquired at attached stack trace but never released. See java.io.Closeable for information on avoiding resource leaks.
+java.lang.Throwable: Explicit termination method 'close' not called
+	at dalvik.system.CloseGuard.$$robo$$dalvik_system_CloseGuard$open(CloseGuard.java:221)
+	at jdk.internal.reflect.GeneratedMethodAccessor43.invoke(Unknown Source)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.robolectric.shadows.ShadowCloseGuard$CloseGuardReflector$$Reflector53.open(Unknown Source)
+	at org.robolectric.shadows.ShadowCloseGuard.open(ShadowCloseGuard.java:38)
+	at dalvik.system.CloseGuard.open(CloseGuard.java)
+	at android.database.sqlite.SQLiteConnection.$$robo$$android_database_sqlite_SQLiteConnection$__constructor__(SQLiteConnection.java:172)
+	at android.database.sqlite.SQLiteConnection.<init>(SQLiteConnection.java)
+	at android.database.sqlite.SQLiteConnection.$$robo$$android_database_sqlite_SQLiteConnection$open(SQLiteConnection.java:192)
+	at android.database.sqlite.SQLiteConnection.open(SQLiteConnection.java)
+	at android.database.sqlite.SQLiteConnectionPool.$$robo$$android_database_sqlite_SQLiteConnectionPool$openConnectionLocked(SQLiteConnectionPool.java:503)
+	at android.database.sqlite.SQLiteConnectionPool.openConnectionLocked(SQLiteConnectionPool.java)
+	at android.database.sqlite.SQLiteConnectionPool.$$robo$$android_database_sqlite_SQLiteConnectionPool$open(SQLiteConnectionPool.java:204)
+	at android.database.sqlite.SQLiteConnectionPool.open(SQLiteConnectionPool.java)
+	at android.database.sqlite.SQLiteConnectionPool.$$robo$$android_database_sqlite_SQLiteConnectionPool$open(SQLiteConnectionPool.java:196)
+	at android.database.sqlite.SQLiteConnectionPool.open(SQLiteConnectionPool.java)
+	at android.database.sqlite.SQLiteDatabase.$$robo$$android_database_sqlite_SQLiteDatabase$openInner(SQLiteDatabase.java:880)
+	at android.database.sqlite.SQLiteDatabase.openInner(SQLiteDatabase.java)
+	at android.database.sqlite.SQLiteDatabase.$$robo$$android_database_sqlite_SQLiteDatabase$open(SQLiteDatabase.java:865)
+	at android.database.sqlite.SQLiteDatabase.open(SQLiteDatabase.java)
+	at android.database.sqlite.SQLiteDatabase.$$robo$$android_database_sqlite_SQLiteDatabase$openDatabase(SQLiteDatabase.java:739)
+	at android.database.sqlite.SQLiteDatabase.openDatabase(SQLiteDatabase.java)
+	at android.database.sqlite.SQLiteDatabase.$$robo$$android_database_sqlite_SQLiteDatabase$openDatabase(SQLiteDatabase.java:729)
+	at android.database.sqlite.SQLiteDatabase.openDatabase(SQLiteDatabase.java)
+	at android.database.sqlite.SQLiteOpenHelper.$$robo$$android_database_sqlite_SQLiteOpenHelper$getDatabaseLocked(SQLiteOpenHelper.java:355)
+	at android.database.sqlite.SQLiteOpenHelper.getDatabaseLocked(SQLiteOpenHelper.java)
+	at android.database.sqlite.SQLiteOpenHelper.$$robo$$android_database_sqlite_SQLiteOpenHelper$getWritableDatabase(SQLiteOpenHelper.java:298)
+	at android.database.sqlite.SQLiteOpenHelper.getWritableDatabase(SQLiteOpenHelper.java)
+	at com.catalogizer.androidtv.data.tv.CatalogizerTvProviderImpl.insert(CatalogizerTvProviderImpl.kt:117)
+	at com.catalogizer.androidtv.data.tv.CatalogizerTvProviderImplTest.insert multiple media rows returns distinct URIs(CatalogizerTvProviderImplTest.kt:148)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:59)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:56)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:26)
+	at org.junit.runners.ParentRunner$3.evaluate(ParentRunner.java:306)
+	at org.robolectric.RobolectricTestRunner$HelperTestRunner$1.evaluate(RobolectricTestRunner.java:588)
+	at org.robolectric.internal.SandboxTestRunner$2.lambda$evaluate$2(SandboxTestRunner.java:290)
+	at org.robolectric.internal.bytecode.Sandbox.lambda$runOnMainThread$0(Sandbox.java:101)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A terminally deprecated method in java.lang.System has been called
+WARNING: System::setSecurityManager has been called by com.catalogizer.androidtv.player.VLCPlayerTest$Companion
+WARNING: Please consider reporting this to the maintainers of com.catalogizer.androidtv.player.VLCPlayerTest$Companion
+WARNING: System::setSecurityManager will be removed in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+> Task :app:finalizeTestRoborazziDebug SKIPPED
+[Incubating] Problems report is available at: file:///work/catalogizer-androidtv/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.11.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 8m 47s
+32 actionable tasks: 4 executed, 5 from cache, 23 up-to-date
+rc=0
