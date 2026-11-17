@@ -3614,3 +3614,6 @@ Premise confirmed: WebDAV storage-root client already guarded (OperatorTransport
 - SECQ1-R-m1 (minor): mutants B (redirect check removed) and C (approved_class pin ignored → private) survive the request-path suite; add redirect scenario (target non-allow-listed loopback port) and a public-approved root scenario, or show the filesystem unit tests kill them.
 - m2 (minor): step 1 asserts only HTTP 400, not the body message (mutant A = validateRootURL netguard check disabled survives, redundant layer). m3 (minor): withdrawal step accepts any status >= 400; require 202 or pin the refusal. n1 (nit): test 2 duplicates existing tests and uses the mock-scanner harness; fix header text. n2 (nit): stale comment on newWebDAVHTTPClient.
 - Open operator question remains: strict default (CATALOGIZER_OPERATOR_DENY_PRIVATE=1) — unchanged.
+
+## Operator decisions 2026-11-17 (sweep 8 part 2)
+CAT-LEGACY-MEDIAHANDLER-1: removal not approved; deep-dive of the whole legacy media system first (why never wired, unimplemented vs replaced, advertised-but-unbacked claims). PostgreSQL = supported; CAT-PG-SESSION-END-1 and CAT-PG-TX-SWEEP-1 are rc.1 blockers. Load policy: max agents; pause all agents for Vision/build phases then resume them all, with a sync record. SECQ-1: confirm_private_network model kept.
