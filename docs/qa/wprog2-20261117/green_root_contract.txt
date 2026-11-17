@@ -1,0 +1,10 @@
+$ GOMAXPROCS=2 nice -n 10 go test -p 1 . -run "AuthSurface|OpenAPI|Contract" -count=1
+--- PASS: TestMainPackageAuthSurfaceClosed (0.04s)
+--- PASS: TestAuthSurfaceGuard_Mutants (2.97s)
+--- PASS: TestAuthSurfaceGuard_GoldenFalse (0.21s)
+--- PASS: TestBuildRouterAuthSurface (0.00s)
+--- PASS: TestBuildRouterAuthSurface_ComparatorDetects (0.03s)
+--- SKIP: TestBuildRouterAuthSurface_RuntimeMutants (0.00s)
+--- SKIP: TestBuildRouterAuthSurface_Trimpath (0.00s)
+--- PASS: TestOpenAPIContract_RealBinary_PathParamsAndUserRolePermissions (28.45s)
+ok  	catalogizer	31.913s

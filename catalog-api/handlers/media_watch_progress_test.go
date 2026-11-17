@@ -71,7 +71,7 @@ func TestWatchProgress_PersistsPerUser(t *testing.T) {
 	h := NewAndroidTVMediaHandler(db)
 	a, b := wprogRouter(h, 1), wprogRouter(h, 2)
 
-	code, resp := wprogPut(a, "1", `{"progress": 0.25}`)
+	code, resp := wprogPut(a, "1", `{"progress": 0.25, "duration": 1000}`)
 	require.Equal(t, http.StatusOK, code)
 	assert.Equal(t, true, resp["persisted"], "the write must really be stored")
 
@@ -83,7 +83,7 @@ func TestWatchProgress_PersistsPerUser(t *testing.T) {
 	assert.ErrorIs(t, err, sql.ErrNoRows, "user 2 must not see user 1's progress")
 
 	// B writes its own value; A's must be unchanged (upsert is keyed per user)
-	code, _ = wprogPut(b, "1", `{"progress": 0.9}`)
+	code, _ = wprogPut(b, "1", `{"progress": 0.9, "duration": 1000}`)
 	require.Equal(t, http.StatusOK, code)
 	pa, _ := repo.GetProgress(context.Background(), 1, 1)
 	pb, _ := repo.GetProgress(context.Background(), 2, 1)
@@ -106,19 +106,20 @@ func TestWatchProgress_PersistsPerUser(t *testing.T) {
 	}
 }
 
-// The exact JSON bodies the shipped clients send (WatchProgressRequest in catalogizer-android Requests.kt serialises
-// progress + optional timestamp as a STRING + optional position; Android TV sends {"progress": x}; the TS API client
-// sends media_id/position/duration/timestamp numbers). The old map[string]float64 binding answered 400 for the Android shape.
-func TestWatchProgress_ClientBodyShapes(t *testing.T) {
+// Body shapes accepted without a 400. Android TV sends {"progress": x} and the Android WatchProgressRequest adds a
+// string timestamp and position, but neither calls this route today (Android calls the nonexistent user/progress/{id});
+// they are accepted for when a client is pointed here, and without a duration they are answered persisted:false. The
+// desktop / api-client PlaybackProgress shape (floats, no progress) is covered in media_watch_progress_integrity_test.go.
+func TestWatchProgress_AcceptedBodyShapes(t *testing.T) {
 	db := wprogDB(t)
 	h := NewAndroidTVMediaHandler(db)
 	r := wprogRouter(h, 1)
 	cases := map[string]string{
-		"android full":      `{"progress":0.42,"timestamp":"1700000000000","position":3012}`,
-		"android minimal":   `{"progress":0.42}`,
-		"android no pos":    `{"progress":0.42,"timestamp":"1700000000000"}`,
-		"androidtv":         `{"progress":0.42}`,
-		"ts client numbers": `{"progress":0.42,"media_id":1,"position":300,"duration":7200,"timestamp":1700000000000}`,
+		"progress only":                    `{"progress":0.42}`,
+		"progress + string timestamp":      `{"progress":0.42,"timestamp":"1700000000000"}`,
+		"progress + timestamp + position":  `{"progress":0.42,"timestamp":"1700000000000","position":3012}`,
+		"desktop floats":                   `{"media_id":1,"position":12.5,"duration":7200.25,"timestamp":1700000000000}`,
+		"progress + numeric ts + duration": `{"progress":0.42,"media_id":1,"duration":7200,"timestamp":1700000000000}`,
 	}
 	for name, body := range cases {
 		code, resp := wprogPut(r, "1", body)

@@ -203,7 +203,7 @@ func TestDefectD_UpdateWatchProgress_ExistingMedia(t *testing.T) {
 	r.PUT("/api/v1/media/:id/progress", func(c *gin.Context) { c.Set("user_id", 7) }, handler.UpdateWatchProgress)
 
 	req := httptest.NewRequest("PUT", "/api/v1/media/"+itoa(id)+"/progress",
-		strings.NewReader(`{"progress": 0.5}`))
+		strings.NewReader(`{"progress": 0.5, "duration": 7200}`))
 	req.Header.Set("Content-Type", "application/json")
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
@@ -214,7 +214,7 @@ func TestDefectD_UpdateWatchProgress_ExistingMedia(t *testing.T) {
 	var resp map[string]any
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
 	assert.Equal(t, true, resp["success"])
-	// WPROG: the route is authenticated and now really stores the caller's progress (it used to report persisted=false).
+	// WPROG: the route is authenticated and stores the caller's progress (a duration is needed to create a row; without one persisted=false).
 	assert.Equal(t, true, resp["persisted"],
 		"authenticated progress route must persist per-user progress")
 }
