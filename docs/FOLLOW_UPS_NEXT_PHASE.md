@@ -3484,3 +3484,10 @@ HAUTHZ-F2 fixed: PUT /media/:id/favorite and GET /media/:id use the new `user_fa
 - G1FIXFU-R1-F4 (minor, process-doc): evidence logs were gitignored (*.log); force-added at landing (done).
 - G1FIXFU-R1-F5 (nit): name-based ban refuses `filepath.Match` in sanctioned bodies (fails closed; known limit).
 - Adopt reviewer mutants RVW1, RVW2, RVW3, RVW5 verbatim into TestAuthSurfaceGuard_Mutants. N1 validated (changed 401 message makes test fail).
+
+## tvany review round 1 (Opus, GO-with-follow-ups, PROVISIONAL)
+- TVANY-R1-F1 (minor, test-instrumentation): TvRetrofitWireResponseTest KDoc claims fixtures are "the real JSON shapes the catalog-api handlers return"; they are not (collections items/total/limit/offset vs `collections`; favorites `count` vs `total`; subtitles success/subtitles/media_item_id; languages success/languages/count; stats/overall {success,data}). Transport is still correct (JsonObject). Use real envelopes or correct the KDoc.
+- TVANY-R1-F2 (minor, source-defect, no callers): MediaRepository.addPlaylistItem(entityType="movie") invents a default; server AddItem does not validate entity_type. Make it required when the first caller is added.
+- TVANY-R1-F3 (nit): wire tests use their own Json{ignoreUnknownKeys}, not the DependencyContainer configuration (coerceInputValues).
+- TVANY-R1-F4 (nit): author mutant set covers only the guard; reviewer M1/M4/M5 show wire tests kill field-name/default/path mutants but commands.txt does not record them.
+- Reviewer full TV run (forced rerun): 1290 tests, 0 failures/errors/skipped.
