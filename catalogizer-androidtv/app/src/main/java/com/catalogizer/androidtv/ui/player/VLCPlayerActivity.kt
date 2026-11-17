@@ -44,8 +44,6 @@ import org.videolan.libvlc.util.VLCVideoLayout
 
 // Progress tracking constants
 private const val PROGRESS_SAVE_INTERVAL_MS = 5000L // Save every 5 seconds
-private const val MIN_PROGRESS_TO_SAVE = 0.05 // Only save if > 5% watched
-private const val MAX_PROGRESS_TO_SAVE = 0.95 // Don't save if > 95% (completed)
 
 /**
  * VLC-based video player activity for Android TV.
@@ -224,22 +222,17 @@ class VLCPlayerActivity : ComponentActivity() {
         val currentPosition = vlcPlayer.currentPosition.value
         val duration = vlcPlayer.duration.value
         
-        if (duration <= 0) return
-        
-        val progress = currentPosition.toDouble() / duration.toDouble()
-        
-        // Only save if progress changed significantly and is in valid range
-        if (progress in MIN_PROGRESS_TO_SAVE..MAX_PROGRESS_TO_SAVE && 
-            kotlin.math.abs(progress - lastSavedProgress) > 0.01) {
-            
-            try {
-                val container = com.catalogizer.androidtv.DependencyContainer.getInstance(this)
-                container.mediaRepository.updateWatchProgress(mediaId, progress)
-                lastSavedProgress = progress
-                Log.d(TAG, "Saved watch progress: ${"%.2f".format(progress * 100)}%")
-            } catch (e: Exception) {
-                Log.w(TAG, "Failed to save watch progress: ${e.message}")
+        val container = com.catalogizer.androidtv.DependencyContainer.getInstance(this)
+        lastSavedProgress = com.catalogizer.androidtv.data.playback.WatchProgressTick.run(
+            lastSavedProgress, currentPosition, duration,
+        ) { progress, posMs, durMs ->
+            val outcome = container.mediaRepository.saveWatchProgress(
+                mediaId, progress, positionMs = posMs, durationMs = durMs,
+            )
+            if (outcome is com.catalogizer.androidtv.data.repository.WatchProgressOutcome.NotStored) {
+                Log.w(TAG, "Watch progress NOT stored by the server: ${outcome.reason}")
             }
+            outcome
         }
     }
     

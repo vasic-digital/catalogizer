@@ -203,11 +203,7 @@ describe('MediaService', () => {
 
       await mediaService.markAsWatched(1);
 
-      expect(mockHttp.put).toHaveBeenCalledWith('/media/1/progress', expect.objectContaining({
-        media_id: 1,
-        position: 100,
-        duration: 100,
-      }));
+      expect(mockHttp.put).toHaveBeenCalledWith('/media/1/progress', { progress: 1 });
     });
   });
 

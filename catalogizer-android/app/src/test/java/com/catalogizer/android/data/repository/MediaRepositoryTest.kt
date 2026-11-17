@@ -15,6 +15,8 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.ResponseBody.Companion.toResponseBody
 import retrofit2.Response
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -246,13 +248,60 @@ class MediaRepositoryTest {
     @Test
     fun `updateWatchProgress should update locally and sync with server`() = runTest {
         coEvery { mockMediaDao.updateWatchProgress(any(), any(), any()) } just Runs
-        coEvery { mockApi.updateUserWatchProgress(any(), any()) } returns Response.success(Unit)
+        coEvery { mockApi.updateWatchProgress(any(), any()) } returns persistedResponse(true)
 
-        val result = repository.updateWatchProgress(1L, 0.5)
+        val result = repository.updateWatchProgress(1L, 0.5, durationSeconds = 120.0)
 
         assertTrue(result.isSuccess)
         coVerify { mockMediaDao.updateWatchProgress(1L, 0.5, any()) }
-        coVerify { mockApi.updateUserWatchProgress(1L, any()) }
+        // the existing server route is used and the duration (seconds) is sent (WPROG3-FU)
+        coVerify { mockApi.updateWatchProgress(1L, match { it.duration == 120.0 }) }
+    }
+
+    private fun persistedResponse(persisted: Boolean?, reason: String? = null): Response<kotlinx.serialization.json.JsonObject> =
+        Response.success(kotlinx.serialization.json.buildJsonObject {
+            if (persisted != null) put("persisted", kotlinx.serialization.json.JsonPrimitive(persisted))
+            if (reason != null) put("reason", kotlinx.serialization.json.JsonPrimitive(reason))
+        })
+
+    private fun conflictResponse(): Response<kotlinx.serialization.json.JsonObject> = Response.error(
+        409,
+        """{"success":false,"persisted":false,"reason":"concurrent_update"}"""
+            .toResponseBody("application/json".toMediaType())
+    )
+
+    @Test
+    fun `updateWatchProgress does not claim saved when the server answers persisted false`() = runTest {
+        coEvery { mockMediaDao.updateWatchProgress(any(), any(), any()) } just Runs
+        coEvery { mockApi.updateWatchProgress(any(), any()) } returns persistedResponse(false, "unknown_duration_no_row")
+
+        val result = repository.updateWatchProgress(1L, 0.5)
+
+        assertFalse(result.isSuccess)
+        assertTrue(result.error!!.contains("unknown_duration_no_row"))
+    }
+
+    @Test
+    fun `updateWatchProgress retries a 409 concurrent_update and then succeeds`() = runTest {
+        coEvery { mockMediaDao.updateWatchProgress(any(), any(), any()) } just Runs
+        coEvery { mockApi.updateWatchProgress(any(), any()) } returnsMany listOf(conflictResponse(), persistedResponse(true))
+
+        val result = repository.updateWatchProgress(1L, 0.5, durationSeconds = 60.0)
+
+        assertTrue(result.isSuccess)
+        coVerify(exactly = 2) { mockApi.updateWatchProgress(1L, any()) }
+    }
+
+    @Test
+    fun `updateWatchProgress gives up after 3 attempts on a persistent 409`() = runTest {
+        coEvery { mockMediaDao.updateWatchProgress(any(), any(), any()) } just Runs
+        coEvery { mockApi.updateWatchProgress(any(), any()) } returns conflictResponse()
+
+        val result = repository.updateWatchProgress(1L, 0.5, durationSeconds = 60.0)
+
+        assertFalse(result.isSuccess)
+        assertTrue(result.error!!.contains("concurrent_update"))
+        coVerify(exactly = 3) { mockApi.updateWatchProgress(1L, any()) }
     }
 
     @Test

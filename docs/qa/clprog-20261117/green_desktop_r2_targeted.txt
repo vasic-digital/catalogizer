@@ -1,0 +1,25 @@
+
+ RUN  v0.34.6 /home/milosvasic/.cache/claude-tmp/clprog/catalogizer-desktop
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+(node:3680043) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3680043) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3680043) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3680043) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/services/__tests__/apiService.watchProgress.test.ts  (6 tests) 80ms
+ ✓ src/services/__tests__/apiService.extended.test.ts  (19 tests) 238ms
+ ✓ src/services/__tests__/apiService.test.ts  (32 tests) 343ms
+stdout | src/hooks/__tests__/useVLCPlayer.watchProgress.test.tsx > desktop watch progress call sites (seconds, not ms) > useVLCPlayer.saveProgress sends position and duration in seconds
+Watch progress saved: 8.3%
+
+ ✓ src/hooks/__tests__/useVLCPlayer.watchProgress.test.tsx  (3 tests) 308ms
+
+ Test Files  4 passed (4)
+      Tests  60 passed (60)
+   Start at  16:16:52
+   Duration  10.70s (transform 1.75s, setup 3.52s, collect 4.14s, tests 969ms, environment 6.78s, prepare 2.74s)
+

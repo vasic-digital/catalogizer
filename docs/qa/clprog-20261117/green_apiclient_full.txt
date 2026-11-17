@@ -1,0 +1,26 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/milosvasic/.cache/claude-tmp/clprog/catalogizer-api-client[39m
+
+[90mstdout[2m | src/__tests__/websocket.ticket.test.ts[2m > [22m[2mWebSocketClient ticket auth (SEC-WS-1 F2)[2m > [22m[2mmints a NEW ticket on every reconnect
+[22m[39mAttempting to reconnect (1/5)...
+
+ [32m✓[39m src/__tests__/websocket.ticket.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32m✓[39m src/services/__tests__/MediaService.test.ts [2m([22m[2m29 tests[22m[2m)[22m[32m 68[2mms[22m[39m
+ [32m✓[39m src/services/__tests__/SMBService.test.ts [2m([22m[2m25 tests[22m[2m)[22m[33m 646[2mms[22m[39m
+       [33m[2m✓[22m[39m gets all SMB configurations [33m 510[2mms[22m[39m
+[90mstdout[2m | src/__tests__/websocket.test.ts[2m > [22m[2mWebSocketClient[2m > [22m[2mauth token management[2m > [22m[2muses updated auth token on reconnection
+[22m[39mAttempting to reconnect (1/5)...
+
+ [32m✓[39m src/services/__tests__/AuthService.permissions.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/__tests__/websocket.test.ts [2m([22m[2m26 tests[22m[2m)[22m[32m 121[2mms[22m[39m
+ [32m✓[39m src/services/__tests__/AuthService.test.ts [2m([22m[2m27 tests[22m[2m)[22m[32m 47[2mms[22m[39m
+ [32m✓[39m src/types/__tests__/index.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m src/__tests__/http.test.ts [2m([22m[2m49 tests[22m[2m)[22m[32m 174[2mms[22m[39m
+ [32m✓[39m src/__tests__/index.test.ts [2m([22m[2m83 tests[22m[2m)[22m[32m 103[2mms[22m[39m
+ [32m✓[39m src/__tests__/client.test.ts [2m([22m[2m37 tests[22m[2m)[22m[32m 189[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m10 passed[39m[22m[90m (10)[39m
+[2m      Tests [22m [1m[32m316 passed[39m[22m[90m (316)[39m
+[2m   Start at [22m 15:27:05
+[2m   Duration [22m 8.27s[2m (transform 21.60s, setup 0ms, import 32.30s, tests 1.43s, environment 5ms)[22m
+

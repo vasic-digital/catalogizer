@@ -1,5 +1,7 @@
 package com.catalogizer.android.data.remote
 
+import kotlinx.serialization.json.booleanOrNull
+
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
@@ -129,6 +131,18 @@ class CatalogizerApiTest {
         assertEquals("PUT", recorded.method)
         assertEquals("/media/7/progress", recorded.path)
         assertEquals("""{"progress":0.5}""", recorded.body.readUtf8())
+    }
+
+    @Test
+    fun `updateWatchProgress sends duration and reads the persisted flag`() = runBlocking {
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody("""{"success":true,"persisted":false,"reason":"unknown_duration_no_row"}"""))
+
+        val result = api.updateWatchProgress(7L, WatchProgressRequest(progress = 0.5, position = 30L, duration = 60.0))
+
+        val body = result.body()!!
+        assertEquals(false, (body["persisted"] as kotlinx.serialization.json.JsonPrimitive).booleanOrNull)
+        assertEquals("unknown_duration_no_row", (body["reason"] as kotlinx.serialization.json.JsonPrimitive).content)
+        assertEquals("""{"progress":0.5,"position":30,"duration":60.0}""", mockWebServer.takeRequest().body.readUtf8())
     }
 
     @Test
