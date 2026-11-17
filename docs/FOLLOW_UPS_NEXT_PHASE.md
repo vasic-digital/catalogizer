@@ -3632,3 +3632,12 @@ CAT-LEGACY-MEDIAHANDLER-1: removal not approved; deep-dive of the whole legacy m
 - PGEND1-R-m3 (minor): repeated End of ended session now 200 {ok:true} applying nothing; document in API contract.
 - PGEND1-R-m4 (minor): no PG test for End on a row created by the PUT handler.
 - PGEND1-R-n1/n2 (nit): comment "BOOLEAN-affinity" for SQLite completed is wrong (INTEGER); SUMMARY.md wrongly says Get/ListHistory are tx statements.
+
+## ALTSVC3 review (Opus, 2026-11-17) — GO-with-follow-ups, landed PROVISIONAL
+- ALTSVC3-R-m1: no test for flag-cleared-on-Serve-failure (mutant M1 survives).
+- ALTSVC3-R-m2: no test for TCP-bind-failure branch (M5 survives); cover TCP-only and both-occupied cases.
+- ALTSVC3-R-m3: no real HTTP/3 request (M6b survives); add quic-go http3 client GET to ephemeral port.
+- ALTSVC3-R-m4: guard scope covers main() only; extend AST scan so the only h3Advertised.Store(true) in non-test code is in startH3Stack after net.ListenPacket (M7).
+- ALTSVC3-R-m5: call pin checks CallExpr text only; pin assignment LHS and nil-guarded Shutdown/Close (M2).
+- ALTSVC3-R-n1..n3 (nit): h3 UDP socket never closed; freeTCPUDPPort race should SKIP not FAIL; real-main startup test binds fixed port 28443.
+- Note: s1g9r2/redfix1 allow-list entries for altSvcMiddleware stay in main_router.go (unchanged by altsvc3).
