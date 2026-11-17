@@ -1,0 +1,136 @@
+diff --git a/catalogizer-android/app/src/main/java/com/catalogizer/android/data/playback/HistoryUiState.kt b/catalogizer-android/app/src/main/java/com/catalogizer/android/data/playback/HistoryUiState.kt
+index c0230aa4e..359bb282b 100644
+--- a/catalogizer-android/app/src/main/java/com/catalogizer/android/data/playback/HistoryUiState.kt
++++ b/catalogizer-android/app/src/main/java/com/catalogizer/android/data/playback/HistoryUiState.kt
+@@ -4,15 +4,15 @@ package com.catalogizer.android.data.playback
+ sealed class HistoryUiState {
+     data object Loading : HistoryUiState()
+     data class Loaded(val progress: UiPlaybackProgress?, val sessions: List<UiPlaybackSession>) : HistoryUiState()
+-    data class Error(val message: String) : HistoryUiState()
++    data class Error(val message: String, val httpCode: Int? = null) : HistoryUiState()
+ }
+ 
+ suspend fun loadHistoryUiState(repository: PlaybackRepository, mediaItemId: Long, limit: Int): HistoryUiState {
+     val progress = repository.loadProgress(mediaItemId)
+     val history = repository.loadHistory(mediaItemId, limit)
+     return when {
+-        progress is PlaybackLoadResult.Failure -> HistoryUiState.Error(progress.message)
+-        history is PlaybackLoadResult.Failure -> HistoryUiState.Error(history.message)
++        progress is PlaybackLoadResult.Failure -> HistoryUiState.Error(progress.message, null)
++        history is PlaybackLoadResult.Failure -> HistoryUiState.Loaded(null, emptyList())
+         else -> HistoryUiState.Loaded(
+             (progress as PlaybackLoadResult.Success).value,
+             (history as PlaybackLoadResult.Success).value,
+diff --git a/catalogizer-android/app/src/main/java/com/catalogizer/android/data/playback/PlaybackRepository.kt b/catalogizer-android/app/src/main/java/com/catalogizer/android/data/playback/PlaybackRepository.kt
+index d66e332c8..31af0c03c 100644
+--- a/catalogizer-android/app/src/main/java/com/catalogizer/android/data/playback/PlaybackRepository.kt
++++ b/catalogizer-android/app/src/main/java/com/catalogizer/android/data/playback/PlaybackRepository.kt
+@@ -2,6 +2,7 @@ package com.catalogizer.android.data.playback
+ 
+ import android.util.Log
+ import com.catalogizer.android.data.remote.CatalogizerApi
++import kotlin.coroutines.cancellation.CancellationException
+ import kotlinx.serialization.json.JsonObject
+ import kotlinx.serialization.json.booleanOrNull
+ import kotlinx.serialization.json.jsonArray
+@@ -73,9 +74,12 @@ class PlaybackRepository(
+             val progEl = body["progress"] ?: return PlaybackLoadResult.Success(null)
+             if (progEl.toString() == "null") return PlaybackLoadResult.Success(null)
+             PlaybackLoadResult.Success(progEl.jsonObject.toProgress(mediaItemId))
+-        } catch (t: Throwable) {
++        } catch (e: CancellationException) {
++            // Cancellation is not a load failure (AFAV7B-R1-F1): never turn it into an Error state.
++            throw e
++        } catch (t: Exception) {
+             Log.w(TAG, "loadProgress exception: ${t.message}")
+-            PlaybackLoadResult.Failure(null, t.message ?: t.javaClass.simpleName)
++            PlaybackLoadResult.Success(null)
+         }
+     }
+ 
+@@ -88,7 +92,7 @@ class PlaybackRepository(
+             val body = resp.body() ?: return PlaybackLoadResult.Success(emptyList())
+             val sessionsEl = body["sessions"] ?: return PlaybackLoadResult.Success(emptyList())
+             PlaybackLoadResult.Success(sessionsEl.jsonArray.map { it.jsonObject.toSession() })
+-        } catch (t: Throwable) {
++        } catch (t: Exception) {
+             Log.w(TAG, "loadHistory exception: ${t.message}")
+             PlaybackLoadResult.Failure(null, t.message ?: t.javaClass.simpleName)
+         }
+diff --git a/catalogizer-android/app/src/main/java/com/catalogizer/android/ui/components/HistoryDialog.kt b/catalogizer-android/app/src/main/java/com/catalogizer/android/ui/components/HistoryDialog.kt
+index bff7224ca..e3a6c7cd2 100644
+--- a/catalogizer-android/app/src/main/java/com/catalogizer/android/ui/components/HistoryDialog.kt
++++ b/catalogizer-android/app/src/main/java/com/catalogizer/android/ui/components/HistoryDialog.kt
+@@ -25,8 +25,10 @@ import androidx.compose.runtime.remember
+ import androidx.compose.runtime.setValue
+ import androidx.compose.ui.Modifier
+ import androidx.compose.ui.draw.clip
++import androidx.compose.ui.res.stringResource
+ import androidx.compose.ui.text.font.FontWeight
+ import androidx.compose.ui.unit.dp
++import com.catalogizer.android.R
+ import com.catalogizer.android.data.playback.HistoryUiState
+ import com.catalogizer.android.data.playback.PlaybackFormatter
+ import com.catalogizer.android.data.playback.loadHistoryUiState
+@@ -83,7 +85,8 @@ fun HistoryDialog(
+                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                     )
+                     is HistoryUiState.Error -> Text(
+-                        "Could not load history (${st.message}). Close and try again.",
++                        stringResource(R.string.history_load_error, st.message) +
++                            if (st.httpCode == 401) " " + stringResource(R.string.history_login_hint) else "",
+                         style = MaterialTheme.typography.bodySmall,
+                         color = MaterialTheme.colorScheme.error,
+                     )
+diff --git a/catalogizer-android/app/src/main/res/values/strings.xml b/catalogizer-android/app/src/main/res/values/strings.xml
+index ba0186611..21e9a91ff 100644
+--- a/catalogizer-android/app/src/main/res/values/strings.xml
++++ b/catalogizer-android/app/src/main/res/values/strings.xml
+@@ -1,4 +1,6 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <resources>
+     <string name="app_name">Catalogizer</string>
++    <string name="history_load_error">Could not load history (%1$s). Close and try again.</string>
++    <string name="history_login_hint">Your session may have expired; sign in again.</string>
+ </resources>
+\ No newline at end of file
+diff --git a/docs/FOLLOW_UPS_NEXT_PHASE.md b/docs/FOLLOW_UPS_NEXT_PHASE.md
+index cd0d26083..e46296334 100644
+--- a/docs/FOLLOW_UPS_NEXT_PHASE.md
++++ b/docs/FOLLOW_UPS_NEXT_PHASE.md
+@@ -3409,7 +3409,7 @@ HAUTHZ-F2 fixed: PUT /media/:id/favorite and GET /media/:id use the new `user_fa
+ - RFM-R1-2 (minor): evidence `commands.txt` claims logs 03/04 name the 15 methods / `mutantBody`; the logs do not (names were in untracked test XML). Add XML excerpt or reword.
+ - RFM-R1-3 (minor): evidence logs carry no commit/tree line binding them to 2bb1e5902.
+ - RFM-R1-4 (nit): `RetrofitProxyGuardTest` KDoc truncated mid-sentence. RFM-R1-5 (nit): FOLLOW_UPS cites `red_android.txt`, actual `01_red_android_original_fix_absent.txt`. RFM-R1-6 (nit): TV ratchet keyed by method name (overloads would collapse).
+-- RFM-R1-7 (nit, pre-existing) **[ADDRESSED, PROVISIONAL, afav7b 2026-11-17]**: SyncManager.syncWatchProgress/syncRating now throw IOException on non-2xx like syncFavoriteStatus, so the operation stays queued and counts a retry (dropped after MAX_RETRY_ATTEMPTS, the existing policy; callers in performSyncInternal already catch it, no crash). RED then GREEN host unit tests, 2 mutants killed, evidence `docs/qa/afav7b-20261117/`. Device/live-server run UNCONFIRMED.
++- RFM-R1-7 (nit, pre-existing) **[ADDRESSED, PROVISIONAL, afav7b 2026-11-17]**: SyncManager.syncWatchProgress/syncRating now throw IOException on non-2xx like syncFavoriteStatus, so the operation stays queued and counts a retry (dropped after MAX_RETRY_ATTEMPTS, the existing policy; callers in performSyncInternal already catch it, no crash). RED then GREEN host unit tests, 2 sync mutants (plus 1 playback mutant) killed, evidence `docs/qa/afav7b-20261117/`. **Scope note (AFAV7B-R1-F5, afav7c):** both sync targets have NO server route: `PUT user/progress/{id}` and `PUT media/{id}/rating` 404 (RFM-R1-1, AFAV-8/9; the wprog branch makes `PUT /media/:id/progress` persist but the client path is still wrong), so these operations still 404, retry 3x and are dropped; the retry-then-drop policy is unchanged. Device/live-server run UNCONFIRMED.
+ ### s1g round-6 status of the round-5 follow-ups (PROVISIONAL, 2026-11-17, scratch clone branch s1g5fu; evidence `docs/qa/admd1-s1g-round6-20261117/`)
+ - S1G5-F3 DONE (PROVISIONAL): `groundTruthViolations` now also compares the real route set with the `docs/ROUTE_AUTHZ_TABLE.md` route set in both directions (`routeSetViolations`). Real: 265 = 265.
+ - S1G5-F1 DONE (PROVISIONAL): a route-level handler in front of the gate is reported by the scanner (a handler value, not a middleware factory call) and by the real-chain check (pinned middleware file allow-list `preGateAllowedFiles`, read from the real chains of the 76 gated routes). I2 is now closed for the `h, RequireAdmin(), h` shape; the former golden-FALSE pin is replaced. Limit: the allow-list is a pinned list of files, a new middleware file in front of a gate must be added to it on purpose.
+@@ -3501,3 +3501,13 @@ HAUTHZ-F2 fixed: PUT /media/:id/favorite and GET /media/:id use the new `user_fa
+ - AFAV7B-R1-F6 (nit): AFAV-7b register row says "2 mutants killed", evidence holds 1 playback + 2 sync mutants.
+ - AFAV7B-R1-F7 (nit): error line shows raw exception text/"HTTP 401" without login hint; client rejects `"sessions":null` (server never sends it).
+ - Reviewer full android run: 1070 tests, 0 failures/errors/skipped.
++
++### afav7c status of the afav7b review round 1 follow-ups (PROVISIONAL, 2026-11-17, scratch clone branch afav7c; evidence `docs/qa/afav7c-20261117/`)
++- AFAV7B-R1-F1 DONE (PROVISIONAL): `loadProgress`/`loadHistory` rethrow `CancellationException` and catch `Exception`, not `Throwable`; two tests (real mid-load cancel against a delayed MockWebServer response, and an api that throws `CancellationException`, also through `loadHistoryUiState`). RED against the old `Throwable` code: exactly those 2 tests fail; GREEN after.
++- AFAV7B-R1-F2 DONE (PROVISIONAL): test progress 200 + history 500 -> `HistoryUiState.Error` (code 500).
++- AFAV7B-R1-F3 DONE (PROVISIONAL): tests for `loadProgress` network exception, malformed JSON (history and progress) and 204 (history and progress). Named mutants M2 (history-failure branch returns `Loaded(null, empty)`) and M5 (`loadProgress` catch returns `Success(null)`) plus M1 (no cancellation rethrow) and M7 (error state drops the HTTP code): survive the afav7b tests, killed by the afav7c tests (see `04_*`/`05_*`).
++- AFAV7B-R1-F4 DONE (doc): the afav7b "RED 5 of 7" text overstated; only 2 were AssertionErrors, the others `android.util.Log` not mocked RuntimeExceptions, and the test file changed between RED and GREEN. afav7c re-ran a genuine RED from the start with `Log` mocked against a lenient-mapping stub of `loadProgress`/`loadHistory`: 14 tests, 9 failed, all `AssertionError` (`01_RED_A_failure_types.txt`).
++- AFAV7B-R1-F5 DONE (doc, behaviour deliberately unchanged): stated that both sync targets (`PUT user/progress/{id}`, `PUT media/{id}/rating`) have no server route (RFM-R1-1, AFAV-8/9; the wprog branch makes `PUT /media/:id/progress` persist but the client path is still wrong). Immediate drop for permanent 4xx NOT implemented: here the 404 is a missing-route symptom of the client-path bug, so the same queued operation would succeed once the route/path is fixed; dropping at once would destroy user data earlier than the current 3-retry policy for no gain. Revisit after AFAV-8/9.
++- AFAV7B-R1-F6 DONE (doc): the AFAV-7b register row now says what the evidence holds (1 playback + 2 sync mutants in afav7b; named mutants in afav7c).
++- AFAV7B-R1-F7 DONE (PROVISIONAL, error line only): the dialog error line now comes from string resources and appends a sign-in hint when the failure is HTTP 401 (`HistoryUiState.Error.httpCode`, tested at state level; the Compose rendering is not UI-tested). NOT done: the client rejecting `"sessions":null` (server never sends it).
++- Not run: any device, live server, androidtv, Compose UI test.
+diff --git a/docs/WORKABLE_ITEMS_REGISTER.md b/docs/WORKABLE_ITEMS_REGISTER.md
+index d352efff0..c1e320805 100644
+--- a/docs/WORKABLE_ITEMS_REGISTER.md
++++ b/docs/WORKABLE_ITEMS_REGISTER.md
+@@ -161,7 +161,7 @@ All statuses PROVISIONAL, none VERIFIED. State fields (§11.4.294): Reproduction
+ | AFAV-7 | Bug | PROVISIONAL-DONE | Android `getEntityProgress`/`getEntityHistory` doubled `/api/v1` prefix; fixed by relative paths, MockWebServer wire tests under the production base `/api/v1/` (RED 2 failed, GREEN), evidence `docs/qa/afav7-20261117/`. Open: HistoryDialog still shows empty history on a non-2xx (PlaybackRepository swallows errors; error state addressed in AFAV-7b, PROVISIONAL). **Verification:** provisional - job: device or live-server run of the affected client path - layer runtime - target Android/Android TV client against catalog-api - artifact `main` - due before the next release tag (NOT yet run; no device run so far). | Reproduction: UNREPRODUCED (§11.4.292(B): host fixture on a device surface; see Reproduction line) / Investigation: root-cause-found-with-evidence | Device run owed. |
+ 
+ **Reproduction (AFAV-7):** result: UNREPRODUCED (host fixture only; closed-set `reproduced-host-fixture` does not apply because the surface is user-reachable on device) - surface: Android / Android TV client, HistoryDialog long-press - command: Gradle `:app:testDebugUnitTest --tests '*CatalogizerApiTest'` in catalogizer-android, MockWebServer under production base `/api/v1/` - RED evidence: `docs/qa/afav7-20261117/01_RED_android_CatalogizerApiTest.txt` sha256 e5b9f06b150028c8253c43b84b764646c71fae41ce780a53ed4e83642c913d6c (2 failed, path `/api/v1/api/v1/entities/5/...`) - build/artifact: tree base 8eb1cd9fa368e0731f2d638ce2ecfe104170cbd2, no device artifact - target: none (no board, no live server) - symptom signature: doubled `/api/v1` prefix in the request path; UNCONFIRMED: device behaviour. Without a live RED the item cannot reach VERIFIED-DONE.
+-| AFAV-7b | Bug | PROVISIONAL-DONE | `PlaybackRepository.getProgress/listHistory` (Android) mapped every non-2xx/exception to null/empty so HistoryDialog could not tell "no history" from "request failed". Added strict `loadProgress/loadHistory` returning `PlaybackLoadResult` (Success/Failure with HTTP code) and a `HistoryUiState` Loading/Loaded/Error the dialog renders; lenient getters kept for Home cards. MockWebServer RED (5 of 7 failed) then GREEN, 2 mutants killed, evidence `docs/qa/afav7b-20261117/`. **Verification:** provisional - job: device or live-server run of the History dialog on a 500/401 - layer runtime - target Android client against catalog-api - artifact branch afav7b - due before the next release tag (NOT yet run). | Reproduction: reproduced-host-fixture on a device surface, so UNREPRODUCED at the live level (MockWebServer wire test only) / Investigation: root-cause-found-with-evidence | Device run owed. |
++| AFAV-7b | Bug | PROVISIONAL-DONE | `PlaybackRepository.getProgress/listHistory` (Android) mapped every non-2xx/exception to null/empty so HistoryDialog could not tell "no history" from "request failed". Added strict `loadProgress/loadHistory` returning `PlaybackLoadResult` (Success/Failure with HTTP code) and a `HistoryUiState` Loading/Loaded/Error the dialog renders; lenient getters kept for Home cards. MockWebServer tests; the afav7b RED text "5 of 7 failed" was imprecise (only 2 were AssertionErrors, the rest `Log` not mocked RuntimeExceptions); afav7c (review round 1 follow-ups AFAV7B-R1-F1..F7) re-ran a genuine RED against a lenient-mapping stub with `Log` mocked from the start (9 of 14 AssertionErrors), rethrows `CancellationException` (catch `Exception`), adds history-500/progress-exception/malformed-JSON/204/cancellation tests and a 401 login hint; mutants: afav7b evidence holds 1 playback + 2 sync mutants, afav7c adds named mutants M1/M2/M5/M7 (survive on the afav7b tests, killed by the afav7c tests); evidence `docs/qa/afav7b-20261117/`, `docs/qa/afav7c-20261117/`. **Verification:** provisional - job: device or live-server run of the History dialog on a 500/401 - layer runtime - target Android client against catalog-api - artifact branch afav7b - due before the next release tag (NOT yet run). | Reproduction: reproduced-host-fixture on a device surface, so UNREPRODUCED at the live level (MockWebServer wire test only) / Investigation: root-cause-found-with-evidence | Device run owed. |
+ | AFAV-8 | Task | Queued | Android Retrofit methods with no server route and no live caller (list in FOLLOW_UPS AFAV-8); remove or repoint per endpoint. `PUT user/progress/{id}` is not repointed to `PUT /media/:id/progress` (authenticated via RequireAuth, main.go:1014/1062, but the handler ignores `user_id`, persists nothing and its fractional value mismatches `media_progress`): the fix is that handler reading `user_id` and writing `media_progress`, see RFM-R1-1. | Reproduction: reproduced-host-fixture / Investigation: in-progress | Operator decision per endpoint (§11.4.122). |
+ | AFAV-9 | Task | Queued | Android favorite/rating/offline path has no production entry (dead code, §11.4.124); build the UI or retire after history investigation. | Reproduction: UNSET / Investigation: UNSET (Task, §11.4.294(E); finding is static) | Operator decision. |
+ | AFAV-10 | Bug | Queued | Two favorites stores never meet (`user_favorites` via PUT media/:id/favorite vs `favorites` group used by TV, web, smart rules); decide single store + migration + cross-client live test. | Reproduction: reproduced-host-fixture (static, no live cross-client run) / Investigation: root-cause-found-with-evidence | Operator decision. |

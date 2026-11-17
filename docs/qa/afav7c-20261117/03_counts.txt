@@ -1,0 +1,5 @@
+PlaybackRepositoryTest 18 fail 0 err 0
+PlaybackRepositoryErrorStateTest 14 fail 0 err 0
+CatalogizerApiTest 11 fail 0 err 0
+SyncManagerTest 19 fail 0 err 0
+TOTAL tests=62 failures=0 errors=0 skipped=0

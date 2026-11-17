@@ -1,0 +1,15 @@
+tests=14 failures=9 errors=0
+pass cancelling mid-load leaves no Failure result and propagates cancellation
+FAIL loadProgress network exception is a Failure with null code :: java.lang.AssertionError :: java.lang.AssertionError: got Success(value=null)
+FAIL progress 401 error state carries the code for the login hint :: java.lang.AssertionError :: java.lang.AssertionError: expected:<Error(message=HTTP 401, httpCode=401)> but was:<Loaded(progress=
+pass genuinely empty history is Success empty
+FAIL history UI state maps failure to Error and empty to Empty :: java.lang.AssertionError :: java.lang.AssertionError
+FAIL progress 200 plus history 500 is an Error state :: java.lang.AssertionError :: java.lang.AssertionError: got Loaded(progress=null, sessions=[])
+FAIL history 401 is a Failure not empty :: java.lang.AssertionError :: java.lang.AssertionError: got Success(value=[])
+FAIL network exception is a Failure :: java.lang.AssertionError :: java.lang.AssertionError: got Success(value=[])
+FAIL history 500 is a Failure not empty :: java.lang.AssertionError :: java.lang.AssertionError: got Success(value=[])
+pass 204 no content is Success empty and Success null
+FAIL malformed JSON is a Failure not empty :: java.lang.AssertionError :: java.lang.AssertionError
+pass cancellation raised by the api is rethrown by loadProgress and loadHistory
+FAIL progress 500 and 401 are Failures :: java.lang.AssertionError :: java.lang.AssertionError: code 500 got Success(value=null)
+pass no progress recorded is Success null
