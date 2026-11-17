@@ -3559,6 +3559,14 @@ DO NOT use LIVE_WS_CHECK for the live G4 run until N1-N4 are fixed (they are rep
 - ALTSVC2-F5 (nit): `/discovery`, OPTIONS preflight and early-aborted responses never carry Alt-Svc; name the exceptions.
 - ALTSVC2-F6 (nit): leftover `_ = ce.Pos()` in scanMainVerifySequence; stale text in main_startup_routes_test.go:20 and main.go:~1547.
 
+### ALTSVC3 (addresses ALTSVC2-F1..F6, PROVISIONAL, evidence docs/qa/altsvc3-20261117/)
+- F1: `startH3Stack` (catalog-api/main_h3.go) loads the certificate, binds TCP and UDP, and sets `h3Advertised` only after the UDP bind is confirmed; it is cleared if the HTTP/3 server later fails; main() no longer touches the flag.
+- F2: main() wiring pinned by the AST scan (exactly one `startH3Stack(...)` call, no `h3Advertised` mention; mutants R4, R4b) and by behaviour tests with a certificate error / UDP bind failure.
+- F3: real-socket HTTP/2 over TLS tests (ephemeral ports, free-port wait, INCONCLUSIVE skip); mutant R5 (defer after Next) killed.
+- F4: mutant AS11 (middleware registered after the routes) shows the real signature: routed 200 lacks Alt-Svc while the 404 control has it.
+- F5: exceptions (/discovery, CORS preflight, early aborts, plain HTTP, flag off) documented on `altSvcMiddleware` and pinned by TestAltSvcDocumentedExceptions. F6: leftover `ce.Pos()` and stale texts removed.
+- Limits: no HTTP/3 (QUIC) client request is made; the real `main()` is not asserted on 28443 (an equivalent real listener, the same helper main() calls, is used); HTTPS and HTTP/3 binds are now independent (a TCP bind failure no longer blocks the HTTP/3 server).
+
 ## S1G9 review (Opus, NO-GO, round 1 of structural successor, NOT landed)
 - Important: RV1 helper class not pinned; RV2 RequireAdmin body not content-pinned; RV5 behaviour layer checks status only, not 401/403 body. Minor: timeout counted as reached; control needle `n > 3*len` trivial (use n == 9*len); tests send discovery multicast. Fix needs (a) README states RV1/RV2/RV5 classes, (b) pin RequireAdmin body, (c) assert canonical 401/403 body.
 

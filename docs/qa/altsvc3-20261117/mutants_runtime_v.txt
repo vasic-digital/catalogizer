@@ -1,0 +1,26 @@
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants/AS1_altsvc_aborts_the_chain
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants/AS2_altsvc_header_dropped
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants/AS4_header_on_plain_HTTP
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants/AS5_ma_value_changed
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants/AS6_advertised_while_h3_disabled
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants/AS7_middleware_removed_from_buildRouter
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants/AS8_R5_header_set_via_defer_after_next
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants/AS9_flag_set_before_cert_load
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants/AS10_flag_set_before_udp_bind
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants/AS11_middleware_registered_after_routes_real_signature
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants/HK1_handlerKey_depends_on_directory_name_under_trimpath
+--- PASS: TestAltSvcAndHandlerKey_RuntimeMutants (513.60s)
+    --- PASS: TestAltSvcAndHandlerKey_RuntimeMutants/AS1_altsvc_aborts_the_chain (27.20s)
+    --- PASS: TestAltSvcAndHandlerKey_RuntimeMutants/AS2_altsvc_header_dropped (36.64s)
+    --- PASS: TestAltSvcAndHandlerKey_RuntimeMutants/AS4_header_on_plain_HTTP (38.02s)
+    --- PASS: TestAltSvcAndHandlerKey_RuntimeMutants/AS5_ma_value_changed (35.49s)
+    --- PASS: TestAltSvcAndHandlerKey_RuntimeMutants/AS6_advertised_while_h3_disabled (31.10s)
+    --- PASS: TestAltSvcAndHandlerKey_RuntimeMutants/AS7_middleware_removed_from_buildRouter (47.43s)
+    --- PASS: TestAltSvcAndHandlerKey_RuntimeMutants/AS8_R5_header_set_via_defer_after_next (62.36s)
+    --- PASS: TestAltSvcAndHandlerKey_RuntimeMutants/AS9_flag_set_before_cert_load (55.93s)
+    --- PASS: TestAltSvcAndHandlerKey_RuntimeMutants/AS10_flag_set_before_udp_bind (46.39s)
+    --- PASS: TestAltSvcAndHandlerKey_RuntimeMutants/AS11_middleware_registered_after_routes_real_signature (57.10s)
+    --- PASS: TestAltSvcAndHandlerKey_RuntimeMutants/HK1_handlerKey_depends_on_directory_name_under_trimpath (75.95s)
+PASS
+ok  	catalogizer	514.216s

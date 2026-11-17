@@ -92,6 +92,9 @@ func buildBinds(files map[string]*ast.File) map[string]string {
 
 const authPrefix = "api/v1/auth"
 
+// h3Call is the one statement in main() that starts the HTTPS/HTTP3 stack (main_h3.go).
+const h3Call = "httpsServer, http3Server := startH3Stack(logger, srv.Handler, cfg.Server.Host, h3Port, getOrCreateSelfSignedCert)"
+
 func segHasPrefix(q, p string) bool { return q == p || strings.HasPrefix(q, p+"/") }
 func trimSlashes(s string) string   { return strings.Trim(s, "/") }
 
@@ -839,14 +842,20 @@ func TestAuthSurfaceGuard_Mutants(t *testing.T) {
 		{"F1b_second_Use_in_main", "engine .Use in main()", func(d string) {
 			edit(t, d, "main.go", "// Fail closed: the auth surface of the finished engine must be exactly the", "router.Use(evilLater())\n\t// Fail closed: the auth surface of the finished engine must be exactly the")
 		}},
+		{"R4_h3Advertised_stored_in_main_before_cert_load", "never mention h3Advertised", func(d string) {
+			edit(t, d, "main.go", h3Call, "h3Advertised.Store(true)\n\t"+h3Call)
+		}},
+		{"R4b_startH3Stack_call_removed", "main() must call exactly once", func(d string) {
+			edit(t, d, "main.go", h3Call, "var httpsServer *http.Server\n\tvar http3Server interface{ Close() error }")
+		}},
 		{"F1b2_main_Use_altsvc_back", "engine .Use in main()", func(d string) {
-			edit(t, d, "main.go", "h3Advertised.Store(true)", "h3Advertised.Store(true)\n\trouter.Use(altSvcMiddleware)")
+			edit(t, d, "main.go", h3Call, h3Call+"\n\trouter.Use(altSvcMiddleware)")
 		}},
 		{"F1b3_main_Use_evil_after_h3", "engine .Use in main()", func(d string) {
-			edit(t, d, "main.go", "h3Advertised.Store(true)", "h3Advertised.Store(true)\n\trouter.Use(altSvcMiddleware, evilLater())")
+			edit(t, d, "main.go", h3Call, h3Call+"\n\trouter.Use(altSvcMiddleware, evilLater())")
 		}},
 		{"F1b5_main_Use_spread", "engine .Use in main()", func(d string) {
-			edit(t, d, "main.go", "h3Advertised.Store(true)", "h3Advertised.Store(true)\n\trouter.Use(hooks...)")
+			edit(t, d, "main.go", h3Call, h3Call+"\n\trouter.Use(hooks...)")
 		}},
 		{"AS3_buildRouter_altsvc_Use_removed", "buildRouter's engine Use sequence differs", func(d string) {
 			edit(t, d, "main_router.go", "\trouter.Use(altSvcMiddleware) // CAT-ALTSVC-1: before the routes, or it would reach only the NoRoute chain\n", "")
@@ -901,19 +910,19 @@ func TestAuthSurfaceGuard_Mutants(t *testing.T) {
 		}},
 		{"RB_both_verify_calls_deleted", "found 0 well-formed, 0 mentions", func(d string) {
 			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed\", zap.Error(err))\n\t}", "")
-			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed (after the Alt-Svc middleware)\", zap.Error(err))\n\t}", "")
+			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed (final form)\", zap.Error(err))\n\t}", "")
 		}},
 		{"RB1_first_verify_deleted", "found 1 well-formed, 1 mentions", func(d string) {
 			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed\", zap.Error(err))\n\t}", "")
 		}},
 		{"RB2_second_verify_deleted", "found 1 well-formed, 1 mentions", func(d string) {
-			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed (after the Alt-Svc middleware)\", zap.Error(err))\n\t}", "")
+			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed (final form)\", zap.Error(err))\n\t}", "")
 		}},
 		{"RC_first_Fatal_to_Warn", "found 1 well-formed, 2 mentions", func(d string) {
 			edit(t, d, "main.go", "logger.Fatal(\"Auth route table check failed\", zap.Error(err))", "logger.Warn(\"Auth route table check failed\", zap.Error(err))")
 		}},
 		{"RC2_second_Fatal_to_Warn", "found 1 well-formed, 2 mentions", func(d string) {
-			edit(t, d, "main.go", "logger.Fatal(\"Auth route table check failed (after the Alt-Svc middleware)\", zap.Error(err))", "logger.Warn(\"Auth route table check failed (after the Alt-Svc middleware)\", zap.Error(err))")
+			edit(t, d, "main.go", "logger.Fatal(\"Auth route table check failed (final form)\", zap.Error(err))", "logger.Warn(\"Auth route table check failed (final form)\", zap.Error(err))")
 		}},
 		{"RD_registration_after_first_verify", "registers on or hands out the engine", func(d string) {
 			edit(t, d, "main.go", "// Find available port for HTTP server", "router.GET(\"/late\", evil)\n\t// Find available port for HTTP server")
@@ -1137,7 +1146,6 @@ func scanMainVerifySequence(fset *token.FileSet, files map[string]*ast.File) []s
 	altCount := 0
 	ast.Inspect(mainFn.Body, func(n ast.Node) bool {
 		if ce, ok := n.(*ast.CallExpr); ok && exprText(fset, ce) == "router.Use(altSvcMiddleware)" {
-			_ = ce.Pos()
 			altCount++
 		}
 		return true
@@ -1150,6 +1158,26 @@ func scanMainVerifySequence(fset *token.FileSet, files map[string]*ast.File) []s
 	if len(verifyIdx) != 2 || mentions != 2 {
 		add("main.go: main() must contain exactly two top-level `if err := verifyAuthRouteTable(router); err != nil { logger.Fatal(...) }` statements and no other mention of the verifier (found %d well-formed, %d mentions)", len(verifyIdx), mentions)
 		return out
+	}
+	// ALTSVC2-F2: the HTTP/3 advertisement is decided inside startH3Stack (certificate loaded,
+	// UDP bind confirmed); main() must call it exactly once, with the certificate loader, and
+	// must never set or read h3Advertised itself (a Store before the cert load, mutant R4).
+	h3Calls, h3Mentions := 0, 0
+	ast.Inspect(mainFn.Body, func(n ast.Node) bool {
+		switch x := n.(type) {
+		case *ast.Ident:
+			if x.Name == "h3Advertised" {
+				h3Mentions++
+			}
+		case *ast.CallExpr:
+			if exprText(fset, x) == strings.TrimPrefix(h3Call, "httpsServer, http3Server := ") {
+				h3Calls++
+			}
+		}
+		return true
+	})
+	if h3Calls != 1 || h3Mentions != 0 {
+		add("main.go: main() must call exactly once `%s` and never mention h3Advertised (found %d calls, %d mentions; the advertisement is set after the confirmed bind inside startH3Stack)", h3Call, h3Calls, h3Mentions)
 	}
 	if altCount != 0 {
 		add("main.go: main() must not contain router.Use(altSvcMiddleware) (found %d; it is installed in buildRouter before the routes, CAT-ALTSVC-1)", altCount)

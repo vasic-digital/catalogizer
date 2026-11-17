@@ -300,9 +300,10 @@ var authRouteTable = []string{
 	"POST /api/v1/auth/register",
 }
 
-// h3Advertised is set by main() once it has a TLS certificate and starts the HTTP/3
-// (QUIC) listener on UDP 28443; it is never set when that listener is not started
-// (CAT-ALTSVC-1). Bind success is not confirmed (a bind failure is only logged).
+// h3Advertised is set by startH3Stack (main_h3.go) only after the TLS certificate is
+// loaded AND the HTTP/3 (QUIC) UDP socket on 28443 is bound; it stays false on a
+// certificate error or bind failure and is cleared if the HTTP/3 server later fails
+// (CAT-ALTSVC-1, ALTSVC2-F1). main() does not touch it.
 var h3Advertised atomic.Bool
 
 // altSvcMiddleware advertises the HTTP/3 endpoint on responses served over TLS
