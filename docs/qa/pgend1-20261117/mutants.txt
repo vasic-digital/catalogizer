@@ -1,0 +1,14 @@
+MUTANT M1 Start binds int 0 for completed
+--- FAIL: TestPlaybackSessionPostgres_StartProgressEndGetHistory (9.28s) --- FAIL: TestPlaybackSessionPostgres_ConcurrentEnds (8.50s) FAIL FAIL	catalogizer/repository	17.834s FAIL 
+MUTANT M2 End binds integer completed
+ok  	catalogizer/repository	20.479s 
+MUTANT M3 drop ended_at IS NULL compare-and-set
+--- FAIL: TestPlaybackSessionPostgres_ConcurrentEnds (10.91s) FAIL FAIL	catalogizer/repository	20.279s FAIL 
+MUTANT M4 non-incrementing reproductions
+--- FAIL: TestPlaybackSessionPostgres_StartProgressEndGetHistory (9.08s) --- FAIL: TestPlaybackSessionPostgres_ConcurrentEnds (9.46s) FAIL FAIL	catalogizer/repository	18.570s FAIL 
+MUTANT M5 no dialect rewrite on tx
+--- FAIL: TestPlaybackSessionPostgres_StartProgressEndGetHistory (11.83s) --- FAIL: TestPlaybackSessionPostgres_ConcurrentEnds (11.36s) FAIL FAIL	catalogizer/repository	23.257s FAIL 
+MUTANT M6 invert completed scan
+--- FAIL: TestPlaybackSessionPostgres_StartProgressEndGetHistory (9.52s) FAIL FAIL	catalogizer/repository	17.911s FAIL 
+RESTORED
+ 1 file changed, 53 insertions(+), 55 deletions(-)
