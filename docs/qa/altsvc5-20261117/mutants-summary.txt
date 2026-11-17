@@ -1,0 +1,18 @@
+M1_shared run1 rc=1 races=1 --- FAIL: TestAltSvc5_NoSharedTLSConfig (0.00s) --- FAIL: TestAltSvc5_ConcurrentStartRaceFree (0.36s) 
+M1_shared run2 rc=1 races=7 --- FAIL: TestAltSvc5_NoSharedTLSConfig (0.01s) --- FAIL: TestAltSvc5_ConcurrentStartRaceFree (0.37s) 
+M1_shared run3 rc=1 races=1 --- FAIL: TestAltSvc5_NoSharedTLSConfig (0.01s) --- FAIL: TestAltSvc5_ConcurrentStartRaceFree (0.45s) 
+M2_clone_only_https run1 rc=0 races=0 
+M2_clone_only_https run2 rc=0 races=0 
+M2_clone_only_https run3 rc=0 races=0 
+M3_clone_only_h3 run1 rc=0 races=0 
+M3_clone_only_h3 run2 rc=0 races=0 
+M3_clone_only_h3 run3 rc=0 races=0 
+M4_clone_late BUILD-FAIL
+M5_shared_clone run1 rc=1 races=3 --- FAIL: TestAltSvc5_NoSharedTLSConfig (0.01s) --- FAIL: TestAltSvc5_ConcurrentStartRaceFree (0.37s) 
+M5_shared_clone run2 rc=1 races=7 --- FAIL: TestAltSvc5_NoSharedTLSConfig (0.01s) --- FAIL: TestAltSvc5_ConcurrentStartRaceFree (0.37s) 
+M5_shared_clone run3 rc=1 races=3 --- FAIL: TestAltSvc5_NoSharedTLSConfig (0.00s) --- FAIL: TestAltSvc5_ConcurrentStartRaceFree (0.50s) 
+restored
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+M4 run1 rc=1 races=1
+M4 run2 rc=1 races=1
+M4 run3 rc=1 races=1

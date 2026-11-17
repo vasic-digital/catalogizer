@@ -3779,3 +3779,16 @@ Reviewer cleared the DO-NOT-USE marker for the live G4 run under conditions: BAS
 - SECWS1F3F-R-7 (nit): uppercase HTTPS:// refused (conservative).
 - SECWS1F3F-R-8 (process-doc): README.md:10 grandchild claim unconditional (setsid escapes); a 5xx listed in VICTIM_REFUSED_STATUS could be read as proof.
 - SECWS1F3F-R-9 (process-doc): README.md:99-100 shellcheck list incomplete (also SC2086 x2, SC2329).
+
+## ALTSVC5 (shared tls.Config data race in startH3Stack, 2026-11-17) **[ADDRESSED, PROVISIONAL]**
+- Defect: one *tls.Config shared by http.Server (ServeTLS writes it via http2ConfigureServer) and http3.Server (Clone reads it); -race reported DATA RACE in 5 of 6 runs. Fixed by one Clone() per server before start (main_h3.go); tests TestAltSvc5_*; evidence docs/qa/altsvc5-20261117/.
+- Owed: same pattern in the vendored constitution scripts/scheduled-work-engine/cmd/scheduled-work/main.go (upstream report); production impact UNCONFIRMED; full-package -race not run.
+
+## ALTSVC5 review follow-ups (Opus review round 1, GO-with-follow-ups, 2026-11-17)
+
+- ALTSVC5-R-F1 (minor): README cites 3 green runs; reviewer ran 8 of 8 clean; record >=5.
+- ALTSVC5-R-F2 (minor): `mutants.sh` M4 (line 25) leaves `h3TLS` unused and does not build as written; redone by hand.
+- ALTSVC5-R-F3 (minor): impact note: the written field is `PreferServerCipherSuites = true` (h2_bundle.go:4275, go1.26.8); NextProtos is not appended, so production effect is very likely a formal race on a deprecated no-op field, not torn ALPN (still UNCONFIRMED at runtime).
+- ALTSVC5-R-F4 (minor): re-run the guard set and the AuthSurfaceBinary/DumpIsolation tests on the final tree.
+- ALTSVC5-R-F5 (optional): adopt the reviewer's real-socket cert+ALPN test (h2 via tls.Dial, h3 via quic.DialAddr) and the late-clone mutant R1.
+- ALTSVC5-R-F6 (upstream): constitution `scripts/scheduled-work-engine/cmd/scheduled-work/main.go` (~lines 142/160) hands one `tlsCfg` to http.Server and http3.Server; needs an upstream item (not touched here).
