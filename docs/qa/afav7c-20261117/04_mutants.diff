@@ -1,0 +1,33 @@
+--- /dev/fd/63	2026-11-17 14:03:31.176131784 +0100
++++ catalogizer-android/app/src/main/java/com/catalogizer/android/data/playback/PlaybackRepository.kt	2026-11-17 13:50:28.541672575 +0100
+@@ -79,7 +79,7 @@
+             throw e
+         } catch (t: Exception) {
+             Log.w(TAG, "loadProgress exception: ${t.message}")
+-            PlaybackLoadResult.Failure(null, t.message ?: t.javaClass.simpleName)
++            PlaybackLoadResult.Success(null)
+         }
+     }
+ 
+@@ -92,8 +92,6 @@
+             val body = resp.body() ?: return PlaybackLoadResult.Success(emptyList())
+             val sessionsEl = body["sessions"] ?: return PlaybackLoadResult.Success(emptyList())
+             PlaybackLoadResult.Success(sessionsEl.jsonArray.map { it.jsonObject.toSession() })
+-        } catch (e: CancellationException) {
+-            throw e
+         } catch (t: Exception) {
+             Log.w(TAG, "loadHistory exception: ${t.message}")
+             PlaybackLoadResult.Failure(null, t.message ?: t.javaClass.simpleName)
+--- /dev/fd/63	2026-11-17 14:03:31.205195275 +0100
++++ catalogizer-android/app/src/main/java/com/catalogizer/android/data/playback/HistoryUiState.kt	2026-11-17 13:50:28.542231537 +0100
+@@ -11,8 +11,8 @@
+     val progress = repository.loadProgress(mediaItemId)
+     val history = repository.loadHistory(mediaItemId, limit)
+     return when {
+-        progress is PlaybackLoadResult.Failure -> HistoryUiState.Error(progress.message, progress.httpCode)
+-        history is PlaybackLoadResult.Failure -> HistoryUiState.Error(history.message, history.httpCode)
++        progress is PlaybackLoadResult.Failure -> HistoryUiState.Error(progress.message, null)
++        history is PlaybackLoadResult.Failure -> HistoryUiState.Loaded(null, emptyList())
+         else -> HistoryUiState.Loaded(
+             (progress as PlaybackLoadResult.Success).value,
+             (history as PlaybackLoadResult.Success).value,

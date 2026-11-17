@@ -25,8 +25,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.catalogizer.android.R
 import com.catalogizer.android.data.playback.HistoryUiState
 import com.catalogizer.android.data.playback.PlaybackFormatter
 import com.catalogizer.android.data.playback.loadHistoryUiState
@@ -83,7 +85,8 @@ fun HistoryDialog(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     is HistoryUiState.Error -> Text(
-                        "Could not load history (${st.message}). Close and try again.",
+                        stringResource(R.string.history_load_error, st.message) +
+                            if (st.httpCode == 401) " " + stringResource(R.string.history_login_hint) else "",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error,
                     )
