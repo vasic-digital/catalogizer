@@ -187,7 +187,7 @@ class MediaRepository(
      * Add an entity to the current user's favorites.
      */
     suspend fun addFavorite(entityType: String, entityId: Long) {
-        val body = mapOf<String, Any>("entity_type" to entityType, "entity_id" to entityId)
+        val body = com.catalogizer.androidtv.data.remote.FavoriteRequest(entityType, entityId)
         val response = api.addFavorite(body)
         if (!response.isSuccessful) {
             throw Exception("Failed to add favorite: ${response.code()} ${response.message()}")
@@ -232,7 +232,7 @@ class MediaRepository(
     /**
      * Fetch all collections from the server.
      */
-    suspend fun getCollections(): Map<String, Any>? {
+    suspend fun getCollections(): kotlinx.serialization.json.JsonObject? {
         return try {
             val response = api.getCollections()
             if (response.isSuccessful) {
@@ -250,7 +250,7 @@ class MediaRepository(
     /**
      * Fetch a single collection by ID.
      */
-    suspend fun getCollection(id: Long): Map<String, Any>? {
+    suspend fun getCollection(id: Long): kotlinx.serialization.json.JsonObject? {
         return try {
             val response = api.getCollection(id)
             if (response.isSuccessful) {
@@ -343,7 +343,7 @@ class MediaRepository(
     /**
      * Fetch all playlists for the current user.
      */
-    suspend fun getPlaylists(): Map<String, Any>? {
+    suspend fun getPlaylists(): kotlinx.serialization.json.JsonObject? {
         return try {
             val response = api.getPlaylists()
             if (response.isSuccessful) {
@@ -361,10 +361,9 @@ class MediaRepository(
     /**
      * Create a new playlist with the given name (and optional description).
      */
-    suspend fun createPlaylist(name: String, description: String? = null): Map<String, Any>? {
+    suspend fun createPlaylist(name: String, description: String? = null): kotlinx.serialization.json.JsonObject? {
         return try {
-            val body = mutableMapOf("name" to name)
-            description?.let { body["description"] = it }
+            val body = com.catalogizer.androidtv.data.remote.CreatePlaylistRequest(name, description)
             val response = api.createPlaylist(body)
             if (response.isSuccessful) {
                 response.body()
@@ -381,9 +380,9 @@ class MediaRepository(
     /**
      * Add a media item to a playlist.
      */
-    suspend fun addPlaylistItem(playlistId: Long, mediaId: Long): Map<String, Any>? {
+    suspend fun addPlaylistItem(playlistId: Long, mediaId: Long, entityType: String = "movie"): kotlinx.serialization.json.JsonObject? {
         return try {
-            val body = mapOf<String, Any>("media_id" to mediaId)
+            val body = com.catalogizer.androidtv.data.remote.PlaylistItemRequest(entity_id = mediaId, entity_type = entityType)
             val response = api.addPlaylistItem(playlistId, body)
             if (response.isSuccessful) {
                 response.body()

@@ -73,17 +73,17 @@ interface CatalogizerApi {
     // summary the card ProgressBadge consumes.
     @POST("api/v1/playback/sessions/start")
     suspend fun startPlaybackSession(
-        @Body body: Map<String, @JvmSuppressWildcards Any>
+        @Body body: StartPlaybackRequest
     ): Response<kotlinx.serialization.json.JsonObject>
 
     @POST("api/v1/playback/sessions/progress")
     suspend fun progressPlaybackSession(
-        @Body body: Map<String, @JvmSuppressWildcards Any>
+        @Body body: ProgressPlaybackRequest
     ): Response<Unit>
 
     @POST("api/v1/playback/sessions/end")
     suspend fun endPlaybackSession(
-        @Body body: Map<String, @JvmSuppressWildcards Any>
+        @Body body: EndPlaybackRequest
     ): Response<Unit>
 
     @GET("api/v1/entities/{id}/progress")
@@ -103,6 +103,8 @@ interface CatalogizerApi {
     @GET("api/v1/catalog-info/{path}")
     suspend fun getMediaInfo(@Path("path") path: String): Response<MediaItem>
 
+    // NO server route exists for this (docs/qa/client-route-drift-20261117/REPORT.md, AFAV-11); kept, not deleted
+    // (§11.4.122), and its Map<String, Any> body stays un-callable: pinned in RetrofitProxyGuardTest with that reason.
     @POST("api/v1/media/recognize")
     suspend fun recognizeMedia(@Body request: Map<String, Any>): Response<MediaItem>
 
@@ -112,7 +114,7 @@ interface CatalogizerApi {
 
     // Favorites endpoints
     @POST("api/v1/favorites")
-    suspend fun addFavorite(@Body body: Map<String, @JvmSuppressWildcards Any>): Response<Map<String, String>>
+    suspend fun addFavorite(@Body body: FavoriteRequest): Response<Map<String, String>>
 
     @DELETE("api/v1/favorites/{entity_type}/{entity_id}")
     suspend fun removeFavorite(
@@ -127,7 +129,7 @@ interface CatalogizerApi {
     ): Response<Map<String, Boolean>>
 
     @GET("api/v1/favorites")
-    suspend fun listFavorites(): Response<Map<String, @JvmSuppressWildcards Any>>
+    suspend fun listFavorites(): Response<kotlinx.serialization.json.JsonObject>
 
     // Stats endpoint
     @GET("api/v1/entities/stats")
@@ -135,10 +137,10 @@ interface CatalogizerApi {
 
     // Collections endpoints
     @GET("api/v1/collections")
-    suspend fun getCollections(): Response<Map<String, Any>>
+    suspend fun getCollections(): Response<kotlinx.serialization.json.JsonObject>
 
     @GET("api/v1/collections/{id}")
-    suspend fun getCollection(@Path("id") id: Long): Response<Map<String, Any>>
+    suspend fun getCollection(@Path("id") id: Long): Response<kotlinx.serialization.json.JsonObject>
 
     // Recommendations endpoints
     @GET("api/v1/recommendations/similar/{mediaId}")
@@ -149,28 +151,28 @@ interface CatalogizerApi {
 
     // Scan status endpoint
     @GET("api/v1/scans")
-    suspend fun getScans(): Response<Map<String, Any>>
+    suspend fun getScans(): Response<kotlinx.serialization.json.JsonObject>
 
     // Playlists endpoints
     @GET("api/v1/playlists")
-    suspend fun getPlaylists(): Response<Map<String, Any>>
+    suspend fun getPlaylists(): Response<kotlinx.serialization.json.JsonObject>
 
     @POST("api/v1/playlists")
-    suspend fun createPlaylist(@Body body: Map<String, String>): Response<Map<String, Any>>
+    suspend fun createPlaylist(@Body body: CreatePlaylistRequest): Response<kotlinx.serialization.json.JsonObject>
 
     @POST("api/v1/playlists/{id}/items")
-    suspend fun addPlaylistItem(@Path("id") id: Long, @Body body: Map<String, @JvmSuppressWildcards Any>): Response<Map<String, Any>>
+    suspend fun addPlaylistItem(@Path("id") id: Long, @Body body: PlaylistItemRequest): Response<kotlinx.serialization.json.JsonObject>
 
     // Overall statistics endpoint
     @GET("api/v1/stats/overall")
-    suspend fun getOverallStats(): Response<Map<String, Any>>
+    suspend fun getOverallStats(): Response<kotlinx.serialization.json.JsonObject>
 
     // Subtitles endpoints
     @GET("api/v1/subtitles/media/{mediaId}")
-    suspend fun getSubtitles(@Path("mediaId") mediaId: Long): Response<Map<String, Any>>
+    suspend fun getSubtitles(@Path("mediaId") mediaId: Long): Response<kotlinx.serialization.json.JsonObject>
 
     @GET("api/v1/subtitles/languages")
-    suspend fun getSubtitleLanguages(): Response<Map<String, Any>>
+    suspend fun getSubtitleLanguages(): Response<kotlinx.serialization.json.JsonObject>
 }
 
 /**
@@ -212,3 +214,54 @@ data class LoginResponse(
     val username: String get() = user.username
     val expiresAt: String? get() = expires_at
 }
+
+// Typed request bodies (ANDROID-RETROFIT-RESPONSE-ANY-1). Field names are the wire names of the catalog-api handlers
+// (handlers/playback_handler.go, handlers/service_handlers.go FavoritesHandler.AddFavorite, models.CreatePlaylistRequest,
+// models.AddPlaylistItemRequest). No defaults on required fields: kotlinx omits default-valued fields (encodeDefaults=false).
+
+/** POST /playback/sessions/start. [file_id] is omitted when null-default. */
+@kotlinx.serialization.Serializable
+data class StartPlaybackRequest(
+    val media_item_id: Long,
+    val file_id: Long? = null,
+    val position_unit: String,
+    val start_position: Long
+)
+
+/** POST /playback/sessions/progress. */
+@kotlinx.serialization.Serializable
+data class ProgressPlaybackRequest(
+    val session_id: Long,
+    val end_position: Long,
+    val total_amount: Long
+)
+
+/** POST /playback/sessions/end. */
+@kotlinx.serialization.Serializable
+data class EndPlaybackRequest(
+    val session_id: Long,
+    val end_position: Long,
+    val total_amount: Long,
+    val completed: Boolean
+)
+
+/** POST /favorites. */
+@kotlinx.serialization.Serializable
+data class FavoriteRequest(
+    val entity_type: String,
+    val entity_id: Long
+)
+
+/** POST /playlists. */
+@kotlinx.serialization.Serializable
+data class CreatePlaylistRequest(
+    val name: String,
+    val description: String? = null
+)
+
+/** POST /playlists/{id}/items (the server binds entity_id + entity_type, not media_id). */
+@kotlinx.serialization.Serializable
+data class PlaylistItemRequest(
+    val entity_id: Long,
+    val entity_type: String
+)

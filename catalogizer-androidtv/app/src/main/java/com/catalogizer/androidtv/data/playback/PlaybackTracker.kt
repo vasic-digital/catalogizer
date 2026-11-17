@@ -2,6 +2,9 @@ package com.catalogizer.androidtv.data.playback
 
 import android.util.Log
 import com.catalogizer.androidtv.data.remote.CatalogizerApi
+import com.catalogizer.androidtv.data.remote.EndPlaybackRequest
+import com.catalogizer.androidtv.data.remote.ProgressPlaybackRequest
+import com.catalogizer.androidtv.data.remote.StartPlaybackRequest
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -57,12 +60,12 @@ class PlaybackTracker(
         startPosition: Long = 0L,
     ): Long {
         return try {
-            val body = buildMap<String, Any> {
-                put("media_item_id", mediaItemId)
-                if (fileId != null) put("file_id", fileId)
-                put("position_unit", positionUnit)
-                put("start_position", startPosition)
-            }
+            val body = StartPlaybackRequest(
+                media_item_id = mediaItemId,
+                file_id = fileId,
+                position_unit = positionUnit,
+                start_position = startPosition,
+            )
             val resp = api.startPlaybackSession(body)
             if (!resp.isSuccessful) {
                 Log.w(TAG, "start failed: HTTP ${resp.code()}")
@@ -100,10 +103,10 @@ class PlaybackTracker(
                 if (id == 0L) break
                 try {
                     api.progressPlaybackSession(
-                        mapOf(
-                            "session_id" to id,
-                            "end_position" to getCurrentPosition(),
-                            "total_amount" to getTotalAmount(),
+                        ProgressPlaybackRequest(
+                            session_id = id,
+                            end_position = getCurrentPosition(),
+                            total_amount = getTotalAmount(),
                         ),
                     )
                 } catch (t: CancellationException) {
@@ -138,11 +141,11 @@ class PlaybackTracker(
         stopProgressTicker()
         try {
             api.endPlaybackSession(
-                mapOf(
-                    "session_id" to id,
-                    "end_position" to endPosition,
-                    "total_amount" to totalAmount,
-                    "completed" to completed,
+                EndPlaybackRequest(
+                    session_id = id,
+                    end_position = endPosition,
+                    total_amount = totalAmount,
+                    completed = completed,
                 ),
             )
             Log.d(TAG, "ended session $id at $endPosition (completed=$completed)")
