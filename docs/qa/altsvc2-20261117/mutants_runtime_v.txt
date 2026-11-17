@@ -1,0 +1,18 @@
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants/AS1_altsvc_aborts_the_chain
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants/AS2_altsvc_header_dropped
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants/AS4_header_on_plain_HTTP
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants/AS5_ma_value_changed
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants/AS6_advertised_while_h3_disabled
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants/AS7_middleware_removed_from_buildRouter
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants/HK1_handlerKey_depends_on_directory_name_under_trimpath
+--- PASS: TestAltSvcAndHandlerKey_RuntimeMutants (311.88s)
+    --- PASS: TestAltSvcAndHandlerKey_RuntimeMutants/AS1_altsvc_aborts_the_chain (31.84s)
+    --- PASS: TestAltSvcAndHandlerKey_RuntimeMutants/AS2_altsvc_header_dropped (27.29s)
+    --- PASS: TestAltSvcAndHandlerKey_RuntimeMutants/AS4_header_on_plain_HTTP (29.37s)
+    --- PASS: TestAltSvcAndHandlerKey_RuntimeMutants/AS5_ma_value_changed (33.36s)
+    --- PASS: TestAltSvcAndHandlerKey_RuntimeMutants/AS6_advertised_while_h3_disabled (39.79s)
+    --- PASS: TestAltSvcAndHandlerKey_RuntimeMutants/AS7_middleware_removed_from_buildRouter (26.24s)
+    --- PASS: TestAltSvcAndHandlerKey_RuntimeMutants/HK1_handlerKey_depends_on_directory_name_under_trimpath (123.98s)
+PASS
+ok  	catalogizer	312.310s
