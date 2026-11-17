@@ -1,6 +1,7 @@
 package services
 
 import (
+	"catalogizer/internal/netguard"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -461,7 +462,7 @@ type MachoLoadCommand struct {
 func NewGameSoftwareRecognitionProvider(logger *zap.Logger) *GameSoftwareRecognitionProvider {
 	return &GameSoftwareRecognitionProvider{
 		logger:     logger,
-		httpClient: &http.Client{Timeout: 30 * time.Second},
+		httpClient: netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 30 * time.Second, Strict: true}),
 		baseURLs: map[string]string{
 			"igdb":        "https://api.igdb.com/v4",
 			"steam":       "https://store.steampowered.com/api",

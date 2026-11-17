@@ -1,0 +1,95 @@
+# Census (grep, non-test .go under catalog-api, excluding challenges/): plain client constructions AFTER the fix
+# control needle (must be >=1): NewProviderClient call sites
+17
+# negative control (must be 0): a fabricated token
+0
+# remaining http.Client/Transport literals, DefaultClient, http.Get/Post/Head:
+main.go:1704:	dnsDoHClient  = &http.Client{Timeout: 5 * time.Second}
+main.go:1797:	return &http.Client{Timeout: 15 * time.Second}
+main.go:1801:	transport := &http.Transport{
+main.go:1819:					return &http.Client{Timeout: 15 * time.Second, Transport: transport}
+main.go:1827:				return &http.Client{Timeout: 15 * time.Second, Transport: transport}
+main.go:1835:	return &http.Client{Timeout: 15 * time.Second, Transport: transport}
+main.go:1858:	return &http.Client{Timeout: 15 * time.Second, Transport: transport}
+internal/httpclient/pool.go:12:	transport := &http.Transport{
+internal/httpclient/pool.go:24:	return &http.Client{
+internal/netguard/provider_client.go:179:	tr := &http.Transport{
+internal/netguard/provider_client.go:200:	return &http.Client{
+internal/netguard/operator.go:303:	return &http.Transport{
+internal/netguard/strictclass.go:24:	return &http.Transport{
+internal/netguard/netguard.go:358:	return &http.Transport{DialContext: DialContext, Proxy: nil, TLSHandshakeTimeout: 10 * time.Second}
+internal/netguard/netguard.go:365:	return &http.Client{
+internal/netguard/netguard.go:383:	c.Transport = &http.Transport{DialContext: StrictDialContext, Proxy: nil, TLSHandshakeTimeout: 10 * time.Second}
+internal/firebase/firebase.go:92:	// HTTPClient for outbound calls. Nil = http.DefaultClient.
+internal/services/cover_art_service.go:513:		transport := &http.Transport{}
+internal/services/cover_art_service.go:534:					client = &http.Client{Timeout: 30 * time.Second, Transport: transport, CheckRedirect: guardedRedirect}
+internal/services/cover_art_service.go:542:				client = &http.Client{Timeout: 30 * time.Second, Transport: transport, CheckRedirect: guardedRedirect}
+challenges/ch040_no_sensitive_errors.go:69:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch131_middleware_challenges.go:46:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch131_middleware_challenges.go:145:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch131_middleware_challenges.go:254:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch131_middleware_challenges.go:343:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch131_middleware_challenges.go:433:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch131_middleware_challenges.go:537:	httpClient := &http.Client{Timeout: 100 * time.Millisecond}
+challenges/ch131_middleware_challenges.go:634:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch131_middleware_challenges.go:732:	transport := &http.Transport{
+challenges/ch131_middleware_challenges.go:735:	httpClient := &http.Client{
+challenges/entity_metadata.go:189:		umResp, umDoErr := http.DefaultClient.Do(umReq)
+challenges/ch100_admin_challenges.go:687:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch141_phase1_endpoints.go:1005:	httpClient := &http.Client{Timeout: 30 * time.Second}
+challenges/ch186_200_security_challenges.go:52:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch186_200_security_challenges.go:552:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch186_200_security_challenges.go:645:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch186_200_security_challenges.go:738:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch186_200_security_challenges.go:929:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch186_200_security_challenges.go:1024:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch186_200_security_challenges.go:1128:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch201_220_performance_challenges.go:55:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch201_220_performance_challenges.go:1055:	httpClient := &http.Client{
+challenges/ch201_220_performance_challenges.go:1057:		Transport: &http.Transport{
+challenges/ch201_220_performance_challenges.go:1154:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch039_cors_headers.go:47:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch071_080.go:47:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch071_080.go:134:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch038_rate_limit_auth.go:50:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/browsing_helper.go:76:	client := &http.Client{Timeout: 3 * time.Second}
+challenges/ch081_088.go:272:	httpClient := &http.Client{Timeout: 30 * time.Second}
+challenges/ch111_conversion_challenges.go:450:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/performance_verification.go:68:	httpClient := &http.Client{Timeout: 30 * time.Second}
+challenges/performance_verification.go:302:	httpClient := &http.Client{
+challenges/performance_verification.go:304:		Transport: &http.Transport{
+challenges/performance_verification.go:598:	httpClient := &http.Client{Timeout: 5 * time.Second}
+challenges/ch061_070.go:641:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch061_070.go:740:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/asset_serving.go:99:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch050_graceful_shutdown.go:83:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/ch050_graceful_shutdown.go:156:	keepAliveClient := &http.Client{
+challenges/ch050_graceful_shutdown.go:158:		Transport: &http.Transport{
+challenges/browsing_web_app.go:86:	httpClient := &http.Client{
+challenges/asset_lazy_loading.go:114:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/image_quality.go:436:	httpClient := &http.Client{Timeout: 30 * time.Second}
+challenges/ch036_auth_required.go:48:	httpClient := &http.Client{Timeout: 10 * time.Second}
+challenges/metrics_auth_helper.go:24:		resp, err := (&http.Client{Timeout: 10 * time.Second}).Do(req)
+challenges/rate_limiting.go:52:	httpClient := &http.Client{Timeout: 10 * time.Second}
+filesystem/webdav_client.go:64:	return &http.Client{CheckRedirect: netguard.OperatorCheckRedirectFor(effectiveClass(approved)), Transport: operatorStorageTransportFor(approved)}
+filesystem/s3_client.go:158:		httpC = &http.Client{Transport: tr, CheckRedirect: netguard.OperatorCheckRedirectFor(effectiveClass(c.cfg.ApprovedClass))}
+services/webdav_client.go:61:		quotaHTTP: &http.Client{Timeout: 30 * time.Second, Transport: tr, CheckRedirect: netguard.OperatorCheckRedirectFor(approved)},
+services/webdav_client.go:266:		httpClient = &http.Client{Timeout: 30 * time.Second, Transport: netguard.StrictClassTransport(netguard.ClassPrivate), CheckRedirect: netguard.OperatorCheckRedirect}
+# members converted:
+main.go:1787:	return netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 30 * time.Second, Proxy: px})
+handlers/media_entity_handler.go:634:	return netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: timeout, Strict: true, Proxy: px})
+internal/netguard/provider_client.go:170:func NewProviderClient(cfg ProviderClientConfig) *http.Client {
+internal/media/providers/providers.go:85:	client := netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 30 * time.Second, Proxy: px})
+internal/firebase/firebase.go:273:		httpClient = netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: defaultTimeout, Strict: true}) // Google APIs: fixed public hosts
+internal/services/game_software_recognition_provider.go:465:		httpClient: netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 30 * time.Second, Strict: true}),
+internal/services/cover_art_archive_resolver.go:46:		http:      netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 10 * time.Second, Strict: true}),
+internal/services/igdb_resolver.go:48:		http:     netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 10 * time.Second, Strict: true}),
+internal/services/movie_recognition_provider.go:223:		httpClient: netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 30 * time.Second, Strict: true}),
+internal/services/music_recognition_provider.go:310:		httpClient: netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 30 * time.Second, Strict: true}),
+internal/services/lyrics_service.go:125:		httpClient:         netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 30 * time.Second, Strict: true}),
+internal/services/translation_service.go:98:		httpClient: netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 30 * time.Second, Strict: true}),
+internal/services/recommendation_service.go:159:		httpClient:                netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 30 * time.Second, Strict: true}),
+internal/services/llm_image_resolver.go:54:		client:       netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 15 * time.Second}), // operator endpoint: allow-list honoured,
+internal/services/book_recognition_provider.go:442:		httpClient: netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 30 * time.Second, Strict: true}),
+internal/services/aggregation_service.go:728:	client := netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 10 * time.Second, Strict: true})
+services/error_reporting_service.go:68:		httpClient: netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 30 * time.Second}), // operator webhook: allow-list honoured

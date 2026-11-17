@@ -1,0 +1,16 @@
+M1_no_redirect_check: KILLED
+M2_no_dial_class_check: KILLED
+M3_relax_all_classes: KILLED
+M4_no_cap: KILLED
+M5_unpinned_dial: KILLED
+M6_no_scheme_check: KILLED
+M7_strict_honours_allowlist: KILLED
+M8_unbounded_hops: KILLED
+M9_lyrics_plain_client: KILLED by TestAZ21_NoPlainHTTPClientOutsideNetguard (the first harness run reported SURVIVED because its pattern did not match the aligned source line; re-run by hand)
+
+== Round 2 (review NO-GO I2/M1/M2/M3), mutants run by hand, each restored byte-identical afterwards ==
+M10 userinfo check disabled (`if false && u.User != nil`)       -> TestAZ21_ProviderClient_RefusesRedirectWithUserinfo FAIL  (killed)
+M11 hop judged with `strict && false`                            -> TestAZ21_ProviderClient_StrictProxyHopIgnoresAllowList FAIL (killed)
+M12 IdleConnTimeout line removed from the Transport              -> TestAZ21_ProviderClient_IdleLimitsAndCloseIdleConnections FAIL (killed)
+M13 cappingTransport.CloseIdleConnections renamed away           -> TestAZ21_ProviderClient_PerCallClientsDoNotLeakGoroutines FAIL (killed)
+M14 a non-test file importing netguardtest added                 -> TestAZ21_NetguardtestImportedByTestsOnly FAIL (killed)

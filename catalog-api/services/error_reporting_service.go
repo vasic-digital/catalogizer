@@ -1,6 +1,7 @@
 package services
 
 import (
+	"catalogizer/internal/netguard"
 	"bytes"
 	"database/sql"
 	"encoding/csv"
@@ -64,7 +65,7 @@ func NewErrorReportingService(errorRepo *repository.ErrorReportingRepository, cr
 		errorRepo:  errorRepo,
 		crashRepo:  crashRepo,
 		config:     config,
-		httpClient: &http.Client{Timeout: 30 * time.Second},
+		httpClient: netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 30 * time.Second}), // operator webhook: allow-list honoured
 		enabled:    true,
 	}
 }

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"catalogizer/internal/netguard"
 	"context"
 	"encoding/json"
 	"errors"
@@ -155,9 +156,7 @@ func NewRecommendationService(
 		googleBooksBaseURL:        "https://www.googleapis.com/books/v1",
 		steamBaseURL:              "https://store.steampowered.com/api",
 		githubBaseURL:             "https://api.github.com",
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
+		httpClient:                netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 30 * time.Second, Strict: true}),
 	}
 }
 

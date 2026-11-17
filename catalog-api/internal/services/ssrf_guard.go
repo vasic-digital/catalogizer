@@ -12,6 +12,8 @@ package services
 import (
 	"fmt"
 
+	"catalogizer/internal/netguard"
+
 	"digital.vasic.security/pkg/ssrf"
 )
 
@@ -41,7 +43,8 @@ var testAllowPrivateNetworks bool
 func AllowPrivateSSRFForTests(t interface{ Cleanup(func()) }) {
 	prev := testAllowPrivateNetworks
 	testAllowPrivateNetworks = true
-	t.Cleanup(func() { testAllowPrivateNetworks = prev })
+	restoreLoop := netguard.SetTestAllowLoopback(true) // AZ2-1: provider clients reach httptest loopback servers too
+	t.Cleanup(func() { testAllowPrivateNetworks = prev; restoreLoop() })
 }
 
 // SetTestAllowPrivateNetworks flips the package-wide test-only SSRF
@@ -51,7 +54,8 @@ func AllowPrivateSSRFForTests(t interface{ Cleanup(func()) }) {
 func SetTestAllowPrivateNetworks(allow bool) func() {
 	prev := testAllowPrivateNetworks
 	testAllowPrivateNetworks = allow
-	return func() { testAllowPrivateNetworks = prev }
+	restoreLoop := netguard.SetTestAllowLoopback(allow)
+	return func() { testAllowPrivateNetworks = prev; restoreLoop() }
 }
 
 // GuardProviderURL parses target and runs every SSRF check, delegating
