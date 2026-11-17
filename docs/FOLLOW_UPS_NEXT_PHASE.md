@@ -3675,3 +3675,11 @@ CAT-LEGACY-MEDIAHANDLER-1: removal not approved; deep-dive of the whole legacy m
 - CLPROG-R2-n1 (nit): onDestroy final save in a cancelling lifecycleScope may never run; tick catches CancellationException.
 - CLPROG-R2-n2 (nit): desktop non-2xx other than 409 reported persisted:false with reason unknown.
 - Not checked: device/emulator, live server, full suites.
+
+## PGTX1 review (Opus, 2026-11-17) — GO-with-follow-ups, landed PROVISIONAL
+- PGTX1-R-F1 (minor): tx_site_guard misses aliased sql import, local unwrap (raw := db.DB; raw.BeginTx), and (*database.Transaction) shapes; make the guard type-based (go/types) or add planted cases.
+- PGTX1-R-F2 (minor): database.Transaction still embeds raw *sql.Tx; only Exec/Query/QueryRow rewrite; shadow the rest or embed *Tx; SUMMARY overstates.
+- PGTX1-R-F3 (minor): double-rewrite not idempotent for two INSERT OR IGNORE occurrences (RewriteInsertOrIgnore first-only); drop redundant explicit Rewrite at tx sites or document.
+- PGTX1-R-F4 (minor): SafeRollback/SafeCommit take *sql.Tx; use a small interface.
+- PGTX1-R-N1/N2 (nit): stale comments (connection.go:160, tx_helpers.go:16, playback_session_repository.go:145); sql.Conn path in encryption.go unguarded (SQLite-only).
+- Open from author: PlaylistService schema drift (21 sites) needs its own item; rename-tracker PG paths not driven live.
