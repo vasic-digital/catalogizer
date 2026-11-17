@@ -1,0 +1,4 @@
+=== RUN   TestJob404_ForeignDeleteOfCompletedJobKeepsOutputFile
+--- PASS: TestJob404_ForeignDeleteOfCompletedJobKeepsOutputFile (0.81s)
+PASS
+ok  	catalogizer/handlers	1.004s

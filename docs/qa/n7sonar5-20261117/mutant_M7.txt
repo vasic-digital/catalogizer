@@ -1,0 +1,5 @@
+--- FAIL: TestJob404_ForeignDeleteOfCompletedJobKeepsOutputFile (0.62s)
+        	Error:      	Received unexpected error:
+        	Messages:   	a non-owner's DELETE must not remove the job's output file
+FAIL
+FAIL	catalogizer/handlers	0.786s
