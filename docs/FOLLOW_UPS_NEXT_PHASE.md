@@ -3501,3 +3501,12 @@ HAUTHZ-F2 fixed: PUT /media/:id/favorite and GET /media/:id use the new `user_fa
 - AFAV7B-R1-F6 (nit): AFAV-7b register row says "2 mutants killed", evidence holds 1 playback + 2 sync mutants.
 - AFAV7B-R1-F7 (nit): error line shows raw exception text/"HTTP 401" without login hint; client rejects `"sessions":null` (server never sends it).
 - Reviewer full android run: 1070 tests, 0 failures/errors/skipped.
+
+## secws1f3d review round 4 (Opus, GO-with-follow-ups, PROVISIONAL; script NOT live evidence)
+DO NOT use LIVE_WS_CHECK for the live G4 run until N1-N4 are fixed (they are reproduced false PASSes / unproven tests of the F3 check):
+- SECWS1F3D-N1 (test-instrumentation, must-fix): JWT lifetime measured once before probes (script L163), used at L206; SUSPEND_CMD/prompt unbounded, so a token can expire after the marker and its 1008 counts as suspension. Recompute lifetime at the marker, require > F3_BOUND+margin, bound SUSPEND_CMD/prompt.
+- SECWS1F3D-N2 (must-fix): elapsed measured from SUSPEND_CMD return (L184/L217) not start; late close reads PASS. Record start; INCONCLUSIVE when close-return <= bound < close-start.
+- SECWS1F3D-N3 (must-fix): server close reason written raw to results.txt (L212/L219/record() L42): forged PASS line. Strip control chars/pipe/newline or JSON-encode.
+- SECWS1F3D-N4 (must-fix): `probe-killed` scenario does not test R3-2 (victim already closed at kill; kill hits wrapper only); reverting L215 survives. Use reviewer's killprobe2.py approach.
+- SECWS1F3D-N5: SUSPEND_CMD in bash -c argv and saved output may leak admin token; pass via env, warn. N6: label prints `null` not `none`. N7: README "20 PASS" counts only top-level (-v has 28).
+- Reviewer repro files: /home/milosvasic/.cache/claude-tmp/r4review_secws1f3/ (myrun.sh, mock2.py, killprobe2.py).
