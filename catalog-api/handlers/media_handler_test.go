@@ -33,7 +33,7 @@ func (suite *MediaHandlerTestSuite) SetupTest() {
 
 	suite.router = gin.New()
 	suite.router.GET("/api/v1/media/:id", suite.handler.GetMediaByID)
-	suite.router.PUT("/api/v1/media/:id/progress", suite.handler.UpdateWatchProgress)
+	suite.router.PUT("/api/v1/media/:id/progress", func(c *gin.Context) { c.Set("user_id", 7) }, suite.handler.UpdateWatchProgress)
 	// The favorite route authenticates before it parses anything (CAT-HAUTHZ-F2: 401 before body parse), so the 400-intent tests
 	// below run as an authenticated caller; the anonymous behaviour is pinned by TestUpdateFavoriteStatus_AnonymousIs401BeforeParse.
 	suite.router.PUT("/api/v1/media/:id/favorite", func(c *gin.Context) { c.Set("user_id", 7) }, suite.handler.UpdateFavoriteStatus)

@@ -1,0 +1,3 @@
+$ GOMAXPROCS=2 nice -n 10 go test -p 1 . -run OpenAPI|Contract -count=1
+ok  	catalogizer	41.775s
+exit=0

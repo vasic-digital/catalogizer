@@ -1,0 +1,5 @@
+$ go test -p 1 ./handlers -run "Media|Progress|Playback|Favorite|AndroidTV|DefectD|TestWatchProgress" -count=1
+ok  	catalogizer/handlers	80.024s
+exit=0
+$ go vet ./handlers
+vet exit=0

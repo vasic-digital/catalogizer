@@ -1,0 +1,51 @@
+$ GOMAXPROCS=2 nice -n 10 go test -p 1 ./handlers -run 'TestWatchProgress_(PutThen|SessionEnd|RealClient|SecondWrite|FirstInsert|Persistent|PositionWithout)' -count=1 -v   # RED on base f54ca206e (HEAD of wprog)
+f54ca206e1689291cf7dec575a4e39639ecbd2b4
+=== RUN   TestWatchProgress_PutThenSessionEnd_NoPermille
+    media_watch_progress_integrity_test.go:29: 
+        	Error:      	Not equal: 
+    media_watch_progress_integrity_test.go:30: 
+        	Error:      	Should NOT be empty, but was <nil>
+    media_watch_progress_integrity_test.go:33: 
+        	Error:      	Not equal: 
+--- FAIL: TestWatchProgress_PutThenSessionEnd_NoPermille (0.03s)
+=== RUN   TestWatchProgress_SessionEndThenPut_KeepsSecondsResumePoint
+    media_watch_progress_integrity_test.go:64: 
+        	Error:      	Not equal: 
+    media_watch_progress_integrity_test.go:65: 
+        	Error:      	Should NOT be empty, but was <nil>
+    media_watch_progress_integrity_test.go:68: 
+        	Error:      	Not equal: 
+    media_watch_progress_integrity_test.go:69: 
+        	Error:      	Not equal: 
+    media_watch_progress_integrity_test.go:64: 
+        	Error:      	Not equal: 
+    media_watch_progress_integrity_test.go:65: 
+        	Error:      	Should NOT be empty, but was <nil>
+    media_watch_progress_integrity_test.go:68: 
+        	Error:      	Not equal: 
+    media_watch_progress_integrity_test.go:69: 
+        	Error:      	Not equal: 
+    media_watch_progress_integrity_test.go:75: 
+        	Error:      	Not equal: 
+--- FAIL: TestWatchProgress_SessionEndThenPut_KeepsSecondsResumePoint (0.04s)
+=== RUN   TestWatchProgress_RealClientShapes
+    media_watch_progress_integrity_test.go:94: 
+        	Error:      	Not equal: 
+--- FAIL: TestWatchProgress_RealClientShapes (0.04s)
+=== RUN   TestWatchProgress_SecondWriteDoesNotTouchOtherUser
+--- PASS: TestWatchProgress_SecondWriteDoesNotTouchOtherUser (0.03s)
+=== RUN   TestWatchProgress_FirstInsertFailureRetried
+--- PASS: TestWatchProgress_FirstInsertFailureRetried (0.05s)
+=== RUN   TestWatchProgress_PersistentInsertFailureIs500
+--- PASS: TestWatchProgress_PersistentInsertFailureIs500 (0.03s)
+=== RUN   TestWatchProgress_PositionWithoutKnownDurationIgnored
+    media_watch_progress_integrity_test.go:194: 
+        	Error:      	Not equal: 
+    media_watch_progress_integrity_test.go:197: 
+        	Error:      	Not equal: 
+    media_watch_progress_integrity_test.go:199: 
+        	Error:      	Expected error with "sql: no rows in result set" in chain but got nil.
+--- FAIL: TestWatchProgress_PositionWithoutKnownDurationIgnored (0.04s)
+FAIL
+FAIL	catalogizer/handlers	0.424s
+FAIL

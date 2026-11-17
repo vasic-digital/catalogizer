@@ -2,9 +2,12 @@ package handlers
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
+	"math"
 	"net/http"
 	"strconv"
+	"time"
 
 	"catalogizer/database"
 	"catalogizer/models"
@@ -131,81 +134,81 @@ func (h *AndroidTVMediaHandler) GetMediaByID(c *gin.Context) {
 	c.JSON(http.StatusOK, mediaItem)
 }
 
+// watchProgressRequest is the body of PUT /media/:id/progress. It accepts every shape the shipped clients send:
+//   - {progress}                                    (Android TV; fraction 0.0-1.0)
+//     (Android TV calls this route with no duration: a first watch of an item with no row answers 200 persisted=false
+//     reason=unknown_duration_no_row; see WPROG3-FU-1 in docs/FOLLOW_UPS_NEXT_PHASE.md)
+//   - {progress, timestamp(string), position}       (Android WatchProgressRequest; not wired to this route)
+//   - {media_id, position, duration, timestamp}     (desktop / api-client PlaybackProgress; floats, no `progress`)
+//
+// `progress` is optional when `position` and `duration` are both present (the fraction is then position/duration).
+// position and duration are seconds and may be fractional (rounded to whole seconds). `timestamp` (string or number) and
+// `media_id` are ignored: the server stamps updated_at itself and takes the id from the path.
+type watchProgressRequest struct {
+	Progress  *float64        `json:"progress"`
+	Position  *float64        `json:"position"`
+	Duration  *float64        `json:"duration"`
+	Timestamp json.RawMessage `json:"timestamp"`
+}
+
+// watchProgressMax bounds position/duration so rounding to int64 can never overflow.
+const watchProgressMax = 1e12
+
 // UpdateWatchProgress godoc
 // @Summary Update watch progress
-// @Description Update the watch progress for a media item
+// @Description Store the authenticated user's watch progress for a media item (per user, in media_progress). Rows are only written in seconds with a known duration; a request that cannot be stored without guessing a unit or duration answers 200 with persisted=false and a reason.
 // @Tags media
 // @Accept json
 // @Produce json
 // @Param id path int true "Media ID"
-// @Param body body map[string]float64 true "Progress value (0.0 to 1.0)"
+// @Param body body watchProgressRequest true "progress 0.0-1.0, or position+duration in seconds (floats allowed)"
 // @Success 200 {object} utils.SuccessResponse
 // @Failure 400 {object} utils.SendErrorResponse
+// @Failure 401 {object} utils.SendErrorResponse
 // @Failure 404 {object} utils.SendErrorResponse
 // @Failure 500 {object} utils.SendErrorResponse
 // @Router /api/v1/media/{id}/progress [put]
 func (h *AndroidTVMediaHandler) UpdateWatchProgress(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	// Parse media ID from path
-	idStr := c.Param("id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
+	// Authentication is checked first, before any input is parsed (an anonymous caller gets 401, never 400).
+	callerID, _ := callerUserID(c)
+	if callerID == 0 {
+		utils.SendErrorResponse(c, http.StatusUnauthorized, "Authentication required", nil)
+		return
+	}
+
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid media ID", err)
 		return
 	}
 
-	// Parse request body
-	var requestBody map[string]float64
-	if err := c.ShouldBindJSON(&requestBody); err != nil {
+	var req watchProgressRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
-
-	progress, exists := requestBody["progress"]
-	if !exists {
-		utils.SendErrorResponse(c, http.StatusBadRequest, "Progress field is required", nil)
-		return
-	}
-
-	// Validate progress value
-	if progress < 0.0 || progress > 1.0 {
+	if req.Progress != nil && !(*req.Progress >= 0.0 && *req.Progress <= 1.0) {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Progress must be between 0.0 and 1.0", nil)
 		return
 	}
+	if req.Position != nil && !(*req.Position >= 0 && *req.Position <= watchProgressMax) {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Position must be between 0 and 1e12", nil)
+		return
+	}
+	if req.Duration != nil && !(*req.Duration >= 0 && *req.Duration <= watchProgressMax) {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Duration must be between 0 and 1e12", nil)
+		return
+	}
+	if req.Progress == nil && (req.Position == nil || req.Duration == nil) {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Progress field is required (or position and duration)", nil)
+		return
+	}
 
-	// DEFECT-D (2026-06-25): the prior query did
-	// `UPDATE media_items SET watch_progress=?, last_watched=..., updated_at=...`
-	// but the real normalized media_items table has NO watch_progress and
-	// NO last_watched column (they only existed in the flat test-helper
-	// schema), so every call returned HTTP 500 `no such column: watch_progress`.
-	//
-	// The genuine progress store is `media_progress` (migration v15),
-	// keyed PRIMARY KEY (user_id, media_item_id) and tracking absolute
-	// position (last_position / duration_total / position_unit) — the
-	// SAME store the canonical authenticated path reads via
-	// PlaybackHandler.GetProgressForEntity / ProgressSession
-	// (GET /api/v1/entities/:id/progress), which derives user_id from the
-	// auth context (c.Get("user_id")).
-	//
-	// HONEST AMBIGUITY (§11.4.6): this AndroidTV route
-	// (PUT /api/v1/media/:id/progress) IS authenticated: it is registered in
-	// the `api` group after api.Use(RequireAuth()) (main.go), which sets
-	// "user_id" in the context. This handler, however, never reads user_id,
-	// and it accepts a fractional 0.0-1.0 progress whereas media_progress
-	// stores absolute position units. Writing a row with that value would
-	// persist WRONG data and would NOT agree with the authenticated
-	// GetProgressForEntity reader. Per the no-phantom-column rule, we
-	// therefore validate the media item exists against the REAL schema
-	// (correct 404/200) and do NOT write to any phantom or mis-keyed
-	// column. Genuine per-user persistence needs this handler to read
-	// user_id and write media_progress once the unit mismatch is resolved
-	// (tracked follow-up AFAV-8 / RFM-R1-1); until then it is a validated
-	// no-op write (persisted:false), reported honestly to the caller.
-	var existsRow int
-	err = h.db.QueryRowContext(ctx, `SELECT 1 FROM media_items WHERE id = ?`, id).Scan(&existsRow)
-	if err != nil {
-		if err.Error() == "sql: no rows in result set" {
+	var one int
+	if err := h.db.QueryRowContext(ctx, `SELECT 1 FROM media_items WHERE id = ?`, id).Scan(&one); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
 			utils.SendErrorResponse(c, http.StatusNotFound, "Media not found", nil)
 		} else {
 			utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to update watch progress", err)
@@ -213,12 +216,164 @@ func (h *AndroidTVMediaHandler) UpdateWatchProgress(c *gin.Context) {
 		return
 	}
 
+	// Portable SELECT / guarded UPDATE / INSERT upsert (same pattern as PlaybackSessionRepository: the SQLCipher build
+	// predates ON CONFLICT DO UPDATE). Concurrency: the plan is computed from the row read by the SELECT, so the UPDATE
+	// is conditional on that row still having the unit and duration the plan was made from (optimistic compare-and-set,
+	// plain portable SQL: it needs no transaction, no FOR UPDATE and no BEGIN IMMEDIATE, so it behaves the same on SQLite
+	// and Postgres through the DB wrapper's placeholder rewrite). A session End that committed in the window makes the
+	// UPDATE touch zero rows; the loop then re-reads and re-plans (bounded). The duration guard is spelled
+	// `= ?` or `IS NULL` in Go, never `? IS NULL`, because Postgres cannot type an untyped NULL parameter. A first insert
+	// that loses a race is retried once from the SELECT, which then finds the competing row.
+	const maxAttempts = 3
+	for attempt := 0; attempt < maxAttempts; attempt++ {
+		var unit string
+		var duration sql.NullInt64
+		selErr := h.db.QueryRowContext(ctx,
+			`SELECT position_unit, duration_total FROM media_progress WHERE user_id = ? AND media_item_id = ?`,
+			callerID, id).Scan(&unit, &duration)
+		if selErr != nil && !errors.Is(selErr, sql.ErrNoRows) {
+			utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to update watch progress", selErr)
+			return
+		}
+		exists := selErr == nil
+		pos, dur, reason := watchProgressPlan(req, exists, unit, duration)
+		if reason != "" {
+			c.JSON(http.StatusOK, gin.H{
+				"success":   true,
+				"message":   "Watch progress not stored",
+				"persisted": false,
+				"reason":    reason,
+			})
+			return
+		}
+		now := time.Now().UTC()
+		if exists {
+			// never changes the unit of an existing row; duration is only filled in when it was unknown
+			q := `UPDATE media_progress SET duration_total = ?, last_position = ?, updated_at = ?
+				 WHERE user_id = ? AND media_item_id = ? AND position_unit = ? AND `
+			args := []interface{}{dur, pos, now, callerID, id, unit}
+			if duration.Valid {
+				q += `duration_total = ?`
+				args = append(args, duration.Int64)
+			} else {
+				q += `duration_total IS NULL`
+			}
+			res, err := h.db.ExecContext(ctx, q, args...)
+			if err != nil {
+				utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to update watch progress", err)
+				return
+			}
+			n, raErr := res.RowsAffected()
+			if raErr != nil {
+				utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to update watch progress", raErr)
+				return
+			}
+			if n == 0 {
+				// the row changed (or vanished) since the SELECT: re-read and re-plan, never report persisted
+				if attempt == maxAttempts-1 {
+					c.JSON(http.StatusConflict, gin.H{
+						"success":   false,
+						"message":   "Watch progress not stored",
+						"persisted": false,
+						"reason":    "concurrent_update",
+					})
+					return
+				}
+				continue
+			}
+			break
+		}
+		if _, err := h.db.ExecContext(ctx,
+			`INSERT INTO media_progress (user_id, media_item_id, position_unit, duration_total, last_position, updated_at)
+			 VALUES (?, ?, 'seconds', ?, ?, ?)`,
+			callerID, id, dur, pos, now); err != nil {
+			if attempt == 0 {
+				continue
+			}
+			utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to update watch progress", err)
+			return
+		}
+		break
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success":   true,
-		"message":   "Watch progress accepted",
-		"persisted": false,
-		"reason":    "per-user progress store (media_progress) requires an authenticated user; this public route has none",
+		"message":   "Watch progress updated",
+		"persisted": true,
 	})
+}
+
+// watchProgressPlan decides what to store and returns (last_position, duration_total, reason). A non-empty reason means
+// the request is not stored. Rules: the unit of an existing row is never changed (the caller does not write it); a new
+// row is only created in seconds and only when the duration is known from the body; an existing row with a known duration
+// keeps it (converted fraction, or `position` seconds when the unit is seconds, clamped); an existing seconds row with an
+// unknown duration only learns the duration from the body, otherwise the request is ignored.
+func watchProgressPlan(req watchProgressRequest, exists bool, unit string, duration sql.NullInt64) (int64, int64, string) {
+	bodyDur := int64(0)
+	if req.Duration != nil {
+		bodyDur = int64(math.Round(*req.Duration))
+	}
+	fraction := func(dur int64) (float64, bool) {
+		if req.Progress != nil {
+			return *req.Progress, true
+		}
+		if req.Position != nil && bodyDur > 0 {
+			f := *req.Position / float64(bodyDur)
+			if f > 1 {
+				f = 1
+			}
+			return f, true
+		}
+		return 0, false
+	}
+	secondsPos := func(dur int64) (int64, bool) {
+		if req.Position != nil {
+			p := int64(math.Round(*req.Position))
+			if p > dur {
+				p = dur
+			}
+			return p, true
+		}
+		if f, ok := fraction(dur); ok {
+			return int64(math.Round(f * float64(dur))), true
+		}
+		return 0, false
+	}
+
+	switch {
+	case exists && duration.Valid && duration.Int64 > 0:
+		dur := duration.Int64
+		if unit == "seconds" {
+			if p, ok := secondsPos(dur); ok {
+				return p, dur, ""
+			}
+			return 0, 0, "no_position"
+		}
+		// pages/events/other units: only the fraction is meaningful
+		if f, ok := fraction(dur); ok {
+			return int64(math.Round(f * float64(dur))), dur, ""
+		}
+		return 0, 0, "no_fraction_for_unit_" + unit
+	case exists:
+		if unit != "seconds" {
+			return 0, 0, "unknown_duration_unit_" + unit
+		}
+		if bodyDur <= 0 {
+			return 0, 0, "unknown_duration"
+		}
+		if p, ok := secondsPos(bodyDur); ok {
+			return p, bodyDur, ""
+		}
+		return 0, 0, "no_position"
+	default:
+		if bodyDur <= 0 {
+			return 0, 0, "unknown_duration_no_row"
+		}
+		if p, ok := secondsPos(bodyDur); ok {
+			return p, bodyDur, ""
+		}
+		return 0, 0, "no_position"
+	}
 }
 
 // UpdateFavoriteStatus godoc

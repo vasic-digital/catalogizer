@@ -1,0 +1,8 @@
+M1-constant-user: --- FAIL: TestWatchProgress_PersistsPerUser (0.05s) FAIL FAIL	catalogizer/handlers	0.354s FAIL 
+M2-no-range-check: --- FAIL: TestWatchProgress_StatusCodes (0.09s) FAIL FAIL	catalogizer/handlers	0.969s FAIL 
+M3-no-401: --- FAIL: TestWatchProgress_StatusCodes (0.29s) FAIL FAIL	catalogizer/handlers	0.852s FAIL 
+M5-no-clamp: --- FAIL: TestWatchProgress_KeepsSecondsRow (0.08s) FAIL FAIL	catalogizer/handlers	0.458s FAIL 
+M6-no-media-404: --- FAIL: TestWatchProgress_StatusCodes (0.03s) FAIL FAIL	catalogizer/handlers	0.306s FAIL 
+M7-persisted-false: --- FAIL: TestWatchProgress_PersistsPerUser (0.12s) FAIL FAIL	catalogizer/handlers	0.551s FAIL 
+M8-lose-seconds-unit: --- FAIL: TestWatchProgress_KeepsSecondsRow (0.03s) FAIL FAIL	catalogizer/handlers	0.323s FAIL 
+M4-update-ignores-position (valid rebuild): --- FAIL: TestWatchProgress_PersistsPerUser (0.03s) --- FAIL: TestWatchProgress_KeepsSecondsRow (0.06s) FAIL FAIL	catalogizer/handlers	0.962s FAIL 
