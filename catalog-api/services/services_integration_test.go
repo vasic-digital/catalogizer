@@ -2,6 +2,7 @@ package services
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -924,7 +925,8 @@ func TestLogManagementService_GetLogCollection_AccessDenied(t *testing.T) {
 
 	_, err = service.GetLogCollection(created.ID, 2)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "access denied")
+	assert.ErrorIs(t, err, sql.ErrNoRows, "N7-FU2: a foreign collection reads as not found")
+	assert.NotContains(t, err.Error(), "access denied")
 }
 
 func TestLogManagementService_GetLogCollectionsByUser_Integration(t *testing.T) {
@@ -1812,7 +1814,8 @@ func TestLogManagementService_CreateLogShare_AccessDenied(t *testing.T) {
 	}
 	_, err = service.CreateLogShare(2, shareReq)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "access denied")
+	assert.ErrorIs(t, err, sql.ErrNoRows, "N7-FU2: a foreign collection reads as not found")
+	assert.NotContains(t, err.Error(), "access denied")
 }
 
 func TestLogManagementService_ExportLogs_AccessDenied(t *testing.T) {
@@ -1829,7 +1832,8 @@ func TestLogManagementService_ExportLogs_AccessDenied(t *testing.T) {
 
 	_, err = service.ExportLogs(collection.ID, 2, "json")
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "access denied")
+	assert.ErrorIs(t, err, sql.ErrNoRows, "N7-FU2: a foreign collection reads as not found")
+	assert.NotContains(t, err.Error(), "access denied")
 }
 
 func TestLogManagementService_ExportLogs_UnsupportedFormat(t *testing.T) {
@@ -1864,7 +1868,8 @@ func TestLogManagementService_AnalyzeLogs_AccessDenied(t *testing.T) {
 
 	_, err = service.AnalyzeLogs(collection.ID, 2)
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "access denied")
+	assert.ErrorIs(t, err, sql.ErrNoRows, "N7-FU2: a foreign collection reads as not found")
+	assert.NotContains(t, err.Error(), "access denied")
 }
 
 func TestLogManagementService_StreamLogs_Disabled(t *testing.T) {

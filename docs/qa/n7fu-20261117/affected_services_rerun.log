@@ -1,0 +1,11 @@
+=== RUN   TestCancelJob_NonOwnerDoesNotKillRegisteredRun
+--- PASS: TestCancelJob_NonOwnerDoesNotKillRegisteredRun (0.03s)
+=== RUN   TestLogManagementService_GetLogCollection_AccessDenied
+--- PASS: TestLogManagementService_GetLogCollection_AccessDenied (0.01s)
+=== RUN   TestLogManagementService_CreateLogShare_AccessDenied
+--- PASS: TestLogManagementService_CreateLogShare_AccessDenied (0.01s)
+=== RUN   TestLogManagementService_ExportLogs_AccessDenied
+--- PASS: TestLogManagementService_ExportLogs_AccessDenied (0.00s)
+=== RUN   TestLogManagementService_AnalyzeLogs_AccessDenied
+--- PASS: TestLogManagementService_AnalyzeLogs_AccessDenied (0.01s)
+ok  	catalogizer/services	1.138s

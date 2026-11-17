@@ -1,0 +1,16 @@
+=== RUN   TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing
+=== RUN   TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/get_collection
+=== RUN   TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/entries
+=== RUN   TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/export
+=== RUN   TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/analyze
+=== RUN   TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/create_share_(collection_id_in_body)
+=== RUN   TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/revoke_share
+--- PASS: TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing (0.13s)
+    --- PASS: TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/get_collection (0.00s)
+    --- PASS: TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/entries (0.00s)
+    --- PASS: TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/export (0.00s)
+    --- PASS: TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/analyze (0.01s)
+    --- PASS: TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/create_share_(collection_id_in_body) (0.00s)
+    --- PASS: TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/revoke_share (0.00s)
+PASS
+ok  	catalogizer/handlers	0.402s

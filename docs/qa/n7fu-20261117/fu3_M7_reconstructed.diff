@@ -1,0 +1,13 @@
+diff --git a/catalog-api/services/conversion_service.go b/catalog-api/services/conversion_service.go
+index 0519008cb..27612fb6d 100644
+--- a/catalog-api/services/conversion_service.go
++++ b/catalog-api/services/conversion_service.go
+@@ -1054,7 +1054,7 @@ func (s *ConversionService) CancelJob(jobID int, userID int) error {
+ func (s *ConversionService) DeleteJob(jobID int, userID int) error {
+ 	job, err := s.authorizedJob(jobID, userID)
+ 	if err != nil {
+-		return err
++		if jb, gerr := s.conversionRepo.GetJob(jobID); gerr == nil { job = jb } else { return err }
+ 	}
+ 
+ 	if job.Status == models.ConversionStatusRunning {
