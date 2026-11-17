@@ -3550,3 +3550,14 @@ DO NOT use LIVE_WS_CHECK for the live G4 run until N1-N4 are fixed (they are rep
 - AFAV7C-R1-F5 (nit): WORKABLE_ITEMS_REGISTER AFAV-7b row still says artifact branch afav7b (code on afav7c/main).
 - AFAV7C-R1-F6 (nit): mid-load cancel test exercises only loadHistory; loadProgress cancellation held by one mockk test.
 - Reviewer re-ran full android suite: 1077/0/0/0; F5 reasoning (no immediate 4xx drop) accepted; revisit when AFAV-8/9 land.
+
+## ALTSVC2 review (Opus, GO-with-follow-ups, landed 2026-11-17, PROVISIONAL)
+- ALTSVC2-F1 (minor, source): `h3Advertised` is set before the HTTPS/HTTP3 bind succeeds and never cleared on bind failure (main.go ~1514-1528). Clear in both error branches or set after bind is confirmed (= ALTSVC-R1-F4).
+- ALTSVC2-F2 (minor, test): the cert-present wiring in `main()` has no test (reviewer mutant R4 survives).
+- ALTSVC2-F3 (minor, test): all Alt-Svc tests use ResponseRecorder; a header set after the body passes (mutant R5). Add a real-socket test.
+- ALTSVC2-F4 (minor, evidence): RED.txt fails on the control-needle line, not the routed-200 assertion; state this.
+- ALTSVC2-F5 (nit): `/discovery`, OPTIONS preflight and early-aborted responses never carry Alt-Svc; name the exceptions.
+- ALTSVC2-F6 (nit): leftover `_ = ce.Pos()` in scanMainVerifySequence; stale text in main_startup_routes_test.go:20 and main.go:~1547.
+
+## S1G9 review (Opus, NO-GO, round 1 of structural successor, NOT landed)
+- Important: RV1 helper class not pinned; RV2 RequireAdmin body not content-pinned; RV5 behaviour layer checks status only, not 401/403 body. Minor: timeout counted as reached; control needle `n > 3*len` trivial (use n == 9*len); tests send discovery multicast. Fix needs (a) README states RV1/RV2/RV5 classes, (b) pin RequireAdmin body, (c) assert canonical 401/403 body.
