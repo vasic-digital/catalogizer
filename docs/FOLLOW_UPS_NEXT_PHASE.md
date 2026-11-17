@@ -3690,3 +3690,14 @@ CAT-LEGACY-MEDIAHANDLER-1: removal not approved; deep-dive of the whole legacy m
 - REDFIX1-R-3 (minor): R7 checks allow-list per file, not per symbol (mutant M5 survives); make used-check per (file,symbol).
 - REDFIX1-R-4 (minor): evidence README wrongly says R5 did not fail in scratch rerun (it did; excerpt truncated); red_rerun_scratch_clone.txt exit code is the pipe's.
 - REDFIX1-R-5 (nit): in-memory mutants depend on exact byte anchors.
+
+## SECWS1F3F review round 1 (Opus, 2026-11-17) — NO-GO (script stays DO-NOT-USE for live G4)
+R5-1..R5-8 fixed; gate logic sound; 133/0 reproduced. Blockers:
+- I1 (important): all curl calls use -sk (TLS verify always off; INSECURE=1 only honoured by python probe); admin/victim passwords + JWTs sent unverified; http BASE accepted silently. Drop -k unless INSECURE=1; refuse non-https BASE unless INSECURE=1 or loopback; suite case asserting no -k in argv.
+- I2 (important): real login returns session_token (auth_service.go:88, auth_handler.go:73); script reads .token/.access_token/.data.token only; mock encodes the wrong contract. Read .session_token; make mock return the real shape.
+- M1 (minor): mutants RV1,RV2,RV3,RV4,RV5(okset always 1; mock susp-500 -> PASS),RV6(noexp -> PASS),RV8 survive; add susp-500 and noexp scenarios, leftover-process + duration checks for R5-8, TERM-ignoring suspend case, 08 reads as 8.
+- M2 (minor): SUSPEND_CMD can prompt on /dev/tty; grandchildren survive timeout --foreground; use setsid/kill process group or document.
+- M3 (minor): SUSPEND_TIMEOUT=0 / F3_BOUND=0 / F3_EXP_MARGIN=0 pass validation; require >=1 (margin policy explicit).
+- M4 (minor): WP/CP not cleared after reap; EXIT trap may signal reused PIDs.
+- N1/N2 (nit): F3 grep matches the absent-line record; VICTIM_REFUSED_STATUS unvalidated/glob; base=$BASE may log userinfo; san lookalikes.
+- Live-only unknowns: refused status after suspension (probably 401), clock skew, origin allowlist at edge, suspend semantics vs recheck, ticket pending cap, ticket in nginx logs, victim left suspended, SERVER_PID/SERVER_EXE_SHA256 must be supplied.
