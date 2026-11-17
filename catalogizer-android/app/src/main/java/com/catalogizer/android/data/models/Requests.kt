@@ -18,6 +18,7 @@ data class FavoriteRequest(val favorite: Boolean)
 data class WatchProgressRequest(
     val progress: Double,
     val timestamp: String? = null,
+    /** Playback position in SECONDS (the server route takes seconds; do not pass milliseconds). */
     val position: Long? = null,
     /** WPROG3-FU: total duration in SECONDS; the server stores a first watch only when it is known. */
     val duration: Double? = null

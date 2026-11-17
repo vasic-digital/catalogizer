@@ -26,7 +26,7 @@ export interface WatchProgressResult {
 export const WATCH_PROGRESS_MAX_ATTEMPTS = 3;
 
 /** VLC reports milliseconds; the progress route takes seconds (floats are accepted). */
-export function msToWholeSeconds(ms: number): number {
+export function msToSeconds(ms: number): number {
   return ms / 1000;
 }
 
@@ -123,7 +123,7 @@ class ApiService {
    * changing under the compare-and-set write. Only persisted:true is reported as saved; a concurrent_update is
    * re-sent (the server re-reads and re-plans) up to WATCH_PROGRESS_MAX_ATTEMPTS times.
    */
-  async updateWatchProgress(mediaId: number, progress: PlaybackProgress): Promise<WatchProgressResult> {
+  async updateWatchProgress(mediaId: number, progress: PlaybackProgress | { progress: number }): Promise<WatchProgressResult> {
     let last: WatchProgressResult = { persisted: false, attempts: 0 };
     for (let attempt = 1; attempt <= WATCH_PROGRESS_MAX_ATTEMPTS; attempt++) {
       const resp = await this.makeRequest<{ persisted?: boolean; reason?: string } | null>(

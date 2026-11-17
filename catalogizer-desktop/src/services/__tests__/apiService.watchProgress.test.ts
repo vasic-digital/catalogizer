@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { invoke } from '@tauri-apps/api/core'
-import { apiService, msToWholeSeconds } from '../apiService'
+import { apiService, msToSeconds } from '../apiService'
 
 // WPROG3-FU: the server answers PUT /media/:id/progress with persisted:true|false and 409 concurrent_update
 // (the Tauri command returns the body text for every status). The client must not claim "saved" without
@@ -65,9 +65,9 @@ describe('apiService.updateWatchProgress result (WPROG3-FU-3)', () => {
   })
 })
 
-describe('msToWholeSeconds (VLC ms to server seconds)', () => {
+describe('msToSeconds (VLC ms to server seconds)', () => {
   it('converts milliseconds to seconds', () => {
-    expect(msToWholeSeconds(125000)).toBe(125)
-    expect(msToWholeSeconds(1500)).toBe(1.5)
+    expect(msToSeconds(125000)).toBe(125)
+    expect(msToSeconds(1500)).toBe(1.5)
   })
 })

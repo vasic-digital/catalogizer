@@ -15,7 +15,7 @@ import {
   X
 } from 'lucide-react';
 import { useVLCPlayer } from '../hooks/useVLCPlayer';
-import { apiService, msToWholeSeconds } from '../services/apiService';
+import { apiService, msToSeconds } from '../services/apiService';
 
 interface VLCPlayerProps {
   mediaUrl: string;
@@ -73,13 +73,12 @@ export const VLCPlayer: React.FC<VLCPlayerProps> = ({
     if (status?.state === 'Ended') {
       // Mark as completed (100% progress)
       if (mediaId) {
-        const durationSec = msToWholeSeconds(status?.duration || 0);
-        apiService.updateWatchProgress(mediaId, {
-          media_id: mediaId,
-          position: durationSec,
-          duration: durationSec,
-          timestamp: Date.now()
-        }).then((r) => {
+        const durationSec = msToSeconds(status?.duration || 0);
+        // unknown duration: send the fraction 1.0, never a 0/0 pair
+        const body = durationSec > 0
+          ? { media_id: mediaId, position: durationSec, duration: durationSec, timestamp: Date.now() }
+          : { progress: 1 };
+        apiService.updateWatchProgress(mediaId, body).then((r) => {
           if (!r.persisted) {
             console.warn('[VLCPlayer] watch progress NOT saved', { mediaId, reason: r.reason });
           }

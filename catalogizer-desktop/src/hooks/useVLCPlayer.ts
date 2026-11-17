@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/core';
-import { apiService, msToWholeSeconds } from '../services/apiService';
+import { apiService, msToSeconds } from '../services/apiService';
 
 export type PlaybackState = 
   | 'Idle' 
@@ -325,8 +325,8 @@ export function useVLCPlayer(): UseVLCPlayerReturn {
       try {
         const result = await apiService.updateWatchProgress(mediaId, {
           media_id: mediaId,
-          position: msToWholeSeconds(currentTime),
-          duration: msToWholeSeconds(duration),
+          position: msToSeconds(currentTime),
+          duration: msToSeconds(duration),
           timestamp: Date.now()
         });
         if (result.persisted) {
