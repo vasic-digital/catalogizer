@@ -1,0 +1,10 @@
+G1FIX (PROVISIONAL, 2026-11-17) - four catalog-api Go regressions from G1 retest, base main 5ff531521, branch g1fix.
+Env: GOMAXPROCS=2 nice -n 10 go test -p 1 -count=1; host load ~50; submodules symlinked during test, restored before commit.
+1 root auth-surface guard: ROOT CAUSE = production hook routeDumpHook(router) (98cd6f3bc, no-op unless tag routedump) was added after the first
+  verifyAuthRouteTable without updating the guard's sanctioned lists. DECISION: test (guard allow-list) was stale, production is read-only and sound.
+  Fix: sanction routeDumpHook/routeChainFuncNames, exempt exact statement `routeDumpHook(router)` only; mutants G1 (other hand-out) and G2 (registration in hook) still FAIL as required.
+2 handlers favorite: ROOT CAUSE = 3b1bae3c1 moved 401 before parse (intended); suite route had no user. DECISION: tests were stale. Fix: authenticated middleware in suite + new TestUpdateFavoriteStatus_AnonymousIs401BeforeParse (4 subtests).
+3 errleak: ROOT CAUSE = CreateUser's site is `msg,_ := authClientMessage(...)`, a sanctioned mapper (returns sentinel/policy text only); sweep no longer flags it, so entry is stale (not key drift). Fix: entry removed. Mutant (CreateUser using err.Error()) makes the test FAIL, then restored.
+4 nilslice: ROOT CAUSE = production: ProbeVettedIPsWithIdentities returned nil Shares for authenticated session with no shares => JSON null. Fix: normalise to []SMBShareInfo{}; new unit test (RED observed on unfixed code).
+GREEN: green_full_affected.txt (root 1065s, handlers 955s, errleak, nilslice_guard, services ok, exit=0); go vet ./... exit=0 (vet.txt); gofmt -l on touched files empty.
+Not run: rest of go test ./... (other packages untouched).

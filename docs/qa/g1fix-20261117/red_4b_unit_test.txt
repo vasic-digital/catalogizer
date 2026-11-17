@@ -1,0 +1,5 @@
+--- FAIL: TestProbeVettedIPs_AuthenticatedWithNoSharesIsEmptyListNotNull (0.00s)
+    smb_probe_emptyshares_test.go:27: Shares is nil: it would marshal to JSON null
+FAIL
+FAIL	catalogizer/internal/services	0.067s
+FAIL

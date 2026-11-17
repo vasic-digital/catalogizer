@@ -1,0 +1,6 @@
+ok  	catalogizer	1065.136s
+ok  	catalogizer/handlers	955.297s
+ok  	catalogizer/internal/errleak	2.000s
+ok  	catalogizer/internal/nilslice_guard	0.707s
+ok  	catalogizer/internal/services	77.892s
+exit=0

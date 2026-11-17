@@ -34,7 +34,9 @@ func (suite *MediaHandlerTestSuite) SetupTest() {
 	suite.router = gin.New()
 	suite.router.GET("/api/v1/media/:id", suite.handler.GetMediaByID)
 	suite.router.PUT("/api/v1/media/:id/progress", suite.handler.UpdateWatchProgress)
-	suite.router.PUT("/api/v1/media/:id/favorite", suite.handler.UpdateFavoriteStatus)
+	// The favorite route authenticates before it parses anything (CAT-HAUTHZ-F2: 401 before body parse), so the 400-intent tests
+	// below run as an authenticated caller; the anonymous behaviour is pinned by TestUpdateFavoriteStatus_AnonymousIs401BeforeParse.
+	suite.router.PUT("/api/v1/media/:id/favorite", func(c *gin.Context) { c.Set("user_id", 7) }, suite.handler.UpdateFavoriteStatus)
 }
 
 // Constructor tests
@@ -218,6 +220,29 @@ func (suite *MediaHandlerTestSuite) TestUpdateFavoriteStatus_EmptyBody() {
 	suite.router.ServeHTTP(w, req)
 
 	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
+}
+
+// TestUpdateFavoriteStatus_AnonymousIs401BeforeParse pins the order of checks: an anonymous caller gets 401 for every shape of
+// bad input (bad id, bad JSON, missing field, empty body); none of them may be answered 400 before authentication.
+func TestUpdateFavoriteStatus_AnonymousIs401BeforeParse(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.PUT("/api/v1/media/:id/favorite", NewAndroidTVMediaHandler(nil).UpdateFavoriteStatus) // no user in the context
+	cases := []struct{ name, path, body string }{
+		{"invalid_id", "/api/v1/media/abc/favorite", `{"favorite": true}`},
+		{"invalid_json", "/api/v1/media/1/favorite", "not-json"},
+		{"missing_field", "/api/v1/media/1/favorite", `{"something": true}`},
+		{"empty_body", "/api/v1/media/1/favorite", ""},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			req := httptest.NewRequest("PUT", tc.path, bytes.NewBufferString(tc.body))
+			req.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+			r.ServeHTTP(w, req)
+			assert.Equal(t, http.StatusUnauthorized, w.Code, "body: %s", w.Body.String())
+		})
+	}
 }
 
 // TestUpdateFavoriteStatus_HappyPath is the regression test for
