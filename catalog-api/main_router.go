@@ -14,6 +14,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 	"unsafe"
 
@@ -142,6 +143,7 @@ func buildRouter(d routerDeps) *gin.Engine {
 	router.Use(root_middleware.RequestID())
 	router.Use(root_middleware.InputValidation(root_middleware.DefaultInputValidationConfig()))
 	router.Use(middleware.CompressionMiddleware(middleware.DefaultCompressionConfig()))
+	router.Use(altSvcMiddleware) // CAT-ALTSVC-1: before the routes, or it would reach only the NoRoute chain
 
 	// Prometheus metrics endpoint
 	// Authz round 2: the exposition lists routes, hosts, runtime internals and
@@ -298,19 +300,28 @@ var authRouteTable = []string{
 	"POST /api/v1/auth/register",
 }
 
-// altSvcMiddleware advertises the HTTP/3 endpoint. main() installs it with the one
-// late engine Use (after every route is registered, so in gin it only joins the
-// NoRoute/NoMethod chains, not the chains of already registered routes). It is a
-// named function so the startup verifier and the AST scan can pin its identity.
+// h3Advertised is set by main() once it has a TLS certificate and starts the HTTP/3
+// (QUIC) listener on UDP 28443; it is never set when that listener is not started
+// (CAT-ALTSVC-1). Bind success is not confirmed (a bind failure is only logged).
+var h3Advertised atomic.Bool
+
+// altSvcMiddleware advertises the HTTP/3 endpoint on responses served over TLS
+// (HTTP/2 on 28443 or HTTP/3 itself) and only while the HTTP/3 listener is enabled.
+// buildRouter installs it as the last engine-level Use, BEFORE any route is
+// registered: gin combines a route's handler chain at registration, so an engine Use
+// made later (as main() did before CAT-ALTSVC-1) reached only the 404 (NoRoute)
+// chain. It is a named function so the startup verifier and the AST scan can pin its identity.
 func altSvcMiddleware(c *gin.Context) {
-	c.Header("Alt-Svc", `h3=":28443"; ma=86400`)
+	if h3Advertised.Load() && c.Request.TLS != nil {
+		c.Header("Alt-Svc", `h3=":28443"; ma=86400`)
+	}
 	c.Next()
 }
 
 // wantGlobalChain is the exact engine-level handler chain (the chain prefix of every
 // route registered after buildRouter's Use calls, and the NoRoute/NoMethod fallback
 // chain). Entries are handlerKey values. verifyAuthRouteTable requires the live
-// chain to equal it, optionally followed by altSvcMiddleware, so a global middleware
+// chain to equal it (altSvcMiddleware is its last entry), so a global middleware
 // added anywhere (answering an /api/v1/auth path without the route's limiter) fails
 // startup. Changing it is a deliberate edit of this list.
 var wantGlobalChain = []string{
@@ -328,6 +339,7 @@ var wantGlobalChain = []string{
 	"middleware/request.go:RequestID",
 	"middleware/input_validation.go:InputValidation",
 	"internal/middleware/compression.go:CompressionMiddleware",
+	altSvcKey,
 }
 
 const altSvcKey = "main_router.go:altSvcMiddleware"
@@ -478,8 +490,7 @@ func sameHandlers(a, b gin.HandlersChain) bool {
 //   - the engine's path-matching flags are pinned to the values gin.New() sets (every gin.Engine field is classified in TestGinEngineFieldsClassified: no fixed-path redirect,
 //     no extra-slash removal, no 405 handling, no raw-path matching, no h2c, no escaped-path
 //     matching, trailing slash redirect on, path values unescaped);
-//   - the global handler chain is exactly wantGlobalChain (optionally followed by
-//     altSvcMiddleware), and the NoRoute and NoMethod chains equal it (so no
+//   - the global handler chain is exactly wantGlobalChain (altSvcMiddleware is its last entry), and the NoRoute and NoMethod chains equal it (so no
 //     fallback or global handler can answer an unmatched /api/v1/auth path);
 //   - the routes whose PATTERN can match some /api/v1/auth path (see
 //     patternReachesAuthPaths) are exactly authRouteTable, for every method.
@@ -500,8 +511,8 @@ func verifyAuthRouteTable(e *gin.Engine) error {
 		return err
 	}
 	gk := handlerKeys(global)
-	if !reflect.DeepEqual(gk, wantGlobalChain) && !reflect.DeepEqual(gk, append(append([]string{}, wantGlobalChain...), altSvcKey)) {
-		return fmt.Errorf("engine global handler chain %q differs from the pinned chain %q (optionally followed by %s)", gk, wantGlobalChain, altSvcKey)
+	if !reflect.DeepEqual(gk, wantGlobalChain) {
+		return fmt.Errorf("engine global handler chain %q differs from the pinned chain %q", gk, wantGlobalChain)
 	}
 	for _, field := range []string{"allNoRoute", "allNoMethod"} {
 		ch, err := engineChain(e, field)

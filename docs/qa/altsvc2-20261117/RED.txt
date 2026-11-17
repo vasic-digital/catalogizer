@@ -1,0 +1,26 @@
+# RED: pre-fix main_router.go/main.go (HEAD) + shim declaring h3Advertised, new tests
+# HEAD fa68e27b784fe27baf4b0e1057697a0633cde5e7
+$ GOMAXPROCS=2 nice -n 10 go test -p 1 -count=1 -v -run "TestAltSvcReachOnRealRouter|TestAltSvcNotAdvertised" .
+=== RUN   TestAltSvcReachOnRealRouter
+    main_altsvc_reach_test.go:42: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc2-clone/catalog-api/main_altsvc_reach_test.go:42
+        	Error:      	Not equal: 
+        	            	expected: "h3=\":28443\"; ma=86400"
+        	            	actual  : ""
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-h3=":28443"; ma=86400
+        	            	+
+        	Test:       	TestAltSvcReachOnRealRouter
+        	Messages:   	control: 404 chain over TLS
+--- FAIL: TestAltSvcReachOnRealRouter (0.00s)
+=== RUN   TestAltSvcNotAdvertisedWhenH3Disabled
+--- PASS: TestAltSvcNotAdvertisedWhenH3Disabled (0.00s)
+=== RUN   TestAltSvcNotAdvertisedOverPlainHTTP
+--- PASS: TestAltSvcNotAdvertisedOverPlainHTTP (0.00s)
+FAIL
+FAIL	catalogizer	0.574s
+FAIL

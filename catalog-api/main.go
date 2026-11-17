@@ -1523,8 +1523,9 @@ func main() {
 			}
 	}()
 
-	// Add Alt-Svc header to advertise HTTP/3 support
-	router.Use(altSvcMiddleware)
+	// Advertise HTTP/3 (Alt-Svc, installed in buildRouter's chain) only now that the
+	// HTTP/3 listener below is going to be started (CAT-ALTSVC-1).
+	h3Advertised.Store(true)
 
 	// Start HTTP/3 server on UDP port 28443
 	http3Server = &http3.Server{
@@ -1540,8 +1541,8 @@ func main() {
 	}()
 	}
 
-	// The one late engine Use (altSvcMiddleware) changed the global chain: verify
-	// again so the pinned chain is checked in its final form too.
+	// Verify again so the pinned chain is checked in its final form too (main() no
+	// longer adds an engine Use; Alt-Svc is in buildRouter's chain, CAT-ALTSVC-1).
 	if err := verifyAuthRouteTable(router); err != nil {
 		logger.Fatal("Auth route table check failed (after the Alt-Svc middleware)", zap.Error(err))
 	}
