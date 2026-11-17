@@ -1,0 +1,7 @@
+X1-truncate-duration: TestWatchProgress_X1_RoundsFractionalSeconds 
+X1b-truncate-position: TestWatchProgress_RealClientShapes TestWatchProgress_X1_RoundsFractionalSeconds 
+X2-fraction-clamp-100: TestWatchProgress_X2_FractionClamped 
+X3-null-dur-any-unit: TestWatchProgress_X3_NullDurationNonSecondsRowNotTouched 
+X4-zero-position-rejected: TestWatchProgress_X4_ZeroPositionAccepted 
+F1-no-unit-guard (UPDATE loses `AND position_unit = ?` while the argument stays; the statement then fails on bind count, so this kill is by SQL error, not a semantic proof): see list in first run; killed by TestRV2_* TestWatchProgress_GuardedUpdatePostgresRewrite and 8 more
+F1-rows-affected-ignored (`if n == 0 && false`; the first run used `if false`, which does not compile, and was wrongly printed SURVIVED by my script; invalid, redone): KILLED by TestRV2_RaceSessionEndLearnsDurationBetweenSelectAndUpdate TestWatchProgress_ConcurrentUpdateExhaustionIs409NotPersisted

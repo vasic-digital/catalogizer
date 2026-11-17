@@ -136,6 +136,8 @@ func (h *AndroidTVMediaHandler) GetMediaByID(c *gin.Context) {
 
 // watchProgressRequest is the body of PUT /media/:id/progress. It accepts every shape the shipped clients send:
 //   - {progress}                                    (Android TV; fraction 0.0-1.0)
+//     (Android TV calls this route with no duration: a first watch of an item with no row answers 200 persisted=false
+//     reason=unknown_duration_no_row; see WPROG3-FU-1 in docs/FOLLOW_UPS_NEXT_PHASE.md)
 //   - {progress, timestamp(string), position}       (Android WatchProgressRequest; not wired to this route)
 //   - {media_id, position, duration, timestamp}     (desktop / api-client PlaybackProgress; floats, no `progress`)
 //
@@ -214,10 +216,16 @@ func (h *AndroidTVMediaHandler) UpdateWatchProgress(c *gin.Context) {
 		return
 	}
 
-	// Portable SELECT / UPDATE / INSERT upsert (same pattern as PlaybackSessionRepository: the SQLCipher build predates
-	// ON CONFLICT DO UPDATE). A first insert that loses a race (or otherwise fails) is retried once from the SELECT, which
-	// then finds the competing row and updates it.
-	for attempt := 0; attempt < 2; attempt++ {
+	// Portable SELECT / guarded UPDATE / INSERT upsert (same pattern as PlaybackSessionRepository: the SQLCipher build
+	// predates ON CONFLICT DO UPDATE). Concurrency: the plan is computed from the row read by the SELECT, so the UPDATE
+	// is conditional on that row still having the unit and duration the plan was made from (optimistic compare-and-set,
+	// plain portable SQL: it needs no transaction, no FOR UPDATE and no BEGIN IMMEDIATE, so it behaves the same on SQLite
+	// and Postgres through the DB wrapper's placeholder rewrite). A session End that committed in the window makes the
+	// UPDATE touch zero rows; the loop then re-reads and re-plans (bounded). The duration guard is spelled
+	// `= ?` or `IS NULL` in Go, never `? IS NULL`, because Postgres cannot type an untyped NULL parameter. A first insert
+	// that loses a race is retried once from the SELECT, which then finds the competing row.
+	const maxAttempts = 3
+	for attempt := 0; attempt < maxAttempts; attempt++ {
 		var unit string
 		var duration sql.NullInt64
 		selErr := h.db.QueryRowContext(ctx,
@@ -241,12 +249,37 @@ func (h *AndroidTVMediaHandler) UpdateWatchProgress(c *gin.Context) {
 		now := time.Now().UTC()
 		if exists {
 			// never changes the unit of an existing row; duration is only filled in when it was unknown
-			if _, err := h.db.ExecContext(ctx,
-				`UPDATE media_progress SET duration_total = ?, last_position = ?, updated_at = ?
-				 WHERE user_id = ? AND media_item_id = ?`,
-				dur, pos, now, callerID, id); err != nil {
+			q := `UPDATE media_progress SET duration_total = ?, last_position = ?, updated_at = ?
+				 WHERE user_id = ? AND media_item_id = ? AND position_unit = ? AND `
+			args := []interface{}{dur, pos, now, callerID, id, unit}
+			if duration.Valid {
+				q += `duration_total = ?`
+				args = append(args, duration.Int64)
+			} else {
+				q += `duration_total IS NULL`
+			}
+			res, err := h.db.ExecContext(ctx, q, args...)
+			if err != nil {
 				utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to update watch progress", err)
 				return
+			}
+			n, raErr := res.RowsAffected()
+			if raErr != nil {
+				utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to update watch progress", raErr)
+				return
+			}
+			if n == 0 {
+				// the row changed (or vanished) since the SELECT: re-read and re-plan, never report persisted
+				if attempt == maxAttempts-1 {
+					c.JSON(http.StatusConflict, gin.H{
+						"success":   false,
+						"message":   "Watch progress not stored",
+						"persisted": false,
+						"reason":    "concurrent_update",
+					})
+					return
+				}
+				continue
 			}
 			break
 		}

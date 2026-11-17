@@ -1,0 +1,75 @@
+--- FAIL: TestRV2_RaceSessionEndChangesUnitBetweenSelectAndUpdate (5.91s)
+    media_watch_progress_race_test.go:128: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_race_test.go:128
+        	Error:      	Not equal: 
+        	            	expected: 300
+        	            	actual  : 7200
+        	Test:       	TestRV2_RaceSessionEndChangesUnitBetweenSelectAndUpdate
+        	Messages:   	pages row keeps the pages duration
+    media_watch_progress_race_test.go:129: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_race_test.go:129
+        	Error:      	Not equal: 
+        	            	expected: 150
+        	            	actual  : 3600
+        	Test:       	TestRV2_RaceSessionEndChangesUnitBetweenSelectAndUpdate
+        	Messages:   	re-planned against the new row: 0.5 of 300 pages
+--- FAIL: TestRV2_RaceSessionEndLearnsDurationBetweenSelectAndUpdate (8.45s)
+    media_watch_progress_race_test.go:146: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_race_test.go:146
+        	Error:      	Not equal: 
+        	            	expected: 9000
+        	            	actual  : 7200
+        	Test:       	TestRV2_RaceSessionEndLearnsDurationBetweenSelectAndUpdate
+        	Messages:   	PUT must not overwrite the duration the session just learned
+    media_watch_progress_race_test.go:147: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_race_test.go:147
+        	Error:      	Not equal: 
+        	            	expected: 4500
+        	            	actual  : 3600
+        	Test:       	TestRV2_RaceSessionEndLearnsDurationBetweenSelectAndUpdate
+--- FAIL: TestWatchProgress_ConcurrentUpdateExhaustionIs409NotPersisted (7.76s)
+    media_watch_progress_race_test.go:166: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_race_test.go:166
+        	Error:      	Not equal: 
+        	            	expected: 409
+        	            	actual  : 200
+        	Test:       	TestWatchProgress_ConcurrentUpdateExhaustionIs409NotPersisted
+        	Messages:   	map[message:Watch progress updated persisted:true success:true]
+    media_watch_progress_race_test.go:167: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_race_test.go:167
+        	Error:      	Not equal: 
+        	            	expected: false
+        	            	actual  : true
+        	Test:       	TestWatchProgress_ConcurrentUpdateExhaustionIs409NotPersisted
+    media_watch_progress_race_test.go:168: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_race_test.go:168
+        	Error:      	Not equal: 
+        	            	expected: string("concurrent_update")
+        	            	actual  : <nil>(<nil>)
+        	Test:       	TestWatchProgress_ConcurrentUpdateExhaustionIs409NotPersisted
+    media_watch_progress_race_test.go:170: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_race_test.go:170
+        	Error:      	Not equal: 
+        	            	expected: 10
+        	            	actual  : 900
+        	Test:       	TestWatchProgress_ConcurrentUpdateExhaustionIs409NotPersisted
+        	Messages:   	nothing of the PUT was stored
+    media_watch_progress_race_test.go:174: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_race_test.go:174
+        	Error:      	Not equal: 
+        	            	expected: 3
+        	            	actual  : 1
+        	Test:       	TestWatchProgress_ConcurrentUpdateExhaustionIs409NotPersisted
+        	Messages:   	bounded to 3 attempts
+--- FAIL: TestWatchProgress_GuardedUpdatePostgresRewrite (7.06s)
+    media_watch_progress_race_test.go:199: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_race_test.go:199
+        	Error:      	"UPDATE media_progress SET duration_total = $1, last_position = $2, updated_at = $3\n\t\t\t\t WHERE user_id = $4 AND media_item_id = $5" does not contain "position_unit = $6 AND duration_total = $7"
+        	Test:       	TestWatchProgress_GuardedUpdatePostgresRewrite
+    media_watch_progress_race_test.go:200: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/wprog-clone/catalog-api/handlers/media_watch_progress_race_test.go:200
+        	Error:      	"UPDATE media_progress SET duration_total = $1, last_position = $2, updated_at = $3\n\t\t\t\t WHERE user_id = $4 AND media_item_id = $5" does not contain "position_unit = $6 AND duration_total IS NULL"
+        	Test:       	TestWatchProgress_GuardedUpdatePostgresRewrite
+FAIL
+FAIL	catalogizer/handlers	62.828s
+FAIL

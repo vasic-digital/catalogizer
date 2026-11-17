@@ -119,7 +119,7 @@ All endpoints below require JWT authentication and are rate limited (2000 reques
 | GET | `/api/v1/media/search` | Search media items with filters and pagination |
 | GET | `/api/v1/media/stats` | Get aggregate media statistics |
 | GET | `/api/v1/media/:id` | Get a media item by ID (Android TV compatible) |
-| PUT | `/api/v1/media/:id/progress` | Store the caller's own watch progress: `progress` 0.0-1.0 and/or `position`+`duration` (seconds, floats allowed); new rows only with a known duration (seconds), existing rows keep their unit; otherwise 200 `persisted:false` with a `reason`; 401/400/404 |
+| PUT | `/api/v1/media/:id/progress` | Store the caller's own watch progress: `progress` 0.0-1.0 and/or `position`+`duration` (seconds, floats allowed); new rows only with a known duration (seconds), existing rows keep their unit; otherwise 200 `persisted:false` with a `reason`; the write is a bounded (3) compare-and-set against the row that was read, so a concurrent session end is never overwritten, and exhaustion is 409 `persisted:false` `reason:concurrent_update`; 401/400/404/409 |
 | PUT | `/api/v1/media/:id/favorite` | Toggle favorite status for a media item |
 
 ---
