@@ -1,145 +1,66 @@
 UNIT-PASS hostonly strips :port
-UNIT-PASS f3_verdict 1008 3.0 20 close PASS
-UNIT-PASS f3_verdict 1008 25 20 close FAIL
-UNIT-PASS f3_verdict 1000 3 20 close FAIL
-UNIT-PASS f3_verdict null 0 20 timeout FAIL
-UNIT-PASS f3_verdict null 0 20 eof INCONCLUSIVE
-UNIT-PASS f3_verdict 1008 -2 20 close INCONCLUSIVE
-UNIT-PASS scenario:good (exit 3)
-UNIT-PASS scenario:wrong-code (exit 1)
-----------------------------------------
-Exception occurred during processing of request from ('127.0.0.1', 51046)
-Traceback (most recent call last):
-  File "/usr/lib/python3.14/socketserver.py", line 697, in process_request_thread
-    self.finish_request(request, client_address)
-    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.14/socketserver.py", line 362, in finish_request
-    self.RequestHandlerClass(request, client_address, self)
-    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.14/socketserver.py", line 766, in __init__
-    self.handle()
-    ~~~~~~~~~~~^^
-  File "/usr/lib/python3.14/http/server.py", line 498, in handle
-    self.handle_one_request()
-    ~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "/usr/lib/python3.14/http/server.py", line 464, in handle_one_request
-    self.raw_requestline = self.rfile.readline(65537)
-                           ~~~~~~~~~~~~~~~~~~~^^^^^^^
-  File "/usr/lib/python3.14/socket.py", line 725, in readinto
-    return self._sock.recv_into(b)
-           ~~~~~~~~~~~~~~~~~~~~^^^
-ConnectionResetError: [Errno 104] Connection reset by peer
-----------------------------------------
-----------------------------------------
-Exception occurred during processing of request from ('127.0.0.1', 51122)
-Traceback (most recent call last):
-  File "/usr/lib/python3.14/socketserver.py", line 697, in process_request_thread
-    self.finish_request(request, client_address)
-    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.14/socketserver.py", line 362, in finish_request
-    self.RequestHandlerClass(request, client_address, self)
-    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.14/socketserver.py", line 766, in __init__
-    self.handle()
-    ~~~~~~~~~~~^^
-  File "/usr/lib/python3.14/http/server.py", line 498, in handle
-    self.handle_one_request()
-    ~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "/usr/lib/python3.14/http/server.py", line 464, in handle_one_request
-    self.raw_requestline = self.rfile.readline(65537)
-                           ~~~~~~~~~~~~~~~~~~~^^^^^^^
-  File "/usr/lib/python3.14/socket.py", line 725, in readinto
-    return self._sock.recv_into(b)
-           ~~~~~~~~~~~~~~~~~~~~^^^
-ConnectionResetError: [Errno 104] Connection reset by peer
-----------------------------------------
-UNIT-PASS scenario:never-close (exit 1)
-----------------------------------------
-Exception occurred during processing of request from ('127.0.0.1', 55548)
-Traceback (most recent call last):
-  File "/usr/lib/python3.14/socketserver.py", line 697, in process_request_thread
-    self.finish_request(request, client_address)
-    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.14/socketserver.py", line 362, in finish_request
-    self.RequestHandlerClass(request, client_address, self)
-    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.14/socketserver.py", line 766, in __init__
-    self.handle()
-    ~~~~~~~~~~~^^
-  File "/usr/lib/python3.14/http/server.py", line 498, in handle
-    self.handle_one_request()
-    ~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "/usr/lib/python3.14/http/server.py", line 464, in handle_one_request
-    self.raw_requestline = self.rfile.readline(65537)
-                           ~~~~~~~~~~~~~~~~~~~^^^^^^^
-  File "/usr/lib/python3.14/socket.py", line 725, in readinto
-    return self._sock.recv_into(b)
-           ~~~~~~~~~~~~~~~~~~~~^^^
-ConnectionResetError: [Errno 104] Connection reset by peer
-----------------------------------------
-----------------------------------------
-Exception occurred during processing of request from ('127.0.0.1', 54800)
-Traceback (most recent call last):
-  File "/usr/lib/python3.14/socketserver.py", line 697, in process_request_thread
-    self.finish_request(request, client_address)
-    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.14/socketserver.py", line 362, in finish_request
-    self.RequestHandlerClass(request, client_address, self)
-    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.14/socketserver.py", line 766, in __init__
-    self.handle()
-    ~~~~~~~~~~~^^
-  File "/usr/lib/python3.14/http/server.py", line 498, in handle
-    self.handle_one_request()
-    ~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "/usr/lib/python3.14/http/server.py", line 464, in handle_one_request
-    self.raw_requestline = self.rfile.readline(65537)
-                           ~~~~~~~~~~~~~~~~~~~^^^^^^^
-  File "/usr/lib/python3.14/socket.py", line 725, in readinto
-    return self._sock.recv_into(b)
-           ~~~~~~~~~~~~~~~~~~~~^^^
-ConnectionResetError: [Errno 104] Connection reset by peer
-----------------------------------------
-----------------------------------------
-Exception occurred during processing of request from ('127.0.0.1', 54806)
-Traceback (most recent call last):
-  File "/usr/lib/python3.14/socketserver.py", line 697, in process_request_thread
-    self.finish_request(request, client_address)
-    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.14/socketserver.py", line 362, in finish_request
-    self.RequestHandlerClass(request, client_address, self)
-    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.14/socketserver.py", line 766, in __init__
-    self.handle()
-    ~~~~~~~~~~~^^
-  File "/usr/lib/python3.14/http/server.py", line 498, in handle
-    self.handle_one_request()
-    ~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "/usr/lib/python3.14/http/server.py", line 464, in handle_one_request
-    self.raw_requestline = self.rfile.readline(65537)
-                           ~~~~~~~~~~~~~~~~~~~^^^^^^^
-  File "/usr/lib/python3.14/socket.py", line 725, in readinto
-    return self._sock.recv_into(b)
-           ~~~~~~~~~~~~~~~~~~~~^^^
-ConnectionResetError: [Errno 104] Connection reset by peer
-----------------------------------------
-UNIT-PASS scenario:refuse-ws (exit 3)
---- good scenario results.txt ---
+UNIT-PASS f3_verdict 1008 3.0 20 close pong ok ok PASS
+UNIT-PASS f3_verdict 1008 25 20 close pong ok ok FAIL
+UNIT-PASS f3_verdict 1000 3 20 close pong ok ok FAIL
+UNIT-PASS f3_verdict null 0 20 timeout pong ok ok FAIL
+UNIT-PASS f3_verdict null 0 20 stopped pong ok ok FAIL
+UNIT-PASS f3_verdict null 0 20 eof pong ok ok INCONCLUSIVE
+UNIT-PASS f3_verdict 1008 -2 20 close pong ok ok INCONCLUSIVE
+UNIT-PASS f3_verdict 1008 3 20 close closed/final_pong=false ok ok INCONCLUSIVE
+UNIT-PASS f3_verdict 1008 3 20 close pong none ok INCONCLUSIVE
+UNIT-PASS f3_verdict 1008 3 20 close pong ok none INCONCLUSIVE
+UNIT-PASS scenario:good exit (3)
+UNIT-PASS scenario:good F3 verdict (PASS)
+UNIT-PASS scenario:wrong-code exit (1)
+UNIT-PASS scenario:wrong-code F3 verdict (FAIL)
+UNIT-PASS scenario:never-close exit (1)
+UNIT-PASS scenario:never-close F3 verdict (FAIL)
+UNIT-PASS scenario:refuse-ws exit (3)
+UNIT-PASS scenario:refuse-ws F3 verdict (INCONCLUSIVE)
+UNIT-PASS scenario:drop-after-101 exit (3)
+UNIT-PASS scenario:drop-after-101 F3 verdict (INCONCLUSIVE)
+UNIT-PASS scenario:early-close exit (3)
+UNIT-PASS scenario:early-close F3 verdict (INCONCLUSIVE)
+UNIT-PASS scenario:no-pong exit (3)
+UNIT-PASS scenario:no-pong F3 verdict (INCONCLUSIVE)
+UNIT-PASS scenario:late-close exit (1)
+UNIT-PASS scenario:late-close F3 verdict (FAIL)
+UNIT-PASS scenario:suspend-fails exit (3)
+UNIT-PASS scenario:suspend-fails F3 verdict (INCONCLUSIVE)
+UNIT-PASS scenario:ignore-susp exit (3)
+UNIT-PASS scenario:ignore-susp F3 verdict (INCONCLUSIVE)
+UNIT-PASS scenario:control-closes exit (3)
+UNIT-PASS scenario:control-closes F3 verdict (INCONCLUSIVE)
+UNIT-PASS scenario:short-exp exit (3)
+UNIT-PASS scenario:short-exp F3 verdict (INCONCLUSIVE)
+--- good results.txt ---
 PASS | unauthenticated /ws refused | observed=401 expect=401
 PASS | invalid JWT in ?token= refused (F2) | observed=401 expect=401
 PASS | bad Origin with valid ticket refused | observed=403 expect=403
 PASS | ticket reuse refused (single-use) | observed=401 expect=401
-PASS | F3 socket closed after suspension (code 1008, reason='authorization ended') | close 1008 1.18s after suspension (bound 20s)
+post-suspension victim login status=403 ticket status=403
+PASS | F3 socket closed because of suspension (code 1008, reason='authorization ended') | close 1008 1.18s after suspension (bound 20s)
 INCONCLUSIVE | F3 audience filter (admin-only events not delivered to non-admin) | NOT COVERED by this script: manual / uncovered
 live_proven=NO (answering-process identity: MISSING, UNCONFIRMED)
 summary: PASS=5 FAIL=0 INCONCLUSIVE=1
---- never-close results.txt ---
+--- ignore-susp results.txt ---
 PASS | unauthenticated /ws refused | observed=401 expect=401
 PASS | invalid JWT in ?token= refused (F2) | observed=401 expect=401
 PASS | bad Origin with valid ticket refused | observed=403 expect=403
 PASS | ticket reuse refused (single-use) | observed=401 expect=401
-FAIL | F3 socket closed after suspension (code 1008, reason='') | socket still open at end of window (end=timeout)
+post-suspension victim login status=200 ticket status=200
+INCONCLUSIVE | F3 socket closed because of suspension (code 1008, reason='authorization ended') | suspension not proven effective (victim still able to log in / mint a ticket after SUSPEND_CMD (login=200 ticket=200): suspension had no effect)
 INCONCLUSIVE | F3 audience filter (admin-only events not delivered to non-admin) | NOT COVERED by this script: manual / uncovered
 live_proven=NO (answering-process identity: MISSING, UNCONFIRMED)
-summary: PASS=4 FAIL=1 INCONCLUSIVE=1
+summary: PASS=4 FAIL=0 INCONCLUSIVE=2
+--- control-closes results.txt ---
+PASS | unauthenticated /ws refused | observed=401 expect=401
+PASS | invalid JWT in ?token= refused (F2) | observed=401 expect=401
+PASS | bad Origin with valid ticket refused | observed=403 expect=403
+PASS | ticket reuse refused (single-use) | observed=401 expect=401
+post-suspension victim login status=403 ticket status=403
+INCONCLUSIVE | F3 socket closed because of suspension (code 1008, reason='authorization ended') | control (non-suspended) socket did not stay open and answer a ping (state=close/final_pong=null): cannot attribute the close to the suspension
+INCONCLUSIVE | F3 audience filter (admin-only events not delivered to non-admin) | NOT COVERED by this script: manual / uncovered
+live_proven=NO (answering-process identity: MISSING, UNCONFIRMED)
+summary: PASS=4 FAIL=0 INCONCLUSIVE=2
 gate-logic failures: 0

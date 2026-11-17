@@ -2,33 +2,46 @@
 # GATE-LOGIC UNIT TEST of LIVE_WS_CHECK.sh.txt (11.4.289(C)). NOT live evidence: the target is a local mock
 # (GATE_LOGIC_TEST_mock_server.py.txt). It only proves the script's verdict logic on declared scenarios.
 # usage: bash GATE_LOGIC_TEST_run.sh.txt <scratch-dir>
+# Each scenario asserts BOTH the overall exit code and the F3 line verdict. Overall exit is 3 whenever the F3 check is PASS
+# (the audience leg is always INCONCLUSIVE: uncovered) and 1 on an F3 FAIL; the F3 PASS must appear ONLY in scenario 'good'.
 set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; S="${1:?scratch dir}"; mkdir -p "$S"
 PORT=$((20000 + RANDOM % 20000)); fails=0
-expect(){ # name actual_exit expected_exit
-  if [ "$2" = "$3" ]; then echo "UNIT-PASS $1 (exit $2)"; else echo "UNIT-FAIL $1 (exit $2, expected $3)"; fails=$((fails+1)); fi
-}
-run(){ # mode expected_exit [extra env as VAR=val...]
-  local mode="$1" want="$2"; shift 2; PORT=$((PORT+1)); local trig="$S/trig_$mode"
-  python3 -I "$HERE/GATE_LOGIC_TEST_mock_server.py.txt" "$PORT" "$mode" "$trig" & local sp=$!
+expect(){ if [ "$2" = "$3" ]; then echo "UNIT-PASS $1 ($2)"; else echo "UNIT-FAIL $1 (got $2, expected $3)"; fails=$((fails+1)); fi; }
+run(){ # scenario mockmode want_exit want_f3 suspend_cmd [extra env...]
+  local name="$1" mode="$2" wexit="$3" wf3="$4" susp="$5"; shift 5; PORT=$((PORT+1))
+  local trig="$S/trig_$name"; rm -f "$trig"
+  python3 -I "$HERE/GATE_LOGIC_TEST_mock_server.py.txt" "$PORT" "$mode" "$trig" 2>/dev/null & local sp=$!
   sleep 0.8
-  env BASE="http://127.0.0.1:$PORT" ADMIN_USER=a ADMIN_PASS=b VICTIM_USER=c VICTIM_PASS=d OUT="$S/out_$mode" \
-    SUSPEND_CMD="touch $trig" F3_BOUND="${F3_BOUND:-6}" "$@" bash "$HERE/LIVE_WS_CHECK.sh.txt" > "$S/log_$mode.txt" 2>&1
+  env BASE="http://127.0.0.1:$PORT" ADMIN_USER=a ADMIN_PASS=b VICTIM_USER=c VICTIM_PASS=d OUT="$S/out_$name" \
+    SUSPEND_CMD="${susp//TRIG/$trig}" F3_BOUND="${F3_BOUND:-6}" "$@" bash "$HERE/LIVE_WS_CHECK.sh.txt" > "$S/log_$name.txt" 2>&1 < /dev/null
   local rc=$?; kill "$sp" 2>/dev/null; wait "$sp" 2>/dev/null
-  expect "scenario:$mode" "$rc" "$want"
+  local f3; f3="$(grep 'F3 socket closed because' "$S/out_$name/results.txt" 2>/dev/null | cut -d' ' -f1)"
+  expect "scenario:$name exit" "$rc" "$wexit"; expect "scenario:$name F3 verdict" "${f3:-NONE}" "$wf3"
 }
-# 1. helper functions
+# 1. helper functions (source-only)
 export LIVE_WS_CHECK_SOURCE_ONLY=1; BASE=x OUT="$S"; . "$HERE/LIVE_WS_CHECK.sh.txt"; unset LIVE_WS_CHECK_SOURCE_ONLY
 [ "$(hostonly https://h.example:8443/x)" = h.example ] && echo "UNIT-PASS hostonly strips :port" || { echo "UNIT-FAIL hostonly"; fails=$((fails+1)); }
-for c in "1008 3.0 20 close PASS" "1008 25 20 close FAIL" "1000 3 20 close FAIL" "null 0 20 timeout FAIL" "null 0 20 eof INCONCLUSIVE" "1008 -2 20 close INCONCLUSIVE"; do
-  set -- $c; r="$(f3_verdict "$1" "$2" "$3" "$4")"
-  [ "${r%%|*}" = "$5" ] && echo "UNIT-PASS f3_verdict $c" || { echo "UNIT-FAIL f3_verdict $c => $r"; fails=$((fails+1)); }
+# code el bound end ctrl susp exp => verdict
+for c in "1008 3.0 20 close pong ok ok PASS" "1008 25 20 close pong ok ok FAIL" "1000 3 20 close pong ok ok FAIL" \
+         "null 0 20 timeout pong ok ok FAIL" "null 0 20 stopped pong ok ok FAIL" "null 0 20 eof pong ok ok INCONCLUSIVE" \
+         "1008 -2 20 close pong ok ok INCONCLUSIVE" "1008 3 20 close closed/final_pong=false ok ok INCONCLUSIVE" \
+         "1008 3 20 close pong none ok INCONCLUSIVE" "1008 3 20 close pong ok none INCONCLUSIVE"; do
+  set -- $c; r="$(f3_verdict "$1" "$2" "$3" "$4" "$5" "$6" "$7")"
+  [ "${r%%|*}" = "$8" ] && echo "UNIT-PASS f3_verdict $c" || { echo "UNIT-FAIL f3_verdict $c => $r"; fails=$((fails+1)); }
 done
-# 2. whole-script scenarios against the mock (exit 3 = INCONCLUSIVE because the audience leg is always uncovered)
-run good 3
-run wrong-code 1
-run never-close 1 F3_BOUND=3
-run refuse-ws 3
-echo "--- good scenario results.txt ---"; cat "$S/out_good/results.txt"
-echo "--- never-close results.txt ---"; cat "$S/out_never-close/results.txt"
+# 2. whole-script scenarios against the mock
+run good           good              3 PASS         'touch TRIG'
+run wrong-code     wrong-code        1 FAIL         'touch TRIG'
+run never-close    never-close       1 FAIL         'touch TRIG' F3_BOUND=3
+run refuse-ws      refuse-ws         3 INCONCLUSIVE 'touch TRIG'
+run drop-after-101 drop-after-101    3 INCONCLUSIVE 'touch TRIG'
+run early-close    early-close       3 INCONCLUSIVE 'sleep 2; touch TRIG'
+run no-pong        no-pong           3 INCONCLUSIVE 'touch TRIG'
+run late-close     late-close        1 FAIL         'touch TRIG' F3_BOUND=3
+run suspend-fails  never-close       3 INCONCLUSIVE 'false'
+run ignore-susp    ignore-suspension 3 INCONCLUSIVE 'touch TRIG'
+run control-closes control-closes-too 3 INCONCLUSIVE 'touch TRIG'
+run short-exp      short-exp         3 INCONCLUSIVE 'touch TRIG'
+for n in good ignore-susp control-closes; do echo "--- $n results.txt ---"; cat "$S/out_$n/results.txt"; done
 echo "gate-logic failures: $fails"; exit "$fails"

@@ -5,10 +5,22 @@
 #   production nginx edge, and it does NOT cover SEC-WS-1-F1. Those stay OPEN. The audience-filter leg (admin-only
 #   events must not reach a non-admin socket) is NOT covered here: it is manual / uncovered and is reported as such.
 # Needs: bash, curl, jq, python3. (websocat is NOT needed.) Credentials come from env by NAME only and never appear
-#   in argv or logs: BASE=https://host:port ADMIN_USER ADMIN_PASS VICTIM_USER VICTIM_PASS (non-admin test user).
-#   Suspension step: set SUSPEND_CMD (a command you supply that suspends VICTIM_USER) or be prompted to do it by hand.
-#   Optional: ORIGIN, OUT, F3_BOUND (seconds, default 20), INSECURE=1, SERVER_PID + SERVER_EXE_SHA256 (answering-process
-#   identity read on the server host, 11.4.289(D)); without them the run is reported live_proven=NO (UNCONFIRMED).
+#   in argv: logins build the JSON with `jq -n '{..:env.VAR}'` (values passed as per-command ENVIRONMENT, not argv) and pipe it
+#   to curl --data @-; bearer headers go to curl via `-K -` (config on stdin); tickets go to the probe via env (--ticket-env).
+#   (Honest limit: a process environment is readable by the same uid via /proc; it is not argv/ps.) Logs never print them.
+#   BASE=https://host:port ADMIN_USER ADMIN_PASS VICTIM_USER VICTIM_PASS (VICTIM = non-admin test user, ADMIN = non-suspended control).
+#   Suspension step: set SUSPEND_CMD (a command you supply that suspends VICTIM_USER; its exit status is checked) or be prompted.
+#   Optional: ORIGIN, OUT, INSECURE=1, SERVER_PID + SERVER_EXE_SHA256 (answering-process identity read on the server host,
+#   11.4.289(D); without them the run is reported live_proven=NO (UNCONFIRMED)),
+#   F3_BOUND (seconds, default 20): MUST track the deployment's re-check interval (RecheckInterval, default 15 s) plus margin,
+#   VICTIM_REFUSED_STATUS (space-separated HTTP statuses a SUSPENDED user's login / ticket mint must get; default "401 403";
+#   the real status is UNCONFIRMED: set it to what your server returns).
+# F3 PASS requires ALL of: victim socket alive (pong) + control (admin) socket alive before the suspension; the victim token cannot
+#   expire inside the window (JWT exp, never printed); SUSPEND_CMD exit 0; the suspension PROVEN effective (new login or ticket mint
+#   for the victim refused with an expected status, none succeeding); the victim socket closes 1008 AFTER the suspension marker and
+#   within F3_BOUND; and the control socket is still open and answers a ping at the end. Anything unprovable is INCONCLUSIVE.
+# Timing: marker = epoch taken when SUSPEND_CMD returns (or on Enter); elapsed = probe close_epoch - marker, same host clock
+#   (a close in the few ms between the command's effect and its return reads as 'before suspension' = INCONCLUSIVE, never PASS).
 # Verdict per check: PASS | FAIL | INCONCLUSIVE (INCONCLUSIVE = could not observe; never counted as PASS).
 # Overall exit: 0 all PASS, 1 any FAIL, 3 any INCONCLUSIVE and no FAIL, 2 usage/prereq.
 set -u
@@ -36,20 +48,41 @@ check(){ # label observed expected : compares observed vs expected
   fi
 }
 hostonly(){ local h="${1#*://}"; h="${h%%/*}"; h="${h%%:*}"; printf '%s' "$h"; }
-probe_status(){ # url origin -> HTTP handshake status or empty
-  python3 -I "$PROBE" "$1" ${2:+--origin "$2"} --mode handshake 2>/dev/null | tail -1 | jq -r '.handshake // empty' 2>/dev/null
+probe_status(){ # url origin [ticket] -> HTTP handshake status or empty (ticket via env, never argv)
+  WS_TICKET="${3:-}" python3 -I "$PROBE" "$1" ${2:+--origin "$2"} ${3:+--ticket-env WS_TICKET} --mode handshake 2>/dev/null | tail -1 | jq -r '.handshake // empty' 2>/dev/null
 }
+login_body(){ U="$1" P="$2" jq -n '{username:env.U,password:env.P}'; }
 login(){
-  jq -n --arg u "$1" --arg p "$2" '{username:$u,password:$p}' | \
+  login_body "$1" "$2" | \
     curl -sk --max-time 10 -X POST "$BASE/api/v1/auth/login" -H 'Content-Type: application/json' --data @- | \
     jq -r '.token // .access_token // .data.token // empty' 2>/dev/null
 }
-ticket(){ curl -sk --max-time 10 -X POST "$BASE/api/v1/ws/ticket" -H "Authorization: Bearer $1" | jq -r '.ticket // empty' 2>/dev/null; }
-# f3_verdict closecode elapsed bound end -> prints VERDICT|detail
+login_status(){ # user pass -> HTTP status of a login attempt
+  login_body "$1" "$2" | curl -sk -o /dev/null -w '%{http_code}' --max-time 10 -X POST "$BASE/api/v1/auth/login" -H 'Content-Type: application/json' --data @-
+}
+# bearer header goes via curl config on stdin (-K -), so the token is not in argv
+ticket(){ printf 'header = "Authorization: Bearer %s"\n' "$1" | curl -sk --max-time 10 -X POST "$BASE/api/v1/ws/ticket" -K - | jq -r '.ticket // empty' 2>/dev/null; }
+ticket_status(){ printf 'header = "Authorization: Bearer %s"\n' "$1" | curl -sk -o /dev/null -w '%{http_code}' --max-time 10 -X POST "$BASE/api/v1/ws/ticket" -K -; }
+# jwt_exp_remaining token -> seconds until exp (integer), or "none" if unreadable / no exp. Token passed by env; never printed.
+jwt_exp_remaining(){
+  JWT="$1" python3 -I -c '
+import os,sys,json,base64,time
+try:
+    p=os.environ["JWT"].split(".")[1]; p+="="*(-len(p)%4)
+    e=json.loads(base64.urlsafe_b64decode(p)).get("exp")
+    print(int(e-time.time()) if isinstance(e,(int,float)) else "none")
+except Exception:
+    print("none")'
+}
+# f3_verdict closecode elapsed bound end control_state suspension_state expiry_state -> prints VERDICT|detail
+#   control_state: pong (open + answered final ping) | anything else; suspension_state / expiry_state: ok | reason text
 f3_verdict(){
-  local code="$1" el="$2" bound="$3" end="$4"
+  local code="$1" el="$2" bound="$3" end="$4" ctrl="${5:-missing}" susp="${6:-missing}" expc="${7:-missing}"
+  if [ "$expc" != ok ]; then echo "INCONCLUSIVE|victim token may expire inside the window ($expc): a 1008 would not prove the suspension"; return; fi
+  if [ "$susp" != ok ]; then echo "INCONCLUSIVE|suspension not proven effective ($susp)"; return; fi
+  if [ "$ctrl" != pong ]; then echo "INCONCLUSIVE|control (non-suspended) socket did not stay open and answer a ping (state=$ctrl): cannot attribute the close to the suspension"; return; fi
   if [ "$end" != "close" ] || [ -z "$code" ] || [ "$code" = "null" ]; then
-    if [ "$end" = "timeout" ]; then
+    if [ "$end" = "timeout" ] || [ "$end" = "stopped" ]; then
       echo "FAIL|socket still open at end of window (end=$end)"
     else
       echo "INCONCLUSIVE|no close frame observed (end=$end)"
@@ -97,49 +130,80 @@ else
   if [ -z "$T" ]; then
     record "bad Origin with valid ticket refused" INCONCLUSIVE "no ticket minted"
   else
-    check "bad Origin with valid ticket refused" "$(probe_status "$WS/ws?ticket=$T" https://evil.example)" 403
+    check "bad Origin with valid ticket refused" "$(probe_status "$WS/ws" https://evil.example "$T")" 403
   fi
   T=$(ticket "$VT")
   if [ -z "$T" ]; then
     record "ticket reuse refused (single-use)" INCONCLUSIVE "no ticket minted"
   else
-    first="$(probe_status "$WS/ws?ticket=$T" "$ORIGIN")"
+    first="$(probe_status "$WS/ws" "$ORIGIN" "$T")"
     if [ "$first" != "101" ]; then
       record "ticket reuse refused (single-use)" INCONCLUSIVE "first connection did not succeed (status='$first')"
     else
-      check "ticket reuse refused (single-use)" "$(probe_status "$WS/ws?ticket=$T" "$ORIGIN")" 401
+      check "ticket reuse refused (single-use)" "$(probe_status "$WS/ws" "$ORIGIN" "$T")" 401
     fi
   fi
 
   # ---- F3: connected socket closed (1008) within bound after the victim is suspended ----
-  T=$(ticket "$VT")
-  READY="$OUT/ready.$$"
-  if [ -z "$T" ]; then
-    record "F3 socket closed after suspension" INCONCLUSIVE "no ticket minted"
+  # Preconditions that must hold or the result is INCONCLUSIVE: control socket (admin) alive; victim JWT cannot expire inside
+  # the window; SUSPEND_CMD exit 0; suspension proven effective (login / ticket mint refused with an expected status).
+  F3L="F3 socket closed because of suspension"
+  T=$(ticket "$VT"); CT=$(ticket "$AT")
+  VREADY="$OUT/vready.$$"; CREADY="$OUT/cready.$$"
+  rem="$(jwt_exp_remaining "$VT")"; need=$((F3_BOUND+75))
+  if [ -z "$T" ] || [ -z "$CT" ]; then
+    record "$F3L" INCONCLUSIVE "no ticket minted (victim='${T:+ok}' control='${CT:+ok}')"
   else
-    python3 -I "$PROBE" "$WS/ws?ticket=$T" --origin "$ORIGIN" --mode hold \
-      --max-seconds $((F3_BOUND+60)) --ready-file "$READY" > "$OUT/f3_probe.json" 2> "$OUT/f3_probe.err" &
+    WS_TICKET="$T" python3 -I "$PROBE" "$WS/ws" --origin "$ORIGIN" --ticket-env WS_TICKET --mode hold \
+      --max-seconds $((F3_BOUND+120)) --ready-file "$VREADY" > "$OUT/f3_probe.json" 2> "$OUT/f3_probe.err" &
     WP=$!
-    for _ in $(seq 1 20); do [ -f "$READY" ] && break; sleep 0.5; done
-    if [ ! -f "$READY" ] || ! kill -0 "$WP" 2>/dev/null; then
-      record "F3 socket closed after suspension" INCONCLUSIVE "socket not proven alive before suspension (no pong / handshake failed)"
-      kill "$WP" 2>/dev/null
+    WS_TICKET="$CT" python3 -I "$PROBE" "$WS/ws" --origin "$ORIGIN" --ticket-env WS_TICKET --mode hold \
+      --max-seconds $((F3_BOUND+120)) --ready-file "$CREADY" > "$OUT/f3_control.json" 2> "$OUT/f3_control.err" &
+    CP=$!
+    for _ in $(seq 1 20); do [ -f "$VREADY" ] && [ -f "$CREADY" ] && break; sleep 0.5; done
+    if [ ! -f "$VREADY" ] || ! kill -0 "$WP" 2>/dev/null; then
+      record "$F3L" INCONCLUSIVE "victim socket not proven alive before suspension (no pong / handshake failed)"
+      kill "$WP" "$CP" 2>/dev/null
+    elif [ ! -f "$CREADY" ] || ! kill -0 "$CP" 2>/dev/null; then
+      record "$F3L" INCONCLUSIVE "control socket not proven alive before suspension"
+      kill "$WP" "$CP" 2>/dev/null
     else
-      echo "socket alive (pong received). Suspend (or revoke the session of) the victim user now."
+      echo "victim and control sockets alive (pong received). Suspend (or revoke the session of) the victim user now."
+      SUSP_RC=0
       if [ -n "${SUSPEND_CMD:-}" ]; then
-        SUSP_EPOCH=$(date +%s.%N); bash -c "$SUSPEND_CMD" > "$OUT/suspend_cmd.out" 2>&1
+        bash -c "$SUSPEND_CMD" > "$OUT/suspend_cmd.out" 2>&1; SUSP_RC=$?; SUSP_EPOCH=$(date +%s.%N)
       else
-        printf 'Press Enter right after you suspended the victim: '; read -r _; SUSP_EPOCH=$(date +%s.%N)
+        printf 'Press Enter right after you suspended the victim: '
+        if read -r _; then SUSP_EPOCH=$(date +%s.%N); else SUSP_RC=99; SUSP_EPOCH=$(date +%s.%N); fi
       fi
       echo "$SUSP_EPOCH" > "$OUT/suspend_epoch.txt"
+      # suspension must be proven effective: a NEW login or ticket mint for the victim is refused with an expected status
+      susp=ok
+      if [ "$SUSP_RC" -ne 0 ]; then
+        susp="suspension step did not complete (exit/read status $SUSP_RC)"
+      else
+        LS="$(login_status "$VICTIM_USER" "$VICTIM_PASS")"; TS="$(ticket_status "$VT")"
+        echo "post-suspension victim login status=$LS ticket status=$TS" >> "$OUT/results.txt"
+        for st in "$LS" "$TS"; do
+          case "$st" in 2??) susp="victim still able to log in / mint a ticket after SUSPEND_CMD (login=$LS ticket=$TS): suspension had no effect";; esac
+        done
+        if [ "$susp" = ok ]; then
+          okset=0; for st in ${VICTIM_REFUSED_STATUS:-401 403}; do if [ "$LS" = "$st" ] || [ "$TS" = "$st" ]; then okset=1; fi; done
+          [ "$okset" = 1 ] || susp="post-suspension statuses login=$LS ticket=$TS match none of '${VICTIM_REFUSED_STATUS:-401 403}'"
+        fi
+      fi
+      expc=ok
+      case "$rem" in none|"") expc="victim JWT exp unreadable";; *) [ "$rem" -gt "$need" ] || expc="victim JWT has ${rem}s left, need > ${need}s";; esac
       for _ in $(seq 1 $(( (F3_BOUND+5)*2 ))); do kill -0 "$WP" 2>/dev/null || break; sleep 0.5; done
-      kill "$WP" 2>/dev/null; wait "$WP" 2>/dev/null
+      kill "$WP" "$CP" 2>/dev/null; wait "$WP" 2>/dev/null; wait "$CP" 2>/dev/null
       CC=$(jq -r '.close_code' "$OUT/f3_probe.json" 2>/dev/null); END=$(jq -r '.end' "$OUT/f3_probe.json" 2>/dev/null)
       CE=$(jq -r '.close_epoch // empty' "$OUT/f3_probe.json" 2>/dev/null); RS=$(jq -r '.close_reason' "$OUT/f3_probe.json" 2>/dev/null)
+      CEND=$(jq -r '.end' "$OUT/f3_control.json" 2>/dev/null); CFP=$(jq -r '.final_pong' "$OUT/f3_control.json" 2>/dev/null)
       [ -z "$END" ] && END=timeout
+      ctrl="$CEND/final_pong=$CFP"; [ "$CFP" = true ] && [ "$CEND" = stopped ] && ctrl=pong
       if [ -n "$CE" ]; then EL=$(awk -v c="$CE" -v s="$SUSP_EPOCH" 'BEGIN{printf "%.2f", c-s}'); else EL=0; fi
-      res="$(f3_verdict "$CC" "$EL" "$F3_BOUND" "$END")"
-      record "F3 socket closed after suspension (code 1008, reason='$RS')" "${res%%|*}" "${res#*|}"
+      res="$(f3_verdict "$CC" "$EL" "$F3_BOUND" "$END" "$ctrl" "$susp" "$expc")"
+      record "$F3L (code 1008, reason='$RS')" "${res%%|*}" "${res#*|}"
     fi
   fi
   record "F3 audience filter (admin-only events not delivered to non-admin)" INCONCLUSIVE "NOT COVERED by this script: manual / uncovered"

@@ -1,7 +1,6 @@
-# SEC-WS-1 F3 / rc.1 gate G4 (secws1f3, review round 2 fixes F1..F8) - PROVISIONAL, UNREPRODUCED-as-open-defect
+# SEC-WS-1 F3 / rc.1 gate G4 (secws1f3, review round 3 fixes R2-1..R2-5) - PROVISIONAL, UNREPRODUCED-as-open-defect
 
-Base HEAD af02b7c35cdfc0a43d08998f01e1d12da8a6fd0b (tree 2a547e796f33078c41e73cb5812a2545ea7abf9d), original branch secws1f3; this
-round is on branch secws1f3b (merged with local main). Docs/scripts only: no source change.
+Base HEAD af02b7c35cdfc0a43d08998f01e1d12da8a6fd0b (tree 2a547e796f33078c41e73cb5812a2545ea7abf9d), original branch secws1f3; rounds 2/3 are on branches secws1f3b / secws1f3c (merged with local main). Docs/scripts only: no source change.
 
 ## What F3 requires
 docs/FOLLOW_UPS_NEXT_PHASE.md L2104 (SEC-WS-1-F3): a connected /ws socket must be re-checked after upgrade (revoked session / suspended user stops
@@ -27,14 +26,24 @@ satisfy gate G4's requirement of a live run from catalog-web AND Android through
 The audience-filter leg is NOT covered (manual / uncovered; the script reports it INCONCLUSIVE).
 It was NOT run against a real catalog-api by the author. The token field name of /auth/login and the suspension action are UNCONFIRMED; adjust.
 - Verdicts: every check is PASS / FAIL / INCONCLUSIVE from comparing observed vs expected; INCONCLUSIVE is never PASS. Exit 0 / 1 / 3 (2 = prerequisite).
-- F3 check: the socket is proven alive by ping/pong before the suspension step (else INCONCLUSIVE), the close code is parsed (expect 1008
-  'authorization ended') and the time from suspension to close is compared with the bound (F3_BOUND, default 20 s).
-- Credentials never in argv (jq -n --arg piped to curl --data @-); the ?token= probe uses a deliberately invalid JWT. Network calls have timeouts.
+- F3 check (round 3, R2-1): a 1008 alone proves nothing (authorize() also closes 1008 on token expiry). PASS now needs ALL of: victim socket and a
+  CONTROL socket (admin, never suspended) alive by ping/pong before the suspension; victim JWT exp (decoded, never printed) beyond the window;
+  SUSPEND_CMD exit 0 (a failed/absent suspension is INCONCLUSIVE, never FAIL; closed stdin on the manual prompt likewise); the suspension PROVEN
+  effective (a new victim login / ticket mint refused with a status in VICTIM_REFUSED_STATUS, default "401 403", real value UNCONFIRMED; any 2xx
+  = suspension had no effect = INCONCLUSIVE); close code 1008 after the suspension marker and within F3_BOUND; and the control socket still open
+  answering a final ping at the end (a server that closes everything is INCONCLUSIVE). Anything unprovable is INCONCLUSIVE.
+- Timing: marker = epoch when SUSPEND_CMD returns (or on Enter); elapsed = probe close_epoch (time of receipt in the probe) - marker, same host clock.
+  A close in the ms between the command's effect and its return reads as "before suspension" = INCONCLUSIVE, never PASS.
+- F3_BOUND must track the deployment's re-check interval (RecheckInterval, default 15 s) plus margin; default 20 s assumes the default interval.
+- Probe: validates Sec-WebSocket-Accept (mismatch = no observation), tolerates masked server frames, ticket passed by env (not argv).
 - Process identity (11.4.289(D)): recorded when SERVER_PID / SERVER_EXE_SHA256 are supplied, else the run prints `live_proven=NO (UNCONFIRMED)`.
 
 ## Gate-logic unit test of the script (NOT live evidence, 11.4.289(C))
-GATE_LOGIC_TEST_run.sh.txt + GATE_LOGIC_TEST_mock_server.py.txt: a local MOCK server (python stdlib; websockets and websocat are absent on this host)
-exercises the script's verdict logic on declared scenarios (good -> exit 3 only because the audience leg is uncovered; wrong close code -> FAIL;
-never-close -> FAIL; refused ws -> INCONCLUSIVE) plus helper cases. Output: GATE_LOGIC_TEST_output.txt (the Python tracebacks in it are the mock
-complaining about the handshake-only probe dropping its connection; harmless noise). It proves the script decides correctly given inputs and says
-nothing about the real server. Static checks: `bash -n` clean; shellcheck reports only SC2317 info notes.
+GATE_LOGIC_TEST_run.sh.txt + GATE_LOGIC_TEST_mock_server.py.txt: a local MOCK server (python stdlib) exercises the script's verdict logic only. Each
+scenario asserts the overall exit code AND the F3 verdict: good (F3 PASS, exit 3 only because the audience leg is uncovered); wrong close code (FAIL);
+never closes (FAIL); closes 1008 8 s after suspension with bound 3 (FAIL); refused ws, drop right after 101, close 1008 before the suspension marker,
+never answers ping, SUSPEND_CMD=false, close 1008 3 s after connect while the suspension has no effect, control socket closed too, short-lived token
+(all INCONCLUSIVE). Plus helper-level f3_verdict cases. Output: GATE_LOGIC_TEST_output.txt. It proves the script decides correctly given inputs and says
+nothing about the real server.
+Static checks: `bash -n` clean on both; `shellcheck -s bash LIVE_WS_CHECK.sh.txt` reports only SC2317 (info, unreachable-code note on the sourced-only `return`
+guard); python parse clean. (Earlier SC2034/SC2015/SC2086/SC1091 findings no longer apply: the script was rewritten; none was suppressed.)
