@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# usage: bash strace_check.sh.txt <script-under-test> <scratch> ; round 5 strace argv check (gate-logic mock target, NOT live evidence)
+set -u
+SUT="$1"; S="$2"; HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+mkdir -p "$S"; PORT=$((30000+RANDOM%9000)); TRIG="$S/trig"; rm -f "$TRIG" "$S"/st.* "$S"/ev_*
+python3 -I "$HERE/GATE_LOGIC_TEST_mock_server.py.txt" $PORT good "$TRIG" 2>/dev/null & sp=$!; sleep 0.8
+# SUSPEND_CMD carries a needle secret (SUSPNEEDLE5) as a comment-argument; env passes it
+SUSPEND_CMD="touch $TRIG # token=SUSPNEEDLE5" env BASE=http://127.0.0.1:$PORT ADMIN_USER=a ADMIN_PASS=PWneedleADMIN9 VICTIM_USER=c VICTIM_PASS=PWneedleVICT7 OUT="$S/ev_out" F3_BOUND=6 \
+  strace -f -s 4096 -e trace=execve -o "$S/st.txt" bash "$SUT" > "$S/log.txt" 2>&1 < /dev/null
+kill $sp 2>/dev/null; wait $sp 2>/dev/null
+echo "execve lines captured: $(grep -c execve "$S/st.txt")"
+cnt(){ grep -F -c -- "$1" "$S/st.txt"; }
+ocnt(){ cat "$S/log.txt" "$S"/ev_out/* 2>/dev/null | grep -F -c -- "$1"; }
+for n in PWneedleADMIN9 PWneedleVICT7 SUSPNEEDLE5 'eyJhbGciOiJub25l' 'Bearer '; do echo "needle '$n': argv hits=$(cnt "$n") ; script stdout/log+evidence files hits=$(ocnt "$n")"; done
+echo "POSITIVE control 1 (instrument sees argv): BASE url in argv hits=$(cnt "http://127.0.0.1:$PORT") (>0 expected)"
+bash -c 'true SUSPNEEDLE5' >/dev/null; strace -f -s 4096 -e trace=execve -o "$S/st.pos" bash -c 'true SUSPNEEDLE5' 2>/dev/null; echo "POSITIVE control 2 (deliberate needle in argv: bash -c 'true SUSPNEEDLE5'): hits=$(grep -F -c SUSPNEEDLE5 "$S/st.pos") (>=1 expected)"
+echo "NEGATIVE control (fabricated needle never used): hits=$(cnt NEVERUSEDNEEDLE77) (0 expected)"
+echo "run result: $(grep '^summary' "$S/log.txt")"

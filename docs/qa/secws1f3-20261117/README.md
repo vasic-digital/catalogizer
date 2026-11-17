@@ -1,6 +1,6 @@
-# SEC-WS-1 F3 / rc.1 gate G4 (secws1f3, round 4 fixes R3-1..R3-6 on top of R2-1..R2-5) - PROVISIONAL, UNREPRODUCED-as-open-defect
+# SEC-WS-1 F3 / rc.1 gate G4 (secws1f3, round 5 fixes N1..N7 on top of R3-1..R3-6 and R2-1..R2-5) - PROVISIONAL, UNREPRODUCED-as-open-defect
 
-Base HEAD af02b7c35cdfc0a43d08998f01e1d12da8a6fd0b (tree 2a547e796f33078c41e73cb5812a2545ea7abf9d), original branch secws1f3; rounds 2/3/4 are on branches secws1f3b / secws1f3c / secws1f3d (merged with local main). Docs/scripts only: no source change.
+Base HEAD af02b7c35cdfc0a43d08998f01e1d12da8a6fd0b (tree 2a547e796f33078c41e73cb5812a2545ea7abf9d), original branch secws1f3; rounds 2/3/4/5 are on branches secws1f3b / secws1f3c / secws1f3d / secws1f3e (merged with local main). Docs/scripts only: no source change.
 
 ## What F3 requires
 docs/FOLLOW_UPS_NEXT_PHASE.md L2104 (SEC-WS-1-F3): a connected /ws socket must be re-checked after upgrade (revoked session / suspended user stops
@@ -13,7 +13,7 @@ reproduced: there is no open defect to reproduce (11.4.292 gives no basis for a 
 
 ## Evidence (host-fixture class: real DB, real middleware, real HTTP server, gorilla clients; NOT live)
 - green.txt + green_run1.txt / green_run2.txt / green_run3.txt (round 4, R3-3): `cd catalog-api && go test -p 1 -count=1 -v -run 'TestF3_|TestWSRoute_|TestSEC_WS_1F3FU8' .`
-  run three times (package main), each -v log stored: every run rc=0, 20 `--- PASS` lines, 0 `--- FAIL`. TestSEC_WS_1F3FU8 matches no test in package main:
+  run three times (package main), each -v log stored: every run rc=0, 20 top-level `--- PASS` lines (28 `--- PASS` lines counting subtests, i.e. 8 subtests), 0 `--- FAIL` (round 5, N7: the earlier text said "20 PASS" for the -v count, which only counted top-level tests). TestSEC_WS_1F3FU8 matches no test in package main:
   it lives in package handlers and is covered by green_handlers.txt (`-run 'TestSEC_WS_1F3FU8|TestWS|TestWebSocket' ./handlers`, earlier round at
   HEAD af02b7c35, NOT re-run this round).
 - mutants_rerun.txt: four mutants re-run this round with the exact old/new strings recorded, both packages each, restore verified by cmp
@@ -46,15 +46,26 @@ It was NOT run against a real catalog-api by the author. The token field name of
 - Probe: validates Sec-WebSocket-Accept (mismatch = no observation), tolerates masked server frames, ticket passed by env (not argv).
 - Process identity (11.4.289(D)): recorded when SERVER_PID / SERVER_EXE_SHA256 are supplied, else the run prints `live_proven=NO (UNCONFIRMED)`.
 
+## Round 5 (N1..N7, final round of the budget)
+- N1: JWT lifetime is re-computed AT the suspension marker (not before the probes) and must exceed F3_BOUND + F3_EXP_MARGIN (default 75 s, env-tunable for tests); SUSPEND_CMD and the manual Enter prompt are bounded by SUSPEND_TIMEOUT (default 120 s; overrun or closed stdin = INCONCLUSIVE).
+- N2: SUSPEND_CMD START and RETURN epochs are both recorded (suspend_epoch.txt: start / return / rc); PASS also needs close-minus-START <= F3_BOUND; close-return <= bound < close-start is INCONCLUSIVE (effect time inside the command unknown). f3_verdict takes the start-based elapsed as an optional 8th argument.
+- N3: every results line passes through san(): control characters (including newline) removed, `|` replaced, 200-char cap, so a server close reason cannot forge a verdict line.
+- N5: SUSPEND_CMD runs as `timeout N bash -c 'eval "$SUSPEND_CMD"'` with the text in the ENVIRONMENT (not argv); its output is discarded unless SUSPEND_KEEP_OUTPUT=1 (then suspend_cmd.out may hold secrets, do not publish); the command text is never written to evidence. WARNING: a secret inside SUSPEND_CMD is still readable by the same uid via /proc/<pid>/environ. strace check: a needle in SUSPEND_CMD = 0 argv hits with the round-5 script, 1 hit with the round-4 script (ROUND4_SUPERSEDED_LIVE_WS_CHECK.sh.txt, kept only to reproduce RED).
+- N6: the label prints `none` (not `null`) when no close code was observed.
+- N4: scenario probe-killed2 (mock never-close, victim hold probe killed at 2 s, control probe exec'd directly) and a NAMED MUTANT M-N4 (the round-3 `[ -z "$END" ] && END=timeout` instead of the noprobe branch) which the suite shows to give FAIL where the script gives INCONCLUSIVE, i.e. the suite now discriminates R3-2.
+- New scenarios: expiry-race (margin 5 / token 16 s), expiry-race-long (RUN_SLOW=1, the reviewer's 90 s repro at default margin 75), late-return (`touch TRIG; sleep 5`), suspend-timeout, inject (forged PASS in the close reason; asserts exactly one F3 line and no `^PASS | F3` line). Named mutants: M-N4, M-N1N2 (N1 and N2 are redundant for an expiry close, since elapsed-from-start is also > bound, so the mutant disables BOTH; N1 alone is not independently killed by any scenario, honest), M-N2, M-N3.
+- RED against the round-4 script (ROUND4_SUPERSEDED_LIVE_WS_CHECK.sh.txt, run by the same suite with SCRIPT=...): late-return reads F3 PASS (N2), inject yields 2 F3 lines and a `^PASS | F3` line (N3), expiry-race-long reads F3 PASS (N1, see red_vs_round4.txt); the N4 mutant and N1/N2 mutants are the discrimination evidence for those. expiry-race (short margin) and suspend-timeout / probe-killed2 are NOT red against round-4: the old script ignores F3_EXP_MARGIN (its fixed 81 s margin makes expiry-race INCONCLUSIVE for another reason) and already had the noprobe branch.
+- UNCONFIRMED: the first full-suite run of this round had one `short-exp` scenario fail at login (mock not yet listening, cause not investigated; 3 later full runs passed it). Not run against any real server.
+
 ## Gate-logic unit test of the script (NOT live evidence, 11.4.289(C))
 GATE_LOGIC_TEST_run.sh.txt + GATE_LOGIC_TEST_mock_server.py.txt: a local MOCK server (python stdlib) exercises the script's verdict logic only. Each
 scenario asserts the overall exit code AND the F3 verdict: good (F3 PASS, exit 3 only because the audience leg is uncovered); wrong close code (FAIL);
 never closes (FAIL); closes 1008 8 s after suspension with bound 3 (FAIL); refused ws, drop right after 101, close 1008 before the suspension marker,
 never answers ping, SUSPEND_CMD=false, close 1008 3 s after connect while the suspension has no effect, control socket closed too, control closes
-later than the victim (control-later), short-lived token, victim probe SIGKILLed with no JSON (probe-killed) (all INCONCLUSIVE), plus exit-2 usage /
-unwritable-OUT cases. Mutation check (round 4): the round-3 script (HEAD 90e041a69) run against mock mode control-later gives F3 PASS (the defect R3-1); the round-4 script gives INCONCLUSIVE. Full suite re-run after the last edit: 43 UNIT-PASS, 0 failures (mock output = gate-logic only, not live evidence). Plus helper-level f3_verdict cases. Output: GATE_LOGIC_TEST_output.txt. It proves the script decides correctly given inputs and says
+later than the victim (control-later), short-lived token, victim probe SIGKILLed with no JSON (probe-killed2, mock never-close) (all INCONCLUSIVE), plus exit-2 usage /
+unwritable-OUT cases. Mutation check (round 4): the round-3 script (HEAD 90e041a69) run against mock mode control-later gives F3 PASS (the defect R3-1); the round-4 script gives INCONCLUSIVE. Full suite re-run after the last edit: see GATE_LOGIC_TEST_output.txt (round 5 final run: 64 UNIT-PASS, 0 failures, with RUN_SLOW=1 (62 without the slow expiry-race-long scenario pair)) (mock output = gate-logic only, not live evidence). Plus helper-level f3_verdict cases. Output: GATE_LOGIC_TEST_output.txt. It proves the script decides correctly given inputs and says
 nothing about the real server.
-Credential argv check (round 4): strace_argv_check.txt (`strace -f -e trace=execve` over a run against the mock with needle passwords; 0 argv hits, 0 output
-hits; positive controls: base URL in argv, a deliberate `bash -c 'true <needle>'`; negative control: fabricated needle 0 hits).
+Credential argv check (round 5): strace_argv_check.txt + strace_check.sh.txt (`strace -f -e trace=execve` over a run against the mock with needle passwords and a needle in SUSPEND_CMD; 0 argv hits, 0 output
+hits; positive controls: base URL in argv, a deliberate `bash -c 'true <needle>'`; negative control: fabricated needle 0 hits; contrast: the round-4 script leaks the SUSPEND_CMD needle, 1 hit).
 Static checks: `bash -n` clean on both; `shellcheck -s bash LIVE_WS_CHECK.sh.txt` reports only SC2317 (info, unreachable-code note on the sourced-only `return`
-guard); python parse clean. (Earlier SC2034/SC2015/SC2086/SC1091 findings no longer apply: the script was rewritten; none was suppressed.)
+guard) and SC2016 (info, the single-quoted `eval "$SUSPEND_CMD"` is intentional so the text stays out of argv); nothing suppressed; python parse clean. (Earlier SC2034/SC2015/SC2086/SC1091 findings no longer apply: the script was rewritten; none was suppressed.)
