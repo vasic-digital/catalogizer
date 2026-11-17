@@ -1,0 +1,32 @@
+=== RUN   TestAuthSurfaceDumpIsolation_PolarityMutants
+=== RUN   TestAuthSurfaceDumpIsolation_PolarityMutants/R1_off_file_windows_plus_new_notwindows_hook_file
+    main_routedump_polarity_test.go:51: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/g1fixfu3-clone/catalog-api/main_routedump_polarity_test.go:51
+        	Error:      	"main_r1.go:7: gin.Engine mentioned outside the sanctioned helper functions\nmain_r1.go:8: gin.Engine mentioned outside the sanctioned helper functions\nrouteDumpHook: main_r1.go:10: engine/group value \"e\" used outside a method-call receiver, return, Handler: or sanctioned helper argument (alias/handoff)\nrouteDumpHook: main_r1.go:10: engine/group value \"e\" used outside a method-call receiver, return, Handler: or sanctioned helper argument (alias/handoff)\nmain_r1.go:14: direct access to gin's .Handlers field\nmain_r1.go:15: direct access to gin's .Handlers field" does not contain "exactly one routeDumpHook (found 2)"
+        	Test:       	TestAuthSurfaceDumpIsolation_PolarityMutants/R1_off_file_windows_plus_new_notwindows_hook_file
+=== RUN   TestAuthSurfaceDumpIsolation_PolarityMutants/R1c_hook_body_writes_engine_fields
+    main_routedump_polarity_test.go:51: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/g1fixfu3-clone/catalog-api/main_routedump_polarity_test.go:51
+        	Error:      	"" does not contain "body must be empty"
+        	Test:       	TestAuthSurfaceDumpIsolation_PolarityMutants/R1c_hook_body_writes_engine_fields
+=== RUN   TestAuthSurfaceDumpIsolation_PolarityMutants/R1d_dump_file_routedump_or_notwindows
+    main_routedump_polarity_test.go:51: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/g1fixfu3-clone/catalog-api/main_routedump_polarity_test.go:51
+        	Error:      	"" does not contain "does not exclude it from the default build"
+        	Test:       	TestAuthSurfaceDumpIsolation_PolarityMutants/R1d_dump_file_routedump_or_notwindows
+=== RUN   TestAuthSurfaceDumpIsolation_PolarityMutants/R1e_dump_machinery_under_negated_only
+=== RUN   TestAuthSurfaceDumpIsolation_PolarityMutants/R1f_filename_suffix_dump_machinery
+=== NAME  TestAuthSurfaceDumpIsolation_PolarityMutants
+    main_routedump_polarity_test.go:56: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/g1fixfu3-clone/catalog-api/main_routedump_polarity_test.go:56
+        	Error:      	Should be empty, but was [main_routechains.go: declares route-dump machinery (routeChainFuncNames/funcIdentity/routeChain/routeHandler) but its build constraint does not exclude it from the default build (routedump must be required)]
+        	Test:       	TestAuthSurfaceDumpIsolation_PolarityMutants
+--- FAIL: TestAuthSurfaceDumpIsolation_PolarityMutants (0.44s)
+    --- FAIL: TestAuthSurfaceDumpIsolation_PolarityMutants/R1_off_file_windows_plus_new_notwindows_hook_file (0.06s)
+    --- FAIL: TestAuthSurfaceDumpIsolation_PolarityMutants/R1c_hook_body_writes_engine_fields (0.03s)
+    --- FAIL: TestAuthSurfaceDumpIsolation_PolarityMutants/R1d_dump_file_routedump_or_notwindows (0.06s)
+    --- PASS: TestAuthSurfaceDumpIsolation_PolarityMutants/R1e_dump_machinery_under_negated_only (0.09s)
+    --- PASS: TestAuthSurfaceDumpIsolation_PolarityMutants/R1f_filename_suffix_dump_machinery (0.13s)
+FAIL
+FAIL	catalogizer	0.663s
+FAIL

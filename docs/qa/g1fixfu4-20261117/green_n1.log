@@ -1,0 +1,13 @@
+=== RUN   TestUpdateFavoriteStatus_AnonymousIs401BeforeParse
+=== RUN   TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/invalid_id
+=== RUN   TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/invalid_json
+=== RUN   TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/missing_field
+=== RUN   TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/empty_body
+--- PASS: TestUpdateFavoriteStatus_AnonymousIs401BeforeParse (0.00s)
+    --- PASS: TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/invalid_id (0.00s)
+    --- PASS: TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/invalid_json (0.00s)
+    --- PASS: TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/missing_field (0.00s)
+    --- PASS: TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/empty_body (0.00s)
+PASS
+ok  	catalogizer/handlers	0.256s
+exit=0
