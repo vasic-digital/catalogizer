@@ -1,0 +1,8 @@
+[GIN] 2026/11/17 - 18:07:46 | 200 |     184.181µs |       127.0.0.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:07:46 | 404 |       34.66µs |       127.0.0.1 | GET     "/no-such-route-altsvc4"
+--- FAIL: TestAltSvcAdvertisementAndWiringPins (0.02s)
+    main_altsvc4_test.go:352: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_altsvc4_test.go:352
+        	Error:      	Should be empty, but was [main.go: the startH3Stack result must be assigned to exactly `httpsServer, http3Server :=` (found `x(_, _) =`) main.go: main() must keep the startH3Stack results exactly once (found 0 assignments, 0 discarded calls)]
+        	Test:       	TestAltSvcAdvertisementAndWiringPins
+FAIL

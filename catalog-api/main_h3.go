@@ -16,12 +16,17 @@ import (
 // altSvcMiddleware names the same port.
 const h3Port = 28443
 
+// h3Serve runs the HTTP/3 server on the bound UDP socket. It is a variable only so that a test
+// can make Serve fail after the bind (ALTSVC3-R-m1); production code never reassigns it.
+var h3Serve = func(s *http3.Server, c net.PacketConn) error { return s.Serve(c) }
+
 // startH3Stack loads the TLS certificate, binds TCP and UDP on host:port, and starts the
 // HTTPS (HTTP/2) and HTTP/3 servers. It sets h3Advertised only AFTER the UDP bind is
 // confirmed (the sockets are open, so a client that follows the advertisement reaches a
 // listener); a certificate error or a UDP bind failure leaves it false and is logged.
 // If a server later stops with an error other than a normal close, the flag is cleared
-// again. It returns the servers that were started (nil when not started), for shutdown.
+// again. The UDP socket is closed when Serve returns (http3.Server.Close does not close a socket
+// it was handed, ALTSVC3-R-n1). It returns the servers that were started (nil when not started), for shutdown.
 func startH3Stack(logger *zap.Logger, router http.Handler, host string, port int,
 	loadCert func() (tls.Certificate, error)) (*http.Server, *http3.Server) {
 	cert, err := loadCert()
@@ -57,7 +62,8 @@ func startH3Stack(logger *zap.Logger, router http.Handler, host string, port int
 	h3Advertised.Store(true) // after the bind, before serving; cleared if the server fails
 	go func() {
 		logger.Info("Starting HTTP/3 (QUIC) server", zap.String("address", addr))
-		if err := http3Server.Serve(udpConn); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		defer udpConn.Close() // Close/Shutdown of http3Server does not close a socket passed to Serve
+		if err := h3Serve(http3Server, udpConn); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			h3Advertised.Store(false)
 			logger.Error("HTTP/3 server failed", zap.Error(err))
 		}

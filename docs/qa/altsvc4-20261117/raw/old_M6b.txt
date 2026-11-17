@@ -1,0 +1,60 @@
+[GIN] 2026/11/17 - 18:06:28 | 200 |     446.152µs |       127.0.0.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:06:28 | 404 |     110.551µs |       127.0.0.1 | GET     "/no-such-route-altsvc3"
+[GIN] 2026/11/17 - 18:06:28 | 200 |    4.540795ms |       127.0.0.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:06:28 | 200 |      48.491µs |       192.0.2.1 | GET     "/discovery"
+[GIN] 2026/11/17 - 18:06:28 | 204 |       20.75µs |       192.0.2.1 | OPTIONS "/api/v1/auth/login"
+[GIN] 2026/11/17 - 18:06:28 | 200 |       95.55µs |       192.0.2.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:06:28 | 404 |        38.9µs |       192.0.2.1 | GET     "/no-such-route-altsvc"
+[GIN] 2026/11/17 - 18:06:28 | 200 |       75.67µs |       192.0.2.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:06:28 | 200 |      93.091µs |       192.0.2.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:06:28 | 404 |       17.34µs |       192.0.2.1 | GET     "/no-such-route-altsvc"
+[GIN] 2026/11/17 - 18:06:28 | 200 |        94.7µs |       192.0.2.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:06:28 | 404 |        18.3µs |       192.0.2.1 | GET     "/no-such-route-altsvc"
+--- FAIL: TestMainPackageAuthSurfaceClosed (0.06s)
+    main_chpw_authsurface_test.go:633: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_chpw_authsurface_test.go:633
+        	Error:      	Should be empty, but was [main_h3.go:61: Handler: must be exactly `router` (found http.NotFoundHandler()): a wrapper could answer /api/v1/auth outside the checked chains]
+        	Test:       	TestMainPackageAuthSurfaceClosed
+--- FAIL: TestAuthSurfaceGuard_Mutants (0.04s)
+    main_chpw_authsurface_test.go:961: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_chpw_authsurface_test.go:961
+        	Error:      	Should be empty, but was [main_h3.go:61: Handler: must be exactly `router` (found http.NotFoundHandler()): a wrapper could answer /api/v1/auth outside the checked chains]
+        	Test:       	TestAuthSurfaceGuard_Mutants
+        	Messages:   	baseline must be clean
+--- FAIL: TestAuthSurfaceGuard_GoldenFalse (0.33s)
+    --- FAIL: TestAuthSurfaceGuard_GoldenFalse/engine_route_api_v2_capture_not_auth (0.07s)
+        main_chpw_authsurface_test.go:997: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_chpw_authsurface_test.go:997
+            	Error:      	Should be empty, but was [main_h3.go:61: Handler: must be exactly `router` (found http.NotFoundHandler()): a wrapper could answer /api/v1/auth outside the checked chains]
+            	Test:       	TestAuthSurfaceGuard_GoldenFalse/engine_route_api_v2_capture_not_auth
+    --- FAIL: TestAuthSurfaceGuard_GoldenFalse/engine_route_api_capture_other_static (0.05s)
+        main_chpw_authsurface_test.go:997: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_chpw_authsurface_test.go:997
+            	Error:      	Should be empty, but was [main_h3.go:61: Handler: must be exactly `router` (found http.NotFoundHandler()): a wrapper could answer /api/v1/auth outside the checked chains]
+            	Test:       	TestAuthSurfaceGuard_GoldenFalse/engine_route_api_capture_other_static
+    --- FAIL: TestAuthSurfaceGuard_GoldenFalse/direct_call_on_non_auth_api_group (0.05s)
+        main_chpw_authsurface_test.go:997: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_chpw_authsurface_test.go:997
+            	Error:      	Should be empty, but was [main_h3.go:61: Handler: must be exactly `router` (found http.NotFoundHandler()): a wrapper could answer /api/v1/auth outside the checked chains]
+            	Test:       	TestAuthSurfaceGuard_GoldenFalse/direct_call_on_non_auth_api_group
+    --- FAIL: TestAuthSurfaceGuard_GoldenFalse/harmless_concat_not_a_route (0.07s)
+        main_chpw_authsurface_test.go:997: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_chpw_authsurface_test.go:997
+            	Error:      	Should be empty, but was [main_h3.go:61: Handler: must be exactly `router` (found http.NotFoundHandler()): a wrapper could answer /api/v1/auth outside the checked chains]
+            	Test:       	TestAuthSurfaceGuard_GoldenFalse/harmless_concat_not_a_route
+    --- FAIL: TestAuthSurfaceGuard_GoldenFalse/sibling_prefix_authors_is_not_auth (0.05s)
+        main_chpw_authsurface_test.go:997: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_chpw_authsurface_test.go:997
+            	Error:      	Should be empty, but was [main_h3.go:61: Handler: must be exactly `router` (found http.NotFoundHandler()): a wrapper could answer /api/v1/auth outside the checked chains]
+            	Test:       	TestAuthSurfaceGuard_GoldenFalse/sibling_prefix_authors_is_not_auth
+    --- FAIL: TestAuthSurfaceGuard_GoldenFalse/capture_below_static_segment_not_auth (0.05s)
+        main_chpw_authsurface_test.go:997: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_chpw_authsurface_test.go:997
+            	Error:      	Should be empty, but was [main_h3.go:61: Handler: must be exactly `router` (found http.NotFoundHandler()): a wrapper could answer /api/v1/auth outside the checked chains]
+            	Test:       	TestAuthSurfaceGuard_GoldenFalse/capture_below_static_segment_not_auth
+--- FAIL: TestAuthSurfaceGuard_DumpIsolationMutants (0.85s)
+    main_routedump_isolation_test.go:610: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_routedump_isolation_test.go:610
+        	Error:      	Should be empty, but was [main_h3.go:61: Handler: must be exactly `router` (found http.NotFoundHandler()): a wrapper could answer /api/v1/auth outside the checked chains]
+        	Test:       	TestAuthSurfaceGuard_DumpIsolationMutants
+FAIL

@@ -1,0 +1,8 @@
+--- FAIL: TestAltSvcRealHTTP3Request (0.00s)
+    main_altsvc4_test.go:145: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_altsvc4_test.go:145
+        	Error:      	Not equal: 
+        	            	expected: 200
+        	            	actual  : 404
+        	Test:       	TestAltSvcRealHTTP3Request
+FAIL

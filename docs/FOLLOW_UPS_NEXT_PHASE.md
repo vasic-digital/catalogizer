@@ -3701,3 +3701,6 @@ R5-1..R5-8 fixed; gate logic sound; 133/0 reproduced. Blockers:
 - M4 (minor): WP/CP not cleared after reap; EXIT trap may signal reused PIDs.
 - N1/N2 (nit): F3 grep matches the absent-line record; VICTIM_REFUSED_STATUS unvalidated/glob; base=$BASE may log userinfo; san lookalikes.
 - Live-only unknowns: refused status after suspension (probably 401), clock skew, origin allowlist at edge, suspend semantics vs recheck, ticket pending cap, ticket in nginx logs, victim left suspended, SERVER_PID/SERVER_EXE_SHA256 must be supplied.
+
+## ALTSVC4 (addresses ALTSVC3-R-m1..m5, n1..n3, PROVISIONAL, evidence docs/qa/altsvc4-20261117/)
+m1 ServeFailureClearsFlag (seam h3Serve); m2 TCP-bind-failure and both-occupied tests; m3 real quic-go HTTP/3 client request; m4+m5 AST pins (single Store(true) after ListenPacket; main() keeps both startH3Stack results, nil-guarded Shutdown/Close); n1 UDP socket closed after Close; n2 port race => SKIP INCONCLUSIVE; n3 limits in the evidence README. Real main() on 28443 still not exercised.

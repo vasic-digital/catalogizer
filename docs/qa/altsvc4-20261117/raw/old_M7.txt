@@ -1,0 +1,19 @@
+--- FAIL: TestAltSvcStartH3Stack_UDPBindFailureNotAdvertised (0.00s)
+    main_altsvc3_test.go:121: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_altsvc3_test.go:121
+        	Error:      	Should be false
+        	Test:       	TestAltSvcStartH3Stack_UDPBindFailureNotAdvertised
+        	Messages:   	UDP bind failed: HTTP/3 must not be advertised
+[GIN] 2026/11/17 - 18:07:02 | 200 |      284.59µs |       127.0.0.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:07:02 | 404 |       71.88µs |       127.0.0.1 | GET     "/no-such-route-altsvc3"
+[GIN] 2026/11/17 - 18:07:02 | 200 |      146.95µs |       127.0.0.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:07:02 | 200 |       42.13µs |       192.0.2.1 | GET     "/discovery"
+[GIN] 2026/11/17 - 18:07:02 | 204 |          19µs |       192.0.2.1 | OPTIONS "/api/v1/auth/login"
+[GIN] 2026/11/17 - 18:07:02 | 200 |      87.341µs |       192.0.2.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:07:02 | 404 |     126.201µs |       192.0.2.1 | GET     "/no-such-route-altsvc"
+[GIN] 2026/11/17 - 18:07:02 | 200 |     169.211µs |       192.0.2.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:07:02 | 200 |      80.601µs |       192.0.2.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:07:02 | 404 |       31.04µs |       192.0.2.1 | GET     "/no-such-route-altsvc"
+[GIN] 2026/11/17 - 18:07:02 | 200 |       56.64µs |       192.0.2.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:07:02 | 404 |       18.49µs |       192.0.2.1 | GET     "/no-such-route-altsvc"
+FAIL
