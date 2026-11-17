@@ -53,7 +53,7 @@ func TestADMD1F1S1R1_FailClosedProbes(t *testing.T) {
 	t.Run("D Handle and Any are routes", func(t *testing.T) {
 		s := scanSrc(t, fcHeader+"func Run(m mw) { r := gin.New(); r.Handle(\"DELETE\", \"/op\", m.RequireAdmin(), h); r.Any(\"/x\", m.RequireAdmin(), h) }\n")
 		require.Empty(t, s.unresolved)
-		require.ElementsMatch(t, []string{"DELETE /op gated", "ANY /x gated"}, routeKeys(s))
+		require.ElementsMatch(t, []string{"DELETE /op gated", "GET /x gated", "POST /x gated", "PUT /x gated", "PATCH /x gated", "HEAD /x gated", "OPTIONS /x gated", "DELETE /x gated", "CONNECT /x gated", "TRACE /x gated"}, routeKeys(s))
 	})
 	t.Run("F path param resolved through the call site", func(t *testing.T) {
 		s := scanSrc(t, fcHeader+"func reg(g gin.IRoutes, path string, m mw) { g.POST(path, m.RequireAdmin(), h) }\nfunc Run(m mw) { r := gin.New(); reg(r.Group(\"/a\"), \"/op\", m) }\n")

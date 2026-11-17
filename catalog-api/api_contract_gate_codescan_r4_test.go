@@ -55,8 +55,9 @@ func TestADMD1F1S1R4_UnmodelledMethodOnGroupIsReported(t *testing.T) {
 }
 
 func TestADMD1F1S1R4_InertMethodListPinned(t *testing.T) {
-	require.ElementsMatch(t, []string{"BasePath", "Delims", "HandleContext", "Handler", "LoadHTMLFS", "LoadHTMLFiles", "LoadHTMLGlob", "NoMethod", "NoRoute", "Routes", "Run", "RunFd", "RunListener", "RunTLS", "RunUnix", "ServeHTTP", "SetFuncMap", "SetHTMLTemplate", "SetTrustedProxies"}, inertGroupMethodNames())
+	require.ElementsMatch(t, []string{"BasePath", "Delims", "LoadHTMLFS", "LoadHTMLFiles", "LoadHTMLGlob", "NoMethod", "NoRoute", "Routes", "Run", "RunFd", "RunListener", "RunTLS", "RunUnix", "SetFuncMap", "SetHTMLTemplate", "SetTrustedProxies"}, inertGroupMethodNames())
 	for _, n := range inertGroupMethodNames() {
+		require.False(t, mountMethods[n], n+" is a mount method (reported), never inert")
 		require.False(t, routeMethods[n] || n == "Use" || n == "Group" || func() bool { _, ok := staticRoutes[n]; return ok }(), n+" must not be both inert and modelled")
 	}
 }

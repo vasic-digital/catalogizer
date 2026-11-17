@@ -9,6 +9,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/printer"
@@ -106,9 +107,54 @@ var staticRoutes = map[string]struct {
 // that is neither modelled (routeMethods, Use, Group, staticRoutes) nor listed here is reported (class-wide rule).
 var inertGroupMethods = map[string]bool{
 	"NoRoute": true, "NoMethod": true, "Run": true, "RunTLS": true, "RunUnix": true, "RunFd": true, "RunListener": true,
-	"ServeHTTP": true, "Routes": true, "Handler": true, "BasePath": true, "SetTrustedProxies": true, "SetHTMLTemplate": true,
-	"LoadHTMLGlob": true, "LoadHTMLFiles": true, "LoadHTMLFS": true, "Delims": true, "SetFuncMap": true, "HandleContext": true,
+	"Routes": true, "BasePath": true, "SetTrustedProxies": true, "SetHTMLTemplate": true,
+	"LoadHTMLGlob": true, "LoadHTMLFiles": true, "LoadHTMLFS": true, "Delims": true, "SetFuncMap": true,
 }
+
+// mountMethods (round 5, A20/A21): methods that turn a group/engine into an http.Handler or re-dispatch a request through it. A
+// sub-engine mounted under a wildcard route of the main engine (gin.WrapH(sub.Handler()), gin.WrapF(sub.ServeHTTP), sub.HandleContext(c))
+// registers its routes in ITS OWN table, which the main engine's route table does not show; every use is reported, call or value.
+// (The finished engine served through http.Server{Handler: router} is a composite-literal element, exempt by import path below.)
+// engineDataFields: bool / config fields of gin.Engine read (not called) on a resolved engine; none registers or gates a route.
+// RouterGroup (embedded group) and Handlers (the middleware slice, assignable) are deliberately NOT here.
+var engineDataFields = map[string]bool{"RedirectTrailingSlash": true, "RedirectFixedPath": true, "HandleMethodNotAllowed": true,
+	"ForwardedByClientIP": true, "UseRawPath": true, "UnescapePathValues": true, "RemoveExtraSlash": true, "UseEscapedPath": true,
+	"UseH2C": true, "ContextWithFallback": true, "MaxMultipartMemory": true, "TrustedPlatform": true, "RemoteIPHeaders": true}
+
+func engineDataFieldNames() []string {
+	var out []string
+	for k := range engineDataFields {
+		out = append(out, k)
+	}
+	sort.Strings(out)
+	return out
+}
+
+var mountMethods = map[string]bool{"Handler": true, "ServeHTTP": true, "HandleContext": true}
+
+// nonGinNames (round 5, A22/A23): net/http names that register or serve routes outside the gin engine, so outside the route table.
+// Every use through a package whose import path resolves to net/http is reported unless pinned in nonGinAllowed.
+var nonGinNames = map[string]bool{"ServeMux": true, "NewServeMux": true, "DefaultServeMux": true, "HandleFunc": true, "Handle": true,
+	"ListenAndServe": true, "ListenAndServeTLS": true, "Serve": true, "ServeTLS": true}
+
+// nonGinAllowed pins, by "<file suffix>:<function>:<net/http name>", each non-gin router use with its reason (TestADMD1F1S1R5_NonGinAllowListPinned).
+var nonGinAllowed = map[string]string{
+	"internal/monitoring/monitoring.go:StartPrometheusServer:NewServeMux": "separate Prometheus listener bound to 127.0.0.1 only, serves /metrics and nothing else (documented in its doc comment); the authenticated /metrics of the main engine is the route-table row",
+	"tests/mocks/webdav_mock_server.go:Start:NewServeMux":                 "test double server under tests/mocks, not part of the shipped binary",
+}
+
+func nonGinAllowedKeys() []string {
+	var out []string
+	for k := range nonGinAllowed {
+		out = append(out, k)
+	}
+	sort.Strings(out)
+	return out
+}
+
+// gateWrapperFuncs: callees that wrap a gate and still apply it (metricsSkipIfScrape skips only on a valid scrape token, /metrics is
+// outside the admin table by design). Any OTHER call that merely receives a gate as an argument is not a gate and is reported (round 5).
+var gateWrapperFuncs = map[string]bool{"metricsSkipIfScrape": true}
 
 func inertGroupMethodNames() []string {
 	var out []string
@@ -130,7 +176,8 @@ var serverImportPaths = map[string]bool{"net/http": true, "github.com/quic-go/qu
 //   - applyTrustedProxies / setTrustedProxies: configure X-Forwarded-For trust on the engine (trusted_proxies.go), register nothing.
 //
 // Pinned by TestADMD1F1S1R3_AllowListPinned.
-var allowedGroupSink = map[string]bool{"verifyAuthRouteTable": true, "applyTrustedProxies": true, "setTrustedProxies": true, "engineChain": true}
+//   - routeChainFuncNames(eng any): reads the finished engine's route trees reflectively (main_routechains.go), used by the routedump test build only.
+var allowedGroupSink = map[string]bool{"verifyAuthRouteTable": true, "applyTrustedProxies": true, "setTrustedProxies": true, "engineChain": true, "routeChainFuncNames": true}
 
 func allowedGroupSinkNames() []string {
 	var out []string
@@ -197,6 +244,11 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 		file string
 	}
 	typeDecls := map[string][]typeDecl{}
+	type pkgDecl struct {
+		file string
+		d    *ast.GenDecl
+	}
+	var pkgDecls []pkgDecl
 	globals := map[string]string{}
 	badGlobal := map[string]bool{}
 	for _, f := range files {
@@ -221,6 +273,7 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 					byName[dd.Name.Name] = append(byName[dd.Name.Name], fi)
 				}
 			case *ast.GenDecl:
+				pkgDecls = append(pkgDecls, pkgDecl{filepath.ToSlash(f), dd})
 				for _, sp := range dd.Specs {
 					if ts, ok := sp.(*ast.TypeSpec); ok {
 						typeDecls[ts.Name.Name] = append(typeDecls[ts.Name.Name], typeDecl{ts.Type, filepath.ToSlash(f)})
@@ -300,7 +353,7 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 			continue
 		}
 		for _, r := range fi.decl.Type.Results.List {
-			if typeIs(fi.file, r.Type, engineTypeNames, 0) {
+			if fi.decl.Recv == nil && typeIs(fi.file, r.Type, engineTypeNames, 0) { // round 5 (m1): a METHOD named like a factory is not the factory
 				engineFuncs[fi.decl.Name.Name] = true
 			}
 		}
@@ -327,6 +380,34 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 		}
 	}
 	report := func(file, fn, msg string) { res.unresolved = append(res.unresolved, file+": "+fn+": "+msg) }
+	// A22/A23 (round 5): a net/http router or server is outside the gin route table, so the table cannot show it. Every use of the
+	// names in nonGinNames through a package that resolves to net/http is reported unless pinned in nonGinAllowed with its reason.
+	checkNonGin := func(file, fn string, root ast.Node) {
+		ast.Inspect(root, func(n ast.Node) bool {
+			se, ok := n.(*ast.SelectorExpr)
+			if !ok || !nonGinNames[se.Sel.Name] {
+				return true
+			}
+			id, ok := se.X.(*ast.Ident)
+			if !ok || imports[file][id.Name] != "net/http" {
+				return true
+			}
+			for k := range nonGinAllowed {
+				parts := strings.Split(k, ":")
+				if len(parts) == 3 && strings.HasSuffix(file, parts[0]) && parts[1] == fn && parts[2] == se.Sel.Name {
+					return true
+				}
+			}
+			report(file, fn, "non-gin router or server use net/http."+se.Sel.Name+" (outside the gin route table; pin it in nonGinAllowed with a reason)")
+			return true
+		})
+	}
+	for _, fi := range all {
+		checkNonGin(fi.file, fi.decl.Name.Name, fi.decl)
+	}
+	for _, pd := range pkgDecls {
+		checkNonGin(pd.file, "<package level>", pd.d)
+	}
 	walk := func(j job) {
 		fd := j.fi.decl
 		fname := fd.Name.Name
@@ -365,6 +446,94 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 			}
 		}
 		wrapGated := j.seed != nil && j.seed.wrapGated
+		// round 5: names declared in this function (parameters, results, :=, var/const, range, func literal parameters, type switch).
+		// A name declared more than once that the walk tracks (group, gate or string) is reported: block scoping is not modelled (A28).
+		// A locally declared name never falls back to a package-level constant of the same name (A31).
+		declCount := map[string]int{}
+		noteDecl := func(id *ast.Ident) {
+			if id != nil && id.Name != "_" {
+				declCount[id.Name]++
+			}
+		}
+		noteFields := func(fl *ast.FieldList) {
+			if fl != nil {
+				for _, f := range fl.List {
+					for _, nm := range f.Names {
+						noteDecl(nm)
+					}
+				}
+			}
+		}
+		noteFields(fd.Type.Params)
+		noteFields(fd.Type.Results)
+		noteFields(fd.Recv)
+		parent := map[ast.Node]ast.Node{}
+		var stack []ast.Node
+		ast.Inspect(fd.Body, func(n ast.Node) bool {
+			if n == nil {
+				stack = stack[:len(stack)-1]
+				return true
+			}
+			if len(stack) > 0 {
+				parent[n] = stack[len(stack)-1]
+			}
+			stack = append(stack, n)
+			switch c := n.(type) {
+			case *ast.AssignStmt:
+				if c.Tok == token.DEFINE {
+					for _, l := range c.Lhs {
+						if id, ok := l.(*ast.Ident); ok {
+							noteDecl(id)
+						}
+					}
+				}
+			case *ast.ValueSpec:
+				for _, nm := range c.Names {
+					noteDecl(nm)
+				}
+			case *ast.RangeStmt:
+				if c.Tok == token.DEFINE {
+					for _, e := range []ast.Expr{c.Key, c.Value} {
+						if id, ok := e.(*ast.Ident); ok {
+							noteDecl(id)
+						}
+					}
+				}
+			case *ast.FuncLit:
+				noteFields(c.Type.Params)
+				noteFields(c.Type.Results)
+			case *ast.TypeSwitchStmt:
+				if as, ok := c.Assign.(*ast.AssignStmt); ok && as.Tok == token.DEFINE {
+					for _, l := range as.Lhs {
+						if id, ok := l.(*ast.Ident); ok {
+							noteDecl(id)
+						}
+					}
+				}
+			}
+			return true
+		})
+		pathIdents := map[string]bool{} // identifiers used inside a route / Group path argument
+		notePath := func(e ast.Expr) {
+			ast.Inspect(e, func(n ast.Node) bool {
+				if id, ok := n.(*ast.Ident); ok {
+					pathIdents[id.Name] = true
+				}
+				return true
+			})
+		}
+		tracked := map[string]bool{}
+		paramGroups := map[string]bool{}
+		for k := range groups {
+			tracked[k] = true
+			paramGroups[k] = true
+		}
+		for k := range gates {
+			tracked[k] = true
+		}
+		for k := range strs {
+			tracked[k] = true
+		}
 		var isGate func(e ast.Expr) bool
 		isGate = func(e ast.Expr) bool {
 			switch x := e.(type) {
@@ -378,9 +547,21 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 						return true
 					}
 				}
-				for _, a := range x.Args { // a wrapper around an admin gate (metricsSkipIfScrape(RequireAdmin())) still carries it
+				for _, a := range x.Args { // a pinned wrapper around an admin gate (metricsSkipIfScrape(RequireAdmin())) still carries it
 					if isGate(a) {
-						return true
+						name := ""
+						switch f := x.Fun.(type) {
+						case *ast.Ident:
+							name = f.Name
+						case *ast.SelectorExpr:
+							name = f.Sel.Name
+						}
+						if gateWrapperFuncs[name] {
+							return true
+						}
+						// round 5 (A29): a call that merely RECEIVES a gate does not apply it
+						report(j.fi.file, fname, "call "+exprStr(x.Fun)+" receives a gate as an argument but is not a pinned gate wrapper: "+exprStr(x))
+						return false
 					}
 				}
 			}
@@ -397,6 +578,9 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 			case *ast.Ident:
 				if v, ok := strs[x.Name]; ok {
 					return v, true
+				}
+				if declCount[x.Name] > 0 { // round 5 (A31): a local of the same name hides the package constant
+					return "", false
 				}
 				v, ok := globals[x.Name]
 				return v, ok
@@ -437,6 +621,7 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 						return scanEnv{}, false
 					}
 					n := scanEnv{prefix: b.prefix, gated: b.gated, unknown: b.unknown}
+					notePath(x.Args[0])
 					if lit, ok := evalStr(x.Args[0]); ok {
 						n.prefix = joinRoute(b.prefix, lit)
 					} else {
@@ -459,7 +644,8 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 						}
 					}
 					return b, true
-				case (s.Sel.Name == "New" || s.Sel.Name == "Default") && imports[j.fi.file][exprStr(s.X)] == ginImportPath, engineFuncs[s.Sel.Name]:
+				case (s.Sel.Name == "New" || s.Sel.Name == "Default") && imports[j.fi.file][exprStr(s.X)] == ginImportPath,
+					engineFuncs[s.Sel.Name] && imports[j.fi.file][exprStr(s.X)] != "" && declCount[exprStr(s.X)] == 0: // m1: pkg.Factory(), never x.Factory()
 					return scanEnv{prefix: "/"}, true
 				}
 			}
@@ -470,6 +656,41 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 			if _, ok := recv(e); ok {
 				report(j.fi.file, fname, "group value escapes the scanner ("+why+"): "+exprStr(e))
 			}
+		}
+		// useCheck (round 5, structural): every use of a tracked group VARIABLE must be in a position the walk models (receiver of a
+		// method, assignment/declaration, call argument, return/composite/send, ==/!= comparison). Address-of, dereference, type
+		// assertion, indexing, slicing, range and every other position leave the model and are reported.
+		useCheck := func(n ast.Expr) {
+			if _, ok := groups[exprStr(n)]; !ok {
+				return
+			}
+			var c ast.Node = n
+			p := parent[n]
+			for {
+				pe, ok := p.(*ast.ParenExpr)
+				if !ok {
+					break
+				}
+				c, p = pe, parent[pe]
+			}
+			switch pp := p.(type) {
+			case nil:
+				return
+			case *ast.SelectorExpr:
+				return // receiver of a method (modelled elsewhere) or the field-name identifier itself
+			case *ast.CallExpr, *ast.AssignStmt, *ast.ValueSpec, *ast.ReturnStmt, *ast.CompositeLit, *ast.SendStmt, *ast.ExprStmt, *ast.Field:
+				return
+			case *ast.KeyValueExpr:
+				if pp.Value == c {
+					return
+				}
+				return // a key identifier is not a use of the variable
+			case *ast.BinaryExpr:
+				if pp.Op == token.EQL || pp.Op == token.NEQ {
+					return
+				}
+			}
+			report(j.fi.file, fname, fmt.Sprintf("group value %s is used in a position the walk does not model (%T)", exprStr(n), p))
 		}
 		// ctxOf: innermost if/for/switch/select/closure/go/defer construct enclosing a call or declaration (nil = straight-line body).
 		// A gate Use(...) is unconditional for a group only when it sits in the SAME context in which the group was declared.
@@ -498,6 +719,52 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 			})
 		}
 		mark(fd.Body, nil)
+		// execCtx: the nearest func literal, defer or go statement around a node (nil = the function body itself). Code in such a
+		// context runs at a different time than its text position suggests (round 5, A32 / defer ordering).
+		execCtx := func(n ast.Node) ast.Node {
+			for p := parent[n]; p != nil; p = parent[p] {
+				switch p.(type) {
+				case *ast.FuncLit, *ast.DeferStmt, *ast.GoStmt:
+					return p
+				}
+			}
+			return nil
+		}
+		execDecl := map[string]ast.Node{}
+		// spreadWrapper: `g.GET(path, h.syncHandlers(handler)...)`: the one spread form that is modelled, a call of a gate wrapper (a
+		// method returning a handler chain built from a *Gate field) whose result is the whole handler list.
+		spreadWrapper := func(c *ast.CallExpr) bool {
+			if !c.Ellipsis.IsValid() || len(c.Args) == 0 {
+				return false
+			}
+			ce, ok := c.Args[len(c.Args)-1].(*ast.CallExpr)
+			if !ok {
+				return false
+			}
+			sl, ok := ce.Fun.(*ast.SelectorExpr)
+			return ok && wrappers[sl.Sel.Name]
+		}
+		rootKey := func(e ast.Expr) string { // the tracked variable at the root of a receiver chain (r.Group("/a").Use(g) -> r)
+			for {
+				if _, ok := groups[exprStr(e)]; ok {
+					return exprStr(e)
+				}
+				switch c := e.(type) {
+				case *ast.ParenExpr:
+					e = c.X
+				case *ast.CallExpr:
+					if sl, ok := c.Fun.(*ast.SelectorExpr); ok {
+						e = sl.X
+					} else {
+						return exprStr(e)
+					}
+				case *ast.SelectorExpr:
+					e = c.X
+				default:
+					return exprStr(e)
+				}
+			}
+		}
 		bind := func(lhs, rhs ast.Expr, ctx ast.Node) {
 			switch lhs.(type) {
 			case *ast.Ident, *ast.SelectorExpr:
@@ -509,18 +776,33 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 			if k == "_" {
 				return
 			}
+			if _, has := gates[k]; has { // round 5 (A27): a gate name bound twice is not tracked by value
+				report(j.fi.file, fname, "gate variable "+k+" is reassigned (flow of the gate value is not modelled): "+k+" = "+exprStr(rhs))
+				gates[k] = false
+				return
+			}
 			if e, ok := recv(rhs); ok {
+				tracked[k] = true
+				switch u := ast.Unparen(rhs).(type) { // round 5 (A32c): a plain copy of a group shares the pointer; a later Use on either changes both
+				case *ast.Ident, *ast.SelectorExpr:
+					if exprStr(u) != k {
+						report(j.fi.file, fname, "group value is aliased ("+k+" = "+exprStr(rhs)+"): a Use through one name gates the other, not modelled")
+					}
+				}
 				if old, has := groups[k]; has && old != e {
 					report(j.fi.file, fname, "group name "+k+" is redefined with a different value (block scoping is not modelled)")
 				}
 				groups[k] = e
 				if _, has := declCtx[k]; !has {
 					declCtx[k] = ctx
+					execDecl[k] = execCtx(lhs)
 				}
 			} else if isGate(rhs) {
 				gates[k] = true
+				tracked[k] = true
 			} else if v, ok := evalStr(rhs); ok {
 				strs[k] = v
+				tracked[k] = true
 			}
 		}
 		ast.Inspect(fd.Body, func(n ast.Node) bool {
@@ -550,11 +832,27 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 			case *ast.SendStmt:
 				escape(x.Value, "channel send")
 			case *ast.SelectorExpr:
-				if _, isStatic := staticRoutes[x.Sel.Name]; !calledSel[x] && (routeMethods[x.Sel.Name] || isStatic || x.Sel.Name == "Use" || x.Sel.Name == "Group") {
-					if _, ok := recv(x.X); ok {
-						report(j.fi.file, fname, "route/group method value is not called directly (calls through it are not modelled): "+exprStr(x))
+				useCheck(x)
+				if _, ok := recv(x.X); ok {
+					switch {
+					case mountMethods[x.Sel.Name]: // A20/A21: a sub-engine exposed as an http.Handler is mounted under a route of another engine
+						report(j.fi.file, fname, "mount method "+x.Sel.Name+" on a resolved group/engine (a sub-engine's routes are not in the outer route table): "+exprStr(x))
+					case x.Sel.Name == "RouterGroup":
+						report(j.fi.file, fname, "embedded RouterGroup of an engine is exposed (its address can be taken and used as a group): "+exprStr(x))
+					case !calledSel[x] && !engineDataFields[x.Sel.Name]:
+						report(j.fi.file, fname, "method value or unmodelled field is not called directly (calls through it are not modelled): "+exprStr(x))
+					}
+				} else if _, isIdent := x.X.(*ast.Ident); !isIdent { // A10: method EXPRESSION (*gin.RouterGroup).GET / gin.Engine.Use
+					if typeIs(j.fi.file, x.X, groupTypeNames, 0) {
+						report(j.fi.file, fname, "method expression on a gin group/engine type (calls through it are not modelled): "+exprStr(x))
 					}
 				}
+			case *ast.BranchStmt:
+				if x.Tok == token.GOTO {
+					report(j.fi.file, fname, "goto is not modelled (a Use or registration can be jumped over): goto "+x.Label.Name)
+				}
+			case *ast.Ident:
+				useCheck(x)
 			case *ast.FuncLit:
 				for _, fl := range x.Type.Params.List {
 					for _, nm := range fl.Names {
@@ -579,10 +877,23 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 				}
 			case *ast.CallExpr:
 				s, isSel := x.Fun.(*ast.SelectorExpr)
+				if isSel {
+					if _, has := recv(s.X); has && (routeMethods[s.Sel.Name] || s.Sel.Name == "Use" || s.Sel.Name == "Group" || func() bool { _, st := staticRoutes[s.Sel.Name]; return st }()) {
+						if x.Ellipsis.IsValid() && !spreadWrapper(x) { // A32d: a spread handler list is not modelled
+							report(j.fi.file, fname, "variadic handler list (...) is not modelled: "+exprStr(x))
+						}
+						if k := rootKey(s.X); execCtx(x) != execDecl[k] { // A32 / defer ordering: runs at another time than its text position
+							report(j.fi.file, fname, "registration, Use or Group inside a closure, defer or go statement on a group declared outside it (execution order is not modelled): "+exprStr(x.Fun))
+						}
+					}
+				}
 				if isSel && s.Sel.Name == "Use" {
 					if e, has := recv(s.X); has {
 						for _, a := range x.Args {
 							if isGate(a) {
+								if paramGroups[exprStr(s.X)] { // A32b: Use on a group received as a parameter changes the CALLER's group
+									report(j.fi.file, fname, "gate Use on a group received as a parameter (the caller's group changes; not modelled): "+exprStr(x))
+								}
 								e.gated = true
 								if dc := declCtx[exprStr(s.X)]; ctxOf[x] != dc {
 									report(j.fi.file, fname, "gate Use(...) in a conditional, loop, closure, go or defer context other than the group's declaration is not unconditional: "+exprStr(x))
@@ -619,6 +930,7 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 				if isStatic && len(x.Args) >= sr.nargs {
 					call := exprStr(s.X) + "." + s.Sel.Name + "(" + exprStr(x.Args[0]) + ")"
 					base, has := recv(s.X)
+					notePath(x.Args[0])
 					switch {
 					case !has:
 						report(j.fi.file, fname, call+" receiver does not resolve to a known group")
@@ -644,6 +956,7 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 					if len(x.Args) >= pi+2 { // path plus at least one handler: a gin registration, not a lookalike
 						call := exprStr(s.X) + "." + s.Sel.Name + "(" + exprStr(x.Args[pi]) + ")"
 						base, has := recv(s.X)
+						notePath(x.Args[pi])
 						switch {
 						case !has:
 							report(j.fi.file, fname, call+" receiver does not resolve to a known group")
@@ -666,17 +979,46 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 								}
 							}
 							gated := base.gated
-							for i, a := range x.Args[pi+1:] {
+							handlers := x.Args[pi+1:]
+							for i, a := range handlers {
 								if isGate(a) {
-									gated = true
-								} else if _, isLit := a.(*ast.FuncLit); !isLit && i < len(x.Args[pi+1:])-1 && strings.Contains(strings.ToLower(exprStr(a)), "admin") && !strings.Contains(exprStr(a), "RequireSelfOrAdmin") {
+									if i == len(handlers)-1 && spreadWrapper(x) { // the wrapper's chain is [gate, handlers...]: the gate precedes the terminal handler
+										gated = true
+									} else if i == len(handlers)-1 { // A26: the gate is the terminal handler, so it runs after the handler it should protect
+										report(j.fi.file, fname, call+" has the gate as its LAST handler (it protects nothing): "+exprStr(a))
+									} else {
+										gated = true
+									}
+								} else if _, isLit := a.(*ast.FuncLit); !isLit && i < len(handlers)-1 && strings.Contains(strings.ToLower(exprStr(a)), "admin") && !strings.Contains(exprStr(a), "RequireSelfOrAdmin") {
 									report(j.fi.file, fname, call+" has an admin-looking middleware the scanner cannot model: "+exprStr(a))
+								}
+							}
+							methods := []string{method}
+							switch s.Sel.Name {
+							case "Any": // A38: gin registers nine routes
+								methods = ginAnyMethods
+							case "Match":
+								methods = nil
+								if cl, ok := ast.Unparen(x.Args[0]).(*ast.CompositeLit); ok {
+									for _, el := range cl.Elts {
+										if m, ok := evalStr(el); ok {
+											methods = append(methods, strings.ToUpper(m))
+										} else {
+											methods = nil
+											break
+										}
+									}
+								}
+								if len(methods) == 0 {
+									report(j.fi.file, fname, call+" method list is not a constant string slice literal")
 								}
 							}
 							if !okp {
 								report(j.fi.file, fname, call+" path is not a constant after call-site binding")
 							} else {
-								res.routes = append(res.routes, scanRoute{method, joinRoute(base.prefix, lit), j.fi.file, gated})
+								for _, m := range methods {
+									res.routes = append(res.routes, scanRoute{m, joinRoute(base.prefix, lit), j.fi.file, gated})
+								}
 							}
 						}
 					}
@@ -778,6 +1120,13 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 			}
 			return true
 		})
+		for k := range tracked { // A28: the same name declared twice in one function (shadowing across blocks) is not modelled
+			_, isGrp := groups[k]
+			_, isGt := gates[k]
+			if declCount[k] > 1 && (isGrp || isGt || pathIdents[k]) { // a string name only matters when it feeds a route or group path
+				report(j.fi.file, fname, "name "+k+" is declared "+strconv.Itoa(declCount[k])+" times in the function (block scoping is not modelled)")
+			}
+		}
 	}
 	// I2 (round 4): EVERY function is walked. A function with a group parameter that no call site binds is walked with all its group
 	// parameters unknown, so each registration through them reports "full path is unresolved" and each escape reports.

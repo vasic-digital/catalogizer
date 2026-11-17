@@ -85,7 +85,7 @@ func TestADMD1F1S1R3_RealNamesStillResolve(t *testing.T) {
 
 // the allow-list of callees that legitimately receive an engine/group without registering routes; each is pinned.
 func TestADMD1F1S1R3_AllowListPinned(t *testing.T) {
-	require.ElementsMatch(t, []string{"verifyAuthRouteTable", "applyTrustedProxies", "setTrustedProxies", "engineChain"}, allowedGroupSinkNames())
+	require.ElementsMatch(t, []string{"verifyAuthRouteTable", "applyTrustedProxies", "setTrustedProxies", "engineChain", "routeChainFuncNames"}, allowedGroupSinkNames())
 	for _, n := range allowedGroupSinkNames() {
 		s := scanSrc(t, fcHeader+"func "+n+"(e *gin.Engine) error { return nil }\nfunc Run() { r := gin.New(); _ = "+n+"(r) }\n")
 		require.Empty(t, s.unresolved, n)

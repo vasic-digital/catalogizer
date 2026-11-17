@@ -1463,6 +1463,7 @@ func main() {
 	if err := verifyAuthRouteTable(router); err != nil {
 		logger.Fatal("Auth route table check failed", zap.Error(err))
 	}
+	routeDumpHook(router) // no-op unless built with the test-only tag routedump (main_routedump_on.go)
 
 	// Find available port for HTTP server
 	startPort := cfg.Server.Port
