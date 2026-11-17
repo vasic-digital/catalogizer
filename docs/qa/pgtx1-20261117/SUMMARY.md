@@ -30,3 +30,8 @@ Limits (UNCONFIRMED where stated):
 - The scanner is name/shape based (no go/types); a tx obtained by a pattern other than Begin/BeginTx/typed param would be missed, mitigated by the grep cross-check (75 = 70 + 5 accounted).
 - Full `repository` package run exceeded the default timeout under load; subsets passed.
 - Not independently reviewed (§11.4.142 owed); status PROVISIONAL, verification job: full repository + services suites on a quiet host.
+
+Addendum (PGFU1, 2026-11-17): the line "`Transaction` (TxContext) keeps its own rewriting" overstated: it embedded the raw `*sql.Tx` and rewrote only Exec/Query/QueryRow,
+so ExecContext/QueryContext/QueryRowContext/Prepare/PrepareContext reached PostgreSQL with raw `?` (reproduced RED on real PostgreSQL, docs/qa/pgfu1-20261117/red_f2_f3.txt).
+`Transaction` now embeds `*Tx`, so every statement method is the rewriting one and runs exactly once; explicit `Rewrite` calls at tx sites were removed
+("left (redundant, proven idempotent)" is superseded: the proof holds only for a single INSERT OR IGNORE per statement).

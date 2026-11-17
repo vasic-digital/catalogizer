@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"reflect"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -90,8 +91,10 @@ type TransactionOptions struct {
 }
 
 // Transaction represents a database transaction with timeout and deadlock detection
+// Transaction embeds *Tx (not the raw *sql.Tx): every statement method, including ExecContext, QueryContext, QueryRowContext,
+// Prepare and PrepareContext, is the dialect-rewriting one from tx.go (PGTX1-R-F2). Commit/Rollback are overridden below.
 type Transaction struct {
-	*sql.Tx
+	*Tx
 	ctx          context.Context
 	cancel       context.CancelFunc
 	config       TransactionConfig
@@ -131,7 +134,7 @@ func (tc *TxContext) Begin(ctx context.Context, opts *sql.TxOptions) (*Transacti
 
 	txID := generateTxID()
 	tx := &Transaction{
-		Tx:        sqlTx.Tx,
+		Tx:        sqlTx,
 		ctx:       txCtx,
 		cancel:    cancel,
 		config:    tc.config,
@@ -176,8 +179,7 @@ func (tx *Transaction) Exec(query string, args ...interface{}) (sql.Result, erro
 	ctx, cancel := context.WithTimeout(tx.ctx, tx.config.QueryTimeout)
 	defer cancel()
 
-	query = tx.db.rewriteQuery(query)
-	return tx.Tx.ExecContext(ctx, query, args...)
+	return tx.Tx.ExecContext(ctx, query, args...) // rewritten once, by Tx
 }
 
 // Query executes a query within the transaction.
@@ -197,8 +199,7 @@ func (tx *Transaction) Exec(query string, args ...interface{}) (sql.Result, erro
 // duration of the transaction.  Per-statement timeout safety is provided by the
 // driver (SQLite _busy_timeout, PostgreSQL statement_timeout).
 func (tx *Transaction) Query(query string, args ...interface{}) (*sql.Rows, error) {
-	query = tx.db.rewriteQuery(query)
-	return tx.Tx.QueryContext(tx.ctx, query, args...)
+	return tx.Tx.QueryContext(tx.ctx, query, args...) // rewritten once, by Tx
 }
 
 // QueryRow executes a query returning a single row within the transaction.
@@ -216,8 +217,7 @@ func (tx *Transaction) Query(query string, args ...interface{}) (*sql.Rows, erro
 // timeout safety comes from the driver (SQLite _busy_timeout, PostgreSQL
 // statement_timeout).
 func (tx *Transaction) QueryRow(query string, args ...interface{}) *sql.Row {
-	query = tx.db.rewriteQuery(query)
-	return tx.Tx.QueryRowContext(tx.ctx, query, args...)
+	return tx.Tx.QueryRowContext(tx.ctx, query, args...) // rewritten once, by Tx
 }
 
 // Commit commits the transaction with cleanup.
@@ -237,7 +237,7 @@ func (tx *Transaction) Commit() error {
 
 		txID = tx.txID
 		shouldRecord = true
-		return tx.Tx.Commit()
+		return tx.Tx.Tx.Commit()
 	}()
 
 	tx.cancel()
@@ -266,7 +266,7 @@ func (tx *Transaction) Rollback() error {
 		tx.isRolledBack = true
 		txID = tx.txID
 		shouldRecord = true
-		return tx.Tx.Rollback()
+		return tx.Tx.Tx.Rollback()
 	}()
 
 	tx.cancel()
@@ -382,15 +382,32 @@ func isDeadlockError(err error) bool {
 	return false
 }
 
+// TxFinisher is what SafeCommit/SafeRollback need from a transaction: *sql.Tx, *Tx and *Transaction all satisfy it.
+type TxFinisher interface {
+	Commit() error
+	Rollback() error
+}
+
+// txPresent reports whether tx holds a usable transaction: false for a nil interface and for a typed nil pointer
+// (a nil *sql.Tx / *Tx / *Transaction passed as TxFinisher), which the former *sql.Tx signature also treated as nil.
+func txPresent(tx TxFinisher) bool {
+	if tx == nil {
+		return false
+	}
+	v := reflect.ValueOf(tx)
+	return !(v.Kind() == reflect.Ptr && v.IsNil())
+}
+
 // SafeRollback performs a safe rollback that won't panic
 // Logs rollback errors for debugging but doesn't return them since rollback is typically a cleanup operation
-func SafeRollback(tx *sql.Tx) {
-	if tx != nil {
-		if err := tx.Rollback(); err != nil {
-			// Log rollback error but don't fail - transaction may already be rolled back or committed
-			// This is acceptable behavior for cleanup operations
-			fmt.Fprintf(os.Stderr, "Warning: transaction rollback failed (may be already completed): %v\n", err)
-		}
+func SafeRollback(tx TxFinisher) {
+	if !txPresent(tx) {
+		return
+	}
+	if err := tx.Rollback(); err != nil {
+		// Log rollback error but don't fail - transaction may already be rolled back or committed
+		// This is acceptable behavior for cleanup operations
+		fmt.Fprintf(os.Stderr, "Warning: transaction rollback failed (may be already completed): %v\n", err)
 	}
 }
 
@@ -448,8 +465,8 @@ func (lo *TxLockOrder) SortTables(tables []string) []string {
 }
 
 // SafeCommit commits a transaction and handles rollback on error
-func SafeCommit(tx *sql.Tx) error {
-	if tx == nil {
+func SafeCommit(tx TxFinisher) error {
+	if !txPresent(tx) {
 		return fmt.Errorf("cannot commit nil transaction")
 	}
 	if err := tx.Commit(); err != nil {

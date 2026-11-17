@@ -376,10 +376,10 @@ func (t *LoginThrottle) reserve(ctx context.Context, q querier, subject, scope s
 // (takeToken: count-then-insert). Writing the row is what takes the lock.
 func (t *LoginThrottle) lockSlots(ctx context.Context, tx *database.Tx, subject string, nowMs int64) error {
 	for i := 0; i < 3; i++ {
-		if _, err := tx.ExecContext(ctx, t.db.Rewrite(`INSERT OR IGNORE INTO login_throttle (subject, scope) VALUES (?, ?)`), subject, slotsScope); err != nil {
+		if _, err := tx.ExecContext(ctx, `INSERT OR IGNORE INTO login_throttle (subject, scope) VALUES (?, ?)`, subject, slotsScope); err != nil {
 			return err
 		}
-		res, err := tx.ExecContext(ctx, t.db.Rewrite(`UPDATE login_throttle SET last_failure_ms = ?, version = version + 1 WHERE subject = ? AND scope = ?`), nowMs, subject, slotsScope)
+		res, err := tx.ExecContext(ctx, `UPDATE login_throttle SET last_failure_ms = ?, version = version + 1 WHERE subject = ? AND scope = ?`, nowMs, subject, slotsScope)
 		if err != nil {
 			return err
 		}
@@ -410,14 +410,14 @@ func (t *LoginThrottle) takeToken(ctx context.Context, tok AttemptToken, now tim
 		return false, err
 	}
 	var live int
-	if err = tx.QueryRowContext(ctx, t.db.Rewrite(`SELECT COUNT(*) FROM login_throttle WHERE subject = ? AND substr(scope, 1, 5) = ? AND last_failure_ms > ?`),
+	if err = tx.QueryRowContext(ctx, `SELECT COUNT(*) FROM login_throttle WHERE subject = ? AND substr(scope, 1, 5) = ? AND last_failure_ms > ?`,
 		tok.subject, pendPrefix, nowMs-pol.PendingTTL.Milliseconds()).Scan(&live); err != nil {
 		return false, err
 	}
 	if live >= pol.MaxInflight {
 		return false, nil
 	}
-	if _, err = tx.ExecContext(ctx, t.db.Rewrite(`INSERT INTO login_throttle (subject, scope, last_failure_ms) VALUES (?, ?, ?)`), tok.subject, tok.scope, nowMs); err != nil {
+	if _, err = tx.ExecContext(ctx, `INSERT INTO login_throttle (subject, scope, last_failure_ms) VALUES (?, ?, ?)`, tok.subject, tok.scope, nowMs); err != nil {
 		return false, err
 	}
 	if err = tx.Commit(); err != nil {

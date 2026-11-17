@@ -142,12 +142,12 @@ func (r *PlaybackSessionRepository) End(ctx context.Context, e PlaybackEnd) erro
 		return fmt.Errorf("begin tx: %w", err)
 	}
 	defer func() { _ = tx.Rollback() }()
-	// Statements on a *sql.Tx bypass the DB wrappers: apply the dialect rewrite (placeholders, boolean literals) explicitly,
-	// otherwise PostgreSQL receives raw `?` markers.
-	exec := func(q string, a ...interface{}) (sql.Result, error) { return tx.ExecContext(ctx, r.db.Rewrite(q), a...) }
-	queryRow := func(q string, a ...interface{}) *sql.Row { return tx.QueryRowContext(ctx, r.db.Rewrite(q), a...) }
+	// tx is a *database.Tx: every statement run on it is dialect-rewritten by that type (placeholders, boolean literals, ...),
+	// so no explicit Rewrite here.
+	exec := func(q string, a ...interface{}) (sql.Result, error) { return tx.ExecContext(ctx, q, a...) }
+	queryRow := func(q string, a ...interface{}) *sql.Row { return tx.QueryRowContext(ctx, q, a...) }
 
-	// completed is BOOLEAN on PostgreSQL and a 0/1 BOOLEAN-affinity column on SQLite: bind a Go bool (both drivers accept
+	// completed is BOOLEAN on PostgreSQL and a 0/1 INTEGER-affinity column on SQLite: bind a Go bool (both drivers accept
 	// it), never an integer (CAT-PG-SESSION-END-1). The ended_at IS NULL guard is a compare-and-set: it takes the row
 	// lock, so concurrent Ends of one session serialise and the loser re-evaluates the predicate under READ COMMITTED and
 	// matches nothing, so a session is counted into media_progress exactly once.

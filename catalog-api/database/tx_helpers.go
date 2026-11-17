@@ -5,8 +5,9 @@ import (
 	"database/sql"
 )
 
-// TxExecQuerier is what TxInsertReturningID needs from a transaction; both *Tx and a raw *sql.Tx satisfy it. The query is
-// rewritten by TxInsertReturningID itself, so passing a raw *sql.Tx is safe here (a *Tx rewrites again, idempotently).
+// TxExecQuerier is what TxInsertReturningID needs from a transaction; *Tx, *Transaction and a raw *sql.Tx satisfy it. The query is
+// rewritten by TxInsertReturningID itself, so passing a raw *sql.Tx is safe here; a *Tx rewrites it again (idempotent for the
+// single-statement INSERT this helper builds, which carries at most one INSERT OR IGNORE).
 type TxExecQuerier interface {
 	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row

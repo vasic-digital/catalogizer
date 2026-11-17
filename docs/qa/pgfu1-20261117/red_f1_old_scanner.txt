@@ -1,0 +1,12 @@
+--- FAIL: TestREDOldScannerOnPlantedCases (0.02s)
+    zz_red_old_scanner_test.go:59: old scanner local unwrap var: got 0 want 1
+    zz_red_old_scanner_test.go:59: old scanner field unwrap: got 0 want 1
+    zz_red_old_scanner_test.go:59: old scanner declared sql.DB fld: got 0 want 1
+    zz_red_old_scanner_test.go:59: old scanner local unwrap: got 0 want 1
+    zz_red_old_scanner_test.go:59: old scanner declared *sql.DB: got 0 want 1
+    zz_red_old_scanner_test.go:59: old scanner non-sql alias named sql: got 1 want 0
+    zz_red_old_scanner_test.go:59: old scanner embedded tx unwrap: got 0 want 1
+    zz_red_old_scanner_test.go:59: old scanner aliased import: got 0 want 1
+FAIL
+FAIL	catalogizer/database	0.040s
+FAIL

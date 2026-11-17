@@ -3640,11 +3640,14 @@ Premise confirmed: WebDAV storage-root client already guarded (OperatorTransport
 CAT-LEGACY-MEDIAHANDLER-1: removal not approved; deep-dive of the whole legacy media system first (why never wired, unimplemented vs replaced, advertised-but-unbacked claims). PostgreSQL = supported; CAT-PG-SESSION-END-1 and CAT-PG-TX-SWEEP-1 are rc.1 blockers. Load policy: max agents; pause all agents for Vision/build phases then resume them all, with a sync record. SECQ-1: confirm_private_network model kept.
 
 ## PGEND1 review (Opus, 2026-11-17) — GO-with-follow-ups, landed PROVISIONAL
-- PGEND1-R-m1 (minor): mutant R6 survives (media_progress UPDATE dropping media_item_id); add two-item/two-user test asserting other rows unchanged.
+- **[ADDRESSED in PGFU1, PROVISIONAL: m1, m4, n1, n2; m2/m3 open]** PGEND1-R-m1 (minor): mutant R6 survives (media_progress UPDATE dropping media_item_id); add two-item/two-user test asserting other rows unchanged.
 - PGEND1-R-m2 (minor): racing first-ever Ends / PUT insert vs End collide on PK -> 500; consider portable ON CONFLICT upsert (go-sqlcipher support UNCONFIRMED).
 - PGEND1-R-m3 (minor): repeated End of ended session now 200 {ok:true} applying nothing; document in API contract.
 - PGEND1-R-m4 (minor): no PG test for End on a row created by the PUT handler.
 - PGEND1-R-n1/n2 (nit): comment "BOOLEAN-affinity" for SQLite completed is wrong (INTEGER); SUMMARY.md wrongly says Get/ListHistory are tx statements.
+
+## PGFU1 (follow-up of PGTX1 + PGEND1 reviews, 2026-11-17) **[PROVISIONAL]**
+Evidence docs/qa/pgfu1-20261117/. F1 guard is AST-based with alias/local-unwrap/declared-*sql.DB/.Tx.Tx tracking (still NOT go/types: a raw tx reached via an interface-typed value or a function returning *sql.DB is unseen). F2 `Transaction` embeds `*Tx`. F3: explicit `Rewrite` at tx sites removed; `RewriteInsertOrIgnore` still rewrites only the first occurrence (not made all-occurrence: the appended `ON CONFLICT DO NOTHING` is statement-level, a multi-statement fix is not safe), pinned by a test. F4 `TxFinisher` interface. Open: PGTX1-R-N2 (sql.Conn path in encryption.go), PGEND1-R-m2/m3.
 
 ## ALTSVC3 review (Opus, 2026-11-17) — GO-with-follow-ups, landed PROVISIONAL
 - ALTSVC3-R-m1: no test for flag-cleared-on-Serve-failure (mutant M1 survives).
@@ -3677,7 +3680,7 @@ CAT-LEGACY-MEDIAHANDLER-1: removal not approved; deep-dive of the whole legacy m
 - Not checked: device/emulator, live server, full suites.
 
 ## PGTX1 review (Opus, 2026-11-17) — GO-with-follow-ups, landed PROVISIONAL
-- PGTX1-R-F1 (minor): tx_site_guard misses aliased sql import, local unwrap (raw := db.DB; raw.BeginTx), and (*database.Transaction) shapes; make the guard type-based (go/types) or add planted cases.
+- **[ADDRESSED in PGFU1, PROVISIONAL: F1..F4, N1; N2 and the Open-from-author items stay open]** PGTX1-R-F1 (minor): tx_site_guard misses aliased sql import, local unwrap (raw := db.DB; raw.BeginTx), and (*database.Transaction) shapes; make the guard type-based (go/types) or add planted cases.
 - PGTX1-R-F2 (minor): database.Transaction still embeds raw *sql.Tx; only Exec/Query/QueryRow rewrite; shadow the rest or embed *Tx; SUMMARY overstates.
 - PGTX1-R-F3 (minor): double-rewrite not idempotent for two INSERT OR IGNORE occurrences (RewriteInsertOrIgnore first-only); drop redundant explicit Rewrite at tx sites or document.
 - PGTX1-R-F4 (minor): SafeRollback/SafeCommit take *sql.Tx; use a small interface.

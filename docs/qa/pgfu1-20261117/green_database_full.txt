@@ -1,0 +1,2 @@
+ok  	catalogizer/database	142.792s
+ok  	catalogizer/internal/media/database	0.066s

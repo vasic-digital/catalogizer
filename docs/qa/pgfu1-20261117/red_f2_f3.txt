@@ -1,0 +1,10 @@
+--- FAIL: TestTransactionEveryStatementMethodIsRewrittenOnPostgres (5.84s)
+    transaction_pg_fu1_test.go:26: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/pgfu1/catalog-api/database/transaction_pg_fu1_test.go:26
+        	Error:      	Received unexpected error:
+        	            	pq: syntax error at or near ","
+        	Test:       	TestTransactionEveryStatementMethodIsRewrittenOnPostgres
+        	Messages:   	ExecContext with ? on a TxContext transaction
+FAIL
+FAIL	catalogizer/database	5.888s
+FAIL
