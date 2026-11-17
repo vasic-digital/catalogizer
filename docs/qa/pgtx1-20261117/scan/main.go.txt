@@ -1,0 +1,122 @@
+// txscan enumerates statement call sites on transaction values in non-test Go files.
+// A "tx value" is: an identifier assigned from X.Begin()/X.BeginTx(...) (also BeginWithRetry/RunInTx-style closures params),
+// or a function/closure parameter whose type text contains "sql.Tx", "database.Tx", "*Tx" or "Transaction".
+package main
+
+import (
+	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/printer"
+	"go/token"
+	"os"
+	"path/filepath"
+	"sort"
+	"strings"
+	"bytes"
+)
+
+var stmtMethods = map[string]bool{"Exec": true, "ExecContext": true, "Query": true, "QueryContext": true, "QueryRow": true, "QueryRowContext": true, "Prepare": true, "PrepareContext": true}
+var beginNames = map[string]bool{"Begin": true, "BeginTx": true, "BeginWithRetry": true}
+
+func src(fset *token.FileSet, n ast.Node) string {
+	var b bytes.Buffer
+	printer.Fprint(&b, fset, n)
+	return b.String()
+}
+
+func main() {
+	root := os.Args[1]
+	fset := token.NewFileSet()
+	var rows []string
+	filepath.Walk(root, func(p string, info os.FileInfo, err error) error {
+		if err != nil { return nil }
+		if info.IsDir() && (info.Name() == "vendor" || info.Name() == ".git") { return filepath.SkipDir }
+		if info.IsDir() || !strings.HasSuffix(p, ".go") || strings.HasSuffix(p, "_test.go") { return nil }
+		f, err := parser.ParseFile(fset, p, nil, 0)
+		if err != nil { fmt.Fprintln(os.Stderr, "PARSE", p, err); return nil }
+		rel, _ := filepath.Rel(root, p)
+		// per function scan
+		var visitFn func(name string, ftype *ast.FuncType, body *ast.BlockStmt)
+		visitFn = func(name string, ftype *ast.FuncType, body *ast.BlockStmt) {
+			if body == nil { return }
+			tx := map[string]string{}
+			if ftype != nil && ftype.Params != nil {
+				for _, fl := range ftype.Params.List {
+					t := src(fset, fl.Type)
+					if strings.Contains(t, "sql.Tx") || strings.Contains(t, "database.Tx") || t == "*Tx" || strings.Contains(t, "Transaction") || strings.Contains(t, "TxExecQuerier") {
+						for _, n := range fl.Names { tx[n.Name] = "param:" + t }
+					}
+				}
+			}
+			ast.Inspect(body, func(n ast.Node) bool {
+				switch x := n.(type) {
+				case *ast.FuncLit:
+					visitFn(name+".func", x.Type, x.Body)
+					return false
+				case *ast.AssignStmt:
+					for i, r := range x.Rhs {
+						if ce, ok := r.(*ast.CallExpr); ok {
+							if se, ok := ce.Fun.(*ast.SelectorExpr); ok && beginNames[se.Sel.Name] {
+								idx := i
+								if len(x.Rhs) == 1 { idx = 0 }
+								if idx < len(x.Lhs) {
+									if id, ok := x.Lhs[idx].(*ast.Ident); ok && id.Name != "_" {
+										tx[id.Name] = "begin:" + src(fset, se.X)
+									}
+								}
+							}
+						}
+					}
+				}
+				return true
+			})
+			lits := map[string]string{}
+			ast.Inspect(body, func(n ast.Node) bool {
+				if as, ok := n.(*ast.AssignStmt); ok && len(as.Lhs) == len(as.Rhs) {
+					for i := range as.Lhs {
+						if id, ok := as.Lhs[i].(*ast.Ident); ok {
+							if bl, ok := as.Rhs[i].(*ast.BasicLit); ok && bl.Kind == token.STRING { lits[id.Name] += " " + bl.Value }
+						}
+					}
+				}
+				return true
+			})
+			ast.Inspect(body, func(n ast.Node) bool {
+				if _, ok := n.(*ast.FuncLit); ok { return false }
+				ce, ok := n.(*ast.CallExpr)
+				if !ok { return true }
+				se, ok := ce.Fun.(*ast.SelectorExpr)
+				if !ok || !stmtMethods[se.Sel.Name] { return true }
+				recv := src(fset, se.X)
+				base := recv
+				if i := strings.Index(base, "."); i >= 0 { base = base[:i] }
+				origin, isTx := tx[recv]
+				if !isTx { origin, isTx = tx[base]; if isTx && strings.HasPrefix(recv, base+".") && recv != base+".Tx" { isTx = false } }
+				if !isTx { return true }
+				pos := fset.Position(ce.Pos())
+				sqlArg := ""
+				for _, a := range ce.Args {
+					s := src(fset, a)
+					if strings.Contains(s, "\"") || strings.Contains(s, "`") || strings.Contains(strings.ToLower(s), "query") || strings.Contains(strings.ToLower(s), "sql") || strings.Contains(strings.ToLower(s), "stmt") {
+						sqlArg = s; break
+					}
+				}
+				if v, ok := lits[sqlArg]; ok { sqlArg = v }
+				sqlArg = strings.Join(strings.Fields(sqlArg), " ")
+				rows = append(rows, fmt.Sprintf("%s:%d\t%s\t%s\t%s\t%s\t%s", rel, pos.Line, name, recv, origin, se.Sel.Name, sqlArg))
+				return true
+			})
+		}
+		for _, d := range f.Decls {
+			if fd, ok := d.(*ast.FuncDecl); ok {
+				n := fd.Name.Name
+				if fd.Recv != nil && len(fd.Recv.List) > 0 { n = strings.TrimPrefix(src(fset, fd.Recv.List[0].Type), "*") + "." + n }
+				visitFn(n, fd.Type, fd.Body)
+			}
+		}
+		return nil
+	})
+	sort.Strings(rows)
+	for _, r := range rows { fmt.Println(r) }
+}

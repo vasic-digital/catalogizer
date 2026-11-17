@@ -1,0 +1,3285 @@
+ok  	catalogizer/database	172.944s
+panic: test timed out after 10m0s
+	running tests:
+		TestPGLAX1F7_UserWriteGuards_SingleConnectionPoolDoesNotHang (10s)
+		TestPGLAX1F7_UserWriteGuards_SingleConnectionPoolDoesNotHang/UpdateGuarded (2s)
+
+goroutine 5720562 [running]:
+testing.(*M).startAlarm.func1()
+	/usr/lib/go-1.26/src/testing/testing.go:2802 +0x354
+created by time.goFunc
+	/usr/lib/go-1.26/src/time/sleep.go:215 +0x2d
+
+goroutine 1 [chan receive]:
+testing.(*T).Run(0x3ab331ae2908, {0xa64693?, 0x0?}, 0xa962e0)
+	/usr/lib/go-1.26/src/testing/testing.go:2109 +0x4e5
+testing.runTests.func1(0x3ab331ae2908)
+	/usr/lib/go-1.26/src/testing/testing.go:2585 +0x3e
+testing.tRunner(0x3ab331ae2908, 0x3ab331b1fbe0)
+	/usr/lib/go-1.26/src/testing/testing.go:2036 +0xea
+testing.runTests({0xa3d61d, 0xb}, {0xa4548b, 0x16}, 0x3ab331aa6228, {0xe39560, 0x17b, 0x17b}, {0xc2b73ad8e1e93725, 0x8bb2da85b1, ...})
+	/usr/lib/go-1.26/src/testing/testing.go:2583 +0x505
+testing.(*M).Run(0x3ab331aa4f00)
+	/usr/lib/go-1.26/src/testing/testing.go:2443 +0x6ac
+catalogizer/repository.TestMain(0x3ab331aa4f00)
+	/home/milosvasic/.cache/claude-tmp/pgtx1/catalog-api/repository/testmain_dbkey_test.go:17 +0x91
+main.main()
+	_testmain.go:818 +0xa5
+
+goroutine 2038 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cf6ea0, {0xaa2a48, 0x3ab331a7bb80})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2037
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2522 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b0b380, {0xaa2a48, 0x3ab331b1c7d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2521
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 23 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ab5450, {0xaa2a48, 0x3ab331aea4b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 22
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 54 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b57930, {0xaa2a48, 0x3ab331aeb450})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 53
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 26 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ab5790, {0xaa2a48, 0x3ab331aea5a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 25
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 28 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ab5a00, {0xaa2a48, 0x3ab331aea690})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 27
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 30 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b560d0, {0xaa2a48, 0x3ab331aea780})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 29
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 33 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b56340, {0xaa2a48, 0x3ab331aea8c0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 32
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 35 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b565b0, {0xaa2a48, 0x3ab331aea9b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 34
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 38 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b56820, {0xaa2a48, 0x3ab331aeab40})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 37
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 40 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b56a90, {0xaa2a48, 0x3ab331aeacd0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 39
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 42 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b56d00, {0xaa2a48, 0x3ab331aeae10})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 41
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 45 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b56f70, {0xaa2a48, 0x3ab331aeafa0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 44
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 47 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b571e0, {0xaa2a48, 0x3ab331aeb090})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 46
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 50 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b57450, {0xaa2a48, 0x3ab331aeb1d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 49
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 52 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b576c0, {0xaa2a48, 0x3ab331aeb310})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 51
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 56 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b57ba0, {0xaa2a48, 0x3ab331aeb590})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 55
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 65 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b78680, {0xaa2a48, 0x3ab331aeb9f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 64
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 59 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b57e10, {0xaa2a48, 0x3ab331aeb720})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 58
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 61 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b781a0, {0xaa2a48, 0x3ab331aeb810})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 60
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 63 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b78410, {0xaa2a48, 0x3ab331aeb900})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 62
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 77 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b795f0, {0xaa2a48, 0x3ab331b96190})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 76
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 68 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b78b60, {0xaa2a48, 0x3ab331aebb30})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 67
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 70 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b78ea0, {0xaa2a48, 0x3ab331aebc70})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 69
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 73 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b79110, {0xaa2a48, 0x3ab331aebe00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 72
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 75 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b79380, {0xaa2a48, 0x3ab331b96050})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 74
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2022 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ba1c70, {0xaa2a48, 0x3ab331a7b310})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2021
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2020 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ba1a00, {0xaa2a48, 0x3ab331a7b220})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2019
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2018 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ba1790, {0xaa2a48, 0x3ab331a7b0e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2017
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2015 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ba1520, {0xaa2a48, 0x3ab331a7afa0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2014
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2013 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ba12b0, {0xaa2a48, 0x3ab331a7aeb0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2012
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2008 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ba0dd0, {0xaa2a48, 0x3ab331a7ab90})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2007
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2025 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cf6000, {0xaa2a48, 0x3ab331a7b450})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2024
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2029 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cf64e0, {0xaa2a48, 0x3ab331a7b6d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2028
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2003 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ba0820, {0xaa2a48, 0x3ab331a7a8c0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2002
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2370 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b844e0, {0xaa2a48, 0x3ab331a7acd0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2369
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2010 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ba1040, {0xaa2a48, 0x3ab331a7ad70})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2009
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2379 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b85040, {0xaa2a48, 0x3ab331a7b360})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2378
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 1991 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d22270, {0xaa2a48, 0x3ab331b97090})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 1990
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2006 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ba0a90, {0xaa2a48, 0x3ab331a7aa00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2005
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2381 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b852b0, {0xaa2a48, 0x3ab331a7b4a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2380
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2241 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331df5930, {0xaa2a48, 0x3ab331dfab40})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2240
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2527 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b0b860, {0xaa2a48, 0x3ab331b1ca00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2526
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2031 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cf6750, {0xaa2a48, 0x3ab331a7b7c0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2030
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 1985 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ba05b0, {0xaa2a48, 0x3ab331a7a7d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 1984
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2260 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d23860, {0xaa2a48, 0x3ab331b967d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2259
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2286 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cda5b0, {0xaa2a48, 0x3ab331b974f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2285
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2268 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331df5c70, {0xaa2a48, 0x3ab331b96b40})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2267
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2270 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ab4750, {0xaa2a48, 0x3ab331b96c30})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2269
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2273 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ab5380, {0xaa2a48, 0x3ab331b96d70})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2272
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2275 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b78dd0, {0xaa2a48, 0x3ab331b96e60})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2274
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2280 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b79c70, {0xaa2a48, 0x3ab331b970e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2279
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2265 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d23d40, {0xaa2a48, 0x3ab331b96a00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2264
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2510 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b0a750, {0xaa2a48, 0x3ab331b1c230})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2509
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2412 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c25790, {0xaa2a48, 0x3ab331d9aaa0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2411
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5710927 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e21ad0, {0xaa2a48, 0x3ab331bfeeb0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5710926
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2289 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cda820, {0xaa2a48, 0x3ab331b97680})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2288
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2377 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b84d00, {0xaa2a48, 0x3ab331a7b1d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2376
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2027 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cf6270, {0xaa2a48, 0x3ab331a7b5e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2026
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2334 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d16a90, {0xaa2a48, 0x3ab331dfbae0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2333
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2416 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c25c70, {0xaa2a48, 0x3ab331d9ac80})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2415
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2383 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b85520, {0xaa2a48, 0x3ab331a7b590})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2382
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 1994 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d224e0, {0xaa2a48, 0x3ab331b97180})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 1993
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2388 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b85ad0, {0xaa2a48, 0x3ab331a7b900})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2387
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2390 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c241a0, {0xaa2a48, 0x3ab331a7bd60})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2389
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2393 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c24410, {0xaa2a48, 0x3ab331a7bea0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2392
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2402 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c24dd0, {0xaa2a48, 0x3ab331d9a460})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2401
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2395 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c24680, {0xaa2a48, 0x3ab331d9a140})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2394
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2517 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b0aea0, {0xaa2a48, 0x3ab331b1c5a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2516
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2409 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c25520, {0xaa2a48, 0x3ab331d9a910})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2408
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2263 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d23ad0, {0xaa2a48, 0x3ab331b96910})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2262
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2405 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c25040, {0xaa2a48, 0x3ab331d9a5f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2404
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2398 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c248f0, {0xaa2a48, 0x3ab331d9a280})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2397
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2407 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c252b0, {0xaa2a48, 0x3ab331d9a780})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2406
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2400 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c24b60, {0xaa2a48, 0x3ab331d9a370})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2399
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2418 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c40000, {0xaa2a48, 0x3ab331d9ae10})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2417
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2414 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c25a00, {0xaa2a48, 0x3ab331d9ab90})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2413
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 1996 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d22820, {0xaa2a48, 0x3ab331b97310})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 1995
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2385 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b85790, {0xaa2a48, 0x3ab331a7b720})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2384
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2291 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cdaa90, {0xaa2a48, 0x3ab331b97770})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2290
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2520 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b0b110, {0xaa2a48, 0x3ab331b1c6e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2519
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2501 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ba0410, {0xaa2a48, 0x3ab331aebbd0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2500
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2515 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b0ac30, {0xaa2a48, 0x3ab331b1c4b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2514
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2525 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b0b5f0, {0xaa2a48, 0x3ab331b1c910})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2524
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2278 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b79a00, {0xaa2a48, 0x3ab331b96fa0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2277
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2375 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b849c0, {0xaa2a48, 0x3ab331a7b090})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2374
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2229 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331df4d00, {0xaa2a48, 0x3ab331dfa5f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2228
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2034 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cf69c0, {0xaa2a48, 0x3ab331a7b9a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2033
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2036 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cf6c30, {0xaa2a48, 0x3ab331a7ba90})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2035
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2045 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cf75f0, {0xaa2a48, 0x3ab331d9a0f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2044
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2041 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cf7110, {0xaa2a48, 0x3ab331a7bcc0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2040
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2043 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cf7380, {0xaa2a48, 0x3ab331d9a000})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2042
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2213 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331dabad0, {0xaa2a48, 0x3ab331d9bdb0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2212
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2222 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331df45b0, {0xaa2a48, 0x3ab331dfa2d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2221
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2250 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d22ea0, {0xaa2a48, 0x3ab331b963c0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2249
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2233 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331df51e0, {0xaa2a48, 0x3ab331dfa7d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2232
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2227 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331df4a90, {0xaa2a48, 0x3ab331dfa500})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2226
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2236 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331df5450, {0xaa2a48, 0x3ab331dfa910})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2235
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2253 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d23110, {0xaa2a48, 0x3ab331b964b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2252
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2220 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331df4340, {0xaa2a48, 0x3ab331dfa1e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2219
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2225 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331df4820, {0xaa2a48, 0x3ab331dfa410})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2224
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2238 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331df56c0, {0xaa2a48, 0x3ab331dfaa00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2237
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2282 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cda0d0, {0xaa2a48, 0x3ab331b97270})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2281
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2217 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331df40d0, {0xaa2a48, 0x3ab331dfa0a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2216
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2215 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331dabd40, {0xaa2a48, 0x3ab331d9bea0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2214
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2231 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331df4f70, {0xaa2a48, 0x3ab331dfa6e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2230
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2210 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331dab860, {0xaa2a48, 0x3ab331d9bc70})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2209
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2246 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d22750, {0xaa2a48, 0x3ab331b961e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2245
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2284 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cda340, {0xaa2a48, 0x3ab331b973b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2283
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2368 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b84270, {0xaa2a48, 0x3ab331a7aaa0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2367
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2365 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b84000, {0xaa2a48, 0x3ab331a7a870})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2364
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2363 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331daaea0, {0xaa2a48, 0x3ab331a7a730})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2362
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2360 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331daac30, {0xaa2a48, 0x3ab331a7a5f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2359
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2208 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331dab5f0, {0xaa2a48, 0x3ab331d9bb80})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2207
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2355 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331daa410, {0xaa2a48, 0x3ab331a7a3c0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2354
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2129 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331daa0d0, {0xaa2a48, 0x3ab331a7a2d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2128
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2126 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cf7d40, {0xaa2a48, 0x3ab331a7a190})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2125
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2124 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cf7a00, {0xaa2a48, 0x3ab331a7a0a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2123
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2372 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b84750, {0xaa2a48, 0x3ab331a7ae60})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2371
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2243 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d22000, {0xaa2a48, 0x3ab331b96000})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2242
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2358 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331daa8f0, {0xaa2a48, 0x3ab331a7a500})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2357
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2205 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331dab380, {0xaa2a48, 0x3ab331d9ba90})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2204
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2258 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d235f0, {0xaa2a48, 0x3ab331b966e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2257
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712639 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f620d0, {0xaa2a48, 0x3ab331b1c780})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712638
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2255 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d23380, {0xaa2a48, 0x3ab331b965a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2254
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2248 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d22c30, {0xaa2a48, 0x3ab331b962d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2247
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2294 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cdad00, {0xaa2a48, 0x3ab331b978b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2293
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2296 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cdb110, {0xaa2a48, 0x3ab331b97c20})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2295
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2299 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cdb380, {0xaa2a48, 0x3ab331b97d60})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2298
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2301 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cdb5f0, {0xaa2a48, 0x3ab331b97ea0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2300
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2304 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cdb860, {0xaa2a48, 0x3ab331dfad70})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2303
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2306 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cdbad0, {0xaa2a48, 0x3ab331dfae60})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2305
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2309 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cdbd40, {0xaa2a48, 0x3ab331dfafa0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2308
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2311 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b760d0, {0xaa2a48, 0x3ab331dfb090})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2310
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2313 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b76340, {0xaa2a48, 0x3ab331dfb180})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2312
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2316 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b765b0, {0xaa2a48, 0x3ab331dfb2c0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2315
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2318 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b76820, {0xaa2a48, 0x3ab331dfb3b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2317
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2321 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b76a90, {0xaa2a48, 0x3ab331dfb4f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2320
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2323 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b76d00, {0xaa2a48, 0x3ab331dfb5e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2322
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2325 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b76f70, {0xaa2a48, 0x3ab331dfb6d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2324
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2328 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b771e0, {0xaa2a48, 0x3ab331dfb810})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2327
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2330 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d165b0, {0xaa2a48, 0x3ab331dfb900})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2329
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2332 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d16820, {0xaa2a48, 0x3ab331dfb9f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2331
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2336 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d16d00, {0xaa2a48, 0x3ab331dfbdb0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2335
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2338 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d16f70, {0xaa2a48, 0x3ab331aea0a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2337
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2340 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d171e0, {0xaa2a48, 0x3ab331aea500})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2339
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2342 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d17450, {0xaa2a48, 0x3ab331aea960})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2341
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2344 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d176c0, {0xaa2a48, 0x3ab331aeaaa0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2343
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2346 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d17930, {0xaa2a48, 0x3ab331aeac80})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2345
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2347 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d17ba0, {0xaa2a48, 0x3ab331aead70})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2345
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2349 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d17e10, {0xaa2a48, 0x3ab331aeaf50})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2348
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712591 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f389c0, {0xaa2a48, 0x3ab331bffbd0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712590
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2498 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ba01a0, {0xaa2a48, 0x3ab331aeba90})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2484
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2512 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b0a9c0, {0xaa2a48, 0x3ab331b1c370})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2511
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2508 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b0a4e0, {0xaa2a48, 0x3ab331b1c0f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2507
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2505 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b0a270, {0xaa2a48, 0x3ab331aebe50})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2504
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2503 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b0a000, {0xaa2a48, 0x3ab331aebd10})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2502
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2534 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d080d0, {0xaa2a48, 0x3ab331b1cd20})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2533
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2530 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b0bad0, {0xaa2a48, 0x3ab331b1cb40})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2529
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2532 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b0bd40, {0xaa2a48, 0x3ab331b1cc30})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2531
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2536 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d08410, {0xaa2a48, 0x3ab331b1ce10})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2535
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2543 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d08c30, {0xaa2a48, 0x3ab331b1d180})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2542
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2539 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d08750, {0xaa2a48, 0x3ab331b1cfa0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2538
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2541 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d089c0, {0xaa2a48, 0x3ab331b1d090})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2540
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2545 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d08ea0, {0xaa2a48, 0x3ab331b1d270})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2544
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4422 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b84c30, {0xaa2a48, 0x3ab331b1d130})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4421
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708712 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e211e0, {0xaa2a48, 0x3ab331dfbe00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708711
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708672 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331da6680, {0xaa2a48, 0x3ab331dfa050})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708671
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5909 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d644e0, {0xaa2a48, 0x3ab331aea370})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5908
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5891 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e3dc70, {0xaa2a48, 0x3ab331a55770})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5890
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2713 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d65e10, {0xaa2a48, 0x3ab331d81180})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2712
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712697 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f63930, {0xaa2a48, 0x3ab331d9acd0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712696
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2711 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d65ba0, {0xaa2a48, 0x3ab331d81090})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2710
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712797 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cdfa00, {0xaa2a48, 0x3ab331a55db0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712796
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2709 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d65930, {0xaa2a48, 0x3ab331d80fa0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2708
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5919 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d65040, {0xaa2a48, 0x3ab331aeaeb0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5918
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713119 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331bb6340, {0xaa2a48, 0x3ab331b1d900})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713118
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712699 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f63ba0, {0xaa2a48, 0x3ab331d9ae60})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712698
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712849 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331dcd2b0, {0xaa2a48, 0x3ab331aea730})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712848
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712957 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c449c0, {0xaa2a48, 0x3ab331bfe0f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712956
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712833 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331dcc1a0, {0xaa2a48, 0x3ab331ed56d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712832
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712765 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c45450, {0xaa2a48, 0x3ab331a54820})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712764
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708657 [chan receive, 1 minutes]:
+testing.(*T).Parallel(0x3ab331d3afc8)
+	/usr/lib/go-1.26/src/testing/testing.go:1803 +0x230
+catalogizer/repository.TestPickBestStreamableFile(0x3ab331d3afc8)
+	/home/milosvasic/.cache/claude-tmp/pgtx1/catalog-api/repository/media_file_repository_test.go:396 +0x2a
+testing.tRunner(0x3ab331d3afc8, 0xa96338)
+	/usr/lib/go-1.26/src/testing/testing.go:2036 +0xea
+created by testing.(*T).Run in goroutine 1
+	/usr/lib/go-1.26/src/testing/testing.go:2101 +0x4c5
+
+goroutine 5712703 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a721a0, {0xaa2a48, 0x3ab331d9b0e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712702
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708703 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e20820, {0xaa2a48, 0x3ab331dfb590})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708702
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5716920 [select]:
+database/sql.(*DB).connectionOpener(0x3ab331fab2b0, {0xaa2a48, 0x3ab331bff270})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5716919
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712601 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f39450, {0xaa2a48, 0x3ab331e903c0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712600
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712596 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f38f70, {0xaa2a48, 0x3ab331e900f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712595
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712541 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ee9520, {0xaa2a48, 0x3ab331e915e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712540
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708191 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b45ad0, {0xaa2a48, 0x3ab331ed4f00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708190
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712598 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f391e0, {0xaa2a48, 0x3ab331e90280})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712597
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713112 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b1fa00, {0xaa2a48, 0x3ab331b1d4a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713111
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712736 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b94d00, {0xaa2a48, 0x3ab331b96870})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712735
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708623 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c65380, {0xaa2a48, 0x3ab331aeb220})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708622
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712671 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f62f70, {0xaa2a48, 0x3ab331b1de50})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712670
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712900 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331eaf5f0, {0xaa2a48, 0x3ab331d80730})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712899
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712544 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ee9790, {0xaa2a48, 0x3ab331e91720})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712543
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712844 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331dccdd0, {0xaa2a48, 0x3ab331aea0f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712843
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5720225 [select]:
+database/sql.(*DB).connectionOpener(0x3ab3320c2a90, {0xaa2a48, 0x3ab331a54000})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5720224
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708674 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331da68f0, {0xaa2a48, 0x3ab331dfa280})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708673
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713558 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab3320932b0, {0xaa2a48, 0x3ab331a55c70})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713557
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713097 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b1e8f0, {0xaa2a48, 0x3ab331b1c690})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713096
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708215 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331faedd0, {0xaa2a48, 0x3ab331ed5c70})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708214
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5710907 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d61930, {0xaa2a48, 0x3ab331d81d10})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5710906
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713547 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab332092410, {0xaa2a48, 0x3ab331a55040})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713546
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713136 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331bb7450, {0xaa2a48, 0x3ab331d9a410})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713135
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708696 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e200d0, {0xaa2a48, 0x3ab331dfb0e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708695
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708630 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c65ad0, {0xaa2a48, 0x3ab331aeb8b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708629
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712799 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cdfd40, {0xaa2a48, 0x3ab331ed40f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712798
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712586 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f38410, {0xaa2a48, 0x3ab331bff860})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712585
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712726 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b94000, {0xaa2a48, 0x3ab331d9bd60})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712725
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708204 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e3cd00, {0xaa2a48, 0x3ab331ed55e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708203
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712713 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a72dd0, {0xaa2a48, 0x3ab331d9b680})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712712
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712641 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f62340, {0xaa2a48, 0x3ab331b1c960})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712640
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708652 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d391e0, {0xaa2a48, 0x3ab331a7aaf0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708651
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712579 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c64340, {0xaa2a48, 0x3ab331bff310})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712578
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712831 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d31e10, {0xaa2a48, 0x3ab331ed5590})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712830
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708213 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331fae8f0, {0xaa2a48, 0x3ab331ed5b30})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708212
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712792 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cdf380, {0xaa2a48, 0x3ab331a55860})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712791
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5878 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e3cb60, {0xaa2a48, 0x3ab331a551d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5877
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4393 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e3c820, {0xaa2a48, 0x3ab331aeb6d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4392
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4391 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e3c5b0, {0xaa2a48, 0x3ab331aeb400})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4390
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4245 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c40340, {0xaa2a48, 0x3ab331a55900})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4244
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4247 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c405b0, {0xaa2a48, 0x3ab331a55a40})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4246
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4250 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c40820, {0xaa2a48, 0x3ab331a55b80})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4249
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4252 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c40a90, {0xaa2a48, 0x3ab331a55cc0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4251
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4256 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c41110, {0xaa2a48, 0x3ab331b1c1e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4255
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4254 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c40dd0, {0xaa2a48, 0x3ab331b1c000})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4253
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4403 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c41380, {0xaa2a48, 0x3ab331b1c3c0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4402
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4405 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c416c0, {0xaa2a48, 0x3ab331b1c640})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4404
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4407 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c41930, {0xaa2a48, 0x3ab331b1c820})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4406
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4410 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c41ba0, {0xaa2a48, 0x3ab331b1c9b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4409
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4412 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c41e10, {0xaa2a48, 0x3ab331b1caf0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4411
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4415 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cf7860, {0xaa2a48, 0x3ab331b1ccd0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4414
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5706794 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c9a8f0, {0xaa2a48, 0x3ab331bfe7d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5706793
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5876 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e3c410, {0xaa2a48, 0x3ab331a550e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5875
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708654 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d39450, {0xaa2a48, 0x3ab331a7ae10})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708653
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712615 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f4e410, {0xaa2a48, 0x3ab331e90be0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712614
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712950 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b94680, {0xaa2a48, 0x3ab331dfb4a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712949
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712953 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b95790, {0xaa2a48, 0x3ab331dfb8b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712952
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5706790 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c9a410, {0xaa2a48, 0x3ab331bfe550})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5706789
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713138 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331bb76c0, {0xaa2a48, 0x3ab331d9a5a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713137
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712561 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d60820, {0xaa2a48, 0x3ab331bfe820})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712560
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712669 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f62d00, {0xaa2a48, 0x3ab331b1dd10})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712668
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708691 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331da7ad0, {0xaa2a48, 0x3ab331dfadc0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708690
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708225 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331fd81a0, {0xaa2a48, 0x3ab331bfe2d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708224
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5706798 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c9add0, {0xaa2a48, 0x3ab331bfea50})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5706797
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5917 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d64c30, {0xaa2a48, 0x3ab331aeaa00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5916
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5914 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d649c0, {0xaa2a48, 0x3ab331aea7d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5913
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5905 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d64000, {0xaa2a48, 0x3ab331aea190})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5904
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5912 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d64750, {0xaa2a48, 0x3ab331aea640})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5911
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5898 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d09ad0, {0xaa2a48, 0x3ab331a55bd0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5897
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5903 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c40d00, {0xaa2a48, 0x3ab331aea050})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5902
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5901 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d09d40, {0xaa2a48, 0x3ab331a55e00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5900
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5881 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e3d110, {0xaa2a48, 0x3ab331a55310})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5880
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5886 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e3d790, {0xaa2a48, 0x3ab331a55540})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5885
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5888 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e3da00, {0xaa2a48, 0x3ab331a55630})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5887
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5896 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d09860, {0xaa2a48, 0x3ab331a55a90})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5895
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5883 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e3d520, {0xaa2a48, 0x3ab331a55400})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5882
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5907 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d64270, {0xaa2a48, 0x3ab331aea280})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5906
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5873 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e3c1a0, {0xaa2a48, 0x3ab331a54ff0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5872
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4432 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d09380, {0xaa2a48, 0x3ab331b1d770})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4431
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4430 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d09110, {0xaa2a48, 0x3ab331b1d680})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4429
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4427 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c240d0, {0xaa2a48, 0x3ab331b1d4f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4426
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4425 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b85d40, {0xaa2a48, 0x3ab331b1d360})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4424
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4420 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331dab110, {0xaa2a48, 0x3ab331b1cff0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4419
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 4417 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331daa680, {0xaa2a48, 0x3ab331b1ce60})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 4416
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712878 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e4f520, {0xaa2a48, 0x3ab331a7b040})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712877
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5720224 [runnable]:
+github.com/mutecomm/go-sqlcipher._Cfunc__sqlite3_step(0x7619e4865208, 0x3ab3319e2f90, 0x3ab3319e2f98)
+	_cgo_gotypes.go:175 +0x46
+github.com/mutecomm/go-sqlcipher.(*SQLiteStmt).exec.func4(...)
+	/home/milosvasic/go/pkg/mod/github.com/mutecomm/go-sqlcipher@v0.0.0-20190227152316-55dbde17881f/sqlite3.go:681
+github.com/mutecomm/go-sqlcipher.(*SQLiteStmt).exec(0x3ab331eb0180, {0xaa2930, 0xeb2b80}, {0xeb2b80?, 0x761a3106c108?, 0x3000000000070?})
+	/home/milosvasic/go/pkg/mod/github.com/mutecomm/go-sqlcipher@v0.0.0-20190227152316-55dbde17881f/sqlite3.go:681 +0x205
+github.com/mutecomm/go-sqlcipher.(*SQLiteConn).exec(0x3ab331cc5b40, {0xaa2930, 0xeb2b80}, {0xa6df54?, 0x7619e3af5e28?}, {0xeb2b80?, 0x0?, 0x3ab331cc5b40?})
+	/home/milosvasic/go/pkg/mod/github.com/mutecomm/go-sqlcipher@v0.0.0-20190227152316-55dbde17881f/sqlite3.go:234 +0x159
+github.com/mutecomm/go-sqlcipher.(*SQLiteConn).Exec(0x3ab331cc5b40, {0xa6df54, 0x5d}, {0xeb2b80, 0x0, 0x0?})
+	/home/milosvasic/go/pkg/mod/github.com/mutecomm/go-sqlcipher@v0.0.0-20190227152316-55dbde17881f/sqlite3.go:214 +0x149
+database/sql.ctxDriverExec({0xaa2930, 0xeb2b80}, {0x0?, 0x3ab331cc5b40?}, {0x7619e80f1c20, 0x3ab331cc5b40}, {0xa6df54, 0x5d}, {0xeb2b80, 0x0, ...})
+	/usr/lib/go-1.26/src/database/sql/ctxutil.go:43 +0x21d
+database/sql.(*DB).execDC.func2()
+	/usr/lib/go-1.26/src/database/sql/sql.go:1713 +0x15c
+database/sql.withLock({0xaa1098, 0x3ab3320c4280}, 0x3ab331f79570)
+	/usr/lib/go-1.26/src/database/sql/sql.go:3572 +0x71
+database/sql.(*DB).execDC(0x5a3001?, {0xaa2930, 0xeb2b80}, 0x3ab3320c4280, 0x48c89f?, {0xa6df54, 0x5d}, {0x0, 0x0, 0x0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1708 +0x1f6
+database/sql.(*DB).exec(0x3ab3320c2a90, {0xaa2930, 0xeb2b80}, {0xa6df54, 0x5d}, {0x0, 0x0, 0x0}, 0xaa?)
+	/usr/lib/go-1.26/src/database/sql/sql.go:1693 +0xcf
+database/sql.(*DB).ExecContext.func1(0xce?)
+	/usr/lib/go-1.26/src/database/sql/sql.go:1672 +0x4f
+database/sql.(*DB).retry(0x3ab331ba4340?, 0x3ab331f79760)
+	/usr/lib/go-1.26/src/database/sql/sql.go:1576 +0x42
+database/sql.(*DB).ExecContext(0x3ab331e6a420?, {0xaa2930?, 0xeb2b80?}, {0xa6df54?, 0x0?}, {0x0?, 0x3ab331da0998?, 0x5a7300?})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1671 +0x9b
+catalogizer/database.(*DB).ExecContext(0x3ab331e6a420, {0xaa2930, 0xeb2b80}, {0xa6df54?, 0x0?}, {0x0, 0x0, 0x0})
+	/home/milosvasic/.cache/claude-tmp/pgtx1/catalog-api/database/connection.go:166 +0x7a
+catalogizer/database.(*DB).createRuntimeTables(0x3ab331e6a420, {0xaa2930, 0xeb2b80})
+	/home/milosvasic/.cache/claude-tmp/pgtx1/catalog-api/database/migrations_v22_runtime_tables.go:34 +0xe5
+catalogizer/database.(*DB).runMigration(0x3ab331e6a420, {0xaa2930, 0xeb2b80}, {0x3ab3320c4280?, {0xa45104?, 0x3ab3319e30c0?}, 0x3ab331d0f3d0?})
+	/home/milosvasic/.cache/claude-tmp/pgtx1/catalog-api/database/migrations.go:83 +0x135
+catalogizer/database.(*DB).RunMigrations(0x3ab331e6a420, {0xaa2930, 0xeb2b80})
+	/home/milosvasic/.cache/claude-tmp/pgtx1/catalog-api/database/migrations.go:48 +0x9a9
+catalogizer/repository.TestPGLAX1F7_UserWriteGuards_SingleConnectionPoolDoesNotHang.func1(0x3ab331ae2b48)
+	/home/milosvasic/.cache/claude-tmp/pgtx1/catalog-api/repository/user_repository_pglax1_f7_singleconn_test.go:25 +0x179
+testing.tRunner(0x3ab331ae2b48, 0x3ab331f9c768)
+	/usr/lib/go-1.26/src/testing/testing.go:2036 +0xea
+created by testing.(*T).Run in goroutine 5719153
+	/usr/lib/go-1.26/src/testing/testing.go:2101 +0x4c5
+
+goroutine 5712733 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b94a90, {0xaa2a48, 0x3ab331b96640})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712732
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708202 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d65860, {0xaa2a48, 0x3ab331ed54f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708201
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712710 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a72a90, {0xaa2a48, 0x3ab331d9b540})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712709
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713567 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab332093a00, {0xaa2a48, 0x3ab331ed4690})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713566
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708639 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d385b0, {0xaa2a48, 0x3ab331a7a0f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708638
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712892 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331eae8f0, {0xaa2a48, 0x3ab331d80050})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712891
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712722 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a73a00, {0xaa2a48, 0x3ab331d9bae0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712721
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713131 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331bb6f70, {0xaa2a48, 0x3ab331d9a050})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713130
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712802 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d300d0, {0xaa2a48, 0x3ab331ed42d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712801
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712756 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c44a90, {0xaa2a48, 0x3ab331a540f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712755
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5720275 [select]:
+database/sql.(*DB).connectionCleaner(0x3ab3320c2a90, 0x7619e5a33e08?)
+	/usr/lib/go-1.26/src/database/sql/sql.go:1104 +0x9e
+created by database/sql.(*DB).startCleanerLocked in goroutine 5720224
+	/usr/lib/go-1.26/src/database/sql/sql.go:1091 +0x105
+
+goroutine 5713155 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c5a8f0, {0xaa2a48, 0x3ab331d9b220})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713154
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708710 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e20f70, {0xaa2a48, 0x3ab331dfbc70})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708709
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712823 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d316c0, {0xaa2a48, 0x3ab331ed50e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712822
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5706796 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c9ab60, {0xaa2a48, 0x3ab331bfe910})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5706795
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712826 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d31930, {0xaa2a48, 0x3ab331ed5270})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712825
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712856 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331dcdad0, {0xaa2a48, 0x3ab331aeb0e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712855
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5893 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d095f0, {0xaa2a48, 0x3ab331a558b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5892
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5719153 [chan receive]:
+testing.(*T).Run(0x3ab331fa1208, {0xa3eefe?, 0xb50acd?}, 0x3ab331f9c768)
+	/usr/lib/go-1.26/src/testing/testing.go:2109 +0x4e5
+catalogizer/repository.TestPGLAX1F7_UserWriteGuards_SingleConnectionPoolDoesNotHang(0x3ab331fa1208)
+	/home/milosvasic/.cache/claude-tmp/pgtx1/catalog-api/repository/user_repository_pglax1_f7_singleconn_test.go:21 +0x90
+testing.tRunner(0x3ab331fa1208, 0xa962e0)
+	/usr/lib/go-1.26/src/testing/testing.go:2036 +0xea
+created by testing.(*T).Run in goroutine 1
+	/usr/lib/go-1.26/src/testing/testing.go:2101 +0x4c5
+
+goroutine 5712763 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c451e0, {0xaa2a48, 0x3ab331a546e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712762
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712758 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c44d00, {0xaa2a48, 0x3ab331a54230})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712757
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713100 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b1ec30, {0xaa2a48, 0x3ab331b1ca50})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713099
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712539 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ee92b0, {0xaa2a48, 0x3ab331e914f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712538
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712522 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c64dd0, {0xaa2a48, 0x3ab331e90c80})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712521
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712876 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e4f2b0, {0xaa2a48, 0x3ab331a7ad20})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712875
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712565 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c9b860, {0xaa2a48, 0x3ab331bfea00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712564
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712532 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ee8b60, {0xaa2a48, 0x3ab331e91130})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712531
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708249 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331fd96c0, {0xaa2a48, 0x3ab331d80280})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708248
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5706792 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c9a680, {0xaa2a48, 0x3ab331bfe690})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5706791
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5716902 [select]:
+database/sql.(*DB).connectionOpener(0x3ab331faa410, {0xaa2a48, 0x3ab331dfb450})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5716901
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5710998 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331faed00, {0xaa2a48, 0x3ab331bff6d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5710997
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712584 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f381a0, {0xaa2a48, 0x3ab331bff770})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712583
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708174 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d60dd0, {0xaa2a48, 0x3ab331bff360})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708173
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713126 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331bb6a90, {0xaa2a48, 0x3ab331b1dc20})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713125
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713539 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c5b930, {0xaa2a48, 0x3ab331a54960})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713538
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713579 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab3320c2000, {0xaa2a48, 0x3ab331ed5090})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713578
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5720481 [select]:
+github.com/mutecomm/go-sqlcipher.(*SQLiteStmt).exec.func3(0x7619e5a33e08)
+	/home/milosvasic/go/pkg/mod/github.com/mutecomm/go-sqlcipher@v0.0.0-20190227152316-55dbde17881f/sqlite3.go:673 +0x69
+created by github.com/mutecomm/go-sqlcipher.(*SQLiteStmt).exec in goroutine 5720224
+	/home/milosvasic/go/pkg/mod/github.com/mutecomm/go-sqlcipher@v0.0.0-20190227152316-55dbde17881f/sqlite3.go:672 +0x185
+
+goroutine 5712962 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a60000, {0xaa2a48, 0x3ab331bfe4b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712961
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5711089 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c65110, {0xaa2a48, 0x3ab331b96af0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5711088
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712880 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e4f790, {0xaa2a48, 0x3ab331a7b3b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712879
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712863 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e4e410, {0xaa2a48, 0x3ab331aeb7c0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712862
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712608 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f39ba0, {0xaa2a48, 0x3ab331e90730})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712607
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708693 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331da7d40, {0xaa2a48, 0x3ab331dfaf00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708692
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713128 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331bb6d00, {0xaa2a48, 0x3ab331b1dd60})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713127
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708642 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d38820, {0xaa2a48, 0x3ab331a7a280})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708641
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712574 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331fd8410, {0xaa2a48, 0x3ab331bfeff0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712573
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712617 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f4e680, {0xaa2a48, 0x3ab331e90eb0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712616
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712474 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331faa1a0, {0xaa2a48, 0x3ab331d80a50})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712473
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5716906 [select]:
+database/sql.(*DB).connectionOpener(0x3ab331faa680, {0xaa2a48, 0x3ab331dfbb80})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5716905
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708195 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d61e10, {0xaa2a48, 0x3ab331ed5180})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708194
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712729 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b94270, {0xaa2a48, 0x3ab331b96230})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712728
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713090 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b1e1a0, {0xaa2a48, 0x3ab331e91e00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713089
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712634 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f4fad0, {0xaa2a48, 0x3ab331b1c410})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712633
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708669 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331da6410, {0xaa2a48, 0x3ab331a7bd10})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708668
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712637 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f4fd40, {0xaa2a48, 0x3ab331b1c5f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712636
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712778 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cde410, {0xaa2a48, 0x3ab331a54fa0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712777
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713545 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab3320921a0, {0xaa2a48, 0x3ab331a54e10})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713544
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713114 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b1fc70, {0xaa2a48, 0x3ab331b1d5e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713113
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5710910 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d61a00, {0xaa2a48, 0x3ab331d81e00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5710909
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712760 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c44f70, {0xaa2a48, 0x3ab331a54410})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712759
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712548 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ee9ad0, {0xaa2a48, 0x3ab331e919a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712547
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712745 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b95860, {0xaa2a48, 0x3ab331b96ff0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712744
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5710881 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d611e0, {0xaa2a48, 0x3ab331d81c20})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5710880
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712767 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c456c0, {0xaa2a48, 0x3ab331a54910})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712766
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712570 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c9bc70, {0xaa2a48, 0x3ab331bfecd0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712569
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712888 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331eae410, {0xaa2a48, 0x3ab331a7bc20})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712887
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708163 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c9b520, {0xaa2a48, 0x3ab331bfed20})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708162
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712966 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a604e0, {0xaa2a48, 0x3ab331bfe780})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712965
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713143 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331bb7ba0, {0xaa2a48, 0x3ab331d9a9b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713142
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712627 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f4f2b0, {0xaa2a48, 0x3ab331e91db0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712626
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713116 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331bb60d0, {0xaa2a48, 0x3ab331b1d7c0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713115
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712955 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c444e0, {0xaa2a48, 0x3ab331dfbcc0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712954
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708649 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d38f70, {0xaa2a48, 0x3ab331a7a820})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708648
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713140 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331bb7930, {0xaa2a48, 0x3ab331d9a730})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713139
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712806 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d305b0, {0xaa2a48, 0x3ab331ed4640})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712805
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712968 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a60750, {0xaa2a48, 0x3ab331bfe960})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712967
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708219 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331faf520, {0xaa2a48, 0x3ab331ed5e50})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708218
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708211 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331fae410, {0xaa2a48, 0x3ab331ed59f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708210
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712804 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d30340, {0xaa2a48, 0x3ab331ed44b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712803
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712577 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331fd9e10, {0xaa2a48, 0x3ab331bff180})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712576
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712528 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ee8680, {0xaa2a48, 0x3ab331e90f50})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712527
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712706 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a72410, {0xaa2a48, 0x3ab331d9b2c0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712705
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712867 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e4e8f0, {0xaa2a48, 0x3ab331aebc20})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712866
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708644 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d38a90, {0xaa2a48, 0x3ab331a7a460})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708643
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713574 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab332093c70, {0xaa2a48, 0x3ab331ed4b40})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713573
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708676 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331da6b60, {0xaa2a48, 0x3ab331dfa4b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708675
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712785 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cdec30, {0xaa2a48, 0x3ab331a55450})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712784
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5710871 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d60c30, {0xaa2a48, 0x3ab331d81b30})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5710870
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708171 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d608f0, {0xaa2a48, 0x3ab331bff220})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708170
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713519 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c5b450, {0xaa2a48, 0x3ab331a545f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713518
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712644 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f625b0, {0xaa2a48, 0x3ab331b1cc80})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712643
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708193 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b45d40, {0xaa2a48, 0x3ab331ed5040})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708192
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708686 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331da75f0, {0xaa2a48, 0x3ab331dfaaf0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708685
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708665 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d39e10, {0xaa2a48, 0x3ab331a7b950})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708664
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708146 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b44410, {0xaa2a48, 0x3ab331ed4aa0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708145
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708656 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d396c0, {0xaa2a48, 0x3ab331a7b130})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708655
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712589 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f38680, {0xaa2a48, 0x3ab331bffa40})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712588
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712603 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f396c0, {0xaa2a48, 0x3ab331e904b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712602
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712724 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a73c70, {0xaa2a48, 0x3ab331d9bc20})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712723
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712781 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cde680, {0xaa2a48, 0x3ab331a55180})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712780
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708632 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c65d40, {0xaa2a48, 0x3ab331aeba40})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708631
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713543 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c5be10, {0xaa2a48, 0x3ab331a54c80})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713542
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5706801 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c9b040, {0xaa2a48, 0x3ab331bfebe0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5706800
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708180 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b44270, {0xaa2a48, 0x3ab331ed4050})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708179
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712886 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331eae1a0, {0xaa2a48, 0x3ab331a7ba40})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712885
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713517 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c5b1e0, {0xaa2a48, 0x3ab331a544b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713516
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708707 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e20d00, {0xaa2a48, 0x3ab331dfba40})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708706
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712530 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ee88f0, {0xaa2a48, 0x3ab331e91040})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712529
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713093 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b1e410, {0xaa2a48, 0x3ab331b1c190})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713092
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713521 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c5b6c0, {0xaa2a48, 0x3ab331a54780})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713520
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713095 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b1e680, {0xaa2a48, 0x3ab331b1c460})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713094
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712946 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a72680, {0xaa2a48, 0x3ab331dfaeb0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712945
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712526 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ee8410, {0xaa2a48, 0x3ab331e90e60})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712525
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708186 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b455f0, {0xaa2a48, 0x3ab331ed47d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708185
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712973 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a60c30, {0xaa2a48, 0x3ab331bfef00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712972
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713124 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331bb6820, {0xaa2a48, 0x3ab331b1db30})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713123
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712747 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b95c70, {0xaa2a48, 0x3ab331b97590})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712746
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708182 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b44d00, {0xaa2a48, 0x3ab331ed4320})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708181
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708698 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e20340, {0xaa2a48, 0x3ab331dfb220})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708697
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712468 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331eaf860, {0xaa2a48, 0x3ab331dfa0f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712467
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5716914 [select]:
+database/sql.(*DB).connectionOpener(0x3ab331fab040, {0xaa2a48, 0x3ab331bfe500})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5716913
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708679 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331da6dd0, {0xaa2a48, 0x3ab331dfa690})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708678
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712861 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e4e1a0, {0xaa2a48, 0x3ab331aeb630})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712860
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712620 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f4e8f0, {0xaa2a48, 0x3ab331e91090})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712619
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5710970 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b441a0, {0xaa2a48, 0x3ab331ed40a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5710969
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712630 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f4f5f0, {0xaa2a48, 0x3ab331b1c0a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712629
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712754 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c44750, {0xaa2a48, 0x3ab331b97bd0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712753
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708705 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e20a90, {0xaa2a48, 0x3ab331dfb7c0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708704
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708700 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e205b0, {0xaa2a48, 0x3ab331dfb360})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708699
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713107 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b1f380, {0xaa2a48, 0x3ab331b1d1d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713106
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708681 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331da7110, {0xaa2a48, 0x3ab331dfa820})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708680
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712738 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b94f70, {0xaa2a48, 0x3ab331b969b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712737
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708625 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c655f0, {0xaa2a48, 0x3ab331aeb360})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708624
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712708 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a72750, {0xaa2a48, 0x3ab331d9b400})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712707
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712581 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c64d00, {0xaa2a48, 0x3ab331bff540})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712580
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708628 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c65860, {0xaa2a48, 0x3ab331aeb5e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708627
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708240 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331fd8d00, {0xaa2a48, 0x3ab331bffcc0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708239
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5711058 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c64a90, {0xaa2a48, 0x3ab331b96550})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5711057
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712872 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e4edd0, {0xaa2a48, 0x3ab331a7a4b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712871
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712816 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d30f70, {0xaa2a48, 0x3ab331ed4cd0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712815
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713105 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b1f110, {0xaa2a48, 0x3ab331b1cf00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713104
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712749 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c44000, {0xaa2a48, 0x3ab331b97720})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712748
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712720 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a73790, {0xaa2a48, 0x3ab331d9b9a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712719
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712809 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d30820, {0xaa2a48, 0x3ab331ed48c0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712808
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708247 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331fd9450, {0xaa2a48, 0x3ab331d80190})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708246
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713121 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331bb65b0, {0xaa2a48, 0x3ab331b1d9f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713120
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708184 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b45380, {0xaa2a48, 0x3ab331ed46e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708183
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708660 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d39930, {0xaa2a48, 0x3ab331a7b4f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708659
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712646 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f62a90, {0xaa2a48, 0x3ab331b1d040})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712645
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712858 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331dcdd40, {0xaa2a48, 0x3ab331aeb270})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712857
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708245 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331fd91e0, {0xaa2a48, 0x3ab331d800a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708244
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712534 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ee8dd0, {0xaa2a48, 0x3ab331e91220})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712533
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712752 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c44270, {0xaa2a48, 0x3ab331b979f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712751
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713110 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b1f5f0, {0xaa2a48, 0x3ab331b1d3b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713109
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708667 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331da61a0, {0xaa2a48, 0x3ab331a7bb30})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708666
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712783 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cde9c0, {0xaa2a48, 0x3ab331a552c0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712782
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713145 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331bb7e10, {0xaa2a48, 0x3ab331d9ab40})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713144
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712842 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331dccb60, {0xaa2a48, 0x3ab331ed5db0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712841
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712971 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a609c0, {0xaa2a48, 0x3ab331bfeb90})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712970
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712795 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cdf5f0, {0xaa2a48, 0x3ab331a55b30})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712794
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708217 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331faf2b0, {0xaa2a48, 0x3ab331ed5d60})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708216
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712776 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cde1a0, {0xaa2a48, 0x3ab331a54eb0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712775
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713563 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab332093790, {0xaa2a48, 0x3ab331ed4370})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713562
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712818 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d311e0, {0xaa2a48, 0x3ab331ed4e10})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712817
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712552 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e21520, {0xaa2a48, 0x3ab331bfe230})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712551
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712898 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331eaf040, {0xaa2a48, 0x3ab331d80640})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712897
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708688 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331da7860, {0xaa2a48, 0x3ab331dfac30})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708687
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708149 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b44680, {0xaa2a48, 0x3ab331ed4be0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708148
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713102 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b1eea0, {0xaa2a48, 0x3ab331b1cbe0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713101
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713550 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab3320928f0, {0xaa2a48, 0x3ab331a55360})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713548
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708167 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d60270, {0xaa2a48, 0x3ab331bfefa0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708166
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713556 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab332093040, {0xaa2a48, 0x3ab331a559a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713555
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712731 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b94750, {0xaa2a48, 0x3ab331b96410})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712730
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708635 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d380d0, {0xaa2a48, 0x3ab331aebcc0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708634
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712788 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cdeea0, {0xaa2a48, 0x3ab331a555e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712787
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712715 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a73110, {0xaa2a48, 0x3ab331d9b770})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712714
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712605 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f39930, {0xaa2a48, 0x3ab331e905a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712604
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712743 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b95450, {0xaa2a48, 0x3ab331b96d20})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712742
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713551 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab332092b60, {0xaa2a48, 0x3ab331a554a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713548
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713085 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a61ad0, {0xaa2a48, 0x3ab331e91b80})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713084
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708197 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d64f70, {0xaa2a48, 0x3ab331ed52c0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708196
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712894 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331eaeb60, {0xaa2a48, 0x3ab331d802d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712893
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712939 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c641a0, {0xaa2a48, 0x3ab331dfa870})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712938
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712769 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c45930, {0xaa2a48, 0x3ab331a54a50})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712768
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708209 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c9bd40, {0xaa2a48, 0x3ab331ed58b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708208
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712941 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f38c30, {0xaa2a48, 0x3ab331dfaa50})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712940
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712840 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331dcc8f0, {0xaa2a48, 0x3ab331ed5c20})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712839
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713604 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331faab60, {0xaa2a48, 0x3ab331aea910})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713603
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712821 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d31450, {0xaa2a48, 0x3ab331ed4fa0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712820
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5711014 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331fd8c30, {0xaa2a48, 0x3ab331bff9a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5711013
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708662 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d39ba0, {0xaa2a48, 0x3ab331a7b680})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708661
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712828 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d31ba0, {0xaa2a48, 0x3ab331ed53b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712827
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708189 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b45860, {0xaa2a48, 0x3ab331ed4dc0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708188
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708221 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331faf790, {0xaa2a48, 0x3ab331bfe050})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708220
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712790 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cdf110, {0xaa2a48, 0x3ab331a55720})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712789
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712811 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d30a90, {0xaa2a48, 0x3ab331ed4a00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712810
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713549 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab332092680, {0xaa2a48, 0x3ab331a55220})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713548
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713088 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a61d40, {0xaa2a48, 0x3ab331e91cc0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713087
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712943 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f4f520, {0xaa2a48, 0x3ab331dfabe0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712942
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712884 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e4fe10, {0xaa2a48, 0x3ab331a7b860})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712883
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708176 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d612b0, {0xaa2a48, 0x3ab331bff4f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708175
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712470 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331eafad0, {0xaa2a48, 0x3ab331d80870})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712469
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713554 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab332092dd0, {0xaa2a48, 0x3ab331a556d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713553
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5716910 [select]:
+database/sql.(*DB).connectionOpener(0x3ab331faadd0, {0xaa2a48, 0x3ab331bfe140})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5716909
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712870 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e4eb60, {0xaa2a48, 0x3ab331a7a140})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712869
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708207 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c9a000, {0xaa2a48, 0x3ab331ed5770})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708206
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712890 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331eae680, {0xaa2a48, 0x3ab331a7be00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712889
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712838 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331dcc680, {0xaa2a48, 0x3ab331ed59a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712837
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712673 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f631e0, {0xaa2a48, 0x3ab331d9a190})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712672
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5711042 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c64680, {0xaa2a48, 0x3ab331b960f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5711041
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712948 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a73040, {0xaa2a48, 0x3ab331dfb1d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712947
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712593 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f38d00, {0xaa2a48, 0x3ab331bffe00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712592
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5710983 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b45110, {0xaa2a48, 0x3ab331ed41e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5710982
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712622 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f4eb60, {0xaa2a48, 0x3ab331e91ae0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712621
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712625 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f4edd0, {0xaa2a48, 0x3ab331e91c70})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712624
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712851 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331dcd520, {0xaa2a48, 0x3ab331aeaaf0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712850
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713560 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab332093520, {0xaa2a48, 0x3ab331ed4000})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713559
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712896 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331eaedd0, {0xaa2a48, 0x3ab331d80410})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712895
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712874 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e4f040, {0xaa2a48, 0x3ab331a7a910})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712873
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713541 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c5bba0, {0xaa2a48, 0x3ab331a54af0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713540
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708165 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c9ba00, {0xaa2a48, 0x3ab331bfee60})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708164
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713535 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331faa8f0, {0xaa2a48, 0x3ab331aea140})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713534
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712572 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331fafba0, {0xaa2a48, 0x3ab331bfee10})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712571
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712959 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331cdfc70, {0xaa2a48, 0x3ab331bfe370})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712958
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713157 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c5ab60, {0xaa2a48, 0x3ab331d9b450})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713156
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713152 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c5a680, {0xaa2a48, 0x3ab331d9b040})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713151
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713584 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab3320c2270, {0xaa2a48, 0x3ab331ed5630})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713583
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708243 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331fd8f70, {0xaa2a48, 0x3ab331bffea0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708242
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712524 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ee81a0, {0xaa2a48, 0x3ab331e90d70})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712523
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712975 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a60ea0, {0xaa2a48, 0x3ab331bff1d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712974
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712854 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331dcd790, {0xaa2a48, 0x3ab331aeadc0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712853
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713150 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c5a410, {0xaa2a48, 0x3ab331d9af00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713149
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712632 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f4f860, {0xaa2a48, 0x3ab331b1c280})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712631
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712814 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d30d00, {0xaa2a48, 0x3ab331ed4b90})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712813
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713148 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c5a1a0, {0xaa2a48, 0x3ab331d9ad70})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713147
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708178 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d61ad0, {0xaa2a48, 0x3ab331bff680})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708177
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712610 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f39e10, {0xaa2a48, 0x3ab331e908c0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712609
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712847 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331dcd040, {0xaa2a48, 0x3ab331aea320})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712846
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5710954 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331fae270, {0xaa2a48, 0x3ab331bff4a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5710953
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712557 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ee9e10, {0xaa2a48, 0x3ab331bfe5a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712556
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708200 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d65450, {0xaa2a48, 0x3ab331ed5400})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708199
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708236 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331fd84e0, {0xaa2a48, 0x3ab331bff9f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708235
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712774 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c45e10, {0xaa2a48, 0x3ab331a54cd0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712773
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712717 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a73450, {0xaa2a48, 0x3ab331d9b860})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712716
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712865 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e4e680, {0xaa2a48, 0x3ab331aeb9a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712864
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712882 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331e4fad0, {0xaa2a48, 0x3ab331a7b630})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712881
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712536 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331ee9040, {0xaa2a48, 0x3ab331e91360})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712535
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712701 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f63e10, {0xaa2a48, 0x3ab331d9afa0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712700
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712964 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331a60270, {0xaa2a48, 0x3ab331bfe640})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712963
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708251 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331fd9930, {0xaa2a48, 0x3ab331d80370})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708250
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712472 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331eafd40, {0xaa2a48, 0x3ab331d80960})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712471
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712835 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331dcc410, {0xaa2a48, 0x3ab331ed5810})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712834
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712688 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f63450, {0xaa2a48, 0x3ab331d9a820})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712687
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5711031 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c64410, {0xaa2a48, 0x3ab331bffdb0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5711030
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708223 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331fafe10, {0xaa2a48, 0x3ab331bfe1e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708222
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712771 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c45ba0, {0xaa2a48, 0x3ab331a54b40})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712770
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708683 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331da7380, {0xaa2a48, 0x3ab331dfa960})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708682
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5711072 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331c64ea0, {0xaa2a48, 0x3ab331b96820})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5711071
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708637 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d38340, {0xaa2a48, 0x3ab331aebea0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708636
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5713133 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331bb71e0, {0xaa2a48, 0x3ab331d9a230})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5713132
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708647 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d38d00, {0xaa2a48, 0x3ab331a7a690})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708646
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712695 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f636c0, {0xaa2a48, 0x3ab331d9aaf0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712694
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708169 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331d605b0, {0xaa2a48, 0x3ab331bff0e0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708168
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5708238 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331fd8820, {0xaa2a48, 0x3ab331bffb30})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5708237
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712740 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331b951e0, {0xaa2a48, 0x3ab331b96b90})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712739
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 5712612 [select, 1 minutes]:
+database/sql.(*DB).connectionOpener(0x3ab331f4e1a0, {0xaa2a48, 0x3ab331e90a00})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 5712611
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+FAIL	catalogizer/repository	600.195s
+ok  	catalogizer/internal/media/database	0.029s
+FAIL
+done

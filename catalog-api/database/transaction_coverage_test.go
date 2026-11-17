@@ -196,10 +196,10 @@ func TestSafeRollback_RealTx(t *testing.T) {
 	tx, err := db.BeginTx(context.Background(), nil)
 	require.NoError(t, err)
 	// Rollback directly is idempotent here too — SafeRollback swallows errors.
-	SafeRollback(tx)
+	SafeRollback(tx.SQLTx())
 	// Second call on the same (already finished) tx — SafeRollback swallows
 	// the "Tx.done" sentinel via its stderr log.
-	SafeRollback(tx)
+	SafeRollback(tx.SQLTx())
 }
 
 func TestSafeCommit_NilReturnsError(t *testing.T) {
@@ -214,7 +214,7 @@ func TestSafeCommit_RealCommit(t *testing.T) {
 	require.NoError(t, err)
 	_, err = tx.Exec("INSERT INTO tx_cov (name, counter) VALUES (?, ?)", "e", 5)
 	require.NoError(t, err)
-	require.NoError(t, SafeCommit(tx))
+	require.NoError(t, SafeCommit(tx.SQLTx()))
 }
 
 func TestTxLockOrder_GetAndSort(t *testing.T) {

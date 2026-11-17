@@ -327,7 +327,7 @@ func (r *UserRepository) adminRoleIDs() ([]int, error) {
 // transaction-scoped advisory lock. SQLite (PGLAX1-F7): a no-op write takes the database write lock BEFORE the
 // administrator-role set is read, so a concurrent role strip cannot commit between that read and the guarded
 // statement (it waits for this transaction, then reads the committed result).
-func (r *UserRepository) lockAdminWrites(tx *sql.Tx) error {
+func (r *UserRepository) lockAdminWrites(tx *database.Tx) error {
 	if r.db.Dialect().Type == database.DialectPostgres {
 		_, err := tx.Exec(pgAdvisoryLockKey)
 		return err
@@ -344,7 +344,7 @@ const pgAdvisoryLockKey = `SELECT pg_advisory_xact_lock(7340001)`
 // adminRoleIDsTx is adminRoleIDs read through an open transaction. PGLA-X1: on PostgreSQL the
 // administrator-role set must be read AFTER the advisory lock is held, inside the same transaction as the
 // guarded write; a set read before the lock can be made stale by a concurrent UpdateRole / role grant.
-func (r *UserRepository) adminRoleIDsTx(tx *sql.Tx) ([]int, error) {
+func (r *UserRepository) adminRoleIDsTx(tx *database.Tx) ([]int, error) {
 	rows, err := tx.Query(r.db.Rewrite(`SELECT id, permissions FROM roles`))
 	if err != nil {
 		return nil, fmt.Errorf("failed to list roles: %w", err)

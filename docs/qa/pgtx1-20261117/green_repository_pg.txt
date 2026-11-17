@@ -1,0 +1,394 @@
+=== RUN   TestLoginThrottlePostgres_InflightCapHolds
+=== RUN   TestLoginThrottlePostgres_InflightCapHolds/docker.io/library/postgres:15-alpine
+    login_throttle_pg_test.go:35: image docker.io/library/postgres:15-alpine: datcollate=en_US.utf8
+    login_throttle_pg_test.go:50: serial control: 4 of 10 allowed (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 0: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 1: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 2: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 3: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 4: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 5: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 6: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 7: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 8: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 9: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 10: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 11: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:90: max allowed in any concurrent round: 4; pend rows after purge: 0
+=== RUN   TestLoginThrottlePostgres_InflightCapHolds/docker.io/library/postgres:15
+    login_throttle_pg_test.go:35: image docker.io/library/postgres:15: datcollate=en_US.utf8
+    login_throttle_pg_test.go:50: serial control: 4 of 10 allowed (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 0: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 1: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 2: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 3: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 4: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 5: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 6: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 7: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 8: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 9: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 10: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:78: round 11: 4 of 40 concurrent Begins allowed, 0 errors (MaxInflight 4)
+    login_throttle_pg_test.go:90: max allowed in any concurrent round: 4; pend rows after purge: 0
+--- PASS: TestLoginThrottlePostgres_InflightCapHolds (29.07s)
+    --- PASS: TestLoginThrottlePostgres_InflightCapHolds/docker.io/library/postgres:15-alpine (14.87s)
+    --- PASS: TestLoginThrottlePostgres_InflightCapHolds/docker.io/library/postgres:15 (14.20s)
+=== RUN   TestLoginThrottlePostgres_EvaluatedBeforeBlockBound
+=== RUN   TestLoginThrottlePostgres_EvaluatedBeforeBlockBound/docker.io/library/postgres:15-alpine
+    login_throttle_pg_test.go:158: image docker.io/library/postgres:15-alpine: worst evaluated before the block over 20 rounds: 23 (bound 23); Begin errors 0, Fail errors 0
+=== RUN   TestLoginThrottlePostgres_EvaluatedBeforeBlockBound/docker.io/library/postgres:15
+    login_throttle_pg_test.go:158: image docker.io/library/postgres:15: worst evaluated before the block over 20 rounds: 23 (bound 23); Begin errors 0, Fail errors 0
+--- PASS: TestLoginThrottlePostgres_EvaluatedBeforeBlockBound (70.19s)
+    --- PASS: TestLoginThrottlePostgres_EvaluatedBeforeBlockBound/docker.io/library/postgres:15-alpine (34.25s)
+    --- PASS: TestLoginThrottlePostgres_EvaluatedBeforeBlockBound/docker.io/library/postgres:15 (35.93s)
+=== RUN   TestLoginThrottlePostgres_ChargeEveryEvaluatedAndCapWindow
+=== RUN   TestLoginThrottlePostgres_ChargeEveryEvaluatedAndCapWindow/docker.io/library/postgres:15-alpine
+    login_throttle_pg_test.go:220: image docker.io/library/postgres:15-alpine window 0: evaluated 4, charged 4
+    login_throttle_pg_test.go:220: image docker.io/library/postgres:15-alpine window 1: evaluated 4, charged 4
+    login_throttle_pg_test.go:220: image docker.io/library/postgres:15-alpine window 2: evaluated 4, charged 4
+    login_throttle_pg_test.go:220: image docker.io/library/postgres:15-alpine window 3: evaluated 4, charged 4
+=== RUN   TestLoginThrottlePostgres_ChargeEveryEvaluatedAndCapWindow/docker.io/library/postgres:15
+    login_throttle_pg_test.go:220: image docker.io/library/postgres:15 window 0: evaluated 4, charged 4
+    login_throttle_pg_test.go:220: image docker.io/library/postgres:15 window 1: evaluated 4, charged 4
+    login_throttle_pg_test.go:220: image docker.io/library/postgres:15 window 2: evaluated 4, charged 4
+    login_throttle_pg_test.go:220: image docker.io/library/postgres:15 window 3: evaluated 4, charged 4
+--- PASS: TestLoginThrottlePostgres_ChargeEveryEvaluatedAndCapWindow (26.22s)
+    --- PASS: TestLoginThrottlePostgres_ChargeEveryEvaluatedAndCapWindow/docker.io/library/postgres:15-alpine (13.04s)
+    --- PASS: TestLoginThrottlePostgres_ChargeEveryEvaluatedAndCapWindow/docker.io/library/postgres:15 (13.18s)
+=== RUN   TestLoginThrottlePolicy_AccountDecayIsClampedToStaleAfter
+--- PASS: TestLoginThrottlePolicy_AccountDecayIsClampedToStaleAfter (0.00s)
+=== RUN   TestPlaybackSessionRepository_StartProgressEnd
+--- PASS: TestPlaybackSessionRepository_StartProgressEnd (0.13s)
+=== RUN   TestPlaybackSessionRepository_HandlesBookPages
+--- PASS: TestPlaybackSessionRepository_HandlesBookPages (0.10s)
+=== RUN   TestPlaybackSessionRepository_PersistsDurationTotal
+--- PASS: TestPlaybackSessionRepository_PersistsDurationTotal (0.03s)
+=== RUN   TestPlaybackSessionRepository_ListHistoryEmpty
+--- PASS: TestPlaybackSessionRepository_ListHistoryEmpty (0.06s)
+=== RUN   TestPlaybackSessionRepository_UnknownSessionIsNotFound
+--- PASS: TestPlaybackSessionRepository_UnknownSessionIsNotFound (0.11s)
+=== RUN   TestUserRepository_CreateSession
+=== RUN   TestUserRepository_CreateSession/success
+=== RUN   TestUserRepository_CreateSession/database_error
+--- PASS: TestUserRepository_CreateSession (0.01s)
+    --- PASS: TestUserRepository_CreateSession/success (0.01s)
+    --- PASS: TestUserRepository_CreateSession/database_error (0.00s)
+=== RUN   TestUserRepository_DeactivateSession
+--- PASS: TestUserRepository_DeactivateSession (0.00s)
+=== RUN   TestUserRepository_DeactivateAllUserSessions
+--- PASS: TestUserRepository_DeactivateAllUserSessions (0.00s)
+=== RUN   TestUserRepository_UpdateSessionTokens
+--- PASS: TestUserRepository_UpdateSessionTokens (0.00s)
+=== RUN   TestUserRepository_UpdateSessionTokensAndExpiry
+--- PASS: TestUserRepository_UpdateSessionTokensAndExpiry (0.00s)
+=== RUN   TestUserRepository_UpdateSessionActivity
+--- PASS: TestUserRepository_UpdateSessionActivity (0.00s)
+=== RUN   TestUserRepository_CleanupExpiredSessions
+--- PASS: TestUserRepository_CleanupExpiredSessions (0.00s)
+=== RUN   TestUserRepository_CreateRole
+=== RUN   TestUserRepository_CreateRole/success
+=== RUN   TestUserRepository_CreateRole/database_error
+--- PASS: TestUserRepository_CreateRole (0.00s)
+    --- PASS: TestUserRepository_CreateRole/success (0.00s)
+    --- PASS: TestUserRepository_CreateRole/database_error (0.00s)
+=== RUN   TestUserRepository_UpdateRole
+=== RUN   TestUserRepository_UpdateRole/success
+=== RUN   TestUserRepository_UpdateRole/not_found_or_system_role
+=== RUN   TestUserRepository_UpdateRole/database_error
+--- PASS: TestUserRepository_UpdateRole (0.00s)
+    --- PASS: TestUserRepository_UpdateRole/success (0.00s)
+    --- PASS: TestUserRepository_UpdateRole/not_found_or_system_role (0.00s)
+    --- PASS: TestUserRepository_UpdateRole/database_error (0.00s)
+=== RUN   TestUserRepository_DeleteRole
+=== RUN   TestUserRepository_DeleteRole/success
+=== RUN   TestUserRepository_DeleteRole/role_has_users
+=== RUN   TestUserRepository_DeleteRole/system_role_not_deletable
+--- PASS: TestUserRepository_DeleteRole (0.00s)
+    --- PASS: TestUserRepository_DeleteRole/success (0.00s)
+    --- PASS: TestUserRepository_DeleteRole/role_has_users (0.00s)
+    --- PASS: TestUserRepository_DeleteRole/system_role_not_deletable (0.00s)
+=== RUN   TestUserRepository_ListRoles
+=== RUN   TestUserRepository_ListRoles/returns_roles
+=== RUN   TestUserRepository_ListRoles/empty
+=== RUN   TestUserRepository_ListRoles/database_error
+--- PASS: TestUserRepository_ListRoles (0.00s)
+    --- PASS: TestUserRepository_ListRoles/returns_roles (0.00s)
+    --- PASS: TestUserRepository_ListRoles/empty (0.00s)
+    --- PASS: TestUserRepository_ListRoles/database_error (0.00s)
+=== RUN   TestUserRepository_GetActiveUserSessions
+=== RUN   TestUserRepository_GetActiveUserSessions/returns_sessions
+=== RUN   TestUserRepository_GetActiveUserSessions/empty
+=== RUN   TestUserRepository_GetActiveUserSessions/database_error
+--- PASS: TestUserRepository_GetActiveUserSessions (0.00s)
+    --- PASS: TestUserRepository_GetActiveUserSessions/returns_sessions (0.00s)
+    --- PASS: TestUserRepository_GetActiveUserSessions/empty (0.00s)
+    --- PASS: TestUserRepository_GetActiveUserSessions/database_error (0.00s)
+=== RUN   TestUserRepository_GetSession
+=== RUN   TestUserRepository_GetSession/success
+=== RUN   TestUserRepository_GetSession/not_found
+=== RUN   TestUserRepository_GetSession/database_error
+--- PASS: TestUserRepository_GetSession (0.00s)
+    --- PASS: TestUserRepository_GetSession/success (0.00s)
+    --- PASS: TestUserRepository_GetSession/not_found (0.00s)
+    --- PASS: TestUserRepository_GetSession/database_error (0.00s)
+=== RUN   TestUserRepository_GetSessionByRefreshToken
+=== RUN   TestUserRepository_GetSessionByRefreshToken/success
+=== RUN   TestUserRepository_GetSessionByRefreshToken/not_found
+=== RUN   TestUserRepository_GetSessionByRefreshToken/database_error
+--- PASS: TestUserRepository_GetSessionByRefreshToken (0.00s)
+    --- PASS: TestUserRepository_GetSessionByRefreshToken/success (0.00s)
+    --- PASS: TestUserRepository_GetSessionByRefreshToken/not_found (0.00s)
+    --- PASS: TestUserRepository_GetSessionByRefreshToken/database_error (0.00s)
+=== RUN   TestUserRepository_Delete_UserWithAuditTrail
+--- PASS: TestUserRepository_Delete_UserWithAuditTrail (3.14s)
+=== RUN   TestUserRepository_HasPermission
+=== RUN   TestUserRepository_HasPermission/role_carries_the_permission
+=== RUN   TestUserRepository_HasPermission/wildcard_role
+=== RUN   TestUserRepository_HasPermission/system.admin_passes_any_permission
+=== RUN   TestUserRepository_HasPermission/prefix_wildcard_on_a_segment_boundary
+=== RUN   TestUserRepository_HasPermission/default_user_role_is_refused
+=== RUN   TestUserRepository_HasPermission/similar_permission_is_not_enough
+=== RUN   TestUserRepository_HasPermission/unsafe_prefix_wildcard_is_refused
+=== RUN   TestUserRepository_HasPermission/deactivated_user_with_the_permission_is_refused
+--- PASS: TestUserRepository_HasPermission (0.00s)
+    --- PASS: TestUserRepository_HasPermission/role_carries_the_permission (0.00s)
+    --- PASS: TestUserRepository_HasPermission/wildcard_role (0.00s)
+    --- PASS: TestUserRepository_HasPermission/system.admin_passes_any_permission (0.00s)
+    --- PASS: TestUserRepository_HasPermission/prefix_wildcard_on_a_segment_boundary (0.00s)
+    --- PASS: TestUserRepository_HasPermission/default_user_role_is_refused (0.00s)
+    --- PASS: TestUserRepository_HasPermission/similar_permission_is_not_enough (0.00s)
+    --- PASS: TestUserRepository_HasPermission/unsafe_prefix_wildcard_is_refused (0.00s)
+    --- PASS: TestUserRepository_HasPermission/deactivated_user_with_the_permission_is_refused (0.00s)
+=== RUN   TestUserRepository_HasPermission_UnknownUserAndFailuresFailClosed
+--- PASS: TestUserRepository_HasPermission_UnknownUserAndFailuresFailClosed (0.00s)
+=== RUN   TestUserRepository_HasPermission_LockedAccount
+=== RUN   TestUserRepository_HasPermission_LockedAccount/permanent_lock
+=== RUN   TestUserRepository_HasPermission_LockedAccount/lock_not_yet_expired
+=== RUN   TestUserRepository_HasPermission_LockedAccount/lock_expired
+=== RUN   TestUserRepository_HasPermission_LockedAccount/not_locked,_stale_locked_until
+--- PASS: TestUserRepository_HasPermission_LockedAccount (0.00s)
+    --- PASS: TestUserRepository_HasPermission_LockedAccount/permanent_lock (0.00s)
+    --- PASS: TestUserRepository_HasPermission_LockedAccount/lock_not_yet_expired (0.00s)
+    --- PASS: TestUserRepository_HasPermission_LockedAccount/lock_expired (0.00s)
+    --- PASS: TestUserRepository_HasPermission_LockedAccount/not_locked,_stale_locked_until (0.00s)
+=== RUN   TestLockAccount_WritesLockBeforeRevokingSessions
+--- PASS: TestLockAccount_WritesLockBeforeRevokingSessions (0.00s)
+=== RUN   TestLockAccount_FailedLockWriteRevokesNothing
+--- PASS: TestLockAccount_FailedLockWriteRevokesNothing (0.00s)
+=== RUN   TestD9S_PG_SuspendLockUnlock
+    user_repository_pg_d9_test.go:29: CATALOGIZER_PG_TEST_HOST/PORT not set: PostgreSQL suspend/lock test skipped (honest SKIP, not a pass)
+--- SKIP: TestD9S_PG_SuspendLockUnlock (0.00s)
+=== RUN   TestLockAccount_ZeroRowsClassification
+=== RUN   TestLockAccount_ZeroRowsClassification/unlocked_administrator_is_held_back_by_the_guard_(positive_control)
+=== RUN   TestLockAccount_ZeroRowsClassification/timed-locked_administrator_is_still_held_back_(positive_control)
+=== RUN   TestLockAccount_ZeroRowsClassification/already_suspended_administrator_is_NOT_ErrLastAdmin
+=== RUN   TestLockAccount_ZeroRowsClassification/non-administrator_is_NOT_ErrLastAdmin
+=== RUN   TestLockAccount_ZeroRowsClassification/missing_user_is_NOT_ErrLastAdmin
+--- PASS: TestLockAccount_ZeroRowsClassification (0.01s)
+    --- PASS: TestLockAccount_ZeroRowsClassification/unlocked_administrator_is_held_back_by_the_guard_(positive_control) (0.00s)
+    --- PASS: TestLockAccount_ZeroRowsClassification/timed-locked_administrator_is_still_held_back_(positive_control) (0.00s)
+    --- PASS: TestLockAccount_ZeroRowsClassification/already_suspended_administrator_is_NOT_ErrLastAdmin (0.00s)
+    --- PASS: TestLockAccount_ZeroRowsClassification/non-administrator_is_NOT_ErrLastAdmin (0.00s)
+    --- PASS: TestLockAccount_ZeroRowsClassification/missing_user_is_NOT_ErrLastAdmin (0.00s)
+=== RUN   TestPGLAX1_UpdateRole_CannotStripLastAdministrator
+--- PASS: TestPGLAX1_UpdateRole_CannotStripLastAdministrator (2.98s)
+=== RUN   TestPGLAX1_UpdateRole_NegativeControls
+=== RUN   TestPGLAX1_UpdateRole_NegativeControls/another_active_administrator_in_a_different_admin_role_exists
+=== RUN   TestPGLAX1_UpdateRole_NegativeControls/the_only_other_administrator_is_inactive
+=== RUN   TestPGLAX1_UpdateRole_NegativeControls/role_keeps_system.admin
+=== RUN   TestPGLAX1_UpdateRole_NegativeControls/role_is_not_an_admin_role,_no_administrator_exists_at_all
+=== RUN   TestPGLAX1_UpdateRole_NegativeControls/admin_role_with_no_active_member
+=== RUN   TestPGLAX1_UpdateRole_NegativeControls/system_role_stays_refused_with_the_old_message
+=== RUN   TestPGLAX1_UpdateRole_NegativeControls/missing_role_keeps_the_old_message
+--- PASS: TestPGLAX1_UpdateRole_NegativeControls (24.37s)
+    --- PASS: TestPGLAX1_UpdateRole_NegativeControls/another_active_administrator_in_a_different_admin_role_exists (3.79s)
+    --- PASS: TestPGLAX1_UpdateRole_NegativeControls/the_only_other_administrator_is_inactive (3.33s)
+    --- PASS: TestPGLAX1_UpdateRole_NegativeControls/role_keeps_system.admin (2.68s)
+    --- PASS: TestPGLAX1_UpdateRole_NegativeControls/role_is_not_an_admin_role,_no_administrator_exists_at_all (3.45s)
+    --- PASS: TestPGLAX1_UpdateRole_NegativeControls/admin_role_with_no_active_member (3.70s)
+    --- PASS: TestPGLAX1_UpdateRole_NegativeControls/system_role_stays_refused_with_the_old_message (3.71s)
+    --- PASS: TestPGLAX1_UpdateRole_NegativeControls/missing_role_keeps_the_old_message (3.71s)
+=== RUN   TestPGLAX1_UpdateSettings_DoesNotRevertConcurrentRoleChange
+--- PASS: TestPGLAX1_UpdateSettings_DoesNotRevertConcurrentRoleChange (3.31s)
+=== RUN   TestPGLAX1_AdminRoleIDsReadAfterAdvisoryLock
+=== RUN   TestPGLAX1_AdminRoleIDsReadAfterAdvisoryLock/UpdateGuarded
+=== RUN   TestPGLAX1_AdminRoleIDsReadAfterAdvisoryLock/LockAccount
+=== RUN   TestPGLAX1_AdminRoleIDsReadAfterAdvisoryLock/SetSuspended
+=== RUN   TestPGLAX1_AdminRoleIDsReadAfterAdvisoryLock/Delete
+=== RUN   TestPGLAX1_AdminRoleIDsReadAfterAdvisoryLock/UpdateRole
+--- PASS: TestPGLAX1_AdminRoleIDsReadAfterAdvisoryLock (0.01s)
+    --- PASS: TestPGLAX1_AdminRoleIDsReadAfterAdvisoryLock/UpdateGuarded (0.00s)
+    --- PASS: TestPGLAX1_AdminRoleIDsReadAfterAdvisoryLock/LockAccount (0.00s)
+    --- PASS: TestPGLAX1_AdminRoleIDsReadAfterAdvisoryLock/SetSuspended (0.00s)
+    --- PASS: TestPGLAX1_AdminRoleIDsReadAfterAdvisoryLock/Delete (0.00s)
+    --- PASS: TestPGLAX1_AdminRoleIDsReadAfterAdvisoryLock/UpdateRole (0.00s)
+=== RUN   TestPGLAX1F1_UpdateRole_LockedMembers
+=== RUN   TestPGLAX1F1_UpdateRole_LockedMembers/the_only_active_member_of_the_stripped_role_is_locked:_strip_allowed
+=== RUN   TestPGLAX1F1_UpdateRole_LockedMembers/the_only_member_of_the_stripped_role_is_locked_and_no_other_administrator_exists:_strip_allowed
+=== RUN   TestPGLAX1F1_UpdateRole_LockedMembers/the_only_other_administrator_is_locked:_strip_refused
+--- PASS: TestPGLAX1F1_UpdateRole_LockedMembers (6.86s)
+    --- PASS: TestPGLAX1F1_UpdateRole_LockedMembers/the_only_active_member_of_the_stripped_role_is_locked:_strip_allowed (2.48s)
+    --- PASS: TestPGLAX1F1_UpdateRole_LockedMembers/the_only_member_of_the_stripped_role_is_locked_and_no_other_administrator_exists:_strip_allowed (2.23s)
+    --- PASS: TestPGLAX1F1_UpdateRole_LockedMembers/the_only_other_administrator_is_locked:_strip_refused (2.14s)
+=== RUN   TestPGLAX1F5_UpdateRole_UnparsablePermissionsFailsClosed
+--- PASS: TestPGLAX1F5_UpdateRole_UnparsablePermissionsFailsClosed (2.34s)
+=== RUN   TestPGLAX1F6_ConcurrentStripOfTwoAdminRoles_KeepsOneAdministrator
+    user_repository_pglax1_f6_test.go:124: strip errors: A=<nil> B=operation would remove the last active administrator; active administrators left: 1
+--- PASS: TestPGLAX1F6_ConcurrentStripOfTwoAdminRoles_KeepsOneAdministrator (5.42s)
+=== RUN   TestPGLAX1F7_UserWriteGuards_SingleConnectionPoolDoesNotHang
+=== RUN   TestPGLAX1F7_UserWriteGuards_SingleConnectionPoolDoesNotHang/Delete
+=== RUN   TestPGLAX1F7_UserWriteGuards_SingleConnectionPoolDoesNotHang/SetSuspended
+=== RUN   TestPGLAX1F7_UserWriteGuards_SingleConnectionPoolDoesNotHang/LockAccount
+=== RUN   TestPGLAX1F7_UserWriteGuards_SingleConnectionPoolDoesNotHang/UpdateGuarded
+--- PASS: TestPGLAX1F7_UserWriteGuards_SingleConnectionPoolDoesNotHang (12.08s)
+    --- PASS: TestPGLAX1F7_UserWriteGuards_SingleConnectionPoolDoesNotHang/Delete (2.79s)
+    --- PASS: TestPGLAX1F7_UserWriteGuards_SingleConnectionPoolDoesNotHang/SetSuspended (2.43s)
+    --- PASS: TestPGLAX1F7_UserWriteGuards_SingleConnectionPoolDoesNotHang/LockAccount (3.51s)
+    --- PASS: TestPGLAX1F7_UserWriteGuards_SingleConnectionPoolDoesNotHang/UpdateGuarded (3.35s)
+=== RUN   TestPGLAX1F7_LockAccount_SoleAdminRefusedOnSingleConnectionPool
+--- PASS: TestPGLAX1F7_LockAccount_SoleAdminRefusedOnSingleConnectionPool (2.13s)
+=== RUN   TestPGLAX1F7_UserWriteGuards_ConcurrentAdminRoleStrip_KeepsOneAdministrator
+=== RUN   TestPGLAX1F7_UserWriteGuards_ConcurrentAdminRoleStrip_KeepsOneAdministrator/UpdateGuarded_deactivate_AtGuardedWrite
+    user_repository_pglax1_f7_test.go:129: user write error: <nil>; strip error: operation would remove the last active administrator; active unlocked administrators left: 1
+=== RUN   TestPGLAX1F7_UserWriteGuards_ConcurrentAdminRoleStrip_KeepsOneAdministrator/UpdateGuarded_deactivate_BeforeLock
+    user_repository_pglax1_f7_test.go:129: user write error: operation would remove the last active administrator; strip error: <nil>; active unlocked administrators left: 1
+=== RUN   TestPGLAX1F7_UserWriteGuards_ConcurrentAdminRoleStrip_KeepsOneAdministrator/LockAccount_AtGuardedWrite
+    user_repository_pglax1_f7_test.go:129: user write error: <nil>; strip error: operation would remove the last active administrator; active unlocked administrators left: 1
+=== RUN   TestPGLAX1F7_UserWriteGuards_ConcurrentAdminRoleStrip_KeepsOneAdministrator/LockAccount_BeforeLock
+    user_repository_pglax1_f7_test.go:129: user write error: operation would remove the last active administrator; strip error: <nil>; active unlocked administrators left: 1
+=== RUN   TestPGLAX1F7_UserWriteGuards_ConcurrentAdminRoleStrip_KeepsOneAdministrator/SetSuspended_AtGuardedWrite
+    user_repository_pglax1_f7_test.go:129: user write error: <nil>; strip error: operation would remove the last active administrator; active unlocked administrators left: 1
+=== RUN   TestPGLAX1F7_UserWriteGuards_ConcurrentAdminRoleStrip_KeepsOneAdministrator/SetSuspended_BeforeLock
+    user_repository_pglax1_f7_test.go:129: user write error: operation would remove the last active administrator; strip error: <nil>; active unlocked administrators left: 1
+=== RUN   TestPGLAX1F7_UserWriteGuards_ConcurrentAdminRoleStrip_KeepsOneAdministrator/Delete_AtGuardedWrite
+    user_repository_pglax1_f7_test.go:129: user write error: <nil>; strip error: operation would remove the last active administrator; active unlocked administrators left: 1
+=== RUN   TestPGLAX1F7_UserWriteGuards_ConcurrentAdminRoleStrip_KeepsOneAdministrator/Delete_BeforeLock
+    user_repository_pglax1_f7_test.go:129: user write error: operation would remove the last active administrator; strip error: <nil>; active unlocked administrators left: 1
+--- PASS: TestPGLAX1F7_UserWriteGuards_ConcurrentAdminRoleStrip_KeepsOneAdministrator (31.24s)
+    --- PASS: TestPGLAX1F7_UserWriteGuards_ConcurrentAdminRoleStrip_KeepsOneAdministrator/UpdateGuarded_deactivate_AtGuardedWrite (4.45s)
+    --- PASS: TestPGLAX1F7_UserWriteGuards_ConcurrentAdminRoleStrip_KeepsOneAdministrator/UpdateGuarded_deactivate_BeforeLock (2.90s)
+    --- PASS: TestPGLAX1F7_UserWriteGuards_ConcurrentAdminRoleStrip_KeepsOneAdministrator/LockAccount_AtGuardedWrite (5.17s)
+    --- PASS: TestPGLAX1F7_UserWriteGuards_ConcurrentAdminRoleStrip_KeepsOneAdministrator/LockAccount_BeforeLock (2.59s)
+    --- PASS: TestPGLAX1F7_UserWriteGuards_ConcurrentAdminRoleStrip_KeepsOneAdministrator/SetSuspended_AtGuardedWrite (6.11s)
+    --- PASS: TestPGLAX1F7_UserWriteGuards_ConcurrentAdminRoleStrip_KeepsOneAdministrator/SetSuspended_BeforeLock (3.21s)
+    --- PASS: TestPGLAX1F7_UserWriteGuards_ConcurrentAdminRoleStrip_KeepsOneAdministrator/Delete_AtGuardedWrite (4.80s)
+    --- PASS: TestPGLAX1F7_UserWriteGuards_ConcurrentAdminRoleStrip_KeepsOneAdministrator/Delete_BeforeLock (2.00s)
+=== RUN   TestPGLAX1F7_UserWriteGuards_SoleAdministratorStillRefused
+=== RUN   TestPGLAX1F7_UserWriteGuards_SoleAdministratorStillRefused/LockAccount
+=== RUN   TestPGLAX1F7_UserWriteGuards_SoleAdministratorStillRefused/SetSuspended
+=== RUN   TestPGLAX1F7_UserWriteGuards_SoleAdministratorStillRefused/Delete
+=== RUN   TestPGLAX1F7_UserWriteGuards_SoleAdministratorStillRefused/UpdateGuarded
+--- PASS: TestPGLAX1F7_UserWriteGuards_SoleAdministratorStillRefused (9.59s)
+    --- PASS: TestPGLAX1F7_UserWriteGuards_SoleAdministratorStillRefused/LockAccount (2.20s)
+    --- PASS: TestPGLAX1F7_UserWriteGuards_SoleAdministratorStillRefused/SetSuspended (2.49s)
+    --- PASS: TestPGLAX1F7_UserWriteGuards_SoleAdministratorStillRefused/Delete (2.28s)
+    --- PASS: TestPGLAX1F7_UserWriteGuards_SoleAdministratorStillRefused/UpdateGuarded (2.63s)
+=== RUN   TestPGLAXFUF1_UpdateRole_PGPathFailsClosedOnUnparsableRole
+--- PASS: TestPGLAXFUF1_UpdateRole_PGPathFailsClosedOnUnparsableRole (0.00s)
+=== RUN   TestPGLAXFUR5_UpdateRole_PGPathFailsClosedWhenAdminSetUnreadable
+=== RUN   TestPGLAXFUR5_UpdateRole_PGPathFailsClosedWhenAdminSetUnreadable/list_query_fails
+=== RUN   TestPGLAXFUR5_UpdateRole_PGPathFailsClosedWhenAdminSetUnreadable/corrupt_permissions_JSON_in_the_set
+=== RUN   TestPGLAXFUR5_UpdateRole_PGPathFailsClosedWhenAdminSetUnreadable/row_iteration_error
+--- PASS: TestPGLAXFUR5_UpdateRole_PGPathFailsClosedWhenAdminSetUnreadable (0.00s)
+    --- PASS: TestPGLAXFUR5_UpdateRole_PGPathFailsClosedWhenAdminSetUnreadable/list_query_fails (0.00s)
+    --- PASS: TestPGLAXFUR5_UpdateRole_PGPathFailsClosedWhenAdminSetUnreadable/corrupt_permissions_JSON_in_the_set (0.00s)
+    --- PASS: TestPGLAXFUR5_UpdateRole_PGPathFailsClosedWhenAdminSetUnreadable/row_iteration_error (0.00s)
+=== RUN   TestPGLAXFUF1_Live_UpdateRoleCorruptPermissionsFailsClosed
+    user_repository_pglaxfu_test.go:114: CATALOGIZER_PG_TEST_{HOST,PORT,USER,PASSWORD} not all set: live PostgreSQL UpdateRole fail-closed test skipped (honest SKIP, not a pass)
+--- SKIP: TestPGLAXFUF1_Live_UpdateRoleCorruptPermissionsFailsClosed (0.00s)
+=== RUN   TestUserRepository_GetByID
+=== RUN   TestUserRepository_GetByID/success
+=== RUN   TestUserRepository_GetByID/not_found
+=== RUN   TestUserRepository_GetByID/with_settings_JSON
+--- PASS: TestUserRepository_GetByID (0.00s)
+    --- PASS: TestUserRepository_GetByID/success (0.00s)
+    --- PASS: TestUserRepository_GetByID/not_found (0.00s)
+    --- PASS: TestUserRepository_GetByID/with_settings_JSON (0.00s)
+=== RUN   TestUserRepository_GetByUsername
+=== RUN   TestUserRepository_GetByUsername/success
+=== RUN   TestUserRepository_GetByUsername/not_found
+--- PASS: TestUserRepository_GetByUsername (0.00s)
+    --- PASS: TestUserRepository_GetByUsername/success (0.00s)
+    --- PASS: TestUserRepository_GetByUsername/not_found (0.00s)
+=== RUN   TestUserRepository_Create
+=== RUN   TestUserRepository_Create/success
+=== RUN   TestUserRepository_Create/database_error
+--- PASS: TestUserRepository_Create (0.00s)
+    --- PASS: TestUserRepository_Create/success (0.00s)
+    --- PASS: TestUserRepository_Create/database_error (0.00s)
+=== RUN   TestUserRepository_Update
+=== RUN   TestUserRepository_Update/success
+=== RUN   TestUserRepository_Update/database_error
+--- PASS: TestUserRepository_Update (0.00s)
+    --- PASS: TestUserRepository_Update/success (0.00s)
+    --- PASS: TestUserRepository_Update/database_error (0.00s)
+=== RUN   TestUserRepository_Delete
+=== RUN   TestUserRepository_Delete/success
+=== RUN   TestUserRepository_Delete/database_error
+--- PASS: TestUserRepository_Delete (0.00s)
+    --- PASS: TestUserRepository_Delete/success (0.00s)
+    --- PASS: TestUserRepository_Delete/database_error (0.00s)
+=== RUN   TestUserRepository_UpdatePassword
+=== RUN   TestUserRepository_UpdatePassword/success
+--- PASS: TestUserRepository_UpdatePassword (0.00s)
+    --- PASS: TestUserRepository_UpdatePassword/success (0.00s)
+=== RUN   TestUserRepository_Count
+=== RUN   TestUserRepository_Count/returns_count
+=== RUN   TestUserRepository_Count/empty_table
+--- PASS: TestUserRepository_Count (0.00s)
+    --- PASS: TestUserRepository_Count/returns_count (0.00s)
+    --- PASS: TestUserRepository_Count/empty_table (0.00s)
+=== RUN   TestUserRepository_List
+=== RUN   TestUserRepository_List/returns_users
+=== RUN   TestUserRepository_List/empty_result
+--- PASS: TestUserRepository_List (0.00s)
+    --- PASS: TestUserRepository_List/returns_users (0.00s)
+    --- PASS: TestUserRepository_List/empty_result (0.00s)
+=== RUN   TestUserRepository_LockUnlockAccount
+=== RUN   TestUserRepository_LockUnlockAccount/lock_account
+=== RUN   TestUserRepository_LockUnlockAccount/unlock_account
+--- PASS: TestUserRepository_LockUnlockAccount (0.00s)
+    --- PASS: TestUserRepository_LockUnlockAccount/lock_account (0.00s)
+    --- PASS: TestUserRepository_LockUnlockAccount/unlock_account (0.00s)
+=== RUN   TestUserRepository_FailedLoginAttempts
+=== RUN   TestUserRepository_FailedLoginAttempts/increment
+=== RUN   TestUserRepository_FailedLoginAttempts/reset
+--- PASS: TestUserRepository_FailedLoginAttempts (0.00s)
+    --- PASS: TestUserRepository_FailedLoginAttempts/increment (0.00s)
+    --- PASS: TestUserRepository_FailedLoginAttempts/reset (0.00s)
+=== RUN   TestUserRepository_GetByEmail
+=== RUN   TestUserRepository_GetByEmail/success
+=== RUN   TestUserRepository_GetByEmail/not_found
+--- PASS: TestUserRepository_GetByEmail (0.00s)
+    --- PASS: TestUserRepository_GetByEmail/success (0.00s)
+    --- PASS: TestUserRepository_GetByEmail/not_found (0.00s)
+=== RUN   TestUserRepository_GetByUsernameOrEmail
+=== RUN   TestUserRepository_GetByUsernameOrEmail/success_with_username
+=== RUN   TestUserRepository_GetByUsernameOrEmail/success_with_email
+=== RUN   TestUserRepository_GetByUsernameOrEmail/not_found
+=== RUN   TestUserRepository_GetByUsernameOrEmail/database_error
+--- PASS: TestUserRepository_GetByUsernameOrEmail (0.00s)
+    --- PASS: TestUserRepository_GetByUsernameOrEmail/success_with_username (0.00s)
+    --- PASS: TestUserRepository_GetByUsernameOrEmail/success_with_email (0.00s)
+    --- PASS: TestUserRepository_GetByUsernameOrEmail/not_found (0.00s)
+    --- PASS: TestUserRepository_GetByUsernameOrEmail/database_error (0.00s)
+=== RUN   TestUserRepository_UpdateLastLogin
+=== RUN   TestUserRepository_UpdateLastLogin/success
+=== RUN   TestUserRepository_UpdateLastLogin/database_error
+--- PASS: TestUserRepository_UpdateLastLogin (0.00s)
+    --- PASS: TestUserRepository_UpdateLastLogin/success (0.00s)
+    --- PASS: TestUserRepository_UpdateLastLogin/database_error (0.00s)
+=== RUN   TestUserRepository_GetRole
+=== RUN   TestUserRepository_GetRole/success
+=== RUN   TestUserRepository_GetRole/not_found
+=== RUN   TestUserRepository_GetRole/database_error
+=== RUN   TestUserRepository_GetRole/invalid_permissions_JSON
+--- PASS: TestUserRepository_GetRole (0.00s)
+    --- PASS: TestUserRepository_GetRole/success (0.00s)
+    --- PASS: TestUserRepository_GetRole/not_found (0.00s)
+    --- PASS: TestUserRepository_GetRole/database_error (0.00s)
+    --- PASS: TestUserRepository_GetRole/invalid_permissions_JSON (0.00s)
+PASS
+ok  	catalogizer/repository	229.471s
+done

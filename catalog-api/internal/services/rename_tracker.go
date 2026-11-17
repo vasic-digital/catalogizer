@@ -195,7 +195,7 @@ func (rt *RenameTracker) ProcessMove(ctx context.Context, oldMove *PendingMove, 
 }
 
 // moveFile updates a single file's path and metadata
-func (rt *RenameTracker) moveFile(tx *sql.Tx, fileID int64, newPath string) error {
+func (rt *RenameTracker) moveFile(tx *database.Tx, fileID int64, newPath string) error {
 	// Extract new filename and directory info
 	newName := filepath.Base(newPath)
 	newDir := filepath.Dir(newPath)
@@ -226,7 +226,7 @@ func (rt *RenameTracker) moveFile(tx *sql.Tx, fileID int64, newPath string) erro
 }
 
 // moveDirectory updates a directory and all its children
-func (rt *RenameTracker) moveDirectory(tx *sql.Tx, oldPath, newPath, storageRoot string) error {
+func (rt *RenameTracker) moveDirectory(tx *database.Tx, oldPath, newPath, storageRoot string) error {
 	// Get all files/directories that need to be updated
 	query := `
 		SELECT id, path, is_directory
@@ -304,7 +304,7 @@ func (rt *RenameTracker) moveDirectory(tx *sql.Tx, oldPath, newPath, storageRoot
 }
 
 // recordRenameEvent creates a record of the rename operation
-func (rt *RenameTracker) recordRenameEvent(ctx context.Context, tx *sql.Tx, oldMove *PendingMove, newPath string) (int64, error) {
+func (rt *RenameTracker) recordRenameEvent(ctx context.Context, tx *database.Tx, oldMove *PendingMove, newPath string) (int64, error) {
 	query := `
 		INSERT INTO rename_events (storage_root_id, old_path, new_path, is_directory, size, file_hash, detected_at, status)
 		VALUES ((SELECT id FROM storage_roots WHERE name = ?), ?, ?, ?, ?, ?, ?, 'pending')`
@@ -318,7 +318,7 @@ func (rt *RenameTracker) recordRenameEvent(ctx context.Context, tx *sql.Tx, oldM
 }
 
 // markRenameEventStatus updates the status of a rename event
-func (rt *RenameTracker) markRenameEventStatus(tx *sql.Tx, eventID int64, status string) error {
+func (rt *RenameTracker) markRenameEventStatus(tx *database.Tx, eventID int64, status string) error {
 	query := `UPDATE rename_events SET status = ?, processed_at = CURRENT_TIMESTAMP WHERE id = ?`
 	_, err := tx.Exec(query, status, eventID)
 	return err
