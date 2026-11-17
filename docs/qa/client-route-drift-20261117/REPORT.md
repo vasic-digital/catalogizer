@@ -65,8 +65,8 @@ Method: server routes taken from every registration site (not only main.go): `ca
 | androidtv | POST | `/api/v1/playback/sessions/start` | startPlaybackSession (74) | not traced (route exists) | YES main.go:1324 |
 | androidtv | POST | `/api/v1/playback/sessions/progress` | progressPlaybackSession (79) | not traced (route exists) | YES main.go:1325 |
 | androidtv | POST | `/api/v1/playback/sessions/end` | endPlaybackSession (84) | not traced (route exists) | YES main.go:1326 |
-| androidtv | GET | `/api/v1/entities/{id}/progress` | getEntityProgress (89) | PlaybackRepository.kt:23 <- HistoryDialog <- HomeScreen.kt:155/168/206 (LONG-PRESS, USER-REACHABLE) | YES main.go:1317 |
-| androidtv | GET | `/api/v1/entities/{id}/history` | getEntityHistory (94) | PlaybackRepository.kt:50 <- HistoryDialog (USER-REACHABLE) | YES main.go:1318 |
+| androidtv | GET | `/api/v1/entities/{id}/progress` | getEntityProgress (89) | PlaybackRepository.kt:42 <- HistoryDialog <- HomeScreen.kt:301 / MediaDetailScreen.kt:768 (USER-REACHABLE) | YES main.go:1317 |
+| androidtv | GET | `/api/v1/entities/{id}/history` | getEntityHistory (94) | PlaybackRepository.kt:73 <- HistoryDialog <- HomeScreen.kt:301 / MediaDetailScreen.kt:768 (USER-REACHABLE) | YES main.go:1318 |
 | androidtv | GET | `/api/v1/media/{id}` | getMediaById (100) | not traced (route exists) | YES main.go:1061 |
 | androidtv | GET | `/api/v1/catalog-info/{path}` | getMediaInfo (103) | not traced (route exists) | YES main.go:1020 |
 | androidtv | POST | `/api/v1/media/recognize` | recognizeMedia (106) | none | **NO** |

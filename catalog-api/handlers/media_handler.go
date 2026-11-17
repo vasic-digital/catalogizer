@@ -189,19 +189,19 @@ func (h *AndroidTVMediaHandler) UpdateWatchProgress(c *gin.Context) {
 	// auth context (c.Get("user_id")).
 	//
 	// HONEST AMBIGUITY (§11.4.6): this AndroidTV route
-	// (PUT /api/v1/media/:id/progress) is registered in the PUBLIC `api`
-	// group with NO auth middleware, so it has no user_id in context, and
-	// media_progress cannot be keyed without one. It also accepts a
-	// fractional 0.0–1.0 progress, whereas media_progress stores absolute
-	// position units. Writing a global, user-less, unit-mismatched row to
-	// media_progress would persist WRONG data and would NOT agree with the
-	// authenticated GetProgressForEntity reader. Per the no-phantom-column
-	// rule, we therefore validate the media item exists against the REAL
-	// schema (correct 404/200) and do NOT write to any phantom or
-	// mis-keyed column. Genuine per-user progress persistence for this
-	// route requires the route to be moved under the authenticated entity
-	// group (tracked follow-up); until then it is a validated no-op write,
-	// reported honestly to the caller.
+	// (PUT /api/v1/media/:id/progress) IS authenticated: it is registered in
+	// the `api` group after api.Use(RequireAuth()) (main.go), which sets
+	// "user_id" in the context. This handler, however, never reads user_id,
+	// and it accepts a fractional 0.0-1.0 progress whereas media_progress
+	// stores absolute position units. Writing a row with that value would
+	// persist WRONG data and would NOT agree with the authenticated
+	// GetProgressForEntity reader. Per the no-phantom-column rule, we
+	// therefore validate the media item exists against the REAL schema
+	// (correct 404/200) and do NOT write to any phantom or mis-keyed
+	// column. Genuine per-user persistence needs this handler to read
+	// user_id and write media_progress once the unit mismatch is resolved
+	// (tracked follow-up AFAV-8 / RFM-R1-1); until then it is a validated
+	// no-op write (persisted:false), reported honestly to the caller.
 	var existsRow int
 	err = h.db.QueryRowContext(ctx, `SELECT 1 FROM media_items WHERE id = ?`, id).Scan(&existsRow)
 	if err != nil {
