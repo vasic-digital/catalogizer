@@ -562,6 +562,63 @@ func scanAuthSurface(fset *token.FileSet, files map[string]*ast.File) []string {
 		add("expected groups/registrations not found (api/v1 group %d, matched calls %d): scan matched nothing, fail closed", prefixGroups["api/v1"], matched)
 	}
 	out = append(out, scanMainVerifySequence(fset, files)...)
+	out = append(out, scanSanctionedHookBodies(fset, files)...)
+	return out
+}
+
+// bannedInSanctionedBodies: calls, on any receiver, that register a route/group/middleware or reach one by reflection.
+var bannedInSanctionedBodies = func() map[string]bool {
+	m := map[string]bool{"Use": true, "NoRoute": true, "NoMethod": true, "Call": true, "CallSlice": true, "Method": true, "MethodByName": true}
+	for k := range regPathIdx {
+		m[k] = true
+	}
+	return m
+}()
+
+// scanSanctionedHookBodies (G1FIX-R1-F1): the by-name allowance for routeDumpHook / routeChainFuncNames is only safe while their
+// bodies are read-only. Any registration/Use/handle call (or reflective call) inside them is refused, and routeDumpHook(router) must be
+// called exactly once in the whole package, from main() in main.go.
+func scanSanctionedHookBodies(fset *token.FileSet, files map[string]*ast.File) []string {
+	var out []string
+	names := make([]string, 0, len(files))
+	for n := range files {
+		names = append(names, n)
+	}
+	sort.Strings(names)
+	hookCalls := 0
+	for _, name := range names {
+		f := files[name]
+		for _, d := range f.Decls {
+			fd, ok := d.(*ast.FuncDecl)
+			if !ok || fd.Body == nil {
+				continue
+			}
+			if fd.Recv == nil && (fd.Name.Name == "routeDumpHook" || fd.Name.Name == "routeChainFuncNames") {
+				ast.Inspect(fd.Body, func(n ast.Node) bool {
+					if ce, ok := n.(*ast.CallExpr); ok {
+						if se, ok := ce.Fun.(*ast.SelectorExpr); ok && bannedInSanctionedBodies[se.Sel.Name] {
+							out = append(out, fmt.Sprintf("%s:%d: sanctioned read-only function %s calls %s (registration/handler/reflective call refused inside it)", name, fset.Position(ce.Pos()).Line, fd.Name.Name, exprText(fset, ce.Fun)))
+						}
+					}
+					return true
+				})
+			}
+			ast.Inspect(fd.Body, func(n ast.Node) bool {
+				if ce, ok := n.(*ast.CallExpr); ok {
+					if id, ok := ce.Fun.(*ast.Ident); ok && id.Name == "routeDumpHook" {
+						hookCalls++
+						if name != "main.go" || fd.Name.Name != "main" {
+							out = append(out, fmt.Sprintf("%s:%d: routeDumpHook may only be called from main() in main.go", name, fset.Position(ce.Pos()).Line))
+						}
+					}
+				}
+				return true
+			})
+		}
+	}
+	if hookCalls != 1 {
+		out = append(out, fmt.Sprintf("routeDumpHook must be called exactly once in the package (found %d call sites)", hookCalls))
+	}
 	return out
 }
 
@@ -714,6 +771,25 @@ func TestAuthSurfaceGuard_Mutants(t *testing.T) {
 		}},
 		{"G2_registration_inside_routeDumpHook", "registers under the auth surface", func(d string) {
 			edit(t, d, "main_routedump_on.go", "p := os.Getenv(\"ROUTE_DUMP_FILE\")", "e.POST(\"/api/v1/auth/evil\", nil)\n\tp := os.Getenv(\"ROUTE_DUMP_FILE\")")
+		}},
+		// g1fixfu (G1FIX-R1-F1): reviewer mutants M2b, M7 plus own mutants.
+		{"M2b_nonauth_registration_inside_routeDumpHook", "sanctioned read-only function routeDumpHook calls", func(d string) {
+			edit(t, d, "main_routedump_on.go", "p := os.Getenv(\"ROUTE_DUMP_FILE\")", "e.GET(\"/api/v1/media/evil\", nil)\n\tp := os.Getenv(\"ROUTE_DUMP_FILE\")")
+		}},
+		{"M7_second_routeDumpHook_call_after_alt_svc", "routeDumpHook must be called exactly once", func(d string) {
+			edit(t, d, "main.go", "routeDumpHook(router) // no-op", "routeDumpHook(router)\n\trouteDumpHook(router) // no-op")
+		}},
+		{"FU1_Use_inside_routeDumpHook", "sanctioned read-only function routeDumpHook calls", func(d string) {
+			edit(t, d, "main_routedump_on.go", "p := os.Getenv(\"ROUTE_DUMP_FILE\")", "e.Use(nil)\n\tp := os.Getenv(\"ROUTE_DUMP_FILE\")")
+		}},
+		{"FU2_registration_inside_routeChainFuncNames", "sanctioned read-only function routeChainFuncNames calls", func(d string) {
+			edit(t, d, "main_routechains.go", "trees := reflect.ValueOf(e)", "e.POST(\"/api/v1/media/evil\", nil)\n\ttrees := reflect.ValueOf(e)")
+		}},
+		{"FU3_hook_call_from_other_function", "routeDumpHook may only be called from main() in main.go", func(d string) {
+			addFile(t, d, "zz_fu3.go", "func fu3(r *gin.Engine) { routeDumpHook(r) }\n")
+		}},
+		{"FU4_Group_inside_routeDumpHook", "sanctioned read-only function routeDumpHook calls", func(d string) {
+			edit(t, d, "main_routedump_on.go", "p := os.Getenv(\"ROUTE_DUMP_FILE\")", "_ = e.Group(\"/x\")\n\tp := os.Getenv(\"ROUTE_DUMP_FILE\")")
 		}},
 		{"F5_capture_directly_under_api_v1", "registers a capture/wildcard directly under /api/v1", func(d string) {
 			edit(t, d, "main_router.go", defn, defn+"\n\trouter.GET(\"/api/v1/:lang/x\", func(c *gin.Context) {})")
