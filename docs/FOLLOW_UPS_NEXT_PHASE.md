@@ -688,7 +688,7 @@ Listed, not fixed (reason):
 
 ### Review R1 deferrals (conversion worker)
 
-- F4: a foreign job id answers 403 while an unknown id answers 404, so ids are probeable (ids are sequential); consider 404 for non-owners without permission (decision pending).
+- F4: a foreign job id answered 403 while an unknown id answered 404 (decision taken 2026-11-13, landed as CAT-JOB-404-1: now 404, see "CAT-JOB-404-1 landed"; re-checked 2026-11-17 in N7SONAR5).
 - F6: `RunWorker` refuses a second start in one process, but two API instances on one database still requeue each other's running jobs; needs the lease column (`claimed_by`, `claimed_until`).
 - F10: `TestClaimJob_ExactlyOneWinner` runs on a single-connection in-memory SQLite; it is a logic check, not a concurrency proof against Postgres.
 - F11: `ClaimJob`, `RequeueRunning`, `GetDueJobs` and `UpdateJobIf` have no Postgres run in the committed suite (SKIP, tracked: needs a Postgres test DSN in the suite). The R2 reviewer ran them once against a throwaway postgres:16 with the production migrations and they passed; that run is not committed.
@@ -697,7 +697,7 @@ Listed, not fixed (reason):
   - SQLite (measured): the stored text keeps the original offset, so the rewrite is exact. `ConversionRepository.NormalizeLegacyScheduledFor` runs at every worker start, rewrites pending rows to UTC and is idempotent (tests: `TestNormalizeLegacyScheduledFor_RewritesOffsetRowsToUTC`, `TestRunWorker_NormalizesLegacyScheduledForAtStart`; a legacy +14:00 due row was measured as NOT returned before the rewrite and returned after it). Unparseable text is left alone and logged as a count.
   - Postgres (measured by the R3 reviewer on a throwaway postgres:16: a legacy +14:00 row that is due is NOT returned): the column is `TIMESTAMP` without zone, so the original offset was dropped at write time and cannot be recovered. By reasoning (not measured): every old scheduled pending row written in a non-UTC zone is delayed by the writer's UTC offset (jobs are delayed, never lost). Nothing is rewritten on Postgres; operators who need exact times for old rows must reschedule them. The code assumes nothing about the old zone.
   - Reach is small: no first-party client sends `scheduled_for`.
-- R2-N7 (= F4): 403 vs 404 for another user's job id stays an operator decision.
+- R2-N7 (= F4): decided 2026-11-13 (404, CAT-JOB-404-1, landed); the sync routes are the one documented exception (CAT-SYNC-404-1, decision keep 403). Re-checked 2026-11-17 (N7SONAR5).
 - Pre-existing, not from this branch: `GOOS=windows go vet ./services/` fails on older test files that use `syscall.Mkfifo`/unix helpers (`pathconfine_*`, `converter_private_dir_rv7`, `pdf_text_*`); the conversion worker tests are split so they add no new windows failure (`conversion_worker_unix_test.go`). The non-test package builds for windows.
 - The `pgid > 1` guard is pinned by `TestGroupKillTarget_RefusesPidsAtOrBelowOne` (pure function); the surrounding `Cancel` closure is not exercised with a faked pid.
 
@@ -3519,6 +3519,9 @@ DO NOT use LIVE_WS_CHECK for the live G4 run until N1-N4 are fixed (they are rep
 - SECWS1F3D-N4 (must-fix): `probe-killed` scenario does not test R3-2 (victim already closed at kill; kill hits wrapper only); reverting L215 survives. Use reviewer's killprobe2.py approach.
 - SECWS1F3D-N5: SUSPEND_CMD in bash -c argv and saved output may leak admin token; pass via env, warn. N6: label prints `null` not `none`. N7: README "20 PASS" counts only top-level (-v has 28).
 - Reviewer repro files: /home/milosvasic/.cache/claude-tmp/r4review_secws1f3/ (myrun.sh, mock2.py, killprobe2.py).
+
+## secws1f3e fixes of round 4 (Sonnet author, round 5 = final round of the budget, PROVISIONAL; NOT live evidence)
+N1-N7 fixed in docs/qa/secws1f3-20261117/ on branch secws1f3e (see its README "Round 5"): JWT lifetime recomputed at the marker + SUSPEND_TIMEOUT bound (N1); SUSPEND_CMD start/return epochs, close-return <= bound < close-start INCONCLUSIVE (N2); sanitized results lines + `inject` scenario (N3); probe-killed2 + named mutants M-N4/M-N1N2/M-N2/M-N3 (N4); SUSPEND_CMD via env, output discarded by default, strace needle check 0 vs round-4 1 (N5); `none` label (N6); README counts 20 top-level / 28 with subtests (N7). Gate-logic suite 64 UNIT-PASS / 0 fail (RUN_SLOW=1). Honest limits: N1 alone is not independently killed by any scenario (N2 covers the same expiry close); a secret in SUSPEND_CMD is still readable via /proc/<pid>/environ; one unexplained first-run `short-exp` login failure (3 later runs green, UNCONFIRMED cause). Script still never run against a real server; G4 live part stays OPEN.
 ## g1fixfu3 (STRUCTURAL round, §11.4.276(E) / §11.4.250, PROVISIONAL, branch g1fixfu3)
 - Supersedes the g1fixfu2 branch's claims. Its "CLOSED class-wise" lines for G1FIXFU-R1-F1 and F3 were false: reviewer survivors X1 (index-assign via Interface+len inside routeChainFuncNames; runtime 401 to 200 bypass, AuthSurface suite still PASS), X9h (rebind of the allow-listed `walk` var), X10 (allow-listed helper funcIdentity doing reflect Set), X2/X3 (a body in main_routedump_off.go that walks the engine first), X4 (//go:linkname) and X5b (method value/expression of reflect Value.Call) showed that an AST name scanner cannot prove the two hook bodies read-only. The g1fixfu2 branch is not merged; do not treat its F1/F3 text as proven.
 - Redesign: the engine-walking code is not in the shipped binary at all. routeChainFuncNames, funcIdentity, routeChain, routeHandler (all reflect/unsafe route-dump code) are in main_routechains.go with `//go:build routedump`; routeDumpHook in the default build (main_routedump_off.go) must have an empty body in a file that holds nothing else. Unit tests keep a byte-identical copy in main_routechains_test.go (`!routedump`, _test.go, never shipped); TestRouteChainsLockstep refuses any difference.
@@ -3757,3 +3760,61 @@ Evidence: docs/qa/clfu1-20261117/ (README, SHA256SUMS).
 - FU3-R-M3 (minor): confirm RV3_N1/N5 pos=40/180 semantics in a comment; README claim "R1 killed by N1+N5" not re-run by the reviewer.
 - FU3-R-N1 (nit): `media_watch_progress_pg_test.go:116` comment says session End/transaction; the hook is a plain UPDATE.
 - FU3-R-N2 (nit): `pgrvSeen`/`pgrvHooks` globals never reset; add `t.Cleanup` if a second PG test appears.
+
+## WIZENV-1 (2026-11-17, PROVISIONAL)
+Wizard SystemInfo copied os.Environ() with a password/secret/token deny-list. Reproduced at service layer; HTTP exposure not reproducible (type has no production constructor; routed wizard handlers use ConfigurationService). Fixed with an allow-list (`safeEnvironment`). Evidence: docs/qa/wizenv1-20261117/. Open: Opus review; decide whether the unwired ConfigurationWizardService should be removed (§11.4.124 history check owed, not done).
+
+## WIZENV1 review follow-ups (Opus review, GO-with-follow-ups, 2026-11-17)
+
+- WIZENV1-R-M1 (minor, test-instrumentation): pin the allow-list as an exact golden set and assert no allow-listed key matches `(?i)(KEY|SECRET|TOKEN|PASS|DSN|AUTH|CRED|BEARER|URL)`; mutant adding `TMDB_API_KEY` to `wizardSafeEnvKeys` survives (test checks the map against itself).
+- WIZENV1-R-M2 (minor): add a lowercase-key case to `TestWIZENV1_SafeEnvironmentMalformed` (case-insensitive lookup mutant survives).
+- WIZENV1-R-N1 (nit): `wizenv1_test.go:19` discards the `json.Marshal` error.
+- WIZENV1-R-N2 (nit): README "count=3" claim and RED-versus-mutant wording; capture -v with -count=3.
+- WIZENV1-R-D1 (operator decision, §11.4.124): `ConfigurationWizardService` is unwired (never routed per `git log -S`) but actively maintained (16 commits); wire it with this allow-list and a real-router test, or remove with this history as evidence. Not removed.
+## SECWS1F3F round 7 (2026-11-17) — fixes of the round-6 review (PROVISIONAL; awaiting independent review round 2)
+I1 (no -k unless INSECURE=1, non-https non-loopback BASE refused), I2 (.session_token first, mock returns the real AuthResult shape), M1 (RV1-RV6/RV8 adopted, all killed; mock modes susp-500/noexp/legacy-token), M2 (setsid + process-group kill, /dev/tty unreachable), M3 (>=1 for F3_BOUND/SUSPEND_TIMEOUT, F3_EXP_MARGIN 0 explicit), M4 (WP/CP/SP cleared), N1 (anchored F3 grep), N2 (VICTIM_REFUSED_STATUS validated, userinfo stripped from evidence). Not addressed: san lookalike (confusables). Evidence docs/qa/secws1f3f-20261117/ (green_run1..3 251/0 each). Script stays DO-NOT-USE for live G4 until reviewed; live-only unknowns unchanged.
+
+## SECWS1F3F review follow-ups (Opus review round 2, GO-with-follow-ups, 2026-11-17)
+
+Reviewer cleared the DO-NOT-USE marker for the live G4 run under conditions: BASE is https with no userinfo, INSECURE unset, SERVER_PID and SERVER_EXE_SHA256 supplied, VICTIM_REFUSED_STATUS set to the real 4xx. The run does not satisfy all of G4 (web/Android-through-edge leg, F1 and audience leg remain open). Still gate-logic evidence only until run live.
+
+- SECWS1F3F-R-1 (minor, test-instrumentation, X1): mutant `2??)` -> `9??)` at LIVE_WS_CHECK.sh.txt:263 survives; add mock mode `ticket-ok` (login 403, mint 200) expecting INCONCLUSIVE.
+- SECWS1F3F-R-2 (minor, test-instrumentation, X2): non-F3 checks (reuse, unauthenticated refused, invalid JWT, bad Origin; script :193-209) are not discriminated by the mock suite; add violating mock modes and per-record assertions.
+- SECWS1F3F-R-3 (minor, test-instrumentation, X3): add JWT-header/ticket needle grep over $OUT to the suite (echo-token mutant survives).
+- SECWS1F3F-R-4 (minor source): ws_probe.py.txt:67 Host header and :173 default ORIGIN carry BASE userinfo; use host:port only.
+- SECWS1F3F-R-5 (minor source): loopback_host accepts out-of-range octets (127.0.0.999); limit octets to 0-255.
+- SECWS1F3F-R-6 (nit): `read -ra <<<` reads only first line of VICTIM_REFUSED_STATUS.
+- SECWS1F3F-R-7 (nit): uppercase HTTPS:// refused (conservative).
+- SECWS1F3F-R-8 (process-doc): README.md:10 grandchild claim unconditional (setsid escapes); a 5xx listed in VICTIM_REFUSED_STATUS could be read as proof.
+- SECWS1F3F-R-9 (process-doc): README.md:99-100 shellcheck list incomplete (also SC2086 x2, SC2329).
+
+## ALTSVC5 (shared tls.Config data race in startH3Stack, 2026-11-17) **[ADDRESSED, PROVISIONAL]**
+- Defect: one *tls.Config shared by http.Server (ServeTLS writes it via http2ConfigureServer) and http3.Server (Clone reads it); -race reported DATA RACE in 5 of 6 runs. Fixed by one Clone() per server before start (main_h3.go); tests TestAltSvc5_*; evidence docs/qa/altsvc5-20261117/.
+- Owed: same pattern in the vendored constitution scripts/scheduled-work-engine/cmd/scheduled-work/main.go (upstream report); production impact UNCONFIRMED; full-package -race not run.
+
+## ALTSVC5 review follow-ups (Opus review round 1, GO-with-follow-ups, 2026-11-17)
+
+- ALTSVC5-R-F1 (minor): README cites 3 green runs; reviewer ran 8 of 8 clean; record >=5.
+- ALTSVC5-R-F2 (minor): `mutants.sh` M4 (line 25) leaves `h3TLS` unused and does not build as written; redone by hand.
+- ALTSVC5-R-F3 (minor): impact note: the written field is `PreferServerCipherSuites = true` (h2_bundle.go:4275, go1.26.8); NextProtos is not appended, so production effect is very likely a formal race on a deprecated no-op field, not torn ALPN (still UNCONFIRMED at runtime).
+- ALTSVC5-R-F4 (minor): re-run the guard set and the AuthSurfaceBinary/DumpIsolation tests on the final tree.
+- ALTSVC5-R-F5 (optional): adopt the reviewer's real-socket cert+ALPN test (h2 via tls.Dial, h3 via quic.DialAddr) and the late-clone mutant R1.
+- ALTSVC5-R-F6 (upstream): constitution `scripts/scheduled-work-engine/cmd/scheduled-work/main.go` (~lines 142/160) hands one `tlsCfg` to http.Server and http3.Server; needs an upstream item (not touched here).
+## N7SONAR5 (2026-11-17, scratch clone n7sonar5, PROVISIONAL, needs Opus review): R2-N7 and CAT-QA-SONAR-5 re-check
+Evidence: `docs/qa/n7sonar5-20261117/` (`sha256sum -c SHA256SUMS`). Both operator decisions in the task were found ALREADY LANDED on `main`; no behaviour change was needed, so none was made.
+- (A) R2-N7 / F4 (404 for another user's job id): reproduced with the real router first. `TestJob404_` (real gin routes, real services and SQLite, real JWTs) passes on current `main` (`green_job404.txt`): a non-owner gets 404 with a body and headers equal to a nonexistent id on all five job-by-id routes (`GET /jobs/:id`, cancel, delete, retry, download) in every job state; owner and admin get the real answer. There was therefore no RED to capture; the "current response" is already 404 (landed as CAT-JOB-404-1, merge of fix/job-404). Class enumeration (control needle: the 5 routes are the `conversionGroup` job-by-id routes in `main.go:1142-1146`, the same list as `job404Endpoints` in the test): scan jobs (`GET /api/v1/scans/:job_id`) have no per-user ownership (global status map, no 403 path), so there is no oracle; the sync endpoint and session ids are the one other class member and the operator decided on 2026-11-16 to keep 403 there (CAT-SYNC-404-1, `docs/api/SYNC_API.md`). A fresh attempt to change sync to 404 was reproduced RED (`red_sync404.txt`: 403 vs 404) and then REVERTED because it contradicts that decision (also breaks two tests that pin the documented 403 contract); the reverted test is kept as `sync_404_attempt_REVERTED_per_operator_decision.go.txt`, not compiled. Should the operator reverse the sync decision, that file is the ready test.
+  - Done instead: JOB-404-F2 (docs): `docs/api/openapi.yaml` download 403 text claimed "the job belongs to another user (without media.view)" which has been false since CAT-JOB-404-1; now 403 = output outside the conversion roots (owner/admin only), 404 = missing or foreign. `API_DOCUMENTATION.md` "A 403 is never returned for a job id" reworded to "Ownership never yields a 403" and the download Errors list now names the 403. JOB-404-F1 (partly): new `TestJob404_ForeignDeleteOfCompletedJobKeepsOutputFile` (output file and row survive a foreign DELETE; owner DELETE removes the file as control). Paired mutant M7 (output removal moved before the ownership check in `ConversionService.DeleteJob`) makes it FAIL (`mutant_M7.txt`), restored. NOT done: the M8 half of JOB-404-F1 (killRun must not run for a non-owner cancel): needs a registered run, which is unexported in package services; still open. Timing equality foreign vs missing remains UNCONFIRMED (same DB statements only, as before).
+- (B) CAT-QA-SONAR-5 (ignored wizard template): already FIXED on `main` in `e87f41ba3` (`loadConfigTemplate`, built-in `wizard_templates/config_template.json`, operator dir `$CONFIG_PATH/templates`); the `template != ""` branch now loads and deep-merges the template, so the two go:S3923 identical-branch conditionals are gone (webdav test uses `require.Error`). Static reproduction of what the rule flagged: `B_static_flagged_code_before_79547302.txt` (both branches of `if template != ""` assigned `session.Configuration`; both branches of the webdav `if err == nil` asserted `NotNil(result)`), now `B_current_code.txt` / `B_current_webdav_test.txt`. `sonar-project.properties` has no exclusion naming the wizard template (the exclusions are generic build/cache dirs), so there was no ignore to remove. `go test ./services -run 'CAT_QA_SONAR_5|Wizard|WebDAVClient_SyncDirectory'` ok (`B_green_services.txt`). Limits: the actual rule was NOT re-run (SonarQube not run here); that the finding is cleared on the server stays UNCONFIRMED until the Sonar re-run owed since CAT-QA-SONAR-1 run3. No behaviour or test change was made for (B).
+
+
+## N7SONAR5 review follow-ups (Opus 5.5 review, GO-with-follow-ups, all minor; effort not settable)
+
+- N7-FU1: add an M8 guard test in package `services` (a non-owner cancel must not cancel a registered run, using `registerRun`/`killRun` as in `conversion_worker_r2_test.go:152-164`); the earlier "unexported" reason is wrong. Mutant `killRun` inside the `authorizedJob` error branch currently survives.
+- N7-FU2: log collections and log shares (`/logs/collections/:id`, entries, export, analyze, `DELETE /logs/share/:id`) return 403 for a foreign id and 404 for a missing one: an admin-only existence oracle (`services/log_management_service.go:213-216,233,247,311`, `handlers/log_management_handler.go:22-33,78`). Correct the "sync is the one other class member" text and register an item or decide it is acceptable.
+- N7-FU3 (nit): record the M7 mutant diff in the evidence; list the 404 "No output file available" case in the download docs; `webdav_client_test.go:576-583` tautology `UploadedFiles >= 0`.
+
+## g1fixfu4 third review follow-ups (Opus 5.5, GO-with-follow-ups on head 8b776ac45, already on main; effort not settable)
+
+- RV-F1 (test-instrumentation, minor): a post-verify chain mutation reached through `*gin.Context` (reflect+unsafe `NewAt` on the engine, or an interface `SetLen(0)` call) gives 0 findings on both the scanner and the binary gate; the docs claims g1fixfu4 F2(c) and g1fixfu3 boundary (3) that source rules/verifyAuthRouteTable own this are false and must be corrected. Class fix: refuse `unsafe`/`NewAt`/`UnsafeAddr` in default package-main files (allow only `main_router.go:458-462`), or ban reflect.Value aliases and Set*/Call interface methods.
+- RV-F2 (process-doc, minor): G1FIXFU-R1-F2 (RVW2 package-var initializer, RVW5 `go func` in main) still gives 0 findings; mark moot with the reason (hook empty in the shipped build) or count GenDecl initializers and refuse a hook call in a FuncLit/go statement; adopt RVW2/RVW5 as named tests.
+- RV-F3 (nit): the binary gate inspects the host build only; shipped builds use `-ldflags "-w -s"` and other GOOS/GOARCH (`catalog-api/scripts/build.sh`, `Dockerfile`, `scripts/lib/build-catalog-api.sh`); nothing asserts the released artifact lacks dump symbols or that GOFLAGS lacks `-tags routedump` (§11.4.264).

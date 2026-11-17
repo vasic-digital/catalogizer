@@ -26,6 +26,14 @@
 # Notes (round 4, R3-6): ONE refused leg (new login OR ticket mint) is enough to prove the suspension effective, the other leg may
 #   return anything except 2xx. The JWT exp check uses the LOCAL clock; clock skew between this host and the server beyond the 75 s
 #   margin is NOT covered. An empty / unparseable victim probe result (probe killed, OOM) is INCONCLUSIVE, never FAIL.
+# Round 5 (N1-N7): the victim JWT lifetime is RE-COMPUTED at the suspension marker and must exceed F3_BOUND + F3_EXP_MARGIN (default 75 s)
+#   there (a token expiring after the marker would give a 1008 that is not the suspension); SUSPEND_CMD and the Enter prompt are bounded by
+#   SUSPEND_TIMEOUT (default 120 s; overrun = INCONCLUSIVE). The SUSPEND_CMD START and RETURN epochs are both recorded: PASS needs the close
+#   within F3_BOUND of the command's START too; close-return <= bound < close-start is INCONCLUSIVE (the effect time inside the command is unknown).
+#   The server close reason is sanitized (control chars removed, | replaced) before any results line, so it cannot forge a verdict line.
+#   SECRETS: SUSPEND_CMD is run as `bash -c 'eval "$SUSPEND_CMD"'` (the text travels in the ENVIRONMENT, never in argv) and its output is
+#   discarded unless SUSPEND_KEEP_OUTPUT=1 (then suspend_cmd.out may contain secrets: do not publish it). The command TEXT is never written
+#   to evidence. WARNING: a secret inside SUSPEND_CMD is still visible to the same uid via /proc/<pid>/environ.
 # Exit 2 = usage / prerequisite / output-directory error (missing BASE or credential variable, unwritable OUT).
 # Verdict per check: PASS | FAIL | INCONCLUSIVE (INCONCLUSIVE = could not observe; never counted as PASS).
 # Overall exit: 0 all PASS, 1 any FAIL, 3 any INCONCLUSIVE and no FAIL, 2 usage/prereq.
@@ -33,15 +41,19 @@ set -u
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROBE="${PROBE:-$HERE/ws_probe.py.txt}"
 F3_BOUND="${F3_BOUND:-20}"
+F3_EXP_MARGIN="${F3_EXP_MARGIN:-75}"
+SUSPEND_TIMEOUT="${SUSPEND_TIMEOUT:-120}"
 # deliberately invalid/expired JWT for the ?token= refusal probe; never a real token
 EXPIRED_JWT='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJub2JvZHkiLCJleHAiOjF9.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
 
 # ---- helpers (unit-testable by sourcing with LIVE_WS_CHECK_SOURCE_ONLY=1) ----
 PASSN=0; FAILN=0; INCN=0
+san(){ printf '%s' "$1" | tr -d '\000-\037\177' | tr '|' '/' | cut -c1-200; }  # N3: no control chars / newline / pipe in any results line
 record(){ # label verdict detail
-  printf '%s | %s | %s\n' "$2" "$1" "$3" >> "${OUT:-/dev/null}/results.txt"
+  local lab det; lab="$(san "$1")"; det="$(san "$3")"
+  printf '%s | %s | %s\n' "$2" "$lab" "$det" >> "${OUT:-/dev/null}/results.txt"
   case "$2" in PASS) PASSN=$((PASSN+1));; FAIL) FAILN=$((FAILN+1));; *) INCN=$((INCN+1));; esac
-  printf '%s %s %s\n' "$(date -u +%T)" "$2" "$1 ($3)"
+  printf '%s %s %s\n' "$(date -u +%T)" "$2" "$lab ($det)"
 }
 check(){ # label observed expected : compares observed vs expected
   local obs="$2" exp="$3"
@@ -80,10 +92,10 @@ try:
 except Exception:
     print("none")'
 }
-# f3_verdict closecode elapsed bound end control_state suspension_state expiry_state -> prints VERDICT|detail
+# f3_verdict closecode elapsed bound end control_state suspension_state expiry_state [elapsed_from_suspend_cmd_start] -> prints VERDICT|detail
 #   control_state: pong (open + answered final ping) | anything else; suspension_state / expiry_state: ok | reason text
 f3_verdict(){
-  local code="$1" el="$2" bound="$3" end="$4" ctrl="${5:-missing}" susp="${6:-missing}" expc="${7:-missing}"
+  local code="$1" el="$2" bound="$3" end="$4" ctrl="${5:-missing}" susp="${6:-missing}" expc="${7:-missing}" elst="${8:-$2}"
   if [ "$expc" != ok ]; then echo "INCONCLUSIVE|victim token may expire inside the window ($expc): a 1008 would not prove the suspension"; return; fi
   if [ "$susp" != ok ]; then echo "INCONCLUSIVE|suspension not proven effective ($susp)"; return; fi
   if [ "$ctrl" != pong ]; then echo "INCONCLUSIVE|control (non-suspended) socket did not stay open and answer a ping (state=$ctrl): cannot attribute the close to the suspension"; return; fi
@@ -99,6 +111,8 @@ f3_verdict(){
     echo "INCONCLUSIVE|closed before the suspension (elapsed=$el)"
   elif awk -v e="$el" -v b="$bound" 'BEGIN{exit !(e>b)}'; then
     echo "FAIL|closed ${el}s after suspension, bound ${bound}s"
+  elif awk -v e="$elst" -v b="$bound" 'BEGIN{exit !(e>b)}'; then
+    echo "INCONCLUSIVE|close ${el}s after SUSPEND_CMD returned but ${elst}s after it started (bound ${bound}s): the suspension's effect time inside the command is unknown"
   else
     echo "PASS|close 1008 ${el}s after suspension (bound ${bound}s)"
   fi
@@ -160,15 +174,15 @@ else
   F3L="F3 socket closed because of suspension"
   T=$(ticket "$VT"); CT=$(ticket "$AT")
   VREADY="$OUT/vready.$$"; CREADY="$OUT/cready.$$"
-  rem="$(jwt_exp_remaining "$VT")"; need=$((F3_BOUND+75))
+  need=$((F3_BOUND+F3_EXP_MARGIN))
   if [ -z "$T" ] || [ -z "$CT" ]; then
     record "$F3L" INCONCLUSIVE "no ticket minted (victim='${T:+ok}' control='${CT:+ok}')"
   else
     WS_TICKET="$T" python3 -I "$PROBE" "$WS/ws" --origin "$ORIGIN" --ticket-env WS_TICKET --mode hold \
-      --max-seconds $((F3_BOUND+120)) --ready-file "$VREADY" > "$OUT/f3_probe.json" 2> "$OUT/f3_probe.err" &
+      --max-seconds $((SUSPEND_TIMEOUT+F3_BOUND+60)) --ready-file "$VREADY" > "$OUT/f3_probe.json" 2> "$OUT/f3_probe.err" &
     WP=$!
     WS_TICKET="$CT" python3 -I "$PROBE" "$WS/ws" --origin "$ORIGIN" --ticket-env WS_TICKET --mode hold \
-      --max-seconds $((F3_BOUND+120)) --ready-file "$CREADY" > "$OUT/f3_control.json" 2> "$OUT/f3_control.err" &
+      --max-seconds $((SUSPEND_TIMEOUT+F3_BOUND+60)) --ready-file "$CREADY" > "$OUT/f3_control.json" 2> "$OUT/f3_control.err" &
     CP=$!
     for _ in $(seq 1 20); do [ -f "$VREADY" ] && [ -f "$CREADY" ] && break; sleep 0.5; done
     if [ ! -f "$VREADY" ] || ! kill -0 "$WP" 2>/dev/null; then
@@ -180,17 +194,20 @@ else
     else
       echo "victim and control sockets alive (pong received). Suspend (or revoke the session of) the victim user now."
       SUSP_RC=0
+      SUSP_START=$(date +%s.%N)
       if [ -n "${SUSPEND_CMD:-}" ]; then
-        bash -c "$SUSPEND_CMD" > "$OUT/suspend_cmd.out" 2>&1; SUSP_RC=$?; SUSP_EPOCH=$(date +%s.%N)
+        # N5: command text via ENVIRONMENT (not argv); output discarded unless SUSPEND_KEEP_OUTPUT=1; text never written to evidence
+        SUSP_SINK=/dev/null; [ "${SUSPEND_KEEP_OUTPUT:-0}" = 1 ] && SUSP_SINK="$OUT/suspend_cmd.out"
+        SUSPEND_CMD="$SUSPEND_CMD" timeout "$SUSPEND_TIMEOUT" bash -c 'eval "$SUSPEND_CMD"' > "$SUSP_SINK" 2>&1; SUSP_RC=$?; SUSP_EPOCH=$(date +%s.%N)
       else
-        printf 'Press Enter right after you suspended the victim: '
-        if read -r _; then SUSP_EPOCH=$(date +%s.%N); else SUSP_RC=99; SUSP_EPOCH=$(date +%s.%N); fi
+        printf 'Press Enter right after you suspended the victim (within %ss): ' "$SUSPEND_TIMEOUT"
+        if read -r -t "$SUSPEND_TIMEOUT" _; then SUSP_EPOCH=$(date +%s.%N); else SUSP_RC=99; SUSP_EPOCH=$(date +%s.%N); fi
       fi
-      echo "$SUSP_EPOCH" > "$OUT/suspend_epoch.txt"
+      printf 'start=%s\nreturn=%s\nrc=%s\n' "$SUSP_START" "$SUSP_EPOCH" "$SUSP_RC" > "$OUT/suspend_epoch.txt"
       # suspension must be proven effective: a NEW login or ticket mint for the victim is refused with an expected status
       susp=ok
       if [ "$SUSP_RC" -ne 0 ]; then
-        susp="suspension step did not complete (exit/read status $SUSP_RC)"
+        susp="suspension step did not complete (exit/read status $SUSP_RC; 124/99 = timeout after ${SUSPEND_TIMEOUT}s or closed stdin)"
       else
         LS="$(login_status "$VICTIM_USER" "$VICTIM_PASS")"; TS="$(ticket_status "$VT")"
         echo "post-suspension victim login status=$LS ticket status=$TS" >> "$OUT/results.txt"
@@ -203,19 +220,22 @@ else
         fi
       fi
       expc=ok
+      rem="$(jwt_exp_remaining "$VT")"   # N1: lifetime AT the suspension marker, not before the probes
       case "$rem" in none|"") expc="victim JWT exp unreadable";; *) [ "$rem" -gt "$need" ] || expc="victim JWT has ${rem}s left, need > ${need}s";; esac
       for _ in $(seq 1 $(( (F3_BOUND+5)*2 ))); do kill -0 "$WP" 2>/dev/null || break; sleep 0.5; done
       # R3-1: keep the control socket held for a full F3_BOUND after the victim is gone, then stop it (it sends the final ping)
       if ! kill -0 "$WP" 2>/dev/null; then sleep "$F3_BOUND"; fi
       kill "$WP" "$CP" 2>/dev/null; wait "$WP" 2>/dev/null; wait "$CP" 2>/dev/null
-      CC=$(jq -r '.close_code' "$OUT/f3_probe.json" 2>/dev/null); END=$(jq -r '.end' "$OUT/f3_probe.json" 2>/dev/null)
-      CE=$(jq -r '.close_epoch // empty' "$OUT/f3_probe.json" 2>/dev/null); RS=$(jq -r '.close_reason' "$OUT/f3_probe.json" 2>/dev/null)
+      CC=$(jq -r '.close_code // empty' "$OUT/f3_probe.json" 2>/dev/null); END=$(jq -r '.end // empty' "$OUT/f3_probe.json" 2>/dev/null)
+      CE=$(jq -r '.close_epoch // empty' "$OUT/f3_probe.json" 2>/dev/null); RS=$(jq -r '.close_reason // "none"' "$OUT/f3_probe.json" 2>/dev/null)
       CEND=$(jq -r '.end' "$OUT/f3_control.json" 2>/dev/null); CFP=$(jq -r '.final_pong' "$OUT/f3_control.json" 2>/dev/null)
       # R3-2: no / unparseable victim probe JSON (probe killed, OOM) = no observation, never "socket still open"
       if ! jq -e . "$OUT/f3_probe.json" >/dev/null 2>&1; then END=noprobe; CC=""; fi
       ctrl="$CEND/final_pong=$CFP"; [ "$CFP" = true ] && [ "$CEND" = stopped ] && ctrl=pong
-      if [ -n "$CE" ]; then EL=$(awk -v c="$CE" -v s="$SUSP_EPOCH" 'BEGIN{printf "%.2f", c-s}'); else EL=0; fi
-      res="$(f3_verdict "$CC" "$EL" "$F3_BOUND" "$END" "$ctrl" "$susp" "$expc")"
+      if [ -n "$CE" ]; then
+        EL=$(awk -v c="$CE" -v s="$SUSP_EPOCH" 'BEGIN{printf "%.2f", c-s}'); ELS=$(awk -v c="$CE" -v s="$SUSP_START" 'BEGIN{printf "%.2f", c-s}')
+      else EL=0; ELS=0; fi
+      res="$(f3_verdict "$CC" "$EL" "$F3_BOUND" "$END" "$ctrl" "$susp" "$expc" "$ELS")"
       record "$F3L (close code ${CC:-none}, reason='$RS')" "${res%%|*}" "${res#*|}"
     fi
   fi

@@ -1,0 +1,222 @@
+==================
+WARNING: DATA RACE
+Write at 0x00c0005c62a2 by goroutine 50:
+  runtime.slicecopy()
+      /usr/lib/go-1.26/src/runtime/slice.go:392 +0x0
+  crypto/tls.(*Config).initLegacySessionTicketKeyRLocked()
+      /usr/lib/go-1.26/src/crypto/tls/common.go:1067 +0x596
+  crypto/tls.(*Config).ticketKeys()
+      /usr/lib/go-1.26/src/crypto/tls/common.go:1106 +0x191
+  crypto/tls.(*Config).DecryptTicket()
+      /usr/lib/go-1.26/src/crypto/tls/ticket.go:358 +0x4a
+  github.com/quic-go/quic-go/http3.ConfigureTLSConfig()
+      /home/milosvasic/go/pkg/mod/github.com/quic-go/quic-go@v0.59.0/http3/server.go:50 +0x68
+  github.com/quic-go/quic-go/http3.(*Server).setupListenerForConn()
+      /home/milosvasic/go/pkg/mod/github.com/quic-go/quic-go@v0.59.0/http3/server.go:300 +0x6d
+  github.com/quic-go/quic-go/http3.(*Server).Serve()
+      /home/milosvasic/go/pkg/mod/github.com/quic-go/quic-go@v0.59.0/http3/server.go:212 +0x78
+  catalogizer.init.func1()
+      /home/milosvasic/.cache/claude-tmp/altsvc5/catalog-api/main_h3.go:21 +0x3a
+  catalogizer.startH3Stack.func2()
+      /home/milosvasic/.cache/claude-tmp/altsvc5/catalog-api/main_h3.go:66 +0x20d
+
+Previous read at 0x00c0005c62a6 by goroutine 48:
+  reflect.typedmemmove()
+      /usr/lib/go-1.26/src/runtime/mbarrier.go:213 +0x0
+  reflect.packEfaceData()
+      /usr/lib/go-1.26/src/reflect/value.go:143 +0xfb
+  reflect.packEface()
+      /usr/lib/go-1.26/src/reflect/value.go:126 +0x1d8
+  reflect.valueInterface()
+      /usr/lib/go-1.26/src/reflect/value.go:1512 +0x260
+  reflect.Value.Interface()
+      /usr/lib/go-1.26/src/reflect/value.go:1490 +0xb4
+  fmt.(*pp).printValue()
+      /usr/lib/go-1.26/src/fmt/print.go:770 +0xc5
+  fmt.(*pp).printValue()
+      /usr/lib/go-1.26/src/fmt/print.go:902 +0x2678
+  fmt.(*pp).printValue()
+      /usr/lib/go-1.26/src/fmt/print.go:854 +0x1d13
+  fmt.(*pp).printValue()
+      /usr/lib/go-1.26/src/fmt/print.go:922 +0x1325
+  fmt.(*pp).printArg()
+      /usr/lib/go-1.26/src/fmt/print.go:760 +0xb78
+  fmt.(*pp).doPrintf()
+      /usr/lib/go-1.26/src/fmt/print.go:1075 +0x697
+  fmt.Sprintf()
+      /usr/lib/go-1.26/src/fmt/print.go:239 +0x5c
+  github.com/stretchr/testify/assert.truncatingFormat()
+      /home/milosvasic/go/pkg/mod/github.com/stretchr/testify@v1.12.1/assert/assertions.go:622 +0x74
+  github.com/stretchr/testify/assert.NotSame()
+      /home/milosvasic/go/pkg/mod/github.com/stretchr/testify@v1.12.1/assert/assertions.go:575 +0xf7
+  github.com/stretchr/testify/require.NotSame()
+      /home/milosvasic/go/pkg/mod/github.com/stretchr/testify@v1.12.1/require/require.go:1740 +0xe7
+  catalogizer.TestAltSvc5_NoSharedTLSConfig()
+      /home/milosvasic/.cache/claude-tmp/altsvc5/catalog-api/main_altsvc5_test.go:24 +0x179
+  testing.tRunner()
+      /usr/lib/go-1.26/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /usr/lib/go-1.26/src/testing/testing.go:2101 +0x38
+
+Goroutine 50 (running) created at:
+  catalogizer.startH3Stack()
+      /home/milosvasic/.cache/claude-tmp/altsvc5/catalog-api/main_h3.go:63 +0x108a
+  catalogizer.startStackOrSkip()
+      /home/milosvasic/.cache/claude-tmp/altsvc5/catalog-api/main_altsvc4_test.go:35 +0x297
+  catalogizer.TestAltSvc5_NoSharedTLSConfig()
+      /home/milosvasic/.cache/claude-tmp/altsvc5/catalog-api/main_altsvc5_test.go:21 +0x58
+  testing.tRunner()
+      /usr/lib/go-1.26/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /usr/lib/go-1.26/src/testing/testing.go:2101 +0x38
+
+Goroutine 48 (running) created at:
+  testing.(*T).Run()
+      /usr/lib/go-1.26/src/testing/testing.go:2101 +0xb12
+  testing.runTests.func1()
+      /usr/lib/go-1.26/src/testing/testing.go:2585 +0x84
+  testing.tRunner()
+      /usr/lib/go-1.26/src/testing/testing.go:2036 +0x21c
+  testing.runTests()
+      /usr/lib/go-1.26/src/testing/testing.go:2583 +0x9e9
+  testing.(*M).Run()
+      /usr/lib/go-1.26/src/testing/testing.go:2443 +0xf4b
+  main.main()
+      _testmain.go:568 +0x164
+==================
+==================
+WARNING: DATA RACE
+Write at 0x00c0005c6398 by goroutine 50:
+  crypto/tls.(*Config).ticketKeys()
+      /usr/lib/go-1.26/src/crypto/tls/common.go:1134 +0xc49
+  crypto/tls.(*Config).DecryptTicket()
+      /usr/lib/go-1.26/src/crypto/tls/ticket.go:358 +0x4a
+  github.com/quic-go/quic-go/http3.ConfigureTLSConfig()
+      /home/milosvasic/go/pkg/mod/github.com/quic-go/quic-go@v0.59.0/http3/server.go:50 +0x68
+  github.com/quic-go/quic-go/http3.(*Server).setupListenerForConn()
+      /home/milosvasic/go/pkg/mod/github.com/quic-go/quic-go@v0.59.0/http3/server.go:300 +0x6d
+  github.com/quic-go/quic-go/http3.(*Server).Serve()
+      /home/milosvasic/go/pkg/mod/github.com/quic-go/quic-go@v0.59.0/http3/server.go:212 +0x78
+  catalogizer.init.func1()
+      /home/milosvasic/.cache/claude-tmp/altsvc5/catalog-api/main_h3.go:21 +0x3a
+  catalogizer.startH3Stack.func2()
+      /home/milosvasic/.cache/claude-tmp/altsvc5/catalog-api/main_h3.go:66 +0x20d
+
+Previous read at 0x00c0005c6398 by goroutine 48:
+  reflect.typedmemmove()
+      /usr/lib/go-1.26/src/runtime/mbarrier.go:213 +0x0
+  reflect.packEfaceData()
+      /usr/lib/go-1.26/src/reflect/value.go:143 +0xfb
+  reflect.packEface()
+      /usr/lib/go-1.26/src/reflect/value.go:126 +0x1d8
+  reflect.valueInterface()
+      /usr/lib/go-1.26/src/reflect/value.go:1512 +0x260
+  reflect.Value.Interface()
+      /usr/lib/go-1.26/src/reflect/value.go:1490 +0xb4
+  fmt.(*pp).printValue()
+      /usr/lib/go-1.26/src/fmt/print.go:770 +0xc5
+  fmt.(*pp).printValue()
+      /usr/lib/go-1.26/src/fmt/print.go:922 +0x1325
+  fmt.(*pp).printArg()
+      /usr/lib/go-1.26/src/fmt/print.go:760 +0xb78
+  fmt.(*pp).doPrintf()
+      /usr/lib/go-1.26/src/fmt/print.go:1075 +0x697
+  fmt.Sprintf()
+      /usr/lib/go-1.26/src/fmt/print.go:239 +0x5c
+  github.com/stretchr/testify/assert.truncatingFormat()
+      /home/milosvasic/go/pkg/mod/github.com/stretchr/testify@v1.12.1/assert/assertions.go:622 +0x74
+  github.com/stretchr/testify/assert.NotSame()
+      /home/milosvasic/go/pkg/mod/github.com/stretchr/testify@v1.12.1/assert/assertions.go:575 +0xf7
+  github.com/stretchr/testify/require.NotSame()
+      /home/milosvasic/go/pkg/mod/github.com/stretchr/testify@v1.12.1/require/require.go:1740 +0xe7
+  catalogizer.TestAltSvc5_NoSharedTLSConfig()
+      /home/milosvasic/.cache/claude-tmp/altsvc5/catalog-api/main_altsvc5_test.go:24 +0x179
+  testing.tRunner()
+      /usr/lib/go-1.26/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /usr/lib/go-1.26/src/testing/testing.go:2101 +0x38
+
+Goroutine 50 (running) created at:
+  catalogizer.startH3Stack()
+      /home/milosvasic/.cache/claude-tmp/altsvc5/catalog-api/main_h3.go:63 +0x108a
+  catalogizer.startStackOrSkip()
+      /home/milosvasic/.cache/claude-tmp/altsvc5/catalog-api/main_altsvc4_test.go:35 +0x297
+  catalogizer.TestAltSvc5_NoSharedTLSConfig()
+      /home/milosvasic/.cache/claude-tmp/altsvc5/catalog-api/main_altsvc5_test.go:21 +0x58
+  testing.tRunner()
+      /usr/lib/go-1.26/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /usr/lib/go-1.26/src/testing/testing.go:2101 +0x38
+
+Goroutine 48 (running) created at:
+  testing.(*T).Run()
+      /usr/lib/go-1.26/src/testing/testing.go:2101 +0xb12
+  testing.runTests.func1()
+      /usr/lib/go-1.26/src/testing/testing.go:2585 +0x84
+  testing.tRunner()
+      /usr/lib/go-1.26/src/testing/testing.go:2036 +0x21c
+  testing.runTests()
+      /usr/lib/go-1.26/src/testing/testing.go:2583 +0x9e9
+  testing.(*M).Run()
+      /usr/lib/go-1.26/src/testing/testing.go:2443 +0xf4b
+  main.main()
+      _testmain.go:568 +0x164
+==================
+--- FAIL: TestAltSvc5_NoSharedTLSConfig (0.04s)
+    main_altsvc5_test.go:24: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc5/catalog-api/main_altsvc5_test.go:24
+        	Error:      	Expected and actual point to the same object: 0xc0005c61e0 &tls.Config{Rand:io.Reader(nil), Time:(func() time.Time)(nil), Certificates:[]tls.Certificate{tls.Certificate{Certificate:[][]uint8{[]uint8{0x30, 0x82, 0x1, 0x55, 0x30, 0x81, 0xfb, 0xa0, 0x3, 0x2, 0x1, 0x2, 0x2, 0x1, 0x1, 0x30, 0xa, 0x6, 0x8, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x4, 0x3, 0x2, 0x30, 0x17, 0x31, 0x15, 0x30, 0x13, 0x6, 0x3, 0x55, 0x4, 0x3, 0x13, 0xc, 0x61, 0x6c, 0x74, 0x73, 0x76, 0x63, 0x33, 0x2d, 0x74, 0x65, 0x73, 0x74, 0x30, 0x1e, 0x17, 0xd, 0x32, 0x36, 0x31, 0x31, 0x31, 0x37, 0x31, 0x36, 0x35, 0x34, 0x33, 0x31, 0x5a, 0x17, 0xd, 0x32, 0x36, 0x31, 0x31, 0x31, 0x37, 0x31, 0x38, 0x35, 0x34, 0x33, 0x31, 0x5a, 0x30, 0x17, 0x31, 0x15, 0x30, 0x13, 0x6, 0x3, 0x55, 0x4, 0x3, 0x13, 0xc, 0x61, 0x6c, 0x74, 0x73, 0x76, 0x63, 0x33, 0x2d, 0x74, 0x65, 0x73, 0x74, 0x30, 0x59, 0x30, 0x13, 0x6, 0x7, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x2, 0x1, 0x6, 0x8, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x3, 0x1, 0x7, 0x3, 0x42, 0x0, 0x4, 0x64, 0x19, 0x2b, 0x4, 0x4b, 0x4e, 0x9d, 0xfc, 0xaa, 0xc1, 0x34, 0xa, 0x1b, 0x26, 0x7, 0xc3, 0x1b, 0x6b, 0x5b, 0x99, 0x94, 0x42, 0x34, 0x1d, 0x9, 0xe5, 0xb3, 0xcd, 0x1, 0x3a, 0x26, 0x73, 0xb4, 0x34, 0xbd, 0x21, 0x18, 0xff, 0x47, 0x8b, 0x63, 0x68, 0xdb, 0xb9, 0x5a, 0xcb, 0x22, 0x22, 0x47, 0x39, 0xb2, 0xa7, 0xd4, 0xd7, 0xf9, 0x43, 0x63, 0xa4, 0x34, 0x83, 0x37, 0xb3, 0x16, 0xfd, 0xa3, 0x38, 0x30, 0x36, 0x30, 0xe, 0x6, 0x3, 0x55, 0x1d, 0xf, 0x1, 0x1, 0xff, 0x4, 0x4, 0x3, 0x2, 0x7, 0x80, 0x30, 0x13, 0x6, 0x3, 0x55, 0x1d, 0x25, 0x4, 0xc, 0x30, 0xa, 0x6, 0x8, 0x2b, 0x6, 0x1, 0x5, 0x5, 0x7, 0x3, 0x1, 0x30, 0xf, 0x6, 0x3, 0x55, 0x1d, 0x11, 0x4, 0x8, 0x30, 0x6, 0x87, 0x4, 0x7f, 0x0, 0x0, 0x1, 0x30, 0xa, 0x6, 0x8, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x4, 0x3, 0x2, 0x3, 0x49, 0x0, 0x30, 0x46, 0x2, 0x21, 0x0, 0x84, 0x70, 0x90, 0x6c, 0xa3, 0xdd, 0xa6, 0xb1, 0x1c, 0x23, 0x96, 0x67, 0x1b, 0xb0, 0xf2, 0xae, 0xc0, 0xb, 0x22, 0x23, 0x1b, 0x9f, 0x44, 0xc2, 0x83, 0x34, 0x4a, 0x1, 0xfd, 0x65, 0xeb, 0x75, 0x2, 0x21, 0x0, 0x9e, 0x26, 0x6a, 0xac, 0x8e, 0x61, 0xc1, 0x10, 0x55, 0x56, 0xe8, 0xc4, 0x81, 0x61, 0x5d, 0x19, 0x56, 0x8f, 0x1c, 0xbf, 0x97, 0x3c, 0x4c, 0xa0, 0x74, 0x83, 0x2c, 0xda, 0x32, 0x7b, 0x7b, 0xf8}}, PrivateKey:(*ecdsa.PrivateKey)(0xc000784270), SupportedSignatureAlgorithms:[]tls.SignatureScheme(nil), OCSPStaple:[]uint8(nil), SignedCertificateTimestamps:[][]uint8(nil), Leaf:(*x509.Certificate)(nil)}}, NameToCertificate:map[string]*tls.Certificate(nil), GetCertificate:(func(*tls.ClientHelloInfo) (*tls.Certificate, error))(nil), GetClientCertificate:(func(*tls.CertificateRequestInfo) (*tls.Certificate, error))(nil), GetConfigForClient:(func(*tls.ClientHelloInfo) (*tls.Config, error))(nil), VerifyPeerCertificate:(func([][]uint8, [][]*x509.Certificate) error)(nil), VerifyConnection:(func(tls.ConnectionState) error)(nil), RootCAs:(*x509.CertPool)(nil), NextProtos:[]string{"h3", "h2", "http/1.1"}, ServerName:"", ClientAuth:0, ClientCAs:(*x509.CertPool)(nil), InsecureSkipVerify:false, CipherSuites:[]uint16(nil), PreferServerCipherSuites:true, SessionTicketsDisabled:false, SessionTicketKey:[32]uint8{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}, ClientSessionCache:tls.ClientSessionCache(nil), UnwrapSession:(func([]uint8, tls.ConnectionState) (*tls.SessionState, error))(nil), WrapSession:(func(tls.ConnectionState, *tls.SessionState) ([]uint8, error))(nil), MinVersion:0x0, MaxVersion:0x0, CurvePreferences:[]tls.CurveID(nil), DynamicRecordSizingDisabled:false, Renegotiation:0, KeyLogWriter:io.Writer(nil), EncryptedClientHelloConfigList:[]uint8(nil), EncryptedClientHelloRejectionVerify:(func(tls.ConnectionState) error)(nil), GetEncryptedClientHelloKeys:(func(*tls.ClientHelloInfo) ([]tls.EncryptedClientHelloKey, error))(nil), EncryptedClientHelloKeys:[]tls.EncryptedClientHelloKey(nil), mutex:sync.RWMutex{w:sync.Mutex{_:sync.noCopy{}, mu:sync.Mutex{state:0, sema:0x0}}, writerSem:0x0, readerSem:0x0, readerCount:atomic.Int32{_:atomic.noCopy{}, v:1}, readerWait:atomic.Int32{_:atomic.noCopy{}, v:0}}, sessionTicketKeys:[]tls.ticketKey(nil), autoSessionTicketKeys:[]tls.ticketKey(nil)}
+        	Test:       	TestAltSvc5_NoSharedTLSConfig
+        	Messages:   	ALTSVC5: http and http3 servers must not share one *tls.Config
+    testing.go:1712: race detected during execution of test
+==================
+WARNING: DATA RACE
+Write at 0x00c0005c6fc0 by goroutine 80:
+  net/http.http2ConfigureServer()
+      /usr/lib/go-1.26/src/net/http/h2_bundle.go:4275 +0x4b4
+  net/http.(*Server).onceSetNextProtoDefaults()
+      /usr/lib/go-1.26/src/net/http/server.go:3773 +0x14a
+  net/http.(*Server).onceSetNextProtoDefaults-fm()
+      <autogenerated>:1 +0x2e
+  sync.(*Once).doSlow()
+      /usr/lib/go-1.26/src/sync/once.go:78 +0xa1
+  catalogizer.startH3Stack.func1()
+      /home/milosvasic/.cache/claude-tmp/altsvc5/catalog-api/main_h3.go:50 +0x188
+
+Previous read at 0x00c0005c6fc0 by goroutine 81:
+  crypto/tls.(*Config).Clone()
+      /usr/lib/go-1.26/src/crypto/tls/common.go:1020 +0x99c
+  github.com/quic-go/quic-go/http3.ConfigureTLSConfig()
+      /home/milosvasic/go/pkg/mod/github.com/quic-go/quic-go@v0.59.0/http3/server.go:51 +0x75
+  github.com/quic-go/quic-go/http3.(*Server).setupListenerForConn()
+      /home/milosvasic/go/pkg/mod/github.com/quic-go/quic-go@v0.59.0/http3/server.go:300 +0x6d
+  github.com/quic-go/quic-go/http3.(*Server).Serve()
+      /home/milosvasic/go/pkg/mod/github.com/quic-go/quic-go@v0.59.0/http3/server.go:212 +0x78
+  catalogizer.init.func1()
+      /home/milosvasic/.cache/claude-tmp/altsvc5/catalog-api/main_h3.go:21 +0x3a
+  catalogizer.startH3Stack.func2()
+      /home/milosvasic/.cache/claude-tmp/altsvc5/catalog-api/main_h3.go:66 +0x20d
+
+Goroutine 80 (running) created at:
+  catalogizer.startH3Stack()
+      /home/milosvasic/.cache/claude-tmp/altsvc5/catalog-api/main_h3.go:48 +0xb3d
+  catalogizer.TestAltSvc5_ConcurrentStartRaceFree()
+      /home/milosvasic/.cache/claude-tmp/altsvc5/catalog-api/main_altsvc5_test.go:36 +0x26a
+  testing.tRunner()
+      /usr/lib/go-1.26/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /usr/lib/go-1.26/src/testing/testing.go:2101 +0x38
+
+Goroutine 81 (running) created at:
+  catalogizer.startH3Stack()
+      /home/milosvasic/.cache/claude-tmp/altsvc5/catalog-api/main_h3.go:63 +0x108a
+  catalogizer.TestAltSvc5_ConcurrentStartRaceFree()
+      /home/milosvasic/.cache/claude-tmp/altsvc5/catalog-api/main_altsvc5_test.go:36 +0x26a
+  testing.tRunner()
+      /usr/lib/go-1.26/src/testing/testing.go:2036 +0x21c
+  testing.(*T).Run.gowrap1()
+      /usr/lib/go-1.26/src/testing/testing.go:2101 +0x38
+==================
+--- FAIL: TestAltSvc5_ConcurrentStartRaceFree (0.35s)
+    testing.go:1712: race detected during execution of test
+FAIL

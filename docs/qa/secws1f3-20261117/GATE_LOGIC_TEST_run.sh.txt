@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # GATE-LOGIC UNIT TEST of LIVE_WS_CHECK.sh.txt (11.4.289(C)). NOT live evidence: the target is a local mock
 # (GATE_LOGIC_TEST_mock_server.py.txt). It only proves the script's verdict logic on declared scenarios.
-# usage: bash GATE_LOGIC_TEST_run.sh.txt <scratch-dir>
+# usage: bash GATE_LOGIC_TEST_run.sh.txt <scratch-dir>   (env SCRIPT=<path> runs the suite against another script copy, e.g. the round-4 script to show RED)
 # Each scenario asserts BOTH the overall exit code and the F3 line verdict. Overall exit is 3 whenever the F3 check is PASS
 # (the audience leg is always INCONCLUSIVE: uncovered) and 1 on an F3 FAIL; the F3 PASS must appear ONLY in scenario 'good'.
 set -u
-HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; S="${1:?scratch dir}"; mkdir -p "$S"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; S="${1:?scratch dir}"; mkdir -p "$S"; SCRIPT="${SCRIPT:-$HERE/LIVE_WS_CHECK.sh.txt}"
 PORT=$((20000 + RANDOM % 20000)); fails=0
 expect(){ if [ "$2" = "$3" ]; then echo "UNIT-PASS $1 ($2)"; else echo "UNIT-FAIL $1 (got $2, expected $3)"; fails=$((fails+1)); fi; }
 run(){ # scenario mockmode want_exit want_f3 suspend_cmd [extra env...]
@@ -14,13 +14,13 @@ run(){ # scenario mockmode want_exit want_f3 suspend_cmd [extra env...]
   python3 -I "$HERE/GATE_LOGIC_TEST_mock_server.py.txt" "$PORT" "$mode" "$trig" 2>/dev/null & local sp=$!
   sleep 0.8
   env BASE="http://127.0.0.1:$PORT" ADMIN_USER=a ADMIN_PASS=b VICTIM_USER=c VICTIM_PASS=d OUT="$S/out_$name" \
-    SUSPEND_CMD="${susp//TRIG/$trig}" F3_BOUND="${F3_BOUND:-6}" "$@" bash "$HERE/LIVE_WS_CHECK.sh.txt" > "$S/log_$name.txt" 2>&1 < /dev/null
+    SUSPEND_CMD="${susp//TRIG/$trig}" F3_BOUND="${F3_BOUND:-6}" "$@" bash "$SCRIPT" > "$S/log_$name.txt" 2>&1 < /dev/null
   local rc=$?; kill "$sp" 2>/dev/null; wait "$sp" 2>/dev/null
-  local f3; f3="$(grep 'F3 socket closed because' "$S/out_$name/results.txt" 2>/dev/null | cut -d' ' -f1)"
+  local f3; f3="$(grep 'F3 socket closed because' "$S/out_$name/results.txt" 2>/dev/null | head -1 | cut -d' ' -f1)"
   expect "scenario:$name exit" "$rc" "$wexit"; expect "scenario:$name F3 verdict" "${f3:-NONE}" "$wf3"
 }
 # 1. helper functions (source-only)
-export LIVE_WS_CHECK_SOURCE_ONLY=1; BASE=x OUT="$S"; . "$HERE/LIVE_WS_CHECK.sh.txt"; unset LIVE_WS_CHECK_SOURCE_ONLY
+export LIVE_WS_CHECK_SOURCE_ONLY=1; BASE=x OUT="$S"; . "$SCRIPT"; unset LIVE_WS_CHECK_SOURCE_ONLY
 [ "$(hostonly https://h.example:8443/x)" = h.example ] && echo "UNIT-PASS hostonly strips :port" || { echo "UNIT-FAIL hostonly"; fails=$((fails+1)); }
 # code el bound end ctrl susp exp => verdict
 for c in "1008 3.0 20 close pong ok ok PASS" "1008 25 20 close pong ok ok FAIL" "1000 3 20 close pong ok ok FAIL" \
@@ -44,17 +44,29 @@ run ignore-susp    ignore-suspension 3 INCONCLUSIVE 'touch TRIG'
 run control-closes control-closes-too 3 INCONCLUSIVE 'touch TRIG'
 run short-exp      short-exp         3 INCONCLUSIVE 'touch TRIG'
 run control-later  control-later     3 INCONCLUSIVE 'touch TRIG'
-# 14. victim probe SIGKILLed mid-run (no JSON): wrapper PROBE kills the victim's hold probe after 3 s
-cat > "$S/killprobe.py" <<'PYEOF'
+# 14. victim probe SIGKILLed mid-run (no JSON), victim socket still OPEN when killed (mock never-close, so a missing-JSON-as-timeout
+#     mutant reads FAIL). The wrapper kills the victim's real probe after 2 s and exec()s the real probe directly for every other probe.
+cat > "$S/killprobe2.py" <<'PYEOF'
 import os, subprocess, sys, time
-real = os.environ["REAL_PROBE"]
-args = sys.argv[1:]
+real = os.environ["REAL_PROBE"]; args = sys.argv[1:]
+if not ("hold" in args and os.environ.get("WS_TICKET", "").startswith("tc_")):
+    os.execv(sys.executable, [sys.executable, "-I", real] + args)
 p = subprocess.Popen([sys.executable, "-I", real] + args)
-if "hold" in args and os.environ.get("WS_TICKET", "").startswith("tc_"):
-    time.sleep(3); p.kill(); p.wait(); sys.exit(137)
-sys.exit(p.wait())
+time.sleep(2); p.kill(); p.wait(); sys.exit(137)
 PYEOF
-run probe-killed   good              3 INCONCLUSIVE 'touch TRIG' PROBE="$S/killprobe.py" REAL_PROBE="$HERE/ws_probe.py.txt"
+run probe-killed2  never-close       3 INCONCLUSIVE 'touch TRIG' PROBE="$S/killprobe2.py" REAL_PROBE="$HERE/ws_probe.py.txt"
+# 16. N1 expiry race: token valid at start, expires mid-SUSPEND_CMD; margin 5 so a ~16 s mock token passes the start check. Marker at ~12 s: ~3 s left < bound+margin.
+run expiry-race    expiry-race       3 INCONCLUSIVE 'sleep 12; touch TRIG' F3_BOUND=6 F3_EXP_MARGIN=5
+# 16b. SLOW (RUN_SLOW=1): the reviewer's round-4 race with DEFAULT margin 75: token 90 s, marker at ~87 s. Against the round-4 script this reads PASS (RED).
+if [ "${RUN_SLOW:-0}" = 1 ]; then run expiry-race-long expiry-race-long 3 INCONCLUSIVE 'sleep 84; touch TRIG' F3_BOUND=6; fi
+# 17. N2 late close: SUSPEND_CMD returns 5 s after its effect; close 8 s after the effect = 3 s after return (<= bound 6) but 8 s after start (> bound)
+run late-return    late-close        3 INCONCLUSIVE 'touch TRIG; sleep 5' F3_BOUND=6
+# 18. N1 timeout: SUSPEND_CMD overruns SUSPEND_TIMEOUT
+run suspend-timeout never-close      3 INCONCLUSIVE 'sleep 30' SUSPEND_TIMEOUT=3
+# 19. N3 injection: forged verdict line in the server close reason. Exactly ONE line may mention the F3 check and none may start with PASS.
+run inject         inject            1 FAIL         'touch TRIG'
+n="$(grep -c 'F3 socket closed because' "$S/out_inject/results.txt")"; expect "inject: exactly one F3 verdict line" "$n" 1
+p="$(grep -c '^PASS | F3' "$S/out_inject/results.txt")"; expect "inject: no forged PASS line" "$p" 0
 # 15. usage / output-directory errors must exit 2 (not 1)
 set +e
 env -u BASE ADMIN_USER=a ADMIN_PASS=b VICTIM_USER=c VICTIM_PASS=d OUT="$S/out_nobase" bash "$HERE/LIVE_WS_CHECK.sh.txt" >/dev/null 2>&1 </dev/null; expect "usage: BASE unset exit" "$?" 2
@@ -62,5 +74,27 @@ BASE=http://127.0.0.1:1 ADMIN_USER=a ADMIN_PASS=b VICTIM_USER="" VICTIM_PASS=d O
 : > "$S/afile"
 BASE=http://127.0.0.1:1 ADMIN_USER=a ADMIN_PASS=b VICTIM_USER=c VICTIM_PASS=d OUT="$S/afile/sub" bash "$HERE/LIVE_WS_CHECK.sh.txt" >"$S/log_unwritable.txt" 2>&1 </dev/null; expect "unwritable OUT exit" "$?" 2
 grep -q 'cannot create output directory' "$S/log_unwritable.txt" && echo "UNIT-PASS unwritable OUT message" || { echo "UNIT-FAIL unwritable OUT message"; fails=$((fails+1)); }
+# 20. NAMED MUTANTS of the script (each must make its target scenario give a WRONG verdict, i.e. the suite detects it)
+mutate(){ # name old new file : python string replacement, asserts exactly one occurrence
+  python3 -I - "$1" "$2" "$3" "$SCRIPT" "$S/mut_$1.sh" <<'PYEOF'
+import sys
+n, old, new, src, dst = sys.argv[1:6]
+t = open(src).read(); assert t.count(old) == 1, (n, t.count(old)); open(dst, "w").write(t.replace(old, new))
+PYEOF
+}
+mutscen(){ # mutantname mockmode wexit wf3 suspend [env...]  (want values = what the MUTANT wrongly gives)
+  local m="$1"; shift; PROBE="$HERE/ws_probe.py.txt" SCRIPT="$S/mut_$m.sh" run "mut_$m" "$@"
+}
+# N4: a missing victim JSON read as "still open" turns the killed-probe case into a false FAIL
+mutate M-N4-noprobe-as-timeout 'then END=noprobe; CC=""; fi' 'then :; fi; [ -z "$END" ] && END=timeout' && \
+  mutscen M-N4-noprobe-as-timeout never-close 1 FAIL 'touch TRIG' PROBE="$S/killprobe2.py" REAL_PROBE="$HERE/ws_probe.py.txt"
+# N1+N2 together (the expiry race is caught by BOTH: close at the expiry is also > bound after the command START; honest redundancy)
+mutate M-N1-expiry-at-start 'rem="$(jwt_exp_remaining "$VT")"   # N1' 'rem=9999   # N1' && \
+  cp "$S/mut_M-N1-expiry-at-start.sh" "$S/mut_M-N1N2.sh" && SCRIPT="$S/mut_M-N1N2.sh" mutate M-N1N2 'elst="${8:-$2}"' 'elst=0' && \
+  mutscen M-N1N2 expiry-race 3 PASS 'sleep 12; touch TRIG' F3_BOUND=6 F3_EXP_MARGIN=5
+mutate M-N2-no-start-check 'elst="${8:-$2}"' 'elst=0' && mutscen M-N2-no-start-check late-close 3 PASS 'touch TRIG; sleep 5' F3_BOUND=6
+# N3: sanitizer removed => forged verdict line lands in results.txt
+mutate M-N3-no-sanitize "tr -d '\\000-\\037\\177' | tr '|' '/' | cut -c1-200" 'cat' && mutscen M-N3-no-sanitize inject 1 FAIL 'touch TRIG'
+n="$(grep -c '^PASS | F3' "$S/out_mut_M-N3-no-sanitize/results.txt")"; expect "mutant M-N3: forged PASS line appears (suite detects the mutant)" "$n" 1
 for n in good ignore-susp control-closes; do echo "--- $n results.txt ---"; cat "$S/out_$n/results.txt"; done
 echo "gate-logic failures: $fails"; exit "$fails"

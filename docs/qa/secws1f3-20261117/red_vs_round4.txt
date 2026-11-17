@@ -1,0 +1,14 @@
+RED evidence (round 5): the round-5 gate-logic suite run against the round-4 script (ROUND4_SUPERSEDED_LIVE_WS_CHECK.sh.txt). GATE-LOGIC ONLY, NOT live evidence.
+--- suite UNIT-FAIL lines against the round-4 script (expected RED for late-return N2, inject N3; mutant M-N3 line is an artefact: the mutate step cannot apply to the round-4 text):
+UNIT-FAIL scenario:late-return F3 verdict (got PASS, expected INCONCLUSIVE)
+UNIT-FAIL inject: exactly one F3 verdict line (got 2, expected 1)
+UNIT-FAIL inject: no forged PASS line (got 1, expected 0)
+UNIT-FAIL mutant M-N3: forged PASS line appears (suite detects the mutant) (got , expected 1)
+gate-logic failures: 4
+--- N1 reviewer race, expiry-race-long (token 90 s, SUSPEND_CMD 'sleep 84; touch TRIG', F3_BOUND=6, default margin), single run each:
+round-4 script:
+rc=3
+PASS | F3 socket closed because of suspension (close code 1008, reason='authorization ended') | close 1008 3.26s after suspension (bound 6s)
+round-5 script:
+rc=3
+INCONCLUSIVE | F3 socket closed because of suspension (close code 1008, reason='authorization ended') | victim token may expire inside the window (victim JWT has 3s left, need > 81s): a 1008 would not prove the suspension

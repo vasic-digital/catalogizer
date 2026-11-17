@@ -1,0 +1,13 @@
+WIZENV-1 reachability (2026-11-17, HEAD 6e7d65b04)
+== non-test constructors of ConfigurationWizardService (outside its own file) ==
+catalog-api/services/configuration_wizard_service.go:137:func NewConfigurationWizardService(repo *repository.ConfigurationRepository) *ConfigurationWizardService {
+catalog-api/services/configuration_wizard_service.go:143:	service := &ConfigurationWizardService{
+count=2
+== control needle: same grep WITH test files (must be >0) ==
+50
+== os.Environ non-test occurrences in repo Go code ==
+catalog-api/services/configuration_wizard_service.go:1464:	info.EnvironmentVars = safeEnvironment(os.Environ())
+== wired config handler uses root_services.NewConfigurationService (main.go:572), not the wizard service ==
+572:	configurationService := root_services.NewConfigurationService(configurationRepo, "./config.json")
+== wizard-service-only exposure path: performSystemCheck stores SystemInfo in session.Configuration (service.go:910); no HTTP handler is bound to this type ==
+NOTE: the two hits above (lines 137,143) are the definition and its own composite literal in configuration_wizard_service.go (path-prefix filter mismatch); callers outside that file in non-test code: 0.

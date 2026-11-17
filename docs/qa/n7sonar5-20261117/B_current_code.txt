@@ -1,0 +1,12 @@
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return err
+	}
+
+	data := session.Configuration
+	if template != "" {
+		base, err := s.loadConfigTemplate(template)
+		if err != nil {
+			return err
+		}
+		data = mergeConfigMaps(base, session.Configuration)
+	}
