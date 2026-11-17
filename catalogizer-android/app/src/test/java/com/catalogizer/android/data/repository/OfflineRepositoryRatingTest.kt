@@ -80,4 +80,23 @@ class OfflineRepositoryRatingTest {
         assertNull(repo.getUserRating(1L))
         coVerify(exactly = 0) { sync.queueRatingUpdate(any(), any()) }
     }
+
+    @Test
+    fun `rating the same item twice replaces the first rating (P2 REPLACE not ABORT)`() = runBlocking {
+        repo.rateMediaOffline(1L, 4)
+        repo.rateMediaOffline(1L, 9)
+        assertEquals(9, repo.getUserRating(1L))
+        assertEquals(1, db.openHelper.readableDatabase.query("SELECT COUNT(*) FROM user_ratings WHERE media_id = 1").use {
+            it.moveToFirst(); it.getInt(0)
+        })
+    }
+
+    @Test
+    fun `UserRatingDao delete removes the rating`() = runBlocking {
+        repo.rateMediaOffline(1L, 6)
+        db.userRatingDao().delete(1L)
+        assertNull(repo.getUserRating(1L))
+        db.userRatingDao().delete(1L) // deleting a missing row is a no-op
+        assertNull(db.userRatingDao().get(1L))
+    }
 }

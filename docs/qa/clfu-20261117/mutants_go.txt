@@ -1,0 +1,8 @@
+== mutant E1 (hops after the first unchecked): OLD tests (SECQ|redirect, without CLFU)
+ok  	catalogizer/internal/netguard	1.184s
+== mutant E1: new test
+--- FAIL: TestCLFU_RedirectCheckAppliesToEveryHopOfAChain (0.00s)
+    class_test.go:487: 2-hop chain to a forbidden scheme was not refused with ErrBlocked: <nil>
+FAIL
+FAIL	catalogizer/internal/netguard	0.023s
+FAIL

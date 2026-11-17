@@ -94,6 +94,57 @@ describe('apiService.updateWatchProgress non-2xx answers (CLPROG-R2-n2)', () => 
   })
 })
 
+// CLFU-R-1 / CLFU-R-6: the REAL server bodies (catalog-api/handlers/media_handler.go, UpdateWatchProgress) always carry
+// "message" next to "reason" / "persisted"; the earlier fixtures omitted it, so a client reading message before reason
+// (mutant D1) or reporting a reason on success (mutant D3) was not caught.
+const REAL_STORED = '{"success":true,"message":"Watch progress updated","persisted":true}'
+const REAL_NOT_STORED_200 = '{"success":true,"message":"Watch progress not stored","persisted":false,"reason":"unknown_duration_no_row"}'
+const REAL_409 = '{"success":false,"message":"Watch progress not stored","persisted":false,"reason":"concurrent_update"}'
+
+describe('apiService.updateWatchProgress with the real server body shape (CLFU-R-1, CLFU-R-6)', () => {
+  beforeEach(() => mockInvoke.mockReset())
+
+  it('reports the reason field, not the generic message, for a 200 persisted:false', async () => {
+    const n = bodies([REAL_NOT_STORED_200])
+    const r = await apiService.updateWatchProgress(1, body)
+    expect(r.persisted).toBe(false)
+    expect(r.reason).toBe('unknown_duration_no_row')
+    expect(n()).toBe(1)
+  })
+
+  it('treats the real 409 body as concurrent_update: retries 3 times and keeps that reason', async () => {
+    const n = bodies([REAL_409])
+    const r = await apiService.updateWatchProgress(1, body)
+    expect(r.persisted).toBe(false)
+    expect(r.reason).toBe('concurrent_update')
+    expect(r.attempts).toBe(3)
+    expect(n()).toBe(3)
+  })
+
+  it('retries the real 409 body once and reports the real stored body as saved, with no reason', async () => {
+    const n = bodies([REAL_409, REAL_STORED])
+    const r = await apiService.updateWatchProgress(1, body)
+    expect(r.persisted).toBe(true)
+    expect(r.reason).toBeUndefined()
+    expect(r.attempts).toBe(2)
+    expect(n()).toBe(2)
+  })
+
+  it('sets no reason at all on success, even when the body carries a message (mutant D3)', async () => {
+    bodies([REAL_STORED])
+    const r = await apiService.updateWatchProgress(1, body)
+    expect(r.persisted).toBe(true)
+    expect('reason' in r ? r.reason : undefined).toBeUndefined()
+  })
+
+  it('prefers reason over error over message when all are present', async () => {
+    bodies(['{"success":false,"reason":"r","error":"e","message":"m"}'])
+    expect((await apiService.updateWatchProgress(1, body)).reason).toBe('r')
+    bodies(['{"success":false,"error":"e","message":"m"}'])
+    expect((await apiService.updateWatchProgress(1, body)).reason).toBe('e')
+  })
+})
+
 describe('msToSeconds (VLC ms to server seconds)', () => {
   it('converts milliseconds to seconds', () => {
     expect(msToSeconds(125000)).toBe(125)

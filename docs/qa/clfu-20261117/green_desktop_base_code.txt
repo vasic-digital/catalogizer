@@ -1,0 +1,13 @@
+
+ RUN  v0.34.6 /home/milosvasic/.cache/claude-tmp/clfu/catalogizer-desktop
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+(node:3566243) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/services/__tests__/apiService.watchProgress.test.ts  (15 tests) 35ms
+
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  20:37:12
+   Duration  4.58s (transform 243ms, setup 920ms, collect 181ms, tests 35ms, environment 1.13s, prepare 426ms)
+

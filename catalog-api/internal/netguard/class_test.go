@@ -461,3 +461,43 @@ func TestSECQ1A_Live_GoWebDAVPublicRootCannotBeRedirectedIntoLAN(t *testing.T) {
 		t.Fatal("positive control did not reach the LAN server")
 	}
 }
+
+// CLFU / FU3-R-M1: the redirect check is applied on EVERY hop, not only the first. A chain that starts on an allowed
+// private origin, hops to another allowed private origin, and only then points at a forbidden scheme or a never-approved
+// address is refused at the third request. A check that returned early after the first hop (len(via) > 1 skipped) lets
+// both through.
+func TestCLFU_RedirectCheckAppliesToEveryHopOfAChain(t *testing.T) {
+	envClean(t)
+	mk := func(u string) *http.Request {
+		r, err := http.NewRequest("GET", u, nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return r
+	}
+	first, second := mk("http://192.168.1.10/a"), mk("http://192.168.1.11/b")
+	via := []*http.Request{first, second}
+	chk := OperatorCheckRedirectFor(ClassPrivate)
+
+	// control needle: an allowed third hop on the same chain is accepted, so the refusals below come from the hop itself
+	if err := chk(mk("http://192.168.1.12/c"), via); err != nil {
+		t.Fatalf("control: an allowed private third hop was refused: %v", err)
+	}
+	if err := chk(mk("gopher://192.168.1.12:70/x"), via); err == nil || !errors.Is(err, ErrBlocked) {
+		t.Fatalf("2-hop chain to a forbidden scheme was not refused with ErrBlocked: %v", err)
+	}
+	if err := chk(mk("http://169.254.169.254/latest/meta-data"), via); err == nil || !errors.Is(err, ErrBlocked) {
+		t.Fatalf("2-hop chain to the link-local metadata address was not refused with ErrBlocked: %v", err)
+	}
+	// the same hop on a longer chain (9 hops already followed) is still checked, and the 10-hop cap still applies
+	long := make([]*http.Request, 9)
+	for i := range long {
+		long[i] = first
+	}
+	if err := chk(mk("http://169.254.169.254/"), long); err == nil || !errors.Is(err, ErrBlocked) {
+		t.Fatalf("a hop after 9 earlier hops was not checked: %v", err)
+	}
+	if err := chk(mk("http://192.168.1.12/c"), append(long, first)); err == nil {
+		t.Fatal("the 10-redirect cap no longer applies")
+	}
+}
