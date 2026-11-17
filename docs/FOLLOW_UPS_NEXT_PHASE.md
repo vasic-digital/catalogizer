@@ -3683,3 +3683,10 @@ CAT-LEGACY-MEDIAHANDLER-1: removal not approved; deep-dive of the whole legacy m
 - PGTX1-R-F4 (minor): SafeRollback/SafeCommit take *sql.Tx; use a small interface.
 - PGTX1-R-N1/N2 (nit): stale comments (connection.go:160, tx_helpers.go:16, playback_session_repository.go:145); sql.Conn path in encryption.go unguarded (SQLite-only).
 - Open from author: PlaylistService schema drift (21 sites) needs its own item; rename-tracker PG paths not driven live.
+
+## REDFIX1 review (Opus, 2026-11-17) — GO-with-follow-ups, landed PROVISIONAL
+- REDFIX1-R-1 (IMPORTANT at second landing): s1g9r2 and redfix1 both add `"main_router.go": {"altSvcMiddleware"}` to preGateAllowedSymbols -> duplicate map key, package fails to build after merge. Whichever lands second must drop its own line; s1g9r2's preGateDeclPins pin (same hash 033942399f…) is stronger (wired into the allow decision); redfix1 pin test then redundant but harmless.
+- REDFIX1-R-2 (minor): pin is a separate test, not part of the allow decision (malicious body leaves R7/S1G6F3 green); s1g9r2's preGateBodyPinned closes it.
+- REDFIX1-R-3 (minor): R7 checks allow-list per file, not per symbol (mutant M5 survives); make used-check per (file,symbol).
+- REDFIX1-R-4 (minor): evidence README wrongly says R5 did not fail in scratch rerun (it did; excerpt truncated); red_rerun_scratch_clone.txt exit code is the pipe's.
+- REDFIX1-R-5 (nit): in-memory mutants depend on exact byte anchors.
