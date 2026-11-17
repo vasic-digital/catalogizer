@@ -1,0 +1,26 @@
+--- FAIL: TestRatingRequiresAuthBeforeParsing (0.18s)
+    media_rating_per_user_test.go:128: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/rating1/catalog-api/handlers/media_rating_per_user_test.go:128
+        	Error:      	Not equal: 
+        	            	expected: 401
+        	            	actual  : 400
+        	Test:       	TestRatingRequiresAuthBeforeParsing
+        	Messages:   	PUT
+    media_rating_per_user_test.go:128: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/rating1/catalog-api/handlers/media_rating_per_user_test.go:128
+        	Error:      	Not equal: 
+        	            	expected: 401
+        	            	actual  : 400
+        	Test:       	TestRatingRequiresAuthBeforeParsing
+        	Messages:   	GET
+    media_rating_per_user_test.go:128: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/rating1/catalog-api/handlers/media_rating_per_user_test.go:128
+        	Error:      	Not equal: 
+        	            	expected: 401
+        	            	actual  : 400
+        	Test:       	TestRatingRequiresAuthBeforeParsing
+        	Messages:   	DELETE
+FAIL
+FAIL	catalogizer/handlers	1.139s
+FAIL
+exit=1

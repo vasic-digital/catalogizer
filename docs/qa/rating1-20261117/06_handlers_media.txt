@@ -1,0 +1,2 @@
+ok  	catalogizer/handlers	114.153s
+exit=0

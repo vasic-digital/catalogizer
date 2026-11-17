@@ -1,0 +1,20 @@
+--- FAIL: TestRatingIsPerUser_HorizontalAuthz (0.06s)
+    media_rating_per_user_test.go:66: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/rating1/catalog-api/handlers/media_rating_per_user_test.go:66
+        	Error:      	Expected nil, but got: 8
+        	Test:       	TestRatingIsPerUser_HorizontalAuthz
+        	Messages:   	B must not see A's rating
+    media_rating_per_user_test.go:74: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/rating1/catalog-api/handlers/media_rating_per_user_test.go:74
+        	Error:      	Not equal: 
+        	            	expected: 3
+        	            	actual  : 8
+        	Test:       	TestRatingIsPerUser_HorizontalAuthz
+    media_rating_per_user_test.go:82: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/rating1/catalog-api/handlers/media_rating_per_user_test.go:82
+        	Error:      	Expected nil, but got: 8
+        	Test:       	TestRatingIsPerUser_HorizontalAuthz
+FAIL
+FAIL	catalogizer/handlers	0.640s
+FAIL
+exit=1

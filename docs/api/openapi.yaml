@@ -3472,6 +3472,89 @@ paths:
         '404':
           description: Media item not found
 
+  /api/v1/media/{id}/rating:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    put:
+      tags: [media]
+      summary: Set the caller's rating
+      description: >-
+        Stores the authenticated user's OWN rating of the media item (user_media_ratings, one row per user and item,
+        CAT-RATING-1). The value is an integer from 0 to 10 (0 is a real rating, distinct from not rated); 7 and 7.0 are
+        accepted, 7.5, strings, null and out-of-range values are 400. It never reads or changes another user's rating.
+        Checks run in the order 401, 400 (id, body), 404.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              properties:
+                rating:
+                  type: integer
+                  minimum: 0
+                  maximum: 10
+      responses:
+        '200':
+          description: Rating stored
+        '400':
+          description: Invalid media id, invalid JSON body, or `rating` missing, non-numeric, fractional or outside 0..10
+        '401':
+          description: Authentication required (checked before the id and body are parsed)
+        '404':
+          description: Media item not found
+    get:
+      tags: [media]
+      summary: Get the caller's rating
+      description: >-
+        Returns the authenticated user's OWN rating of the media item, or `rating: null` when the caller has not rated it.
+        Another user's rating is never returned.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: The caller's rating (integer 0..10) or null
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  media_id:
+                    type: integer
+                  rating:
+                    type: integer
+                    nullable: true
+                    minimum: 0
+                    maximum: 10
+        '400':
+          description: Invalid media id
+        '401':
+          description: Authentication required
+        '404':
+          description: Media item not found
+    delete:
+      tags: [media]
+      summary: Remove the caller's rating
+      description: Deletes the authenticated user's OWN rating; idempotent (200 when there was none). Another user's rating is never touched.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Rating removed (or none existed)
+        '400':
+          description: Invalid media id
+        '401':
+          description: Authentication required
+        '404':
+          description: Media item not found
+
   /api/v1/media/recent:
     get:
       tags: [media]

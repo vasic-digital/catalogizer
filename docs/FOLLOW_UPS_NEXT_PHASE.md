@@ -3641,3 +3641,17 @@ CAT-LEGACY-MEDIAHANDLER-1: removal not approved; deep-dive of the whole legacy m
 - ALTSVC3-R-m5: call pin checks CallExpr text only; pin assignment LHS and nil-guarded Shutdown/Close (M2).
 - ALTSVC3-R-n1..n3 (nit): h3 UDP socket never closed; freeTCPUDPPort race should SKIP not FAIL; real-main startup test binds fixed port 28443.
 - Note: s1g9r2/redfix1 allow-list entries for altSvcMiddleware stay in main_router.go (unchanged by altsvc3).
+
+## CAT-RATING-1 (operator decision 2026-11-17: per-user 0..10 rating) **[ADDRESSED server side, PROVISIONAL]**
+- Route: `PUT|GET|DELETE /api/v1/media/:id/rating` (group `auth`, no extra gate; a rating is the caller's own row, every query is scoped by the authenticated user id). Table `user_media_ratings(user_id, media_id, rating INTEGER CHECK 0..10, created_at, updated_at)`, migration v31, FK cascade on users and media_items (same shape as `user_favorites`, v30).
+- Decision recorded: integer 0..10 only (no half steps: no existing column, client or document needs them; `media_items.rating` / external ratings are a different community value and are untouched). 0 is a real rating, distinct from unrated. Body `{"rating": N}`; N may be written `7` or `7.0` (keeps the Android `RatingRequest(Double)` wire shape), 7.5 / string / null / bool / out of range = 400. GET returns `rating: null` when unrated (200, not 404). DELETE is idempotent. Order 401, 400 (id, body), 404 (as PUT favorite).
+- SQLite upsert is `INSERT OR REPLACE` (dialect helper; bundled build predates 3.24), so `created_at` is refreshed on update there; `updated_at` is the column to trust.
+- Follow-ups (clients NOT touched here): Android `rateMedia` already calls `PUT media/{id}/rating` with `{"rating": Double}` (works for integral values; UI sends nothing yet, AFAV-9); catalog-web and desktop/api-client have no rating call; no aggregate (average) endpoint exists; GET /media/:id does not embed the caller's rating (use GET .../rating). `docs/api/API_DOCUMENTATION.md` and `docs/API_CONTRACTS.md` not extended (openapi + API_ENDPOINTS + ROUTE_AUTHZ_TABLE are). Live contract sweep (`api_contract_live_test.go`, build tag live) NOT run here: its happy-path expectations for the three new operations are UNCONFIRMED (`api_contract_happy_exceptions.tsv` unchanged).
+
+## RATING1 review (Opus, 2026-11-17) — GO-with-follow-ups, landed PROVISIONAL
+- F1 adopted: reviewer tests (PG, user-cascade, updated_at, PUT body) added as handlers/media_rating_review_test.go.
+- F2 fixed: ROUTE_AUTHZ_TABLE PUT rating plain-user cell 404 -> 400.
+- RATING1-R-F3 (minor, client): Android RatingRequest(Double) 4.5 is rejected 400 and SyncManager retries then drops; OfflineRepository.rateMediaOffline writes the per-user rating into community-rating column. Client needs integer 0..10 and its own per-user field.
+- RATING1-R-N1 (nit): created_at (DB clock) vs updated_at (Go UTC) mixed on PG; SQLite INSERT OR REPLACE refreshes created_at.
+- RATING1-R-N2 (nit): duplicate JSON keys last-wins, untested.
+- Live contract sweep for the rating routes ran trimmed only (full sweep UNCONFIRMED).

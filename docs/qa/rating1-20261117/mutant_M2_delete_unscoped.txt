@@ -1,0 +1,12 @@
+--- FAIL: TestRatingIsPerUser_HorizontalAuthz (0.18s)
+    media_rating_per_user_test.go:80: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/rating1/catalog-api/handlers/media_rating_per_user_test.go:80
+        	Error:      	Not equal: 
+        	            	expected: float64(8)
+        	            	actual  : <nil>(<nil>)
+        	Test:       	TestRatingIsPerUser_HorizontalAuthz
+        	Messages:   	B's delete must not remove A's rating
+FAIL
+FAIL	catalogizer/handlers	1.217s
+FAIL
+exit=1

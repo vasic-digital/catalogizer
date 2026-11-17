@@ -1,0 +1,12 @@
+--- FAIL: TestRatingValidation (0.04s)
+    media_rating_per_user_test.go:104: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/rating1/catalog-api/handlers/media_rating_per_user_test.go:104
+        	Error:      	Not equal: 
+        	            	expected: 400
+        	            	actual  : 200
+        	Test:       	TestRatingValidation
+        	Messages:   	body {"rating": 7.5}
+FAIL
+FAIL	catalogizer/handlers	0.394s
+FAIL
+exit=1
