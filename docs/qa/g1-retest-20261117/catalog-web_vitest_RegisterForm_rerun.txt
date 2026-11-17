@@ -1,0 +1,32 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/milosvasic/.cache/claude-tmp/g1xKeE/c/catalog-web[39m
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+(node:2308356) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[90mstderr[2m | src/components/auth/__tests__/RegisterForm.test.tsx[2m > [22m[2mRegisterForm[2m > [22m[2mRendering[2m > [22m[2mrenders the registration form with all elements
+[22m[39mWarning: `ReactDOMTestUtils.act` is deprecated in favor of `React.act`. Import `act` from `react` instead of `react-dom/test-utils`. See https://react.dev/warnings/react-dom-test-utils for more info.
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ [32m✓[39m src/components/auth/__tests__/RegisterForm.test.tsx [2m([22m[2m23 tests[22m[2m)[22m[33m 12735[2mms[22m[39m
+       [33m[2m✓[22m[39m renders the registration form with all elements [33m 567[2mms[22m[39m
+       [33m[2m✓[22m[39m shows error when username is empty on submit [33m 1010[2mms[22m[39m
+       [33m[2m✓[22m[39m shows error when username is too short [33m 929[2mms[22m[39m
+       [33m[2m✓[22m[39m shows error when email is invalid [33m 916[2mms[22m[39m
+       [33m[2m✓[22m[39m shows error when password is too short [33m 1270[2mms[22m[39m
+       [33m[2m✓[22m[39m shows error when passwords do not match [33m 747[2mms[22m[39m
+       [33m[2m✓[22m[39m shows error when first name is empty [33m 542[2mms[22m[39m
+       [33m[2m✓[22m[39m shows error when last name is empty [33m 754[2mms[22m[39m
+       [33m[2m✓[22m[39m clears error when field is corrected [33m 661[2mms[22m[39m
+       [33m[2m✓[22m[39m calls register with correct data on valid submission [33m 796[2mms[22m[39m
+       [33m[2m✓[22m[39m navigates to login on successful registration [33m 620[2mms[22m[39m
+       [33m[2m✓[22m[39m shows loading state during registration [33m 572[2mms[22m[39m
+       [33m[2m✓[22m[39m handles registration errors gracefully [33m 953[2mms[22m[39m
+       [33m[2m✓[22m[39m does not submit form when validation fails [33m 855[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m23 passed[39m[22m[90m (23)[39m
+[2m   Start at [22m 09:47:30
+[2m   Duration [22m 16.02s[2m (transform 542ms, setup 233ms, import 1.65s, tests 12.73s, environment 1.06s)[22m
+
