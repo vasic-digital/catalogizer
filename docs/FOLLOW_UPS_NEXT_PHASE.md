@@ -3463,3 +3463,8 @@ HAUTHZ-F2 fixed: PUT /media/:id/favorite and GET /media/:id use the new `user_fa
 - ALTSVC-R1-F2 (minor, test-instrumentation): RED.txt is a hand-condensed summary, not raw go test output; green_characterization.txt lacks command line and tree/submodule fingerprint. Recapture raw output with command and `git rev-parse HEAD`.
 - ALTSVC-R1-F3 (nit): G1FIX-2 "only the group handlers" -> "the engine's root RouterGroup handlers (routes registered later); earlier groups copied theirs".
 - ALTSVC-R1-F4 (nit): CAT-ALTSVC-1(b): Use runs inside the certificate branch but before http3Server.ListenAndServe binds; bind failure only logged ("certificate obtained, bind not confirmed").
+
+## splashfix review round 1 (Opus, GO-with-follow-ups, PROVISIONAL)
+- SPLASH-R1-F1 (minor, process-doc): catalogizer-desktop and installer-wizard declare no Node version (`engines`/`.nvmrc`); document that the Storage helper is only active on Node versions with the native webstorage global (observed Node 26.8.1).
+- SPLASH-R1-F2 (minor, test-instrumentation): fallback Storage is not `instanceof Storage` and `sessionStorage` stays Node-native; consider `--no-experimental-webstorage` in test execArgv instead (restores jsdom Storage). No current use of either.
+- SPLASH-R1-F3 (nit): helper duplicated in two setup files; README wording "invert first-launch test" should say the component condition was inverted; mutant-desktop.txt lacks the mutant diff.
