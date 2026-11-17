@@ -3561,3 +3561,10 @@ DO NOT use LIVE_WS_CHECK for the live G4 run until N1-N4 are fixed (they are rep
 
 ## S1G9 review (Opus, NO-GO, round 1 of structural successor, NOT landed)
 - Important: RV1 helper class not pinned; RV2 RequireAdmin body not content-pinned; RV5 behaviour layer checks status only, not 401/403 body. Minor: timeout counted as reached; control needle `n > 3*len` trivial (use n == 9*len); tests send discovery multicast. Fix needs (a) README states RV1/RV2/RV5 classes, (b) pin RequireAdmin body, (c) assert canonical 401/403 body.
+
+## secws1f3e round-5 review (Opus, NO-GO at budget; operator decision 2026-11-17: new item, fresh budget)
+- SECWS1F3E-R5-1 (important): non-integer F3_BOUND/F3_EXP_MARGIN gives exit 0 with the F3 check skipped; validate integers (exit 2) and assert both F3 labels recorded.
+- SECWS1F3E-R5-2 (important): SUSPEND_CMD reading the terminal hangs under plain `timeout`; use `</dev/null` and `--foreground --kill-after`.
+- R5-3 strace needle for SUSPEND_CMD sits in a comment (document: no secrets as args); R5-4 N1-only scenario `expiry-race` missing; R5-5 san() passes U+2028/U+0085/U+009B; R5-6 harness start-up race (fixed sleep, no listen check); R5-7 usage tests hardcode round-5 script; R5-8 manual mode almost never PASS (document). Script remains DO-NOT-USE for live G4.
+## Operator decisions 2026-11-17 (sweep 8)
+Rating 0-10 per-user route; SECQ-1 netguard+allow-list for storage-root WebDAV; Alt-Svc flag after bind before rc.1; clients: progress duration/persisted:false in rc.1, favorites unification later; /discovery,/ws public, image 761 MB accepted; CAT-LEGACY-MEDIAHANDLER-1: exhaustive investigation first, no removal yet.
