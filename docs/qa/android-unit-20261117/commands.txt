@@ -1,0 +1,4 @@
+Containerised (rootless podman, docker.io/library/eclipse-temurin:17-jdk, Android SDK bind-mounted from host, online dep resolution):
+podman run --rm --userns=keep-id --memory=8g --cpus=4 -v <clone>:/work -v ~/Android/Sdk:/opt/sdk -v <w>/gh:/gh -e GRADLE_USER_HOME=/gh -e ANDROID_HOME=/opt/sdk -w /work/<module> eclipse-temurin:17-jdk nice -n 10 ./gradlew --no-daemon --max-workers=2 :app:testDebugUnitTest
+runs: android main (rc=0, 469s); androidtv main first (rc=1, 99s, google-services.json missing = RED log); androidtv main with untracked copy of google-services.json.example (rc=0, 627s); android on branch fubundle e7ef9bfc7 with --tests '*CatalogizerApiTest' '*SyncManagerTest' '*MediaRepositoryTest' (rc=1, 81s).
+local.properties (sdk.dir=/opt/sdk) and google-services.json are untracked scratch files, not committed.

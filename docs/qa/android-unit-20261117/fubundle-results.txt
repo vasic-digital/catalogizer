@@ -1,0 +1,30 @@
+com.catalogizer.android.CatalogizerApplicationTest tests 0 fail 0 err 0
+com.catalogizer.android.data.remote.CatalogizerApiTest tests 5 fail 2 err 0
+ FAIL setFavoriteStatus surfaces a 400 from the server as an unsuccessful response
+java.lang.IllegalArgumentException: Parameter type must not include a type variable or wildcard: java.util.Map<java.lang.String, ?> (parameter #2)
+    for method CatalogizerApi.setFavoriteStatus
+	at retrofit2.Utils.methodError(Utils.java:54)
+	at retrofit2.Utils.methodError(Utils.java:43)
+	at retrofit2.Utils.parameterError(Utils.java:64)
+	at retrofit2.RequestFactory$Builder.validateResolvableType(RequestFactory.java:813)
+	at retrofit2.RequestFactory$Builder.parseParameterAnnotation(RequestFactory.java:767)
+	at retrofit2.RequestFactory$Builder.parseParameter(RequestFactory.java:325)
+	at retrofit2.RequestFactory$Builder.build(RequestFactory.java:206)
+	at retrofit2.RequestFactory.parseAnnotations(RequestFactory.java:67)
+	at retrofit2.ServiceMethod.parseAnnotations(ServiceMethod.java:26)
+	at retrofit2.Retrofit.loadServiceMethod(Retrofit.java:202)
+ FAIL setFavoriteStatus sends PUT media-id-favorite with the favorite flag as JSON
+java.lang.IllegalArgumentException: Parameter type must not include a type variable or wildcard: java.util.Map<java.lang.String, ?> (parameter #2)
+    for method CatalogizerApi.setFavoriteStatus
+	at retrofit2.Utils.methodError(Utils.java:54)
+	at retrofit2.Utils.methodError(Utils.java:43)
+	at retrofit2.Utils.parameterError(Utils.java:64)
+	at retrofit2.RequestFactory$Builder.validateResolvableType(RequestFactory.java:813)
+	at retrofit2.RequestFactory$Builder.parseParameterAnnotation(RequestFactory.java:767)
+	at retrofit2.RequestFactory$Builder.parseParameter(RequestFactory.java:325)
+	at retrofit2.RequestFactory$Builder.build(RequestFactory.java:206)
+	at retrofit2.RequestFactory.parseAnnotations(RequestFactory.java:67)
+	at retrofit2.ServiceMethod.parseAnnotations(ServiceMethod.java:26)
+	at retrofit2.Retrofit.loadServiceMethod(Retrofit.java:202)
+com.catalogizer.android.data.sync.SyncManagerTest tests 14 fail 0 err 0
+com.catalogizer.android.data.repository.MediaRepositoryTest tests 26 fail 0 err 0
