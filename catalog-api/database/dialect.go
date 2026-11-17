@@ -123,7 +123,7 @@ func (d *Dialect) CurrentTimestamp() string {
 var boolColumnPattern = regexp.MustCompile(
 	`(?i)\b(is_active|is_locked|is_system|is_default|is_forced|is_duplicate|is_directory|` +
 		`deleted|enabled|verified_sync|is_favorite|is_public|is_smart|shuffle_enabled|` +
-		`hdr|dolby_vision|dolby_atmos|is_synced)\s*=\s*([01])\b`)
+		`hdr|dolby_vision|dolby_atmos|is_synced|is_completed|completed|favorite|is_primary|can_read|can_write)\s*=\s*([01])\b`)
 
 // RewriteBooleanLiterals converts "column = 0" → "column = FALSE" and
 // "column = 1" → "column = TRUE" for known boolean columns in PostgreSQL.

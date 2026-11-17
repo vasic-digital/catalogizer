@@ -1,0 +1,9 @@
+--- PASS: TestPlaybackSessionPostgres_StartProgressEndGetHistory (7.92s)
+--- PASS: TestPlaybackSessionPostgres_ConcurrentEnds (8.11s)
+--- PASS: TestPlaybackSessionRepository_StartProgressEnd (0.12s)
+--- PASS: TestPlaybackSessionRepository_HandlesBookPages (0.10s)
+--- PASS: TestPlaybackSessionRepository_PersistsDurationTotal (0.20s)
+--- PASS: TestPlaybackSessionRepository_ListHistoryEmpty (0.09s)
+--- PASS: TestPlaybackSessionRepository_UnknownSessionIsNotFound (0.14s)
+PASS
+ok  	catalogizer/repository	16.723s

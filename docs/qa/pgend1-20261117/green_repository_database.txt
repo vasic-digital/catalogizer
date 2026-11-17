@@ -1,0 +1,2 @@
+ok  	catalogizer/repository	584.892s
+ok  	catalogizer/database	98.573s

@@ -1,0 +1,16 @@
+--- FAIL: TestPlaybackSessionPostgres_StartProgressEndGetHistory (8.17s)
+    playback_session_pg_test.go:46: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/pgend1/catalog-api/repository/playback_session_pg_test.go:46
+        	Error:      	Received unexpected error:
+        	            	pq: column "completed" is of type boolean but expression is of type integer
+        	Test:       	TestPlaybackSessionPostgres_StartProgressEndGetHistory
+        	Messages:   	Start on PostgreSQL
+--- FAIL: TestPlaybackSessionPostgres_ConcurrentEnds (11.31s)
+    playback_session_pg_test.go:96: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/pgend1/catalog-api/repository/playback_session_pg_test.go:96
+        	Error:      	Received unexpected error:
+        	            	pq: column "completed" is of type boolean but expression is of type integer
+        	Test:       	TestPlaybackSessionPostgres_ConcurrentEnds
+FAIL
+FAIL	catalogizer/repository	19.606s
+FAIL
