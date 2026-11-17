@@ -735,6 +735,7 @@ func (h *MediaEntityHandler) fetchTMDBMetadata(ctx context.Context, title string
 	}
 
 	client := h.buildProxyHTTPClient(10 * time.Second)
+	defer client.CloseIdleConnections() // per-request client: release keep-alive goroutines (I2)
 
 	var searchResp struct {
 		Results []struct {

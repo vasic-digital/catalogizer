@@ -21,7 +21,7 @@ Instrument: `census_after.txt` (grep, control needle 17 `NewProviderClient` site
 | fanarttv library's own client (`fanart_resolver.go` `fanart`) | library-owned | SCOPED OUT (AZ2-1a) |
 | cover-art download with an operator proxy (`cover_art_service.go`) | Client + `guardedRedirect` | SCOPED OUT, reason: proxy resolves the destination, hops re-checked by `guardedRedirect` (AZ2-1b) |
 | image proxy (`main.go` `buildImageProxyClient`) | netguard dial + host allow-list (AZ2-4) | SCOPED OUT, already class-guarded |
-| DNS-over-HTTPS fallback (`main.go` `dnsDoHClient`) | plain Client | SCOPED OUT: it exists because local DNS may answer loopback; a dial-time check would defeat it; constant https URL, parsed as DNS JSON |
+| DNS-over-HTTPS fallback (`main.go` `dnsDoHClient`) | plain Client | MIGRATED (round 2, M4): `netguard.NewProviderClient` Strict, 5s, MaxBytes 1 MiB (the earlier scope-out reason was wrong: the DoH host is a fixed public host and the strict dial uses the same system resolver the plain client used) |
 | operator storage clients (`filesystem/*`, `services/webdav_client.go`) | netguard class transports | SCOPED OUT, already guarded (operator classes) |
 | `internal/httpclient/pool.go` | generic primitive | SCOPED OUT: no caller outside its package (grep) |
 | `challenges/*` | harness clients of the local API under test | SCOPED OUT: not provider clients |

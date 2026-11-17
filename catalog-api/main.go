@@ -1701,7 +1701,7 @@ var (
 	dnsCache      = make(map[string]dnsCacheEntry)
 	dnsCacheMu    sync.RWMutex
 	dnsCacheTTL   = 5 * time.Minute
-	dnsDoHClient  = &http.Client{Timeout: 5 * time.Second}
+	dnsDoHClient  = netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 5 * time.Second, Strict: true, MaxBytes: 1 << 20}) // fixed public host (Cloudflare DoH), small JSON answer
 )
 
 // resolveViaDOH queries Cloudflare DNS-over-HTTPS for A records.

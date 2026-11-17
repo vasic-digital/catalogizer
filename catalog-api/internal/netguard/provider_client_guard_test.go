@@ -27,7 +27,6 @@ var az21Scoped = map[string]string{
 	"internal/httpclient/pool.go|": "generic pool primitive; callers pick the transport (no provider caller; grep-checked)",
 	// Image proxy and DNS bootstrap in main.go.
 	"main.go|buildImageProxyClient": "public image proxy: netguard dial-time check, host allow-list (AZ2-4) and a redirect policy in newImageProxyClient",
-	"main.go|init":                  "dnsDoHClient: the DoH fallback exists because local DNS may answer loopback; a dial-time class check would defeat it; constant https URL, response parsed as DNS JSON",
 	// Cover art download with an operator proxy keeps its own guardedRedirect (string-level guard per hop).
 	"internal/services/cover_art_service.go|downloadImage": "operator-proxy variant: guardedRedirect re-checks each hop; the default client is netguard.StrictClient",
 	// Integration-test and challenge harnesses talk to the local API under test, not to providers.
@@ -156,4 +155,36 @@ func TestAZ21_GuardInstrumentSeesPlainClients(t *testing.T) {
 		require.NotContains(t, g, "good.go")
 		require.NotContains(t, g, "bad_test.go")
 	}
+}
+
+// M3: netguardtest is a test support package; only _test.go files may import it.
+func TestAZ21_NetguardtestImportedByTestsOnly(t *testing.T) {
+	root := "../.."
+	var bad []string
+	_ = filepath.WalkDir(root, func(p string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return nil
+		}
+		if d.IsDir() {
+			switch d.Name() {
+			case "vendor", ".git", "node_modules", "netguardtest":
+				return filepath.SkipDir
+			}
+			return nil
+		}
+		if !strings.HasSuffix(p, ".go") || strings.HasSuffix(p, "_test.go") {
+			return nil
+		}
+		f, perr := parser.ParseFile(token.NewFileSet(), p, nil, parser.ImportsOnly)
+		if perr != nil {
+			return nil
+		}
+		for _, im := range f.Imports {
+			if strings.HasSuffix(strings.Trim(im.Path.Value, `"`), "/netguard/netguardtest") {
+				bad = append(bad, p)
+			}
+		}
+		return nil
+	})
+	require.Empty(t, bad, "non-test files must not import netguardtest")
 }

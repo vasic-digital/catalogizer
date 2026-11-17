@@ -13,7 +13,7 @@ import (
 
 // AZ2-1: every fixed-host provider client must refuse a redirect into 0.0.0.0 (an address class netguard never
 // admits). Before the fix the plain http.Client followed it and the sink was hit (RED log:
-// docs/qa/az21-20261117/red_services_baseline.log, this same test at the baseline commit).
+// docs/qa/az21-20261117/red_services_baseline.txt, this same test at the baseline commit).
 func az21Members() map[string]func() *http.Client {
 	lg := zap.NewNop()
 	return map[string]func() *http.Client{

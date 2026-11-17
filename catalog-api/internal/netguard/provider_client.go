@@ -153,6 +153,14 @@ type cappingTransport struct {
 	max int64
 }
 
+// CloseIdleConnections lets http.Client.CloseIdleConnections reach the wrapped Transport (I2): without it a client
+// built per call could not release its keep-alive goroutines.
+func (t *cappingTransport) CloseIdleConnections() {
+	if ci, ok := t.rt.(interface{ CloseIdleConnections() }); ok {
+		ci.CloseIdleConnections()
+	}
+}
+
 func (t *cappingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	resp, err := t.rt.RoundTrip(req)
 	if err != nil || resp == nil || resp.Body == nil {
@@ -165,6 +173,12 @@ func (t *cappingTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	resp.Body = &cappedBody{rc: resp.Body, left: t.max}
 	return resp, nil
 }
+
+const (
+	providerIdleConnTimeout     = 30 * time.Second
+	providerMaxIdleConns        = 10
+	providerMaxIdleConnsPerHost = 2
+)
 
 // NewProviderClient builds the shared provider HTTP client (see the package comment above).
 func NewProviderClient(cfg ProviderClientConfig) *http.Client {
@@ -181,6 +195,10 @@ func NewProviderClient(cfg ProviderClientConfig) *http.Client {
 		TLSHandshakeTimeout:   10 * time.Second,
 		ResponseHeaderTimeout: timeout,
 		Proxy:                 nil,
+		// I2: a client built per call must not pin goroutines/sockets until process exit.
+		IdleConnTimeout:     providerIdleConnTimeout,
+		MaxIdleConns:        providerMaxIdleConns,
+		MaxIdleConnsPerHost: providerMaxIdleConnsPerHost,
 	}
 	if cfg.Proxy.Dial != nil {
 		tr.DialContext = cfg.Proxy.Dial

@@ -726,6 +726,7 @@ func (s *AggregationService) enrichNewEntities(ctx context.Context, storageRootI
 	}
 
 	client := netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 10 * time.Second, Strict: true})
+	defer client.CloseIdleConnections() // per-call client: release keep-alive goroutines (I2)
 	enriched := 0
 
 	for _, e := range entities {

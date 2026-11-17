@@ -47,6 +47,8 @@ func New(t testing.TB) *Topology {
 			_, _ = w.Write([]byte("ok"))
 		case "/to-unspecified":
 			http.Redirect(w, r, fmt.Sprintf("http://0.0.0.0:%s/secret", port), http.StatusFound)
+		case "/to-userinfo":
+			http.Redirect(w, r, fmt.Sprintf("http://user:pw@127.0.0.1:%s/secret", port), http.StatusFound)
 		case "/to-gopher":
 			http.Redirect(w, r, "gopher://127.0.0.1:1/x", http.StatusFound)
 		case "/loop":

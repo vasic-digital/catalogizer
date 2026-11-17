@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"runtime"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -194,4 +195,90 @@ func TestAZ21_ProxyFromConfig(t *testing.T) {
 	_, err = p.Dial(ctx, "tcp", "example.com:80")
 	require.Error(t, err)
 	require.True(t, errors.Is(err, context.DeadlineExceeded) || strings.Contains(err.Error(), "deadline") || strings.Contains(err.Error(), "timeout"), err.Error())
+}
+
+// M1: a redirect carrying userinfo is refused even to an address that is otherwise admitted (loopback under the
+// test relax), so the only possible reason for the refusal is the credentials-in-URL rule.
+func TestAZ21_ProviderClient_RefusesRedirectWithUserinfo(t *testing.T) {
+	restore := SetTestAllowLoopback(true)
+	defer restore()
+	top := netguardtest.New(t)
+	c := NewProviderClient(ProviderClientConfig{Strict: true, Timeout: 5 * time.Second})
+	// control needle: the same target without userinfo is reachable
+	r, err := c.Get(top.SinkURL + "/secret")
+	require.NoError(t, err)
+	r.Body.Close()
+	before := top.SinkHits()
+	_, err = c.Get(top.FrontURL + "/to-userinfo")
+	require.ErrorIs(t, err, ErrBlocked)
+	require.Contains(t, err.Error(), "credentials")
+	require.Equal(t, before, top.SinkHits(), "the userinfo redirect must not reach the sink")
+}
+
+// M2: through an operator HTTP proxy, a redirect hop to an allow-listed CIDR is admitted by a non-strict client and
+// refused by a strict one (the strict flag must reach the per-hop check, not only the dialer).
+func TestAZ21_ProviderClient_StrictProxyHopIgnoresAllowList(t *testing.T) {
+	t.Setenv(AllowCIDRsEnv, "127.0.0.0/8")
+	for _, strict := range []bool{true, false} {
+		var n int32
+		proxySrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if atomic.AddInt32(&n, 1) == 1 {
+				http.Redirect(w, r, "http://127.0.0.1:1/x", http.StatusFound)
+				return
+			}
+			_, _ = w.Write([]byte("hop-followed"))
+		}))
+		pu, _ := url.Parse(proxySrv.URL)
+		c := NewProviderClient(ProviderClientConfig{Timeout: 3 * time.Second, Strict: strict, Proxy: ProviderProxy{HTTP: pu}})
+		resp, err := c.Get("http://provider.example/ok")
+		if strict {
+			require.ErrorIs(t, err, ErrBlocked, "strict client must ignore the allow-list for the redirect hop")
+		} else {
+			require.NoError(t, err, "control needle: the non-strict client admits the allow-listed hop")
+			b, _ := io.ReadAll(resp.Body)
+			resp.Body.Close()
+			require.Equal(t, "hop-followed", string(b))
+		}
+		proxySrv.Close()
+	}
+}
+
+// I2: a client built per call must not leak keep-alive goroutines. Transport carries idle limits, and the wrapper
+// forwards CloseIdleConnections so a per-call site can release immediately.
+func TestAZ21_ProviderClient_IdleLimitsAndCloseIdleConnections(t *testing.T) {
+	c := NewProviderClient(ProviderClientConfig{})
+	ct, ok := c.Transport.(*cappingTransport)
+	require.True(t, ok)
+	tr, ok := ct.rt.(*http.Transport)
+	require.True(t, ok)
+	require.Greater(t, int64(tr.IdleConnTimeout), int64(0), "IdleConnTimeout must be set")
+	require.Greater(t, tr.MaxIdleConnsPerHost, 0)
+}
+
+func TestAZ21_ProviderClient_PerCallClientsDoNotLeakGoroutines(t *testing.T) {
+	restore := SetTestAllowLoopback(true)
+	defer restore()
+	top := netguardtest.New(t)
+	settle := func() int {
+		time.Sleep(300 * time.Millisecond)
+		return runtime.NumGoroutine()
+	}
+	// warm up the server side and control needle: without close, one live keep-alive client does hold goroutines
+	keep := NewProviderClient(ProviderClientConfig{Timeout: 5 * time.Second})
+	r, err := keep.Get(top.FrontURL + "/ok")
+	require.NoError(t, err)
+	_, _ = io.Copy(io.Discard, r.Body)
+	r.Body.Close()
+	base := settle()
+	for i := 0; i < 50; i++ {
+		c := NewProviderClient(ProviderClientConfig{Timeout: 5 * time.Second})
+		r, err := c.Get(top.FrontURL + "/ok")
+		require.NoError(t, err)
+		_, _ = io.Copy(io.Discard, r.Body)
+		r.Body.Close()
+		c.CloseIdleConnections()
+	}
+	after := settle()
+	require.LessOrEqual(t, after-base, 10, "50 throwaway clients left %d goroutines behind", after-base)
+	keep.CloseIdleConnections()
 }
