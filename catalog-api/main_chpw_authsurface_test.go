@@ -135,12 +135,16 @@ var (
 	sanctionedFuncs = map[string]bool{
 		"buildRouter": true, "registerAuthRoutes": true, "registerChangePasswordRoute": true,
 		"registerWebSocketRoute": true, "applyTrustedProxies": true, "setTrustedProxies": true, "verifyAuthRouteTable": true, "engineChain": true,
+		// Read-only route-table dump (main_routedump_*.go, main_routechains.go): the no-op hook in normal builds; under the test-only
+		// build tag routedump it only reads the engine's route trees (reflection) and exits (ADMD1F1-S1 round 5).
+		"routeDumpHook": true, "routeChainFuncNames": true,
 	}
 	// Callees an engine/group-typed value may be handed to.
 	handoffCallees = map[string]bool{
 		"applyTrustedProxies": true, "setTrustedProxies": true, "registerWebSocketRoute": true,
 		"registerAuthRoutes": true, "registerChangePasswordRoute": true, "root_middleware.RegisterChangePassword": true,
 		"verifyAuthRouteTable": true, "engineChain": true,
+		"routeDumpHook": true, "routeChainFuncNames": true,
 	}
 	// Engine-level middleware buildRouter installs before the auth group exists
 	// (the runtime tier pins the resulting chains; this list is the cheap source-level twin).
@@ -704,6 +708,13 @@ func TestAuthSurfaceGuard_Mutants(t *testing.T) {
 		{"N17_package_level_authGroup", "package-level declaration of authGroup", func(d string) {
 			addFile(t, d, "zz_n17.go", "var authGroup gin.IRoutes\n")
 		}},
+		// g1fix (route-dump hook sanctioned): the allowance must stay exactly the read-only hook, nothing broader.
+		{"G1_other_handout_after_first_verify", "a statement after the first verifyAuthRouteTable call registers on or hands out the engine", func(d string) {
+			edit(t, d, "main.go", "routeDumpHook(router) // no-op", "routeDumpHookEvil(router)\n\trouteDumpHook(router) // no-op")
+		}},
+		{"G2_registration_inside_routeDumpHook", "registers under the auth surface", func(d string) {
+			edit(t, d, "main_routedump_on.go", "p := os.Getenv(\"ROUTE_DUMP_FILE\")", "e.POST(\"/api/v1/auth/evil\", nil)\n\tp := os.Getenv(\"ROUTE_DUMP_FILE\")")
+		}},
 		{"F5_capture_directly_under_api_v1", "registers a capture/wildcard directly under /api/v1", func(d string) {
 			edit(t, d, "main_router.go", defn, defn+"\n\trouter.GET(\"/api/v1/:lang/x\", func(c *gin.Context) {})")
 		}},
@@ -1077,6 +1088,9 @@ func scanMainVerifySequence(fset *token.FileSet, files map[string]*ast.File) []s
 			}
 			if exprText(fset, ce) == "router.Use(altSvcMiddleware)" {
 				return false // the one allowed late Use, ordered by the rule above
+			}
+			if exprText(fset, ce) == "routeDumpHook(router)" {
+				return false // read-only, no-op outside the routedump test tag; any other hand-out after the first verify stays refused
 			}
 			if se, ok := ce.Fun.(*ast.SelectorExpr); ok && exprText(fset, se.X) == "router" {
 				hit = true

@@ -1,0 +1,40 @@
+--- FAIL: TestMediaHandlerTestSuite (0.00s)
+    --- FAIL: TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_EmptyBody (0.00s)
+        media_handler_test.go:220: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/g1fix-clone/catalog-api/handlers/media_handler_test.go:220
+            	Error:      	Not equal: 
+            	            	expected: 400
+            	            	actual  : 401
+            	Test:       	TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_EmptyBody
+    --- FAIL: TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_InvalidID (0.00s)
+        media_handler_test.go:184: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/g1fix-clone/catalog-api/handlers/media_handler_test.go:184
+            	Error:      	Not equal: 
+            	            	expected: 400
+            	            	actual  : 401
+            	Test:       	TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_InvalidID
+        media_handler_test.go:188: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/g1fix-clone/catalog-api/handlers/media_handler_test.go:188
+            	Error:      	"Authentication required" does not contain "Invalid media ID"
+            	Test:       	TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_InvalidID
+    --- FAIL: TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_InvalidJSON (0.00s)
+        media_handler_test.go:197: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/g1fix-clone/catalog-api/handlers/media_handler_test.go:197
+            	Error:      	Not equal: 
+            	            	expected: 400
+            	            	actual  : 401
+            	Test:       	TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_InvalidJSON
+    --- FAIL: TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_MissingFavoriteField (0.00s)
+        media_handler_test.go:207: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/g1fix-clone/catalog-api/handlers/media_handler_test.go:207
+            	Error:      	Not equal: 
+            	            	expected: 400
+            	            	actual  : 401
+            	Test:       	TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_MissingFavoriteField
+        media_handler_test.go:211: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/g1fix-clone/catalog-api/handlers/media_handler_test.go:211
+            	Error:      	"Authentication required" does not contain "Favorite field is required"
+            	Test:       	TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_MissingFavoriteField
+FAIL
+FAIL	catalogizer/handlers	0.172s
+FAIL

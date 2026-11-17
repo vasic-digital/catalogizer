@@ -1,0 +1,10 @@
+--- FAIL: TestNoErrorTextReachesAResponse (0.55s)
+    sweep_test.go:231: stale allow-list entry (no longer matches a flagged site): handlers/user_handler.go|CreateUser|=http.Error(w, msg, http.StatusBadRequest)
+FAIL
+FAIL	catalogizer/internal/errleak	0.607s
+--- FAIL: TestNoUnnormalisedNilListReturns (0.36s)
+    guard_test.go:277: ../../internal/services: 1 list function(s) can return a nil slice/map (JSON null); initialise with `x := []T{}`:
+          ../../internal/services/smb_probe.go:148:7 var shares used as struct-literal field value unnormalised in ProbeVettedIPsWithIdentities
+FAIL
+FAIL	catalogizer/internal/nilslice_guard	0.396s
+FAIL

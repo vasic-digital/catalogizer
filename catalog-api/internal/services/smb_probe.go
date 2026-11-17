@@ -158,6 +158,10 @@ func (s *SMBDiscoveryService) ProbeVettedIPsWithIdentities(ctx context.Context, 
 				zap.String("host", host), zap.String("identity", id.Label()))
 			continue
 		}
+		// An authenticated session that exposes no shares answers an empty list, never nil (a nil slice marshals to JSON null).
+		if shares == nil {
+			shares = []SMBShareInfo{}
+		}
 		s.logger.Info("SMB probe found working identity binding",
 			zap.String("host", host), zap.String("identity", id.Label()))
 		return &SMBProbeResult{

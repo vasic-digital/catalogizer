@@ -1,0 +1,50 @@
+=== RUN   TestUpdateFavoriteStatus_AnonymousIs401BeforeParse
+=== RUN   TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/invalid_id
+=== RUN   TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/invalid_json
+=== RUN   TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/missing_field
+=== RUN   TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/empty_body
+--- PASS: TestUpdateFavoriteStatus_AnonymousIs401BeforeParse (0.00s)
+    --- PASS: TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/invalid_id (0.00s)
+    --- PASS: TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/invalid_json (0.00s)
+    --- PASS: TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/missing_field (0.00s)
+    --- PASS: TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/empty_body (0.00s)
+=== RUN   TestUpdateFavoriteStatus_HappyPath
+--- PASS: TestUpdateFavoriteStatus_HappyPath (0.08s)
+=== RUN   TestUpdateFavoriteStatus_MediaNotFound
+--- PASS: TestUpdateFavoriteStatus_MediaNotFound (0.03s)
+=== RUN   TestMediaHandlerTestSuite
+=== RUN   TestMediaHandlerTestSuite/TestGetMediaByID_EmptyID
+=== RUN   TestMediaHandlerTestSuite/TestGetMediaByID_FloatID
+=== RUN   TestMediaHandlerTestSuite/TestGetMediaByID_InvalidID
+=== RUN   TestMediaHandlerTestSuite/TestGetMediaByID_MethodNotAllowed
+=== RUN   TestMediaHandlerTestSuite/TestGetMediaByID_NegativeID
+=== RUN   TestMediaHandlerTestSuite/TestNewAndroidTVMediaHandler
+=== RUN   TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_EmptyBody
+=== RUN   TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_InvalidID
+=== RUN   TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_InvalidJSON
+=== RUN   TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_MissingFavoriteField
+=== RUN   TestMediaHandlerTestSuite/TestUpdateWatchProgress_EmptyBody
+=== RUN   TestMediaHandlerTestSuite/TestUpdateWatchProgress_InvalidID
+=== RUN   TestMediaHandlerTestSuite/TestUpdateWatchProgress_InvalidJSON
+=== RUN   TestMediaHandlerTestSuite/TestUpdateWatchProgress_MissingProgressField
+=== RUN   TestMediaHandlerTestSuite/TestUpdateWatchProgress_ProgressNegative
+=== RUN   TestMediaHandlerTestSuite/TestUpdateWatchProgress_ProgressTooHigh
+--- PASS: TestMediaHandlerTestSuite (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestGetMediaByID_EmptyID (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestGetMediaByID_FloatID (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestGetMediaByID_InvalidID (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestGetMediaByID_MethodNotAllowed (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestGetMediaByID_NegativeID (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestNewAndroidTVMediaHandler (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_EmptyBody (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_InvalidID (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_InvalidJSON (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_MissingFavoriteField (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestUpdateWatchProgress_EmptyBody (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestUpdateWatchProgress_InvalidID (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestUpdateWatchProgress_InvalidJSON (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestUpdateWatchProgress_MissingProgressField (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestUpdateWatchProgress_ProgressNegative (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestUpdateWatchProgress_ProgressTooHigh (0.00s)
+PASS
+ok  	catalogizer/handlers	0.332s

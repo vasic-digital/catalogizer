@@ -1,0 +1,2 @@
+ok  	catalogizer/internal/services	0.040s
+ok  	catalogizer/internal/nilslice_guard	0.778s
