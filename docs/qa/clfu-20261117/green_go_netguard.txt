@@ -1,0 +1,4 @@
+=== RUN   TestCLFU_RedirectCheckAppliesToEveryHopOfAChain
+--- PASS: TestCLFU_RedirectCheckAppliesToEveryHopOfAChain (0.00s)
+PASS
+ok  	catalogizer/internal/netguard	0.048s

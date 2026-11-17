@@ -113,7 +113,7 @@ func TestWatchProgress_PG_CompareAndSetOnRealPostgres(t *testing.T) {
 	_, p, d = get()
 	assert.Equal(t, int64(5), p)
 	assert.Equal(t, int64(50), d.Int64)
-	// 4. NULL row; a real session End (transaction, pq) learns 9000 inside the PUT's window -> re-plan
+	// 4. NULL row; a competing UPDATE through the real pq driver (a plain statement, not a session-End transaction; CLFU, FU3-R-N1) learns 9000 inside the PUT's window -> re-plan
 	_, err = db.ExecContext(ctx, `UPDATE media_progress SET duration_total = NULL WHERE user_id = 1`)
 	require.NoError(t, err)
 	pgrvMu.Lock()

@@ -126,6 +126,8 @@ func rv3Get(t *testing.T, db *database.DB, uid int) (unit string, pos int64, dur
 
 // N1: NULL-duration seconds row; a session End learns 9000 between the PUT's SELECT and UPDATE (exercises the IS NULL
 // guard branch under a real interleaving). The PUT must re-plan against 9000, not write its body duration 50.
+// Position semantics (CLFU, FU3-R-M3; watchProgressPlan.secondsPos): a seconds row stores the body position as is,
+// clamped to the kept duration, so 40 <= 9000 stays 40 after the re-plan.
 func TestWatchProgress_RV3_N1_NullDurationLearnedByEndBetweenSelectAndUpdate(t *testing.T) {
 	db := rv3DB(t)
 	rv3Set(t, db, 1, "seconds", nil, 0)
@@ -160,6 +162,8 @@ func TestWatchProgress_RV3_N2_UnitChangeSameDuration(t *testing.T) {
 
 // N5: two PUTs on a NULL-duration seconds row with different body durations, B runs entirely inside A's window.
 // The first CAS winner (B, 200) fixes the duration; A must re-plan and keep 200 (no shrink to 100).
+// Position semantics (CLFU, FU3-R-M3): A's position 180 is stored as 180 because the kept duration is 200 (180 <= 200);
+// had A's duration 100 won, the position would have been clamped to 100.
 func TestWatchProgress_RV3_N5_TwoPutsDurationShrink(t *testing.T) {
 	db := rv3DB(t)
 	rv3Set(t, db, 1, "seconds", nil, 0)
@@ -184,4 +188,26 @@ func TestWatchProgress_RV3_N10_EndShrinksDurationBetweenSelectAndUpdate(t *testi
 	_, pos, dur := rv3Get(t, db, 1)
 	assert.Equal(t, int64(3000), dur.Int64, "the shorter session-learned duration survives")
 	assert.Equal(t, int64(1500), pos)
+}
+
+// CLFU / WPROG3-R3-F2 (N4c): the row is deleted between the SELECT and the UPDATE of attempt 0 (the UPDATE touches zero
+// rows), attempt 1 then plans an INSERT, and a concurrent writer creates the row just before that INSERT. The INSERT is a
+// lost race, not an error: it must be retried from the SELECT (which finds the competing row) and finish with 200
+// persisted:true on the row the competing writer created, not answer 500.
+func TestWatchProgress_CLFU_InsertLostRaceAfterAFailedUpdateIsRetried(t *testing.T) {
+	db := rv3DB(t)
+	rv3Set(t, db, 1, "seconds", 1000, 10)
+	rv3Arm(rv3Upd, func() {
+		_, err := db.ExecContext(context.Background(), `DELETE FROM media_progress WHERE user_id = 1`)
+		require.NoError(t, err)
+	})
+	rv3Arm(rv3Ins, func() { rv2Session(t, db, 1, "seconds", 500, i64(6000)) })
+	code, resp := wprogPut(wprogRouter(NewAndroidTVMediaHandler(db), 1), "1", `{"position":40,"duration":50}`)
+	require.Equal(t, http.StatusOK, code, "an INSERT that lost a race to a concurrent writer must be retried: %v", resp)
+	assert.Equal(t, true, resp["persisted"])
+	unit, pos, dur := rv3Get(t, db, 1)
+	assert.Equal(t, "seconds", unit)
+	assert.Equal(t, int64(6000), dur.Int64, "the concurrent writer's duration must survive")
+	assert.Equal(t, int64(40), pos)
+	assert.Equal(t, 1, rv3Count(rv3Ins), "exactly one INSERT was attempted: the retry went through the UPDATE path")
 }
