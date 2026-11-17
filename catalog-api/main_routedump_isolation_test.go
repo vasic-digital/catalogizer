@@ -24,6 +24,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"sort"
 	"strings"
 	"testing"
@@ -53,18 +54,117 @@ func fileConstraint(f *ast.File) constraint.Expr {
 	return nil
 }
 
-// evalConstraint evaluates e with routedump = rd and every other tag true (the conservative reading for a "compiled in the default
-// build" question: a file is only treated as absent when routedump alone excludes it).
-func evalConstraint(e constraint.Expr, rd bool) bool {
-	if e == nil {
+// Build-constraint model (class-wise, every polarity). A file is "maybe in the default build" when SOME assignment of the tags it
+// uses (its //go:build expression plus its implied GOOS/GOARCH filename suffix) with routedump=false satisfies it. Negated and
+// combined forms (`!routedump && !windows`, `routedump || !windows`) are therefore all handled by enumeration, never by a
+// "every other tag is true" shortcut. The real host assignment is cross-checked against `go list` (hostInDefaultBuild).
+var knownOS = map[string]bool{"aix": true, "android": true, "darwin": true, "dragonfly": true, "freebsd": true, "hurd": true, "illumos": true,
+	"ios": true, "js": true, "linux": true, "nacl": true, "netbsd": true, "openbsd": true, "plan9": true, "solaris": true, "wasip1": true,
+	"windows": true, "zos": true}
+var knownArch = map[string]bool{"386": true, "amd64": true, "amd64p32": true, "arm": true, "armbe": true, "arm64": true, "arm64be": true,
+	"loong64": true, "mips": true, "mipsle": true, "mips64": true, "mips64le": true, "mips64p32": true, "mips64p32le": true, "ppc": true,
+	"ppc64": true, "ppc64le": true, "riscv": true, "riscv64": true, "s390": true, "s390x": true, "sparc": true, "sparc64": true, "wasm": true}
+
+// nameTags returns the implied constraint tags of a filename (go/build rules: *_GOOS, *_GOARCH, *_GOOS_GOARCH).
+func nameTags(name string) []string {
+	n := strings.TrimSuffix(filepath.Base(name), ".go")
+	n = strings.TrimSuffix(n, "_test")
+	parts := strings.Split(n, "_")
+	if len(parts) < 2 {
+		return nil
+	}
+	last := parts[len(parts)-1]
+	if len(parts) >= 3 && knownOS[parts[len(parts)-2]] && knownArch[last] {
+		return []string{parts[len(parts)-2], last}
+	}
+	if knownOS[last] || knownArch[last] {
+		return []string{last}
+	}
+	return nil
+}
+
+// exprTags lists the distinct tags used by e.
+func exprTags(e constraint.Expr, into map[string]bool) {
+	switch x := e.(type) {
+	case *constraint.TagExpr:
+		into[x.Tag] = true
+	case *constraint.NotExpr:
+		exprTags(x.X, into)
+	case *constraint.AndExpr:
+		exprTags(x.X, into)
+		exprTags(x.Y, into)
+	case *constraint.OrExpr:
+		exprTags(x.X, into)
+		exprTags(x.Y, into)
+	}
+}
+
+// anyAssignment reports whether some assignment of every tag of (e, name suffix) other than routedump, with routedump = rd,
+// satisfies the file's constraints. More than 16 free tags is treated as satisfiable (conservative for the default-build question).
+func anyAssignment(name string, e constraint.Expr, rd bool) bool {
+	set := map[string]bool{}
+	if e != nil {
+		exprTags(e, set)
+	}
+	for _, t := range nameTags(name) {
+		set[t] = true
+	}
+	delete(set, "routedump")
+	free := make([]string, 0, len(set))
+	for t := range set {
+		free = append(free, t)
+	}
+	sort.Strings(free)
+	if len(free) > 16 {
 		return true
 	}
-	return e.Eval(func(tag string) bool {
-		if tag == "routedump" {
-			return rd
+	for m := 0; m < 1<<len(free); m++ {
+		val := map[string]bool{"routedump": rd}
+		for i, t := range free {
+			val[t] = m>>i&1 == 1
 		}
-		return true
-	})
+		// a filename can carry at most one GOOS and one GOARCH; both must hold, as must the expression
+		ok := true
+		for _, t := range nameTags(name) {
+			if !val[t] {
+				ok = false
+			}
+		}
+		if ok && (e == nil || e.Eval(func(tag string) bool { return val[tag] })) {
+			return true
+		}
+	}
+	return false
+}
+
+// maybeDefault: the file can be compiled by SOME default-tag (routedump off) build. maybeDump: it can be compiled when routedump is on.
+func maybeDefault(name string, e constraint.Expr) bool { return anyAssignment(name, e, false) }
+func maybeDump(name string, e constraint.Expr) bool    { return anyAssignment(name, e, true) }
+
+// hostInDefaultBuild is the exact decision for THIS host's default tags (GOOS, GOARCH, unix, gc, go1.N, cgo per `go env`).
+func hostInDefaultBuild(name string, e constraint.Expr, cgo bool) bool {
+	unix := map[string]bool{"aix": true, "android": true, "darwin": true, "dragonfly": true, "freebsd": true, "hurd": true, "illumos": true,
+		"ios": true, "linux": true, "netbsd": true, "openbsd": true, "solaris": true}[runtime.GOOS]
+	tag := func(t string) bool {
+		switch {
+		case t == runtime.GOOS, t == runtime.GOARCH, t == "gc", t == "unix" && unix, t == "cgo" && cgo:
+			return true
+		case t == "linux" && runtime.GOOS == "android", t == "solaris" && runtime.GOOS == "illumos", t == "darwin" && runtime.GOOS == "ios":
+			return true
+		case strings.HasPrefix(t, "go1."):
+			var want, have int
+			fmt.Sscan(strings.TrimPrefix(t, "go1."), &want)
+			fmt.Sscan(strings.TrimPrefix(strings.Split(runtime.Version(), ".")[1], ""), &have)
+			return want <= have
+		}
+		return false
+	}
+	for _, t := range nameTags(name) {
+		if !tag(t) {
+			return false
+		}
+	}
+	return e == nil || e.Eval(tag)
 }
 
 var reflectSetNames = map[string]bool{"Set": true, "SetLen": true, "SetCap": true, "SetMapIndex": true, "SetPointer": true, "SetZero": true,
@@ -84,8 +184,8 @@ func scanDumpIsolation(fset *token.FileSet, files map[string]*ast.File) []string
 	for _, name := range names {
 		f := files[name]
 		con := fileConstraint(f)
-		inDefault := evalConstraint(con, false)
-		inDump := evalConstraint(con, true)
+		inDefault := maybeDefault(name, con)
+		inDump := maybeDump(name, con)
 		// go:linkname in package main is refused in every file, tagged or not.
 		for _, cg := range f.Comments {
 			for _, c := range cg.List {
@@ -190,9 +290,35 @@ func TestAuthSurfaceDumpIsolation_RealSourcesPass(t *testing.T) {
 	require.Contains(t, files, "main_routechains.go")
 	require.Contains(t, files, "main_routedump_on.go")
 	require.Contains(t, files, "main_routedump_off.go")
-	require.False(t, evalConstraint(fileConstraint(files["main_routechains.go"]), false))
-	require.True(t, evalConstraint(fileConstraint(files["main_routechains.go"]), true))
-	require.True(t, evalConstraint(fileConstraint(files["main_routedump_off.go"]), false))
+	require.False(t, maybeDefault("main_routechains.go", fileConstraint(files["main_routechains.go"])))
+	require.True(t, maybeDump("main_routechains.go", fileConstraint(files["main_routechains.go"])))
+	require.True(t, maybeDefault("main_routedump_off.go", fileConstraint(files["main_routedump_off.go"])))
+}
+
+// TestAuthSurfaceDumpIsolation_FileSetMatchesGoList: the scanner's notion of "compiled in the default build" is checked against the
+// compiler's (`go list`, default tags). Every file go list compiles must be maybeDefault (the scanner never under-approximates), and
+// the exact host decision must equal go list's set, so a wrong constraint model fails here instead of silently skipping rules.
+func TestAuthSurfaceDumpIsolation_FileSetMatchesGoList(t *testing.T) {
+	out, err := exec.Command("go", "list", "-buildvcs=false", "-f", `{{range .GoFiles}}{{.}}{{"\n"}}{{end}}{{range .CgoFiles}}{{.}}{{"\n"}}{{end}}`, ".").CombinedOutput()
+	require.NoError(t, err, string(out))
+	listed := map[string]bool{}
+	for _, l := range strings.Fields(string(out)) {
+		listed[l] = true
+	}
+	require.NotEmpty(t, listed, "control: go list must report files")
+	cgoOut, err := exec.Command("go", "env", "CGO_ENABLED").Output()
+	require.NoError(t, err)
+	cgo := strings.TrimSpace(string(cgoOut)) == "1"
+	_, files := nonTestFiles(t, ".")
+	require.Contains(t, listed, "main.go")
+	require.NotContains(t, listed, "main_routechains.go")
+	for name, f := range files {
+		con := fileConstraint(f)
+		if listed[name] {
+			require.True(t, maybeDefault(name, con), "go list compiles %s but the scanner thinks it cannot be in the default build", name)
+		}
+		require.Equal(t, listed[name], hostInDefaultBuild(name, con, cgo), "host decision for %s disagrees with go list", name)
+	}
 }
 
 // TestRouteChainsLockstep: the test-build copy (main_routechains_test.go, default tag) and the routedump copy (main_routechains.go)

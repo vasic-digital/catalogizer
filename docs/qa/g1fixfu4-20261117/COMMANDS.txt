@@ -1,0 +1,5 @@
+cd catalog-api (submodules/* symlinked to the main checkout's for the build, restored empty before commit); GOMAXPROCS=2 nice -n 10 go test -p 1
+RED (old scanner, 9dfc0b3fa; scanner file stashed): go test -run PolarityMutants . -> red_polarity.log (R1, R1c, R1d FAIL; R1e, R1f pass on old by design)
+go test -count=1 -v -run 'AuthSurface|RouteChainsLockstep|RouteHelpers|MainPackageAuthSurfaceClosed' .  -> green_authsurface.log
+go test -count=1 -v -run 'ADMD1F1S1|GroundTruth|RealRouteTable' .  -> green_groundtruth.log
+go test -count=1 -v -run TestUpdateFavoriteStatus_AnonymousIs401BeforeParse ./handlers  -> green_n1.log
