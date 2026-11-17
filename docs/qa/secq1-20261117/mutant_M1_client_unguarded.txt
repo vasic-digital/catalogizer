@@ -1,0 +1,19 @@
+2026/11/17 15:27:50 handlers: storage root url refused (detail not returned to client): webdav url refused: outbound destination not allowed: 127.0.0.1 is a loopback, link-local, metadata, reserved or own address, or outside the approved class (private)
+--- FAIL: TestSECQ1_Live_LoopbackRootRefusedByDefault_AllowedWithAllowList (3.89s)
+    storage_root_secq1_live_test.go:42: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/secq1/catalog-api/handlers/storage_root_secq1_live_test.go:42
+        	Error:      	Not equal: 
+        	            	expected: "failed"
+        	            	actual  : "completed"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-failed
+        	            	+completed
+        	Test:       	TestSECQ1_Live_LoopbackRootRefusedByDefault_AllowedWithAllowList
+        	Messages:   	client must refuse a loopback destination without the allow-list: map[current_path:/ elapsed_ms:153 error_count:0 files_deleted:0 files_found:2 files_processed:2 files_updated:0 job_id:bf44b6d6-e38e-4cc9-8383-5f73888f7246 protocol:webdav reason: start_time:2026-11-17T15:27:50.716459437+01:00 status:completed storage_root:lb]
+FAIL
+FAIL	catalogizer/handlers	8.157s
+FAIL
