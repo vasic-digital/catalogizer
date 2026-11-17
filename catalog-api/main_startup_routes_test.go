@@ -17,7 +17,7 @@ import (
 )
 
 // HYG-R3-F2: buildRouter-level tests do not see what main() registers AFTER buildRouter (the /api/v1 group, aliases, WebSocket
-// ... and the late Alt-Svc Use) nor the two verifyAuthRouteTable calls main() makes at startup, which logger.Fatal on a mismatch.
+// ...) nor the two verifyAuthRouteTable calls main() makes at startup, which logger.Fatal on a mismatch.
 // This test runs the REAL main() (the test binary re-executes itself into main, so the whole registration code path runs, not a
 // copy of it) against a throw-away SQLite directory and requires: no "Auth route table check failed" Fatal, the server reached
 // "Starting catalog API server" (past BOTH verify calls) and /health answers 200. A global-chain change that breaks startup, or
