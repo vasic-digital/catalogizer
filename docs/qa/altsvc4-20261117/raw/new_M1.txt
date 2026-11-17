@@ -1,0 +1,14 @@
+--- FAIL: TestAltSvcStartH3Stack_ServeFailureClearsFlag (5.00s)
+    main_altsvc4_test.go:57: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_altsvc4_test.go:57
+        	Error:      	Condition never satisfied
+        	Test:       	TestAltSvcStartH3Stack_ServeFailureClearsFlag
+        	Messages:   	Serve failed after the bind: HTTP/3 must no longer be advertised
+[GIN] 2026/11/17 - 18:05:21 | 200 |     236.851µs |       127.0.0.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:05:21 | 404 |      60.081µs |       127.0.0.1 | GET     "/no-such-route-altsvc4"
+--- FAIL: TestAltSvcAdvertisementAndWiringPins (0.04s)
+    main_altsvc4_test.go:352: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_altsvc4_test.go:352
+        	Error:      	Should be empty, but was [startH3Stack: the serving goroutine must clear h3Advertised (Store(false)) when Serve fails]
+        	Test:       	TestAltSvcAdvertisementAndWiringPins
+FAIL

@@ -1,0 +1,26 @@
+[GIN] 2026/11/17 - 18:07:41 | 200 |     326.501µs |       127.0.0.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:07:41 | 404 |     162.281µs |       127.0.0.1 | GET     "/no-such-route-altsvc3"
+[GIN] 2026/11/17 - 18:07:41 | 200 |     182.821µs |       127.0.0.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:07:41 | 200 |       36.44µs |       192.0.2.1 | GET     "/discovery"
+[GIN] 2026/11/17 - 18:07:41 | 204 |       21.99µs |       192.0.2.1 | OPTIONS "/api/v1/auth/login"
+[GIN] 2026/11/17 - 18:07:41 | 200 |      110.27µs |       192.0.2.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:07:41 | 404 |       99.61µs |       192.0.2.1 | GET     "/no-such-route-altsvc"
+[GIN] 2026/11/17 - 18:07:41 | 200 |      104.62µs |       192.0.2.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:07:41 | 200 |       81.67µs |       192.0.2.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:07:41 | 404 |        20.3µs |       192.0.2.1 | GET     "/no-such-route-altsvc"
+[GIN] 2026/11/17 - 18:07:41 | 200 |     141.641µs |       192.0.2.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:07:41 | 404 |       28.24µs |       192.0.2.1 | GET     "/no-such-route-altsvc"
+--- FAIL: TestAuthSurfaceGuard_Mutants (3.09s)
+    main_chpw_authsurface_test.go:846: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_chpw_authsurface_test.go:668
+        	            				/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_chpw_authsurface_test.go:846
+        	            				/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_chpw_authsurface_test.go:656
+        	            				/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_chpw_authsurface_test.go:965
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 0
+        	Test:       	TestAuthSurfaceGuard_Mutants
+        	Messages:   	mutation anchor must occur exactly once in main.go: httpsServer, http3Server := startH3Stack(logger, srv.Handler, cfg.Server.Host, h3Port, getOrCreateSelfSignedCert)
+    --- FAIL: TestAuthSurfaceGuard_Mutants/R4_h3Advertised_stored_in_main_before_cert_load (0.00s)
+        testing.go:1913: test executed panic(nil) or runtime.Goexit: subtest may have called FailNow on a parent test
+FAIL

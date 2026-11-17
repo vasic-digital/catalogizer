@@ -1,0 +1,9 @@
+[GIN] 2026/11/17 - 18:08:24 | 200 |      234.12µs |       127.0.0.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:08:24 | 404 |       77.26µs |       127.0.0.1 | GET     "/no-such-route-altsvc4"
+--- FAIL: TestAltSvcStartH3Stack_UDPSocketReleasedAfterClose (5.00s)
+    main_altsvc4_test.go:157: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_altsvc4_test.go:157
+        	Error:      	Condition never satisfied
+        	Test:       	TestAltSvcStartH3Stack_UDPSocketReleasedAfterClose
+        	Messages:   	the UDP port must be free again after the server is closed
+FAIL

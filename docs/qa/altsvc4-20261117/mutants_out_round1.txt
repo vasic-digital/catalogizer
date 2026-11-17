@@ -1,0 +1,11 @@
+BASELINE old_suite_rc=0 (0=mutant SURVIVES old tests) new_suite_rc=0 (1=KILLED by new tests)
+M1 old_suite_rc=0 (0=mutant SURVIVES old tests) new_suite_rc=1 (1=KILLED by new tests)
+M5 old_suite_rc=0 (0=mutant SURVIVES old tests) new_suite_rc=0 (1=KILLED by new tests)
+M6b old_suite_rc=1 (0=mutant SURVIVES old tests) new_suite_rc=1 (1=KILLED by new tests)
+M7 old_suite_rc=1 (0=mutant SURVIVES old tests) new_suite_rc=1 (1=KILLED by new tests)
+M2 old_suite_rc=1 (0=mutant SURVIVES old tests) new_suite_rc=1 (1=KILLED by new tests)
+N1 old_suite_rc=0 (0=mutant SURVIVES old tests) new_suite_rc=1 (1=KILLED by new tests)
+
+real	4m43.151s
+user	3m0.949s
+sys	0m28.480s

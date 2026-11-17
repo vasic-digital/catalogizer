@@ -3711,3 +3711,13 @@ R5-1..R5-8 fixed; gate logic sound; 133/0 reproduced. Blockers:
 - PGFU1-R-3: scan guard blind spots undocumented: anonymous embedded `*sql.DB`, `db.DB.Conn(ctx)` raw connection, function returning `*sql.DB`; conservative false positives (`h.DB.Begin()` on `*database.DB` field, name declared `*sql.DB` in another function).
 - PGFU1-R-4: no repository-level real-PG test for the tx QueryRow paths whose explicit Rewrite was removed (UserRepository.Delete user_repository.go:719/:741, LockAccount refusedByGuard :576); reviewer mutant OWN-TXQR survived the repository PG subset, killed only by database TestTxStatementsAreDialectRewrittenOnPostgres.
 - PGFU1-R-5..7 (optional): evidence files lack producing commands (§11.4.273(e)); guard against explicit Rewrite passed into a tx method; txPresent handles only typed-nil pointers.
+## ALTSVC4 (addresses ALTSVC3-R-m1..m5, n1..n3, PROVISIONAL, evidence docs/qa/altsvc4-20261117/)
+m1 ServeFailureClearsFlag (seam h3Serve); m2 TCP-bind-failure and both-occupied tests; m3 real quic-go HTTP/3 client request; m4+m5 AST pins (single Store(true) after ListenPacket; main() keeps both startH3Stack results, nil-guarded Shutdown/Close); n1 UDP socket closed after Close; n2 port race => SKIP INCONCLUSIVE; n3 limits in the evidence README. Real main() on 28443 still not exercised.
+
+## ALTSVC4 review follow-ups (Opus, GO-with-follow-ups, 2026-11-17)
+- ALTSVC5 (NEW ITEM, IMPORTANT, source-defect, pre-existing at d6a7e8058, release concern): catalog-api/main_h3.go:39-42 shares ONE *tls.Config between http.Server (ServeTLS -> http2ConfigureServer writes it) and http3.Server (ConfigureTLSConfig -> Clone reads it). `go test -race -run TestAltSvc` shows DATA RACE in 5 of 6 runs. Production impact UNCONFIRMED (torn NextProtos/ALPN vs race report only). Fix: separate tlsConfig.Clone() per server + a -race regression test; no -race run existed in prior evidence.
+- ALTSVC4-R-F2 (test-instrumentation): TestAltSvcRealHTTP3Request (main_altsvc4_test.go:132-137) SKIPs on any QUIC timeout, so h3Serve returning nil without serving (reviewer mutant R1) or a dead socket (R4) yields SKIP not FAIL. Add a control needle (bare http3.Server on another ephemeral port); FAIL if control answers and stack does not.
+- ALTSVC4-R-F3: AST pin does not cover the h3Serve seam: add "no non-test assignment to h3Serve".
+- ALTSVC4-R-F4: ServeFailureClearsFlag (main_altsvc4_test.go:53-56) does not use startStackOrSkip retry.
+- ALTSVC4-R-F5 (nit): pin storeIdx > listenIdx+1 does not verify the in-between statement is the error return (runtime test BothBindsFail covers it).
+- ALTSVC4-R-F6: docs/qa/altsvc4-20261117/README.md must disclose the 3 opt-in CHPW_RUNTIME_MUTANTS skips and that no -race run was done.

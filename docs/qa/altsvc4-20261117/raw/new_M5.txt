@@ -1,0 +1,9 @@
+--- FAIL: TestAltSvcStartH3Stack_TCPBindFailureHTTP3StillStarts (0.00s)
+    main_altsvc4_test.go:93: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_altsvc4_test.go:93
+        	Error:      	Expected value not to be nil.
+        	Test:       	TestAltSvcStartH3Stack_TCPBindFailureHTTP3StillStarts
+        	Messages:   	the TCP failure must not stop the independent HTTP/3 server (mutant M5)
+[GIN] 2026/11/17 - 18:05:56 | 200 |     312.521µs |       127.0.0.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:05:56 | 404 |     112.361µs |       127.0.0.1 | GET     "/no-such-route-altsvc4"
+FAIL

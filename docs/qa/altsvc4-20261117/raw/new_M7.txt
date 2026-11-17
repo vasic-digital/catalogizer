@@ -1,0 +1,13 @@
+--- FAIL: TestAltSvcStartH3Stack_BothBindsFail (0.01s)
+    main_altsvc4_test.go:119: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_altsvc4_test.go:119
+        	Error:      	Should be false
+        	Test:       	TestAltSvcStartH3Stack_BothBindsFail
+[GIN] 2026/11/17 - 18:07:09 | 200 |     573.462µs |       127.0.0.1 | GET     "/health"
+[GIN] 2026/11/17 - 18:07:09 | 404 |     114.311µs |       127.0.0.1 | GET     "/no-such-route-altsvc4"
+--- FAIL: TestAltSvcAdvertisementAndWiringPins (0.02s)
+    main_altsvc4_test.go:352: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc4/catalog-api/main_altsvc4_test.go:352
+        	Error:      	Should be empty, but was [startH3Stack: h3Advertised.Store(true) (stmt 6) must come after the net.ListenPacket assignment (stmt 7) and its error check]
+        	Test:       	TestAltSvcAdvertisementAndWiringPins
+FAIL
