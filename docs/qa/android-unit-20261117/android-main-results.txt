@@ -1,0 +1,5 @@
+catalogizer-android main@433cedd94, :app:testDebugUnitTest (full)
+exit code 0, BUILD SUCCESSFUL in 7m 47s (469 s wall)
+suites 65, tests 1076, failures 0, errors 0, skipped 0
+CatalogizerApiTest 30/0/0; SyncManagerTest 14/0/0; MediaRepositoryTest 26/0/0
+(counts taken from build/test-results/testDebugUnitTest/*.xml right after the run)
