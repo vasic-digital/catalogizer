@@ -104,17 +104,33 @@ func preGateKey(file string) string {
 }
 
 func preGateAllowed(h routeHandler) bool {
-	syms, ok := preGateAllowedSymbols[preGateKey(h.File)]
-	if !ok {
-		return false
+	_, _, ok := preGateMatch(h)
+	return ok
+}
+
+// preGateMatch returns the allow-list (file key, symbol) a handler matches. S1G6-F1: a symbol WITHOUT a receiver matches only a
+// package-qualified function ("<pkg>.Logger", compiler-inlined prefixes such as "main.buildRouter.Logger" included), never a method
+// of the same name: the text before the symbol must not end with ")" (a receiver such as "(*X)"). Symbols that carry their receiver
+// ("(*JWTMiddleware).RequireAuth") are matched as written.
+func preGateMatch(h routeHandler) (key, sym string, ok bool) {
+	key = preGateKey(h.File)
+	syms, found := preGateAllowedSymbols[key]
+	if !found {
+		return "", "", false
 	}
 	name := closureSuffixRe.ReplaceAllString(h.Name, "")
 	for _, s := range syms {
-		if name == s || strings.HasSuffix(name, "."+s) {
-			return true
+		if name == s {
+			return key, s, true
+		}
+		if strings.HasSuffix(name, "."+s) {
+			prefix := strings.TrimSuffix(name, "."+s)
+			if !strings.HasSuffix(prefix, ")") {
+				return key, s, true
+			}
 		}
 	}
-	return false
+	return "", "", false
 }
 
 // handlersBeforeGateViolations lists the handlers in front of the first admin gate of a chain that are not pinned middleware.
@@ -281,58 +297,78 @@ var realRoutesCache struct {
 func realBinaryRoutes(t *testing.T) []realRoute {
 	t.Helper()
 	realRoutesCache.once.Do(func() {
-		dir, err := os.MkdirTemp("", "routedump")
-		if err != nil {
-			realRoutesCache.err = err
-			return
-		}
-		defer os.RemoveAll(dir)
-		bin := filepath.Join(dir, "catalog-api-routedump")
-		if out, err := exec.Command("go", "build", "-buildvcs=false", "-tags", "routedump", "-o", bin, ".").CombinedOutput(); err != nil {
-			realRoutesCache.err = fmt.Errorf("build with -tags routedump failed: %v\n%s", err, out)
-			return
-		}
-		dump := filepath.Join(dir, "routes.json")
-		b := &binEnv{t: t, bin: bin, dir: dir, port: 0}
-		cmd := exec.Command(bin)
-		cmd.Dir = dir
-		cmd.Env = b.env("GIN_MODE=release", "ADMIN_PASSWORD=Op3rator-Supplied-Value-9x", "ROUTE_DUMP_FILE="+dump, "HELIX_PPROF_ENABLED=true")
-		out := &safeBuf{}
-		cmd.Stdout, cmd.Stderr = out, out
-		if err := cmd.Start(); err != nil {
-			realRoutesCache.err = err
-			return
-		}
-		done := make(chan error, 1)
-		go func() { done <- cmd.Wait() }()
-		select {
-		case err := <-done:
-			if err != nil {
-				realRoutesCache.err = fmt.Errorf("route dump run failed: %v\n%s", err, out.String())
-				return
-			}
-		case <-time.After(180 * time.Second):
-			_ = cmd.Process.Kill()
-			<-done
-			realRoutesCache.err = fmt.Errorf("route dump run timed out\n%s", out.String())
-			return
-		}
-		raw, err := os.ReadFile(dump)
-		if err != nil {
-			realRoutesCache.err = fmt.Errorf("no route dump written: %v\n%s", err, out.String())
-			return
-		}
-		var rc []routeChain
-		if err := json.Unmarshal(raw, &rc); err != nil {
-			realRoutesCache.err = err
-			return
-		}
-		for _, r := range rc {
-			realRoutesCache.routes = append(realRoutesCache.routes, realRoute{r.Method, r.Path, r.Chain})
-		}
+		realRoutesCache.routes, realRoutesCache.err = dumpRoutesFromBuild(t, "")
 	})
 	require.NoError(t, realRoutesCache.err)
 	return realRoutesCache.routes
+}
+
+// dumpRoutesFromBuild builds the real main() with -tags routedump, runs it and returns the dumped route table. mainOverride != ""
+// replaces main.go for the build only (go build -overlay; the checkout is never edited), which is how the standing mutant tests put
+// a handler in front of a gate in the REAL binary (S1G6-F3).
+func dumpRoutesFromBuild(t *testing.T, mainOverride string) ([]realRoute, error) {
+	dir, err := os.MkdirTemp("", "routedump")
+	if err != nil {
+		return nil, err
+	}
+	defer os.RemoveAll(dir)
+	bin := filepath.Join(dir, "catalog-api-routedump")
+	args := []string{"build", "-buildvcs=false", "-tags", "routedump", "-o", bin}
+	if mainOverride != "" {
+		real, err := filepath.Abs("main.go")
+		if err != nil {
+			return nil, err
+		}
+		mut := filepath.Join(dir, "main_override.go.txt")
+		if err := os.WriteFile(mut, []byte(mainOverride), 0o600); err != nil {
+			return nil, err
+		}
+		ov := filepath.Join(dir, "overlay.json")
+		raw, _ := json.Marshal(map[string]map[string]string{"Replace": {real: mut}})
+		if err := os.WriteFile(ov, raw, 0o600); err != nil {
+			return nil, err
+		}
+		args = append(args, "-overlay", ov)
+	}
+	args = append(args, ".")
+	if out, err := exec.Command("go", args...).CombinedOutput(); err != nil {
+		return nil, fmt.Errorf("build with -tags routedump failed: %v\n%s", err, out)
+	}
+	dump := filepath.Join(dir, "routes.json")
+	b := &binEnv{t: t, bin: bin, dir: dir, port: 0}
+	cmd := exec.Command(bin)
+	cmd.Dir = dir
+	cmd.Env = b.env("GIN_MODE=release", "ADMIN_PASSWORD=Op3rator-Supplied-Value-9x", "ROUTE_DUMP_FILE="+dump, "HELIX_PPROF_ENABLED=true")
+	out := &safeBuf{}
+	cmd.Stdout, cmd.Stderr = out, out
+	if err := cmd.Start(); err != nil {
+		return nil, err
+	}
+	done := make(chan error, 1)
+	go func() { done <- cmd.Wait() }()
+	select {
+	case err := <-done:
+		if err != nil {
+			return nil, fmt.Errorf("route dump run failed: %v\n%s", err, out.String())
+		}
+	case <-time.After(180 * time.Second):
+		_ = cmd.Process.Kill()
+		<-done
+		return nil, fmt.Errorf("route dump run timed out\n%s", out.String())
+	}
+	raw, err := os.ReadFile(dump)
+	if err != nil {
+		return nil, fmt.Errorf("no route dump written: %v\n%s", err, out.String())
+	}
+	var rc []routeChain
+	if err := json.Unmarshal(raw, &rc); err != nil {
+		return nil, err
+	}
+	var routes []realRoute
+	for _, r := range rc {
+		routes = append(routes, realRoute{r.Method, r.Path, r.Chain})
+	}
+	return routes, nil
 }
 
 // The ground truth: the REAL engine's route table (built from the real main(), reflection over gin's trees) against the scanner and

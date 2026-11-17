@@ -1421,8 +1421,11 @@ func TestADMD1F1S1G5_DriftExclusionDoesNotHideAdminOnly403(t *testing.T) {
 }
 
 // callWrapsHandler (R7): true for gin.WrapF / gin.WrapH (any package alias) and for any call that is given a function literal
-// (a literal is a handler body that would run in front of the gate). Limit stated: a call such as wrap(namedHandler) is not
-// recognised by the scanner; the real-chain check (preGateAllowedSymbols) is the backstop for it.
+// (a literal is a handler body that would run in front of the gate). Limits stated (S1G6-F2): the scanner is blind to every handler
+// that is not a literal or a literally-named WrapF/WrapH call: wrap(namedHandler), gin.HandlerFunc(named), an aliased gin.WrapF
+// (w := gin.WrapF; w(h)), and a group-level Use(gin.WrapF(..)) ahead of a group gate. The real-chain check (preGateAllowedSymbols)
+// is the backstop for all of them, pinned by TestS1G6F3_RealChainCatchesScannerBlindHandlersBeforeTheGate (skipped under -short).
+// S1G6-F6 (nit, open): any call given a function literal is flagged, not only handler-wrapping ones.
 func callWrapsHandler(c *ast.CallExpr) bool {
 	switch f := ast.Unparen(c.Fun).(type) {
 	case *ast.SelectorExpr:

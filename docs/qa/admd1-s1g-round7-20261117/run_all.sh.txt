@@ -1,0 +1,41 @@
+#!/bin/bash
+# round 7: GREEN x2, vet/fmt, then mutants (scratch edits, each restored). Runs in the scratch clone.
+W=/home/milosvasic/.cache/claude-tmp/s1g6-clone
+cd $W/catalog-api || exit 1
+E=$W/docs/qa/admd1-s1g-round7-20261117
+export GOMAXPROCS=2
+RE='ADMD1|Admin403|ContractGate|OpenAPI|R6|R7|S1G6'
+for i in 1 2; do
+  { echo "# commit-base $(git -C $W rev-parse HEAD) green run $i"; nice -n 10 go test -vet=off -p 1 -count=1 -run "$RE" . 2>&1 | grep -v '^\[GIN'; echo "exit=${PIPESTATUS[0]}"; } > $E/green_$i.txt
+done
+{ nice -n 10 go vet . 2>&1 | tail -5; echo "vet exit=${PIPESTATUS[0]}"; gofmt -l api_contract_gate_s1g6_test.go api_contract_gate_groundtruth_test.go api_contract_gate_codescan_test.go; echo "gofmt done"; } > $E/vet_fmt.txt
+O=$E/mutants.txt
+echo "# round 7 mutants (scratch edits, each restored)" > $O
+cp main.go $W/.main.orig; cp api_contract_gate_groundtruth_test.go $W/.gt.orig; cp ../docs/ROUTE_AUTHZ_TABLE.md $W/.table.orig
+run() { # name expect file old new tests
+  local name=$1 expect=$2 file=$3 old=$4 new=$5 tests=$6
+  python3 - "$file" "$old" "$new" <<'PY'
+import sys
+f,o,n=sys.argv[1:4]
+s=open(f).read()
+assert o in s, "pattern missing"
+open(f,'w').write(s.replace(o,n,1))
+PY
+  if [ $? -ne 0 ]; then echo "$name: MUTATION NOT APPLIED" >> $O; return; fi
+  local res; res=$(nice -n 10 go test -vet=off -p 1 -count=1 -run "$tests" . 2>&1 | grep -v '^\[GIN')
+  local v=PASS; echo "$res" | grep -q '^FAIL' && v=FAIL
+  local ok=UNEXPECTED; [ "$v" = "$expect" ] && ok=OK
+  { echo "## $name | $file | tests=$tests | expected $expect | got $v | $ok"; echo "$res" | grep -E 'Error:|route-level|handler-wrapping|not used|differs|--- FAIL|^ok|^FAIL' | cut -c1-240 | head -6; } >> $O
+  cp $W/.main.orig main.go; cp $W/.gt.orig api_contract_gate_groundtruth_test.go; cp $W/.table.orig ../docs/ROUTE_AUTHZ_TABLE.md
+}
+G='api.POST("/admin/covers/generate-thumbnails", jwtMiddleware.RequireAdmin(), '
+run "MS1 real main.go: RequireAdmin removed" FAIL main.go "$G" 'api.POST("/admin/covers/generate-thumbnails", ' 'ADMD1F1S1R5_RealRoute'
+run "MS2 real main.go: MintWSTicket method value before the gate" FAIL main.go "$G" 'api.POST("/admin/covers/generate-thumbnails", jwtMiddleware.MintWSTicket, jwtMiddleware.RequireAdmin(), ' 'ADMD1F1S1R5_RealRoute'
+run "MS3 real main.go: gin.WrapF(func literal) before the gate (scanner-visible)" FAIL main.go "$G" 'api.POST("/admin/covers/generate-thumbnails", gin.WrapF(func(w http.ResponseWriter, r *http.Request) {}), jwtMiddleware.RequireAdmin(), ' 'ADMD1F1S1R5_RealRoute'
+run "MS4 groundtruth: F1 receiver check reverted (prefix != empty)" FAIL api_contract_gate_groundtruth_test.go 'if !strings.HasSuffix(prefix, ")") {' 'if prefix != "" {' 'S1G6F1'
+run "MS5 groundtruth: handlersBeforeGateViolations returns no violations" FAIL api_contract_gate_groundtruth_test.go '			if !preGateAllowed(p) {' '			if false {' 'S1G6F1|ADMD1F1S1R7_RealChain'
+run "MS6 groundtruth: stale symbol added to allow-list" FAIL api_contract_gate_groundtruth_test.go '"internal/middleware/middleware.go":  {"AccessLogRouteParams", "ErrorHandler", "Logger"},' '"internal/middleware/middleware.go":  {"AccessLogRouteParams", "ErrorHandler", "Logger", "GhostSymbol"},' 'S1G6F4'
+run "MS7 groundtruth: allow-list gains the method name (RateLimitByUser -> any Logger method via bare Logger kept; add bare MintWSTicket)" FAIL api_contract_gate_groundtruth_test.go '"middleware/auth.go":                 {"(*JWTMiddleware).RequireAuth"},' '"middleware/auth.go":                 {"(*JWTMiddleware).RequireAuth", "MintWSTicket"},' 'ADMD1F1S1R7_RealChain'
+run "MS8 golden-FALSE: pinned RequestID() before the gate" PASS main.go "$G" 'api.POST("/admin/covers/generate-thumbnails", root_middleware.RequestID(), jwtMiddleware.RequireAdmin(), ' 'ADMD1F1S1R5_RealRoute'
+echo "# end; restored: $(cmp main.go $W/.main.orig && echo main-identical) $(cmp api_contract_gate_groundtruth_test.go $W/.gt.orig && echo gt-identical)" >> $O
+echo done > $W/.all.done
