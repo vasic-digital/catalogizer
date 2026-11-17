@@ -3668,3 +3668,10 @@ CAT-LEGACY-MEDIAHANDLER-1: removal not approved; deep-dive of the whole legacy m
 - RATING1-R-N1 (nit): created_at (DB clock) vs updated_at (Go UTC) mixed on PG; SQLite INSERT OR REPLACE refreshes created_at.
 - RATING1-R-N2 (nit): duplicate JSON keys last-wins, untested.
 - Live contract sweep for the rating routes ran trimmed only (full sweep UNCONFIRMED).
+
+## CLPROG round 2 review (Opus, 2026-11-17) — GO-with-follow-ups, landed PROVISIONAL
+- CLPROG-R2-m1 (minor): VLCPlayerActivity.saveWatchProgress lambda forwarding posMs/durMs untested (mutant K5 survives, reintroduces WPROG3-FU-1); let the tick call mediaRepository.saveWatchProgress itself and assert the duration.
+- CLPROG-R2-m2 (minor): phone MediaRepositoryTest lacks a 200-without-persisted test (K6 survives); phone MediaRepository.updateWatchProgress has no production caller, SyncManager still uses dead updateUserWatchProgress.
+- CLPROG-R2-n1 (nit): onDestroy final save in a cancelling lifecycleScope may never run; tick catches CancellationException.
+- CLPROG-R2-n2 (nit): desktop non-2xx other than 409 reported persisted:false with reason unknown.
+- Not checked: device/emulator, live server, full suites.
