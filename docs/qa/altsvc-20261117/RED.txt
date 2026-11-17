@@ -1,0 +1,5 @@
+RED (original assertion, routed 200 must carry Alt-Svc) on base 738ee310137b8e27997e9d3d35e4faaf0ac69c20:
+--- FAIL: TestAltSvcReachOnRealRouter
+    main_altsvc_reach_test.go:33: expected: "h3=\":28443\"; ma=86400"  actual: ""  Messages: routed 200 must advertise HTTP/3
+(control in same test: 404 chain carried the header; /health 200 did not)
+Command: cd catalog-api && GOMAXPROCS=2 nice -n 10 go test -p 1 -run TestAltSvcReachOnRealRouter .

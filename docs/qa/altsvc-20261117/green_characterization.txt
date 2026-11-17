@@ -1,0 +1,9 @@
+=== RUN   TestAltSvcReachOnRealRouter
+--- PASS: TestAltSvcReachOnRealRouter (0.00s)
+=== RUN   TestAltSvcMiddleware
+--- PASS: TestAltSvcMiddleware (0.00s)
+=== RUN   TestAltSvcAndHandlerKey_RuntimeMutants
+    main_router_test.go:604: opt-in (compiles the package per mutant): set CHPW_RUNTIME_MUTANTS=1
+--- SKIP: TestAltSvcAndHandlerKey_RuntimeMutants (0.00s)
+PASS
+ok  	catalogizer	0.195s
