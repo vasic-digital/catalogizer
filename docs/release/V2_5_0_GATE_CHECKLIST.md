@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Revision | 6 (Rev 6 note: rc.1 operator exception 2026-11-17, text only, no gate changed; Rev 5 was: review round 1 fixes applied, merged with `main` `b0066508a`) |
+| Revision | 7 (Rev 7 note: rc.1 readiness measured at `fe5b7b7b9`, see the last section; Rev 6 was: Rev 6 note: rc.1 operator exception 2026-11-17, text only, no gate changed; Rev 5 was: review round 1 fixes applied, merged with `main` `b0066508a`) |
 | Created | 2026-11-14 |
 | Based on | `main` `62ee38f00` for the G rows, then merged with `main` `b0066508a` (2026-11-17, scratch clone `gatechk5`, read-mostly; range since Rev 4 `868b0d379..62ee38f00` = 34 commits, and `62ee38f00..b0066508a` = 20 commits merged in afterwards; G12 and Evidence counts re-measured at `b0066508a`). The `v2.4.3` tag still points at `25cb9e40c`. Commands executed for this revision: git queries (`log`, `rev-list`, `--grep`), `grep` over `docs/FOLLOW_UPS_NEXT_PHASE.md` (L3209-3281), `scripts/release/check_release_consistency.sh --version 2.5.0 --prev-tag v2.4.3` (G6/G11, read-only), and `git ls-remote` (read-only) on the 15 remotes of the main checkout (G10). No test, build, scan or live run was executed. See `docs/release/RC1_PREP_AUDIT_20261116.md` for the rc.1 gate audit |
 | Status | DRAFT. Rev 5 is NOT independently reviewed (Rev 4 was reviewed 2026-11-16, Opus GO-with-follow-ups; its follow-ups GATECHK4-m1/m3/m4/n1 are folded in below). 0 of 12 gates satisfied. Every state below is "as of the repo text now" unless a command is named |
@@ -128,3 +128,24 @@ Gates satisfied: **0 of 12** (no gate has a machine record of a pass; re-stated 
 ## Rev 6 note: rc.1 exception (2026-11-17, PROVISIONAL)
 
 Operator decisions 2026-11-17 (relayed, identifier UNCONFIRMED): rc.1 may ship as a labelled pre-release with G2, G5 and G9 relaxed, a recorded operator exception to 11.4.298(E) for rc.1 ONLY. v2.5.0 is unchanged: all of G1..G12 and the per-product live run on connected hardware stay required; this note relaxes nothing for v2.5.0. The per-product gate record stays `BLOCKED-NO-HARDWARE` (five products) and `BLOCKED-NO-BASELINE` (web); the rc.1 tag carries the pre-release label and cites the exception (see `docs/release/RC1_PREP_AUDIT_20261116.md`, section "Operator exception for rc.1"). Emulator runs are NON-GATE dry-run pre-checks only (`docs/release/RC1_DRYRUN_PLAN_20261117.md`) and never count for any gate. The number "0 of 12 gates satisfied" is unchanged.
+
+## Rev 7: rc.1 readiness measured (2026-11-17, scratch clone, branch `rc1gates`, base `main` `fe5b7b7b9`)
+
+Commands run: `scripts/release/check_release_consistency.sh --version 2.5.0 --prev-tag v2.4.3`, `git log v2.4.3..main` counts, `forge.sh release-ensure ... --dry-run` against three remotes. Nothing else (no build, test, scan, tag, push). The Rev 5/6 text above for G6, G8 and G11 is STALE: the version bump and the `[2.5.0]` changelog section have landed on `main` (merge of `rc1ver`).
+
+| Gate | rc.1 status | v2.5.0 status | Owner |
+|---|---|---|---|
+| G1 retest | OPEN, required for rc.1, no new retest record | OPEN | retest agent |
+| G2 per-product live run | RELAXED for rc.1 by the operator exception (11.4.298(E)), all six products BLOCKED-NO-HARDWARE | OPEN | live-run agent, needs hardware |
+| G3 Vision/UI QA | OPEN, owed for rc.1 | OPEN | vision agent |
+| G4 SEC-WS-1 live /ws | OPEN, owed | OPEN | ws agent |
+| G5 Sonar | RELAXED for rc.1 | OPEN | sonar agent |
+| G6 release checker | SATISFIED on this clone: `VERDICT: PASS` (version_ok=19, fail=0, sha_ok=64, sha_fail=0, unused_waivers=3, permanent_risks=1) with `[2.5.0]` heading; must be re-run on the tag candidate | re-run on the candidate | release agent |
+| G7 manual QA | OPEN, owed | OPEN | operator QA team |
+| G8 changelog | SATISFIED for rc.1 (section exists; counts refreshed at `fe5b7b7b9`: 519 commits, 144 merges, 75 without `Roadmap-Item`; P about 243, exact UNCONFIRMED; rc.1 identity in the section text, NOT in the heading because `[2.5.0-rc.1]` makes the checker BLIND/FAIL) | needs G12 | changelog agent |
+| G9 important items | RELAXED for rc.1 | OPEN | checklist agent |
+| G10 parity + pages | OPEN: tag and pages not created; `release-ensure --dry-run` for `v2.5.0-rc.1` on GitHub, GitLab and Codeberg each returned `RESULT: GAP` `REASON: tag_absent_on_forge` (expected: the tag does not exist; tokens were found in the environment by name); m3w page and GitFlic/GitVerse tags-only UNCONFIRMED | OPEN | release agent after the tag |
+| G11 versions | SATISFIED (19 of 19 files at 2.5.0, Android 10 > 9, TV 12 > 11) | re-check | release agent |
+| G12 VERIFIED items | NOT required for rc.1 (pre-release, PROVISIONAL listed), V = 0 | OPEN | verification agents |
+
+Prepared artifacts: `docs/release/RELEASE_NOTES_v2.5.0-rc.1.md`, `docs/release/RC1_TAG_AND_PUBLISH.sh.txt`. 11.4.298(E) still forbids any tag without a live run; only the recorded rc.1 exception (relayed, identifier UNCONFIRMED) permits it, and the operator must confirm before the tag. "0 of 12 gates satisfied" for v2.5.0 is unchanged.

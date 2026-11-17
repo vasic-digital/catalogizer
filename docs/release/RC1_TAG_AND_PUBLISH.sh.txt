@@ -1,0 +1,31 @@
+# RC1_TAG_AND_PUBLISH.sh.txt -- NOT executable, NOT run. Read, check every pre-flight line, then paste step by step.
+# Tag: v2.5.0-rc.1 (pre-release). 11.4.298(E) forbids any tag until a per-product live run exists; the only basis
+# for cutting this one is the operator exception of 2026-11-17 (rc.1 only, relayed, identifier UNCONFIRMED).
+# Never force. Push serially with sleep 4. No token is ever printed; forge.sh reads token variables by NAME.
+
+### PRE-FLIGHT (every line must hold; stop at the first that does not)
+# 1. Operator has said "cut rc.1" in this session (the exception is a record, not a trigger).
+# 2. On main, clean tree:            test "$(git branch --show-current)" = main && test -z "$(git status --porcelain)"
+# 3. Fetch parity:                   git fetch --all --tags; for r in github gitlab codeberg m3w gitflic-vasic gitverse-vasic; do git ls-remote $r refs/heads/main; done   # all equal local main
+# 4. Constitution latest:            git -C constitution fetch origin && test "$(git -C constitution rev-parse HEAD)" = "$(git -C constitution rev-parse origin/main)"
+# 5. Release checker:                scripts/release/check_release_consistency.sh --version 2.5.0 --prev-tag v2.4.3 | tail -1    # must be VERDICT: PASS
+# 6. Gate states recorded in docs/CHANGELOG.md [2.5.0] and docs/release/RELEASE_NOTES_v2.5.0-rc.1.md (all six BLOCKED-NO-HARDWARE, exception cited)
+# 7. Tag absent everywhere:          git ls-remote --tags github refs/tags/v2.5.0-rc.1   # empty
+# 8. Checklist docs/release/V2_5_0_GATE_CHECKLIST.md Rev 7: G1, G6, G8, G10, G11 satisfied or relaxed as recorded; G2, G5, G9 relaxed by the exception.
+
+### TAG (local, annotated, on the reviewed main tip)
+SHA=$(git rev-parse HEAD)
+git tag -a v2.5.0-rc.1 -m "Catalogizer v2.5.0-rc.1 (pre-release, not production-ready; rc.1 operator exception 2026-11-17)" "$SHA"
+
+### PUSH the tag serially (no force)
+for r in github gitlab codeberg m3w gitflic-vasic gitverse-vasic; do git push "$r" refs/tags/v2.5.0-rc.1; sleep 4; done
+# parity check
+for r in github gitlab codeberg m3w gitflic-vasic gitverse-vasic; do git ls-remote "$r" refs/tags/v2.5.0-rc.1; done   # same sha everywhere
+
+### RELEASE PAGES (GitHub, GitLab, Codeberg; m3w page needs its API token, GitFlic and GitVerse stay tags-only)
+N=docs/release/RELEASE_NOTES_v2.5.0-rc.1.md
+for u in git@github.com:vasic-digital/Catalogizer.git git@gitlab.com:vasic-digital/catalogizer.git ssh://git@codeberg.org/vasic-digital/catalogizer.git; do
+  constitution/scripts/forge/forge.sh release-ensure --url "$u" --tag v2.5.0-rc.1 --sha "$SHA" --notes-file "$N" --title "Catalogizer v2.5.0-rc.1 (pre-release)" --prerelease --dry-run   # expect RESULT: OK
+done
+# only if every dry-run ends RESULT: OK, repeat the same commands WITHOUT --dry-run (Codeberg: add --enable-releases only if the dry-run says releases_disabled).
+# RESULT: UNVERIFIED-COMMIT (exit 5) or GAP means stop and report.
