@@ -291,17 +291,17 @@ type querier interface {
 	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
 }
 
-// txQ runs statements on a transaction with the dialect rewrite (statements on a *sql.Tx bypass the DB wrappers).
+// txQ runs statements on a transaction; *database.Tx applies the dialect rewrite itself (a second rewrite is idempotent).
 type txQ struct {
-	tx *sql.Tx
+	tx *database.Tx
 	db *database.DB
 }
 
 func (q txQ) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
-	return q.tx.ExecContext(ctx, q.db.Rewrite(query), args...)
+	return q.tx.ExecContext(ctx, query, args...)
 }
 func (q txQ) QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row {
-	return q.tx.QueryRowContext(ctx, q.db.Rewrite(query), args...)
+	return q.tx.QueryRowContext(ctx, query, args...)
 }
 
 type rowState struct {
@@ -374,7 +374,7 @@ func (t *LoginThrottle) reserve(ctx context.Context, q querier, subject, scope s
 
 // lockSlots takes the per-subject row lock that serialises the in-flight cap against every other Begin of the subject
 // (takeToken: count-then-insert). Writing the row is what takes the lock.
-func (t *LoginThrottle) lockSlots(ctx context.Context, tx *sql.Tx, subject string, nowMs int64) error {
+func (t *LoginThrottle) lockSlots(ctx context.Context, tx *database.Tx, subject string, nowMs int64) error {
 	for i := 0; i < 3; i++ {
 		if _, err := tx.ExecContext(ctx, t.db.Rewrite(`INSERT OR IGNORE INTO login_throttle (subject, scope) VALUES (?, ?)`), subject, slotsScope); err != nil {
 			return err

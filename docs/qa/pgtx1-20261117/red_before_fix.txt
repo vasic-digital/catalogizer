@@ -1,0 +1,18 @@
+--- FAIL: TestTxStatementsAreDialectRewrittenOnPostgres (10.37s)
+    --- FAIL: TestTxStatementsAreDialectRewrittenOnPostgres/Begin (0.00s)
+        tx_rewrite_pg_test.go:69: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/pgtx1/catalog-api/database/tx_rewrite_pg_test.go:69
+            	Error:      	Received unexpected error:
+            	            	pq: syntax error at or near ","
+            	Test:       	TestTxStatementsAreDialectRewrittenOnPostgres/Begin
+            	Messages:   	Exec with ? on a PostgreSQL tx
+    --- FAIL: TestTxStatementsAreDialectRewrittenOnPostgres/BeginTx (0.00s)
+        tx_rewrite_pg_test.go:69: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/pgtx1/catalog-api/database/tx_rewrite_pg_test.go:69
+            	Error:      	Received unexpected error:
+            	            	pq: syntax error at or near ","
+            	Test:       	TestTxStatementsAreDialectRewrittenOnPostgres/BeginTx
+            	Messages:   	Exec with ? on a PostgreSQL tx
+FAIL
+FAIL	catalogizer/database	10.387s
+FAIL

@@ -131,7 +131,7 @@ func (tc *TxContext) Begin(ctx context.Context, opts *sql.TxOptions) (*Transacti
 
 	txID := generateTxID()
 	tx := &Transaction{
-		Tx:        sqlTx,
+		Tx:        sqlTx.Tx,
 		ctx:       txCtx,
 		cancel:    cancel,
 		config:    tc.config,
