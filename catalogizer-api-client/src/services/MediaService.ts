@@ -137,10 +137,19 @@ export class MediaService {
   /**
    * Set the calling user's favorite flag for a media item (per-user, idempotent)
    * Backend: PUT /api/v1/media/:id/favorite with body {"favorite": boolean}
-   * (the field is required; the server answers 400 without it)
+   * (the field is required; the server answers 400 without it).
+   * The server answers {"success": true, "message": "..."}; it does NOT return the new flag.
    */
-  public async toggleFavorite(mediaId: number, favorite: boolean): Promise<{ is_favorite: boolean }> {
-    return this.http.put<{ is_favorite: boolean }>(`/media/${mediaId}/favorite`, { favorite });
+  public async setFavorite(mediaId: number, favorite: boolean): Promise<{ success: boolean; message: string }> {
+    return this.http.put<{ success: boolean; message: string }>(`/media/${mediaId}/favorite`, { favorite });
+  }
+
+  /**
+   * @deprecated Misleading name and return type: this sets the flag, it does not toggle, and the server returns
+   * {success, message}, not {is_favorite}. Use {@link setFavorite}. Kept as an alias for existing callers.
+   */
+  public async toggleFavorite(mediaId: number, favorite: boolean): Promise<{ success: boolean; message: string }> {
+    return this.setFavorite(mediaId, favorite);
   }
 
   /**

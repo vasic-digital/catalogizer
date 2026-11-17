@@ -1068,9 +1068,11 @@ Copy a file from a remote storage (SMB) to local filesystem.
 | `destination_path` | string | Yes | Local destination path |
 | `overwrite` | bool | No | Overwrite existing files (default: false) |
 
-**Errors:** 400 (invalid source format), 403 (destination is read-only), 409 (file exists and overwrite=false, source and destination are the same file, or the destination is an existing directory), 422 (source is not a regular file), 500 (any other failure)
+**Errors:** 400 (malformed body, invalid source format or path), 401 (missing or invalid token), 403 (caller is not an administrator, body `{"success":false,"error":"Admin role required"}`; or destination is read-only, body `{"error":"Destination is read-only"}`), 409 (file exists and overwrite=false; also source and destination are the same file, or the destination is an existing directory), 422 (source is not a regular file), 500 (any other failure)
 
 The 403/409/422 refusals come from the typed copy errors of the filesystem layer (`ErrCopyDestReadOnly`, `ErrCopySameFile`, `ErrCopyDestIsDirectory`, `ErrCopySourceNotRegular`); the body is `{"error": "<fixed text>"}` and never contains a path. A 403 with the body `Destination is read-only` is a refusal of the copy, not an admin check failure.
+
+**Not reachable yet:** the read-only 403, the same-file and destination-is-a-directory 409 cases and the 422 cannot occur today: the SMB service never returns the typed copy errors (`CopyFile` is used only by the rename tracker). The mapping is in place for when it does. The 409 for an existing destination with `overwrite=false` does occur today.
 
 ---
 
@@ -1103,7 +1105,7 @@ Upload a file from local filesystem to SMB storage.
 }
 ```
 
-**Errors:** 400 (missing file, bad destination), 403 (destination is read-only), 409 (destination exists and overwrite is not `"true"`, same file, or destination is a directory), 422 (source is not a regular file), 500 (any other failure). Same fixed-text bodies as `/copy/local`.
+**Errors:** 400 (missing file, bad destination), 401 (missing or invalid token), 403 (caller is not an administrator, body `{"success":false,"error":"Admin role required"}`; or destination is read-only), 409 (destination exists and overwrite is not `"true"`; also same file or destination is a directory), 422 (source is not a regular file), 500 (any other failure). Same fixed-text bodies and the same "not reachable yet" note as `/copy/local`.
 
 ---
 

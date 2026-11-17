@@ -213,12 +213,12 @@ describe('CatalogizerClient', () => {
       });
     });
 
-    describe('toggleFavorite', () => {
-      it('toggles favorite status', async () => {
-        const mockResponse = { data: { is_favorite: true } };
+    describe('setFavorite', () => {
+      it('sets favorite status', async () => {
+        const mockResponse = { data: { success: true, message: 'Favorite status updated successfully' } };
         mockAxiosInstance.put.mockResolvedValueOnce(mockResponse);
 
-        const result = await client.media.toggleFavorite(1, false);
+        const result = await client.media.setFavorite(1, false);
 
         expect(mockAxiosInstance.put).toHaveBeenCalledWith('/media/1/favorite', { favorite: false }, undefined);
         expect(result).toEqual(mockResponse.data);

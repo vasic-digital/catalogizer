@@ -3232,14 +3232,18 @@ paths:
             schema:
               type: object
       responses:
+        '400':
+          description: 'Invalid request (malformed body, missing or invalid source/destination, invalid path); body {"error":"<fixed text>"}'
+        '401':
+          description: Missing or invalid bearer token
         '503':
           description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '403':
-          description: 'Either the caller is not an administrator (decided from the database on every request) or, from the copy refusal mapping (SMBCOPYR-F7, operator decision 2026-11-17), the destination is read-only (body {"error":"Destination is read-only"}); the two are told apart by the body'
+          description: 'Either the caller is not an administrator (decided from the database on every request; body {"success":false,"error":"Admin role required"}) or, from the copy refusal mapping (SMBCOPYR-F7, operator decision 2026-11-17), the destination is read-only (body {"error":"Destination is read-only"}); the two are told apart by the body. UNCONFIRMED/not yet reachable: the read-only refusal cannot occur today, because the SMB service never returns the typed copy errors; the mapping is in place for when it does'
         '409':
-          description: 'Conflict: destination file already exists and overwrite is false, source and destination are the same file, or the destination is an existing directory (the client-safe body names the case, never a path)'
+          description: 'Conflict: destination file already exists and overwrite is false (this case occurs today, body {"error":"Destination file already exists"}). The same-file and destination-is-a-directory 409 cases come from typed copy errors that the SMB service never returns yet, so they cannot occur today (the mapping is in place for when they do)'
         '422':
-          description: 'Source is not a regular file (directory, FIFO, device, socket); the request is well formed but cannot be copied'
+          description: 'Source is not a regular file (directory, FIFO, device, socket); the request is well formed but cannot be copied. Cannot occur today: it comes from a typed copy error that the SMB service never returns yet (the mapping is in place for when it does)'
         '500':
           description: Copy failed for any other reason
         '200':
@@ -3259,14 +3263,18 @@ paths:
             schema:
               type: object
       responses:
+        '400':
+          description: 'Invalid request (malformed body, missing or invalid source/destination, invalid path); body {"error":"<fixed text>"}'
+        '401':
+          description: Missing or invalid bearer token
         '503':
           description: 'Could not verify admin role (the live database admin check failed; the request is refused, fail closed); body {"success":false,"error":"Could not verify admin role"}'
         '403':
-          description: 'Either the caller is not an administrator (decided from the database on every request) or, from the copy refusal mapping (SMBCOPYR-F7, operator decision 2026-11-17), the destination is read-only (body {"error":"Destination is read-only"}); the two are told apart by the body'
+          description: 'Either the caller is not an administrator (decided from the database on every request; body {"success":false,"error":"Admin role required"}) or, from the copy refusal mapping (SMBCOPYR-F7, operator decision 2026-11-17), the destination is read-only (body {"error":"Destination is read-only"}); the two are told apart by the body. UNCONFIRMED/not yet reachable: the read-only refusal cannot occur today, because the SMB service never returns the typed copy errors; the mapping is in place for when it does'
         '409':
-          description: 'Conflict: destination file already exists and overwrite is false, source and destination are the same file, or the destination is an existing directory (the client-safe body names the case, never a path)'
+          description: 'Conflict: destination file already exists and overwrite is false (this case occurs today, body {"error":"Destination file already exists"}). The same-file and destination-is-a-directory 409 cases come from typed copy errors that the SMB service never returns yet, so they cannot occur today (the mapping is in place for when they do)'
         '422':
-          description: 'Source is not a regular file (directory, FIFO, device, socket); the request is well formed but cannot be copied'
+          description: 'Source is not a regular file (directory, FIFO, device, socket); the request is well formed but cannot be copied. Cannot occur today: it comes from a typed copy error that the SMB service never returns yet (the mapping is in place for when it does)'
         '500':
           description: Copy failed for any other reason
         '200':

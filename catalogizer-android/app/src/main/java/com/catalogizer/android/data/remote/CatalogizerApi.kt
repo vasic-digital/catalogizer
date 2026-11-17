@@ -1,6 +1,7 @@
 package com.catalogizer.android.data.remote
 
 import com.catalogizer.android.data.models.*
+import kotlinx.serialization.json.JsonObject
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -37,7 +38,7 @@ interface CatalogizerApi {
     suspend fun getAuthStatus(): Response<AuthStatus>
 
     @GET("auth/permissions")
-    suspend fun getPermissions(): Response<Map<String, Any>>
+    suspend fun getPermissions(): Response<JsonObject>
 
     // Media endpoints
     @GET("media/search")
@@ -64,7 +65,7 @@ interface CatalogizerApi {
     suspend fun refreshMetadata(@Path("id") id: Long): Response<Map<String, String>>
 
     @GET("media/{id}/quality")
-    suspend fun getQualityInfo(@Path("id") id: Long): Response<Map<String, Any>>
+    suspend fun getQualityInfo(@Path("id") id: Long): Response<JsonObject>
 
     @GET("media/stats")
     suspend fun getMediaStats(): Response<MediaStats>
@@ -83,43 +84,43 @@ interface CatalogizerApi {
 
     // User interaction endpoints
     @PUT("media/{id}/progress")
-    suspend fun updateWatchProgress(@Path("id") id: Long, @Body progressData: Map<String, Any>): Response<Unit>
+    suspend fun updateWatchProgress(@Path("id") id: Long, @Body progressData: WatchProgressRequest): Response<Unit>
 
     @PUT("media/{id}/favorite")
-    suspend fun setFavoriteStatus(@Path("id") id: Long, @Body favoriteData: Map<String, Any>): Response<Unit>
+    suspend fun setFavoriteStatus(@Path("id") id: Long, @Body favoriteData: FavoriteRequest): Response<Unit>
 
     @PUT("media/{id}/rating")
-    suspend fun rateMedia(@Path("id") id: Long, @Body ratingData: Map<String, Any>): Response<Unit>
+    suspend fun rateMedia(@Path("id") id: Long, @Body ratingData: RatingRequest): Response<Unit>
 
     @GET("user/preferences")
-    suspend fun getUserPreferences(): Response<Map<String, Any>>
+    suspend fun getUserPreferences(): Response<JsonObject>
 
     @GET("media/updated")
     suspend fun getUpdatedMedia(@Query("since") since: Long): Response<List<MediaItem>>
 
     // SMB endpoints
     @GET("smb/sources/status")
-    suspend fun getSMBStatus(): Response<Map<String, Any>>
+    suspend fun getSMBStatus(): Response<JsonObject>
 
     @POST("smb/sources/{id}/reconnect")
     suspend fun reconnectSMBSource(@Path("id") id: String): Response<Unit>
 
     @GET("smb/health")
-    suspend fun getSMBHealth(): Response<Map<String, Any>>
+    suspend fun getSMBHealth(): Response<JsonObject>
 
     // Analytics endpoints
     @GET("analytics/dashboard")
-    suspend fun getDashboardData(): Response<Map<String, Any>>
+    suspend fun getDashboardData(): Response<JsonObject>
 
     @GET("analytics/charts")
-    suspend fun getChartsData(): Response<Map<String, Any>>
+    suspend fun getChartsData(): Response<JsonObject>
 
     // System endpoints
     @GET("health")
-    suspend fun getSystemHealth(): Response<Map<String, Any>>
+    suspend fun getSystemHealth(): Response<JsonObject>
 
     @GET("status")
-    suspend fun getSystemStatus(): Response<Map<String, Any>>
+    suspend fun getSystemStatus(): Response<JsonObject>
 
     // File streaming
     @GET("stream/{mediaId}")
@@ -129,12 +130,8 @@ interface CatalogizerApi {
     suspend fun getDownloadUrl(@Path("mediaId") mediaId: Long): Response<Map<String, String>>
 
     // User preferences
-    @GET("user/favorites")
-    suspend fun getFavorites(
-        @Query("limit") limit: Int = 20,
-        @Query("offset") offset: Int = 0
-    ): Response<MediaSearchResponse>
-
+    // AFAV-2: the Retrofit method for GET user/favorites was removed: the server has no such route
+    // (favorites are listed by GET /favorites with a different shape) and nothing called it.
     @GET("user/watchlist")
     suspend fun getWatchlist(
         @Query("limit") limit: Int = 20,
@@ -150,7 +147,7 @@ interface CatalogizerApi {
     @PUT("user/progress/{mediaId}")
     suspend fun updateUserWatchProgress(
         @Path("mediaId") mediaId: Long,
-        @Body progressData: Map<String, Any>
+        @Body progressData: WatchProgressRequest
     ): Response<Unit>
 
     @GET("user/continue-watching")

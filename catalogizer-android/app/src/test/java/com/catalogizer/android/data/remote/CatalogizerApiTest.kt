@@ -1,345 +1,150 @@
 package com.catalogizer.android.data.remote
 
-import com.catalogizer.android.data.models.*
-import io.mockk.*
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import retrofit2.Response
+import retrofit2.Retrofit
+import com.catalogizer.android.data.models.FavoriteRequest
+import com.catalogizer.android.data.models.WatchProgressRequest
+import com.catalogizer.android.data.models.RatingRequest
 
+/**
+ * AFAV-6 / FAVC-F2: the former cases of this class stubbed `CatalogizerApi` itself with MockK and asserted
+ * the stub's own answer, so they proved nothing about the code under test; they were deleted. What remains
+ * is (1) a wire test that drives the REAL Retrofit interface (built like production, with the kotlinx
+ * converter) against a MockWebServer and asserts the HTTP request the server would receive, and (2) the
+ * `toApiResult` extension tests, which never used the stub.
+ *
+ * NOT RUN by the author (no Gradle at the time): the wire test is UNCONFIRMED until the Android unit tests run.
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 class CatalogizerApiTest {
 
-    private val mockApi = mockk<CatalogizerApi>()
+    private lateinit var mockWebServer: MockWebServer
+    private lateinit var api: CatalogizerApi
+    private lateinit var retrofit: Retrofit
 
     @Before
     fun setup() {
-        clearAllMocks()
+        mockWebServer = MockWebServer()
+        mockWebServer.start()
+        val json = Json {
+            ignoreUnknownKeys = true
+            coerceInputValues = true
+            isLenient = true
+        }
+        retrofit = Retrofit.Builder()
+            .baseUrl(mockWebServer.url("/"))
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+        api = retrofit.create(CatalogizerApi::class.java)
     }
 
     @After
     fun tearDown() {
-        clearAllMocks()
+        mockWebServer.shutdown()
     }
 
-    // --- Authentication endpoints ---
+    // --- Wire test: favorite write ---
 
     @Test
-    fun `login endpoint accepts LoginRequest and returns LoginResponse`() = runTest {
-        val user = createTestUser()
-        val loginResponse = LoginResponse(user = user, token = "tok", refreshToken = "ref", expiresIn = 3600)
-        coEvery { mockApi.login(any()) } returns Response.success(loginResponse)
+    fun `setFavoriteStatus sends PUT media-id-favorite with the favorite flag as JSON`() = runBlocking {
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody("""{"success":true,"message":"ok"}"""))
 
-        val result = mockApi.login(LoginRequest("admin", "pass"))
+        val result = api.setFavoriteStatus(1L, FavoriteRequest(true))
 
         assertTrue(result.isSuccessful)
-        assertEquals("tok", result.body()?.token)
-        coVerify { mockApi.login(LoginRequest("admin", "pass")) }
+        val recorded = mockWebServer.takeRequest()
+        assertEquals("PUT", recorded.method)
+        assertEquals("/media/1/favorite", recorded.path)
+        assertTrue(recorded.getHeader("Content-Type").orEmpty().startsWith("application/json"))
+        assertEquals("""{"favorite":true}""", recorded.body.readUtf8())
     }
 
     @Test
-    fun `register endpoint accepts RegisterRequest and returns User`() = runTest {
-        val user = createTestUser(username = "newuser")
-        coEvery { mockApi.register(any()) } returns Response.success(user)
+    fun `setFavoriteStatus surfaces a 400 from the server as an unsuccessful response`() = runBlocking {
+        mockWebServer.enqueue(MockResponse().setResponseCode(400).setBody("""{"error":"bad"}"""))
 
-        val request = RegisterRequest("newuser", "new@test.com", "pass", "New", "User")
-        val result = mockApi.register(request)
-
-        assertTrue(result.isSuccessful)
-        assertEquals("newuser", result.body()?.username)
-    }
-
-    @Test
-    fun `logout endpoint returns Unit`() = runTest {
-        coEvery { mockApi.logout() } returns Response.success(Unit)
-
-        val result = mockApi.logout()
-
-        assertTrue(result.isSuccessful)
-    }
-
-    @Test
-    fun `getProfile returns User`() = runTest {
-        val user = createTestUser()
-        coEvery { mockApi.getProfile() } returns Response.success(user)
-
-        val result = mockApi.getProfile()
-
-        assertTrue(result.isSuccessful)
-        assertEquals("testuser", result.body()?.username)
-    }
-
-    @Test
-    fun `updateProfile accepts UpdateProfileRequest and returns User`() = runTest {
-        val updatedUser = createTestUser(firstName = "Updated")
-        coEvery { mockApi.updateProfile(any()) } returns Response.success(updatedUser)
-
-        val request = UpdateProfileRequest(firstName = "Updated")
-        val result = mockApi.updateProfile(request)
-
-        assertTrue(result.isSuccessful)
-        assertEquals("Updated", result.body()?.firstName)
-    }
-
-    @Test
-    fun `changePassword accepts ChangePasswordRequest`() = runTest {
-        coEvery { mockApi.changePassword(any()) } returns Response.success(Unit)
-
-        val request = ChangePasswordRequest("old", "new")
-        val result = mockApi.changePassword(request)
-
-        assertTrue(result.isSuccessful)
-    }
-
-    @Test
-    fun `getAuthStatus returns AuthStatus`() = runTest {
-        val status = AuthStatus(authenticated = true, user = createTestUser())
-        coEvery { mockApi.getAuthStatus() } returns Response.success(status)
-
-        val result = mockApi.getAuthStatus()
-
-        assertTrue(result.isSuccessful)
-        assertTrue(result.body()!!.authenticated)
-    }
-
-    // --- Media endpoints ---
-
-    @Test
-    fun `searchMedia accepts query parameters and returns MediaSearchResponse`() = runTest {
-        val searchResponse = MediaSearchResponse(
-            items = listOf(createTestMediaItem()),
-            total = 1,
-            limit = 20,
-            offset = 0
-        )
-        coEvery {
-            mockApi.searchMedia(
-                query = any(), mediaType = any(), yearMin = any(), yearMax = any(),
-                ratingMin = any(), quality = any(), sortBy = any(), sortOrder = any(),
-                limit = any(), offset = any()
-            )
-        } returns Response.success(searchResponse)
-
-        val result = mockApi.searchMedia(query = "test", mediaType = "movie", limit = 10, offset = 0)
-
-        assertTrue(result.isSuccessful)
-        assertEquals(1, result.body()?.items?.size)
-    }
-
-    @Test
-    fun `getMediaById returns single MediaItem`() = runTest {
-        val item = createTestMediaItem()
-        coEvery { mockApi.getMediaById(1L) } returns Response.success(item)
-
-        val result = mockApi.getMediaById(1L)
-
-        assertTrue(result.isSuccessful)
-        assertEquals(1L, result.body()?.id)
-    }
-
-    @Test
-    fun `getRecentMedia returns list with default limit`() = runTest {
-        val items = listOf(createTestMediaItem())
-        coEvery { mockApi.getRecentMedia(any()) } returns Response.success(items)
-
-        val result = mockApi.getRecentMedia()
-
-        assertTrue(result.isSuccessful)
-        coVerify { mockApi.getRecentMedia(10) }
-    }
-
-    @Test
-    fun `getPopularMedia returns list with custom limit`() = runTest {
-        coEvery { mockApi.getPopularMedia(any()) } returns Response.success(emptyList())
-
-        mockApi.getPopularMedia(limit = 5)
-
-        coVerify { mockApi.getPopularMedia(5) }
-    }
-
-    @Test
-    fun `deleteMedia accepts mediaId`() = runTest {
-        coEvery { mockApi.deleteMedia(42L) } returns Response.success(Unit)
-
-        val result = mockApi.deleteMedia(42L)
-
-        assertTrue(result.isSuccessful)
-        coVerify { mockApi.deleteMedia(42L) }
-    }
-
-    @Test
-    fun `updateMedia accepts id and MediaItem body`() = runTest {
-        val item = createTestMediaItem()
-        coEvery { mockApi.updateMedia(1L, any()) } returns Response.success(item)
-
-        val result = mockApi.updateMedia(1L, item)
-
-        assertTrue(result.isSuccessful)
-    }
-
-    // --- User interaction endpoints ---
-
-    @Test
-    fun `updateWatchProgress accepts progress data`() = runTest {
-        coEvery { mockApi.updateWatchProgress(1L, any()) } returns Response.success(Unit)
-
-        val progressData = mapOf<String, Any>("progress" to 0.75, "timestamp" to 1000L)
-        val result = mockApi.updateWatchProgress(1L, progressData)
-
-        assertTrue(result.isSuccessful)
-    }
-
-    @Test
-    fun `setFavoriteStatus accepts favorite data`() = runTest {
-        coEvery { mockApi.setFavoriteStatus(1L, any()) } returns Response.success(Unit)
-
-        val favoriteData = mapOf<String, Any>("favorite" to true)
-        val result = mockApi.setFavoriteStatus(1L, favoriteData)
-
-        assertTrue(result.isSuccessful)
-    }
-
-    @Test
-    fun `rateMedia accepts rating data`() = runTest {
-        coEvery { mockApi.rateMedia(1L, any()) } returns Response.success(Unit)
-
-        val ratingData = mapOf<String, Any>("rating" to 8.5)
-        val result = mockApi.rateMedia(1L, ratingData)
-
-        assertTrue(result.isSuccessful)
-    }
-
-    // --- Favorites and watchlist endpoints ---
-
-    @Test
-    fun `getFavorites returns paginated response`() = runTest {
-        val response = MediaSearchResponse(items = emptyList(), total = 0, limit = 20, offset = 0)
-        coEvery { mockApi.getFavorites(any(), any()) } returns Response.success(response)
-
-        val result = mockApi.getFavorites(limit = 20, offset = 0)
-
-        assertTrue(result.isSuccessful)
-        assertEquals(0, result.body()?.total)
-    }
-
-    @Test
-    fun `getWatchlist returns paginated response`() = runTest {
-        val response = MediaSearchResponse(items = emptyList(), total = 0, limit = 20, offset = 0)
-        coEvery { mockApi.getWatchlist(any(), any()) } returns Response.success(response)
-
-        val result = mockApi.getWatchlist()
-
-        assertTrue(result.isSuccessful)
-    }
-
-    // --- Streaming endpoints ---
-
-    @Test
-    fun `getStreamUrl returns URL map`() = runTest {
-        val urlMap = mapOf("url" to "http://server/stream/1")
-        coEvery { mockApi.getStreamUrl(1L) } returns Response.success(urlMap)
-
-        val result = mockApi.getStreamUrl(1L)
-
-        assertTrue(result.isSuccessful)
-        assertEquals("http://server/stream/1", result.body()?.get("url"))
-    }
-
-    @Test
-    fun `getDownloadUrl returns URL map`() = runTest {
-        val urlMap = mapOf("url" to "http://server/download/1")
-        coEvery { mockApi.getDownloadUrl(1L) } returns Response.success(urlMap)
-
-        val result = mockApi.getDownloadUrl(1L)
-
-        assertTrue(result.isSuccessful)
-        assertEquals("http://server/download/1", result.body()?.get("url"))
-    }
-
-    // --- System endpoints ---
-
-    @Test
-    fun `getSystemHealth returns health map`() = runTest {
-        val healthMap = mapOf<String, Any>("status" to "healthy")
-        coEvery { mockApi.getSystemHealth() } returns Response.success(healthMap)
-
-        val result = mockApi.getSystemHealth()
-
-        assertTrue(result.isSuccessful)
-        assertEquals("healthy", result.body()?.get("status"))
-    }
-
-    @Test
-    fun `getSystemStatus returns status map`() = runTest {
-        val statusMap = mapOf<String, Any>("version" to "2.3.0")
-        coEvery { mockApi.getSystemStatus() } returns Response.success(statusMap)
-
-        val result = mockApi.getSystemStatus()
-
-        assertTrue(result.isSuccessful)
-    }
-
-    // --- Playback entity endpoints ---
-
-    @Test
-    fun `getEntityProgress accepts mediaItemId`() = runTest {
-        val jsonObj = mockk<JsonObject>(relaxed = true)
-        coEvery { mockApi.getEntityProgress(42L) } returns Response.success(jsonObj)
-
-        val result = mockApi.getEntityProgress(42L)
-
-        assertTrue(result.isSuccessful)
-        coVerify { mockApi.getEntityProgress(42L) }
-    }
-
-    @Test
-    fun `getEntityHistory accepts mediaItemId and limit`() = runTest {
-        val jsonObj = mockk<JsonObject>(relaxed = true)
-        coEvery { mockApi.getEntityHistory(42L, 25) } returns Response.success(jsonObj)
-
-        val result = mockApi.getEntityHistory(42L, 25)
-
-        assertTrue(result.isSuccessful)
-        coVerify { mockApi.getEntityHistory(42L, 25) }
-    }
-
-    // --- Error response handling ---
-
-    @Test
-    fun `API returns 401 unauthorized`() = runTest {
-        val errorBody = okhttp3.ResponseBody.create(null, "Unauthorized")
-        coEvery { mockApi.getProfile() } returns Response.error(401, errorBody)
-
-        val result = mockApi.getProfile()
+        val result = api.setFavoriteStatus(1L, FavoriteRequest(false))
 
         assertFalse(result.isSuccessful)
-        assertEquals(401, result.code())
+        assertEquals(400, result.code())
+    }
+
+    // --- Wire tests: other typed @Body endpoints (ANDROID-RETROFIT-MAP-1) ---
+
+    @Test
+    fun `updateWatchProgress sends PUT media-id-progress with progress as JSON`() = runBlocking {
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody("{}"))
+
+        val result = api.updateWatchProgress(7L, WatchProgressRequest(progress = 0.5))
+
+        assertTrue(result.isSuccessful)
+        val recorded = mockWebServer.takeRequest()
+        assertEquals("PUT", recorded.method)
+        assertEquals("/media/7/progress", recorded.path)
+        assertEquals("""{"progress":0.5}""", recorded.body.readUtf8())
     }
 
     @Test
-    fun `API returns 404 not found`() = runTest {
-        val errorBody = okhttp3.ResponseBody.create(null, "Not found")
-        coEvery { mockApi.getMediaById(999L) } returns Response.error(404, errorBody)
+    fun `updateUserWatchProgress sends progress timestamp and position`() = runBlocking {
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody("{}"))
 
-        val result = mockApi.getMediaById(999L)
+        val result = api.updateUserWatchProgress(3L, WatchProgressRequest(0.25, "1700", 42L))
 
-        assertFalse(result.isSuccessful)
-        assertEquals(404, result.code())
+        assertTrue(result.isSuccessful)
+        val recorded = mockWebServer.takeRequest()
+        assertEquals("/user/progress/3", recorded.path)
+        assertEquals("""{"progress":0.25,"timestamp":"1700","position":42}""", recorded.body.readUtf8())
     }
 
     @Test
-    fun `API returns 500 server error`() = runTest {
-        val errorBody = okhttp3.ResponseBody.create(null, "Internal server error")
-        coEvery { mockApi.getMediaStats() } returns Response.error(500, errorBody)
+    fun `rateMedia sends PUT media-id-rating with rating as JSON`() = runBlocking {
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody("{}"))
 
-        val result = mockApi.getMediaStats()
+        val result = api.rateMedia(9L, RatingRequest(4.5))
 
-        assertFalse(result.isSuccessful)
-        assertEquals(500, result.code())
+        assertTrue(result.isSuccessful)
+        val recorded = mockWebServer.takeRequest()
+        assertEquals("/media/9/rating", recorded.path)
+        assertEquals("""{"rating":4.5}""", recorded.body.readUtf8())
+    }
+
+    // --- Guard: no method of the interface may be un-callable (ANDROID-RETROFIT-MAP-1) ---
+
+    @Test
+    fun `every CatalogizerApi method is accepted by Retrofit (no wildcard, no unserialisable Any)`() {
+        // Retrofit parses a method (parameter types, response type, converters) when it is first used; a
+        // `Map<String, Any>` @Body throws "Parameter type must not include a type variable or wildcard", and a
+        // `Response<Map<String, Any>>` makes the kotlinx converter throw "Serializer for class 'Any' is not found".
+        // Both only surface when the method is called on a device, so each method is loaded here explicitly.
+        val bad = unparseableMethods(retrofit, CatalogizerApi::class.java)
+        assertEquals("methods Retrofit cannot parse: $bad", emptyMap<String, String>(), bad)
+    }
+
+    /** Names of methods of [apiClass] that this Retrofit instance cannot turn into a service method. */
+    private fun unparseableMethods(retrofit: Retrofit, apiClass: Class<*>): Map<String, String> {
+        val load = Retrofit::class.java.getDeclaredMethod("loadServiceMethod", java.lang.reflect.Method::class.java)
+        load.isAccessible = true
+        val bad = sortedMapOf<String, String>()
+        for (m in apiClass.declaredMethods.filter { !it.isSynthetic }) {
+            try {
+                load.invoke(retrofit, m)
+            } catch (e: java.lang.reflect.InvocationTargetException) {
+                bad[m.name] = (e.targetException.cause ?: e.targetException).let { it.javaClass.simpleName + ": " + it.message?.lineSequence()?.firstOrNull() }
+            }
+        }
+        return bad
     }
 
     // --- toApiResult extension ---
@@ -376,32 +181,4 @@ class CatalogizerApiTest {
         assertFalse(result.isSuccess)
         assertEquals("Empty response", result.error)
     }
-
-    // --- Helpers ---
-
-    private fun createTestUser(
-        username: String = "testuser",
-        firstName: String = "Test"
-    ): User = User(
-        id = 1L,
-        username = username,
-        email = "test@example.com",
-        firstName = firstName,
-        lastName = "User",
-        role = "user",
-        isActive = true,
-        createdAt = "2025-01-01T00:00:00Z",
-        updatedAt = "2025-01-01T00:00:00Z"
-    )
-
-    private fun createTestMediaItem(): MediaItem = MediaItem(
-        id = 1L,
-        title = "Test Movie",
-        mediaType = "movie",
-        year = 2024,
-        description = "Test description",
-        directoryPath = "/test/media",
-        createdAt = "2025-01-01T00:00:00Z",
-        updatedAt = "2025-01-01T00:00:00Z"
-    )
 }

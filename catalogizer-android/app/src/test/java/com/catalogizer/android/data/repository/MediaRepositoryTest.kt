@@ -178,33 +178,33 @@ class MediaRepositoryTest {
     fun `toggleFavorite should add to favorites when not favorited`() = runTest {
         coEvery { mockMediaDao.getMediaById(1L) } returns testMediaItem.copy(isFavorite = false)
         coEvery { mockMediaDao.updateFavoriteStatus(any(), any()) } just Runs
-        coEvery { mockApi.setFavoriteStatus(1L, mapOf("favorite" to true)) } returns Response.success(Unit)
+        coEvery { mockApi.setFavoriteStatus(1L, FavoriteRequest(true)) } returns Response.success(Unit)
 
         val result = repository.toggleFavorite(1L)
 
         assertTrue(result.isSuccess)
         coVerify { mockMediaDao.updateFavoriteStatus(1L, true) }
-        coVerify { mockApi.setFavoriteStatus(1L, mapOf("favorite" to true)) }
+        coVerify { mockApi.setFavoriteStatus(1L, FavoriteRequest(true)) }
     }
 
     @Test
     fun `toggleFavorite should remove from favorites when favorited`() = runTest {
         coEvery { mockMediaDao.getMediaById(1L) } returns testMediaItem.copy(isFavorite = true)
         coEvery { mockMediaDao.updateFavoriteStatus(any(), any()) } just Runs
-        coEvery { mockApi.setFavoriteStatus(1L, mapOf("favorite" to false)) } returns Response.success(Unit)
+        coEvery { mockApi.setFavoriteStatus(1L, FavoriteRequest(false)) } returns Response.success(Unit)
 
         val result = repository.toggleFavorite(1L)
 
         assertTrue(result.isSuccess)
         coVerify { mockMediaDao.updateFavoriteStatus(1L, false) }
-        coVerify { mockApi.setFavoriteStatus(1L, mapOf("favorite" to false)) }
+        coVerify { mockApi.setFavoriteStatus(1L, FavoriteRequest(false)) }
     }
 
     @Test
     fun `toggleFavorite should revert local state on API failure`() = runTest {
         coEvery { mockMediaDao.getMediaById(1L) } returns testMediaItem.copy(isFavorite = false)
         coEvery { mockMediaDao.updateFavoriteStatus(any(), any()) } just Runs
-        coEvery { mockApi.setFavoriteStatus(1L, mapOf("favorite" to true)) } returns Response.error(
+        coEvery { mockApi.setFavoriteStatus(1L, FavoriteRequest(true)) } returns Response.error(
             500,
             okhttp3.ResponseBody.create(null, "Server error")
         )
@@ -214,6 +214,21 @@ class MediaRepositoryTest {
         assertFalse(result.isSuccess)
         // Should revert: first call sets to true, second reverts to false
         coVerify(exactly = 2) { mockMediaDao.updateFavoriteStatus(1L, any()) }
+    }
+
+    @Test
+    fun `toggleFavorite should revert local state on IOException (AFAV-5)`() = runTest {
+        coEvery { mockMediaDao.getMediaById(1L) } returns testMediaItem.copy(isFavorite = false)
+        coEvery { mockMediaDao.updateFavoriteStatus(any(), any()) } just Runs
+        coEvery { mockApi.setFavoriteStatus(1L, FavoriteRequest(true)) } throws java.io.IOException("offline")
+
+        val result = repository.toggleFavorite(1L)
+
+        assertFalse(result.isSuccess)
+        coVerifyOrder {
+            mockMediaDao.updateFavoriteStatus(1L, true)
+            mockMediaDao.updateFavoriteStatus(1L, false)
+        }
     }
 
     @Test

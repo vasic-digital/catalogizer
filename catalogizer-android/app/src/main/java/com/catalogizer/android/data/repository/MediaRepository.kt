@@ -129,16 +129,18 @@ class MediaRepository(
 
     // User interactions
     suspend fun toggleFavorite(mediaId: Long): ApiResult<Unit> {
+        var optimisticStatus: Boolean? = null
         return try {
             val currentMedia = mediaDao.getMediaById(mediaId)
             val newFavoriteStatus = !(currentMedia?.isFavorite ?: false)
 
             // Update local state immediately for better UX
             mediaDao.updateFavoriteStatus(mediaId, newFavoriteStatus)
+            optimisticStatus = newFavoriteStatus
 
             // Sync with server
             // Server contract: PUT /api/v1/media/:id/favorite {"favorite": bool}
-            val result = api.setFavoriteStatus(mediaId, mapOf("favorite" to newFavoriteStatus)).toApiResult()
+            val result = api.setFavoriteStatus(mediaId, FavoriteRequest(newFavoriteStatus)).toApiResult()
 
             // Revert local state if server sync failed
             if (!result.isSuccess) {
@@ -147,6 +149,15 @@ class MediaRepository(
 
             result
         } catch (e: Exception) {
+            // AFAV-5: a transport failure (IOException) after the optimistic update must not leave the
+            // local favorite flag diverged from the server; revert it.
+            optimisticStatus?.let { applied ->
+                try {
+                    mediaDao.updateFavoriteStatus(mediaId, !applied)
+                } catch (_: Exception) {
+                    // reverting is best-effort; the original error is reported below
+                }
+            }
             ApiResult.error(e.message ?: "Failed to update favorite status")
         }
     }
@@ -163,11 +174,7 @@ class MediaRepository(
             mediaDao.updateWatchProgress(mediaId, progress, timestamp)
 
             // Sync with server
-            val progressData = mutableMapOf<String, Any>(
-                "progress" to progress,
-                "timestamp" to timestamp
-            )
-            position?.let { progressData["position"] = it }
+            val progressData = WatchProgressRequest(progress = progress, timestamp = timestamp, position = position)
 
             api.updateUserWatchProgress(mediaId, progressData).toApiResult()
         } catch (e: Exception) {
