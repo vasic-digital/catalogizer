@@ -1,0 +1,76 @@
+
+ RUN  v0.34.6 /home/milosvasic/.cache/claude-tmp/splashfix/installer-wizard
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+(node:213096) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/components/__tests__/SplashScreen.test.tsx  (13 tests | 13 failed) 24ms
+   ❯ src/components/__tests__/SplashScreen.test.tsx > SplashScreen > renders the default title
+     → Cannot read properties of undefined (reading 'clear')
+   ❯ src/components/__tests__/SplashScreen.test.tsx > SplashScreen > renders a custom title when provided
+     → Cannot read properties of undefined (reading 'clear')
+   ❯ src/components/__tests__/SplashScreen.test.tsx > SplashScreen > renders the default subtitle
+     → Cannot read properties of undefined (reading 'clear')
+   ❯ src/components/__tests__/SplashScreen.test.tsx > SplashScreen > renders a custom subtitle when provided
+     → Cannot read properties of undefined (reading 'clear')
+   ❯ src/components/__tests__/SplashScreen.test.tsx > SplashScreen > renders the footer text
+     → Cannot read properties of undefined (reading 'clear')
+   ❯ src/components/__tests__/SplashScreen.test.tsx > SplashScreen > renders the version number
+     → Cannot read properties of undefined (reading 'clear')
+   ❯ src/components/__tests__/SplashScreen.test.tsx > SplashScreen > renders the app icon image
+     → Cannot read properties of undefined (reading 'clear')
+   ❯ src/components/__tests__/SplashScreen.test.tsx > SplashScreen > renders the loading spinner
+     → Cannot read properties of undefined (reading 'clear')
+   ❯ src/components/__tests__/SplashScreen.test.tsx > SplashScreen > first launch (5s minimum) > does not call onComplete before 5 seconds
+     → Cannot read properties of undefined (reading 'clear')
+   ❯ src/components/__tests__/SplashScreen.test.tsx > SplashScreen > first launch (5s minimum) > calls onComplete after 5 seconds
+     → Cannot read properties of undefined (reading 'clear')
+   ❯ src/components/__tests__/SplashScreen.test.tsx > SplashScreen > first launch (5s minimum) > sets the localStorage flag
+     → Cannot read properties of undefined (reading 'clear')
+   ❯ src/components/__tests__/SplashScreen.test.tsx > SplashScreen > regular launch (2.5s minimum) > does not call onComplete before 2.5 seconds
+     → Cannot read properties of undefined (reading 'clear')
+   ❯ src/components/__tests__/SplashScreen.test.tsx > SplashScreen > regular launch (2.5s minimum) > calls onComplete after 2.5 seconds
+     → Cannot read properties of undefined (reading 'clear')
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/__tests__/SplashScreen.test.tsx > SplashScreen > renders the default title
+ FAIL  src/components/__tests__/SplashScreen.test.tsx > SplashScreen > renders a custom title when provided
+ FAIL  src/components/__tests__/SplashScreen.test.tsx > SplashScreen > renders the default subtitle
+ FAIL  src/components/__tests__/SplashScreen.test.tsx > SplashScreen > renders a custom subtitle when provided
+ FAIL  src/components/__tests__/SplashScreen.test.tsx > SplashScreen > renders the footer text
+ FAIL  src/components/__tests__/SplashScreen.test.tsx > SplashScreen > renders the version number
+ FAIL  src/components/__tests__/SplashScreen.test.tsx > SplashScreen > renders the app icon image
+ FAIL  src/components/__tests__/SplashScreen.test.tsx > SplashScreen > renders the loading spinner
+TypeError: Cannot read properties of undefined (reading 'clear')
+ ❯ src/components/__tests__/SplashScreen.test.tsx:13:18
+     11|     vi.useFakeTimers()
+     12|     onComplete = vi.fn()
+     13|     localStorage.clear()
+       |                  ^
+     14|   })
+     15| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+ FAIL  src/components/__tests__/SplashScreen.test.tsx > SplashScreen > first launch (5s minimum) > does not call onComplete before 5 seconds
+ FAIL  src/components/__tests__/SplashScreen.test.tsx > SplashScreen > first launch (5s minimum) > calls onComplete after 5 seconds
+ FAIL  src/components/__tests__/SplashScreen.test.tsx > SplashScreen > first launch (5s minimum) > sets the localStorage flag
+ FAIL  src/components/__tests__/SplashScreen.test.tsx > SplashScreen > regular launch (2.5s minimum) > does not call onComplete before 2.5 seconds
+ FAIL  src/components/__tests__/SplashScreen.test.tsx > SplashScreen > regular launch (2.5s minimum) > calls onComplete after 2.5 seconds
+TypeError: Cannot read properties of undefined (reading 'clear')
+ ❯ src/components/__tests__/SplashScreen.test.tsx:13:18
+     11|     vi.useFakeTimers()
+     12|     onComplete = vi.fn()
+     13|     localStorage.clear()
+       |                  ^
+     14|   })
+     15| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯
+
+ Test Files  1 failed (1)
+      Tests  13 failed (13)
+   Start at  12:22:11
+   Duration  7.52s (transform 178ms, setup 1.18s, collect 100ms, tests 24ms, environment 3.29s, prepare 375ms)
+

@@ -3449,6 +3449,9 @@ HAUTHZ-F2 fixed: PUT /media/:id/favorite and GET /media/:id use the new `user_fa
 - G1FIX-R1-F2 (minor, process-doc): G1FIX-2 main claim is WRONG. In gin v1.12.0 `Engine.Use` changes only group handlers and 404/405 chains; route handlers are combined at registration, so moving the hook would not change dumped route chains. Rewrite G1FIX-2. Related lead (separate check): if every route is registered before the late `Use(altSvcMiddleware)`, Alt-Svc is sent only on 404/405 responses.
 - G1FIX-R1-N1 (nit): AnonymousIs401BeforeParse asserts status only, not the message.
 
+### g1fixfu (Sonnet author, 2026-11-17, PROVISIONAL; evidence docs/qa/g1fixfu-20261117/)
+- G1FIX-R1-F1 fixed (refuse registration calls in the sanctioned bodies, single routeDumpHook call site; mutants M2b/M7 + FU1-FU4 RED then GREEN). G1FIX-R1-N1 fixed (message asserted). G1FIX-R1-F2 still open. Review owed.
+
 ### s1g6 (Sonnet author, 2026-11-17, PROVISIONAL; evidence docs/qa/admd1-s1g-round7-20261117/)
 - S1G6-F1 fixed: `preGateMatch` rejects a receiver-less allow entry when the text before the symbol ends with `)` (a method). S1G6-F2 fixed: wording corrected in the codescan comment, round-6b NOTES and the round-6b limits line above. S1G6-F3 fixed: `TestS1G6F3_RealChainCatchesScannerBlindHandlersBeforeTheGate` builds the real binary with a mutated main.go (`go build -overlay`) for three blind shapes and requires the ground truth to report each (still skipped under `-short`: it builds and runs the binary). S1G6-F4 fixed: `TestS1G6F4_AllowListHasNoStaleSymbol` checks per symbol.
 - Open: S1G6-F5 (pre-gate handlers on the wrapped /metrics gate, UNCONFIRMED), S1G6-F6 (callWrapsHandler flags any call with a function-literal argument). Review of this change owed.
@@ -3463,3 +3466,16 @@ HAUTHZ-F2 fixed: PUT /media/:id/favorite and GET /media/:id use the new `user_fa
 - ALTSVC-R1-F2 (minor, test-instrumentation): RED.txt is a hand-condensed summary, not raw go test output; green_characterization.txt lacks command line and tree/submodule fingerprint. Recapture raw output with command and `git rev-parse HEAD`.
 - ALTSVC-R1-F3 (nit): G1FIX-2 "only the group handlers" -> "the engine's root RouterGroup handlers (routes registered later); earlier groups copied theirs".
 - ALTSVC-R1-F4 (nit): CAT-ALTSVC-1(b): Use runs inside the certificate branch but before http3Server.ListenAndServe binds; bind failure only logged ("certificate obtained, bind not confirmed").
+
+## splashfix review round 1 (Opus, GO-with-follow-ups, PROVISIONAL)
+- SPLASH-R1-F1 (minor, process-doc): catalogizer-desktop and installer-wizard declare no Node version (`engines`/`.nvmrc`); document that the Storage helper is only active on Node versions with the native webstorage global (observed Node 26.8.1).
+- SPLASH-R1-F2 (minor, test-instrumentation): fallback Storage is not `instanceof Storage` and `sessionStorage` stays Node-native; consider `--no-experimental-webstorage` in test execArgv instead (restores jsdom Storage). No current use of either.
+- SPLASH-R1-F3 (nit): helper duplicated in two setup files; README wording "invert first-launch test" should say the component condition was inverted; mutant-desktop.txt lacks the mutant diff.
+
+## g1fixfu review round 1 (Opus, GO-with-follow-ups, PROVISIONAL)
+- G1FIXFU-R1-F1 (important, test-instrumentation): registration class not closed: engine local `e` in routeChainFuncNames is not an engine identifier, so passing it to a helper (RVW1/RVW6) is not flagged; reflect MethodByName/Call outside the sanctioned bodies is not banned. Fix: treat values derived from the engine as engine identifiers, or ban non-stdlib helper calls from sanctioned bodies, or ban reflect Method*/Call package-wide.
+- G1FIXFU-R1-F2 (important, test-instrumentation): one-call-site pin bypass: call in a package-level var initializer (RVW2) is not counted; call inside `go func(){}` in main (RVW5) passes. Fix: count GenDecl initializers; require the call to be a direct ExprStmt of main (not in FuncLit/go/defer).
+- G1FIXFU-R1-F3 (minor, test-instrumentation): reflective writes (Set/SetLen/NewAt, RVW3) and falsifying the dump data (RVW4) not detected; ban reflect write methods in the two bodies or record as honest boundary.
+- G1FIXFU-R1-F4 (minor, process-doc): evidence logs were gitignored (*.log); force-added at landing (done).
+- G1FIXFU-R1-F5 (nit): name-based ban refuses `filepath.Match` in sanctioned bodies (fails closed; known limit).
+- Adopt reviewer mutants RVW1, RVW2, RVW3, RVW5 verbatim into TestAuthSurfaceGuard_Mutants. N1 validated (changed 401 message makes test fail).
