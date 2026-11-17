@@ -1,0 +1,1 @@
+full :app:testDebugUnitTest: tests=1070 skipped=0 failures=0 errors=0

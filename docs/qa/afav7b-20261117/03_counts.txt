@@ -1,0 +1,7 @@
+PlaybackRepositoryErrorStateTest 7/0 fail
+PlaybackRepositoryTest 18/0
+CatalogizerApiTest 11/0
+SyncManagerTest 19/0
+SyncServiceTest 28/0
+SyncWorkerTest 6/0
+(tests/failures)

@@ -1,0 +1,7 @@
+Containerised: plain rootless podman docker.io/library/eclipse-temurin:17-jdk (recorded deviation from the containers submodule), Android SDK + ~/.gradle bind-mounted, nice -n 15, --no-daemon --max-workers=1, one run at a time, not --offline (offline failed: foojay plugin not cached), host load ~40-57.
+RED 01: new PlaybackRepositoryErrorStateTest + stub loadHistory/loadProgress (lenient mapping) -> 7 tests, 5 failed.
+RED/GREEN 02: playback fix applied, SyncManager unfixed: 44 tests, 3 failed (network-exception test needed Log mocking, test fixed; SyncManager watch-progress + rating non-2xx tests RED).
+GREEN 03: all fixes; ErrorState 7, PlaybackRepositoryTest 18, CatalogizerApiTest 11, SyncManagerTest 19, SyncServiceTest 28, SyncWorkerTest 6; 0 failed.
+MUTANTS 04 (diff in 04_mutants.diff): loadHistory non-2xx->Success(empty); rating check if(false); watch-progress check if(false): 26 tests, 4 failed (history 401, history 500, watch-progress, rating) = all killed. Mutants reverted.
+GREEN 05: full :app:testDebugUnitTest BUILD SUCCESSFUL (05_counts.txt).
+Not run: any device, live server, androidtv, Compose UI test of the dialog (only the pure state function + repository are tested).
