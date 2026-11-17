@@ -156,12 +156,14 @@ interface CatalogizerApi {
     // Playback history / progress endpoints (mirrored from catalog-api's
     // /api/v1/entities/:id/{progress,history}). Returns raw JsonObject so
     // callers can tolerate schema drift without recompiling DTOs.
-    @GET("api/v1/entities/{id}/progress")
+    // AFAV-7: paths are relative to the base URL, which already ends in /api/v1/ (DependencyContainer.buildApi);
+    // a leading api/v1/ here doubled the prefix and the requests hit a non-existent route.
+    @GET("entities/{id}/progress")
     suspend fun getEntityProgress(
         @Path("id") id: Long
     ): Response<kotlinx.serialization.json.JsonObject>
 
-    @GET("api/v1/entities/{id}/history")
+    @GET("entities/{id}/history")
     suspend fun getEntityHistory(
         @Path("id") id: Long,
         @Query("limit") limit: Int = 50

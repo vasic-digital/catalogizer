@@ -1,7 +1,7 @@
 Containerised like docs/qa/android-unit-20261117/commands.txt (plain rootless podman, eclipse-temurin:17-jdk, host SDK bind mount, nice -n 10, --no-daemon --max-workers=2). Untracked scratch: local.properties, TV google-services.json from the .example.
 01 RED: original code + fubundle tests: CatalogizerApiTest 2 failed (IllegalArgumentException at the setFavoriteStatus calls); full android run was 45 tests/2 failed in the targeted set.
 02: TV first full run with guard before ratchet: 1280 tests, 2 failed (the new guard tests), rest green.
-03: TV guard probe: lists the 15 un-parseable methods (ANDROID-RETROFIT-RESPONSE-ANY-1).
-04 mutant: new `@Body Map<String, Any>` method added to android CatalogizerApi -> guard RED naming mutantBody; reverted.
+03: TV guard probe log. NOTE (RFM-R1-2): this log does NOT name the 15 methods; the names are the `knownBroken` set in RetrofitProxyGuardTest.kt (addFavorite ... startPlaybackSession); the per-method names were only in untracked test result XML, not preserved.
+04 mutant: new `@Body Map<String, Any>` method added to android CatalogizerApi -> guard RED. NOTE (RFM-R1-2): the log does not contain the method name `mutantBody`; it shows only the RED result of the guard.
 05 GREEN android full :app:testDebugUnitTest rc=0. 06 GREEN androidtv full rc=0 (1279 tests, 0 failed/errors, from result XML). 07 GREEN targeted CatalogizerApiTest/SyncManagerTest/MediaRepositoryTest (50 tests).
 Not run: live device/server; mutant of reverting the whole fix (covered by RED run 01 on the unfixed code).

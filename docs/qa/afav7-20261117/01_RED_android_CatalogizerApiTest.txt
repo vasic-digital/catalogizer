@@ -1,0 +1,9 @@
+[tree base 8eb1cd9fa368e0731f2d638ce2ecfe104170cbd2, see commands.txt for diff sha256]
+RED run: base 8eb1cd9fa368e0731f2d638ce2ecfe104170cbd2 + new tests only (fix absent), module catalogizer-android, filter *CatalogizerApiTest, 2026-11-17T10:15:35Z
+CatalogizerApiTest > getEntityProgress requests api-v1-entities-id-progress exactly once under the production base FAILED
+    org.junit.ComparisonFailure at CatalogizerApiTest.kt:96
+CatalogizerApiTest > getEntityHistory requests api-v1-entities-id-history with the limit under the production base FAILED
+    org.junit.ComparisonFailure at CatalogizerApiTest.kt:108
+11 tests completed, 2 failed
+BUILD FAILED in 8m 12s
+real	8m13.941s

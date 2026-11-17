@@ -1,0 +1,8 @@
+Containerised: plain rootless podman, docker.io/library/eclipse-temurin:17-jdk (recorded deviation from the containers submodule), Android SDK bind-mounted, nice -n 15, --no-daemon --max-workers=1, one run at a time, host load average ~45 during all runs.
+RED 01: base 8eb1cd9fa368e0731f2d638ce2ecfe104170cbd2 + the two new wire tests only; :app:testDebugUnitTest --tests '*CatalogizerApiTest' in catalogizer-android -> 2 failed.
+GREEN 02: fix applied (relative paths); --tests '*CatalogizerApiTest' '*PlaybackRepository*' -> 11 + 18 tests, 0 failed.
+GREEN 03: catalogizer-androidtv --tests '*RetrofitProxyGuardTest' (guard + new TV wire test) -> BUILD SUCCESSFUL. TV google-services.json (copy of .example) and local.properties are untracked scratch, not committed.
+Not run: full android/androidtv suites, any device, any live server. Mutant of reverting the fix is the RED run itself.
+Fingerprint: base 8eb1cd9fa368e0731f2d638ce2ecfe104170cbd2; sha256 of staged source diff (3 .kt files) at run time:
+f8163a80abb8330c1a257407ed8b678a5e4886ef21e4b6d03a563f3ec2d53471  -
+The resulting commit id is the tip of branch afav7 (see report); logs were produced from this exact diff over the base.

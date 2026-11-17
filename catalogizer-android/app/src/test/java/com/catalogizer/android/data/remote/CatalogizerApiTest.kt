@@ -81,6 +81,41 @@ class CatalogizerApiTest {
         assertEquals(400, result.code())
     }
 
+    // --- AFAV-7: entity progress/history must resolve under the production base URL (<server>/api/v1/) ---
+
+    private fun productionLikeApi(): CatalogizerApi {
+        val json = Json { ignoreUnknownKeys = true }
+        return Retrofit.Builder()
+            .baseUrl(mockWebServer.url("/api/v1/")) // same shape as DependencyContainer.buildApi
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+            .create(CatalogizerApi::class.java)
+    }
+
+    @Test
+    fun `getEntityProgress requests api-v1-entities-id-progress exactly once under the production base`() = runBlocking {
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody("""{"progress":null}"""))
+
+        val result = productionLikeApi().getEntityProgress(5L)
+
+        assertTrue(result.isSuccessful)
+        val recorded = mockWebServer.takeRequest()
+        assertEquals("GET", recorded.method)
+        assertEquals("/api/v1/entities/5/progress", recorded.path)
+    }
+
+    @Test
+    fun `getEntityHistory requests api-v1-entities-id-history with the limit under the production base`() = runBlocking {
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody("""{"sessions":[]}"""))
+
+        val result = productionLikeApi().getEntityHistory(5L, 20)
+
+        assertTrue(result.isSuccessful)
+        val recorded = mockWebServer.takeRequest()
+        assertEquals("GET", recorded.method)
+        assertEquals("/api/v1/entities/5/history?limit=20", recorded.path)
+    }
+
     // --- Wire tests: other typed @Body endpoints (ANDROID-RETROFIT-MAP-1) ---
 
     @Test
