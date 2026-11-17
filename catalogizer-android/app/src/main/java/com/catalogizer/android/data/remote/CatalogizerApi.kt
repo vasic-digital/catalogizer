@@ -84,7 +84,8 @@ interface CatalogizerApi {
 
     // User interaction endpoints
     @PUT("media/{id}/progress")
-    suspend fun updateWatchProgress(@Path("id") id: Long, @Body progressData: WatchProgressRequest): Response<Unit>
+    // WPROG3: the answer body carries persisted (true/false) + reason; 409 = concurrent_update. Unit would drop it.
+    suspend fun updateWatchProgress(@Path("id") id: Long, @Body progressData: WatchProgressRequest): Response<kotlinx.serialization.json.JsonObject>
 
     @PUT("media/{id}/favorite")
     suspend fun setFavoriteStatus(@Path("id") id: Long, @Body favoriteData: FavoriteRequest): Response<Unit>

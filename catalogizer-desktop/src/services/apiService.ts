@@ -15,6 +15,21 @@ import {
   UiPlaybackSession,
 } from '../types';
 
+export interface WatchProgressResult {
+  /** true only when the server confirmed persisted:true */
+  persisted: boolean;
+  /** server reason when not persisted (unknown_duration_no_row, concurrent_update, ...) */
+  reason?: string;
+  attempts: number;
+}
+
+export const WATCH_PROGRESS_MAX_ATTEMPTS = 3;
+
+/** VLC reports milliseconds; the progress route takes seconds (floats are accepted). */
+export function msToWholeSeconds(ms: number): number {
+  return ms / 1000;
+}
+
 class ApiService {
   private async makeRequest<T>(
     endpoint: string,
@@ -101,11 +116,30 @@ class ApiService {
     return this.makeRequest<MediaStats>('/media/stats');
   }
 
-  async updateWatchProgress(mediaId: number, progress: PlaybackProgress): Promise<void> {
-    return this.makeRequest<void>(`/media/${mediaId}/progress`, {
-      method: 'PUT',
-      body: progress,
-    });
+  /**
+   * PUT /api/v1/media/:id/progress (server contract, WPROG3): the body carries position and duration in SECONDS;
+   * the answer is persisted:true when stored, 200 persisted:false with a reason when it could not be stored
+   * (for example unknown_duration_no_row), or 409 persisted:false reason:concurrent_update when the row kept
+   * changing under the compare-and-set write. Only persisted:true is reported as saved; a concurrent_update is
+   * re-sent (the server re-reads and re-plans) up to WATCH_PROGRESS_MAX_ATTEMPTS times.
+   */
+  async updateWatchProgress(mediaId: number, progress: PlaybackProgress): Promise<WatchProgressResult> {
+    let last: WatchProgressResult = { persisted: false, attempts: 0 };
+    for (let attempt = 1; attempt <= WATCH_PROGRESS_MAX_ATTEMPTS; attempt++) {
+      const resp = await this.makeRequest<{ persisted?: boolean; reason?: string } | null>(
+        `/media/${mediaId}/progress`,
+        { method: 'PUT', body: progress },
+      );
+      last = {
+        persisted: resp?.persisted === true,
+        reason: resp?.reason,
+        attempts: attempt,
+      };
+      if (last.persisted || last.reason !== 'concurrent_update') {
+        return last;
+      }
+    }
+    return last;
   }
 
   /**

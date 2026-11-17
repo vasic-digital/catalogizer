@@ -3568,3 +3568,15 @@ DO NOT use LIVE_WS_CHECK for the live G4 run until N1-N4 are fixed (they are rep
 - R5-3 strace needle for SUSPEND_CMD sits in a comment (document: no secrets as args); R5-4 N1-only scenario `expiry-race` missing; R5-5 san() passes U+2028/U+0085/U+009B; R5-6 harness start-up race (fixed sleep, no listen check); R5-7 usage tests hardcode round-5 script; R5-8 manual mode almost never PASS (document). Script remains DO-NOT-USE for live G4.
 ## Operator decisions 2026-11-17 (sweep 8)
 Rating 0-10 per-user route; SECQ-1 netguard+allow-list for storage-root WebDAV; Alt-Svc flag after bind before rc.1; clients: progress duration/persisted:false in rc.1, favorites unification later; /discovery,/ws public, image 761 MB accepted; CAT-LEGACY-MEDIAHANDLER-1: exhaustive investigation first, no removal yet.
+
+## clprog (2026-11-17): clients vs the WPROG3 progress contract (PROVISIONAL)
+
+Implemented against the documented contract of `PUT /api/v1/media/:id/progress` (wprog3 `ff4a3b42b`, still under review, unlanded when this was written): seconds rows need a duration, position/duration may be floats, 200 `persisted:false` + `reason` means NOT stored, 409 `concurrent_update` means retry.
+- WPROG3-FU-1 (TV sends duration): `MediaRepository.saveWatchProgress` / `buildWatchProgressBody` send `progress` plus `position` + `duration` in seconds when the player knows the duration; `VLCPlayerActivity` passes the player milliseconds.
+- WPROG3-FU-2 (PlaybackTracker side): NOT changed. `PlaybackTracker` uses `POST /playback/sessions/*`, not this route; no change was needed for the progress route. Left for the reviewer to confirm that reading.
+- WPROG3-FU-3 (persisted:false is not success): TV, Android, desktop and api-client report only `persisted:true` as saved; a 409 is re-sent up to 3 times, then reported not stored (`concurrent_update`).
+- Found and fixed: the desktop sent VLC milliseconds as "seconds" (position/duration); now converted.
+- api-client `markAsWatched` no longer sends the invented 100/100 seconds; it sends `{progress:1}` or the real duration when given.
+- Android phone: `MediaRepository.updateWatchProgress` now uses the existing route `media/{id}/progress` (it used the non-existent `user/progress/{id}`, AFAV-3) with an optional duration. `SyncManager.syncWatchProgress` still calls `updateUserWatchProgress` (dead route, queued ops carry no duration): NOT changed, owed with the favorites unification.
+- catalog-web: no sender of this route (only reads `/entities/:id/progress`); unchanged.
+- Limits: no device/emulator run; the Tauri `make_http_request` returns the body text for every status so the desktop detects 409 via the body `reason`; the VLC activity change itself has no unit test (logic is in the tested repository).

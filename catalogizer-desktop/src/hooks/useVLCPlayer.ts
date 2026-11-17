@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/core';
-import { apiService } from '../services/apiService';
+import { apiService, msToWholeSeconds } from '../services/apiService';
 
 export type PlaybackState = 
   | 'Idle' 
@@ -323,13 +323,17 @@ export function useVLCPlayer(): UseVLCPlayerReturn {
     // Only save if progress is in valid range
     if (progress >= MIN_PROGRESS_TO_SAVE && progress <= MAX_PROGRESS_TO_SAVE) {
       try {
-        await apiService.updateWatchProgress(mediaId, { 
+        const result = await apiService.updateWatchProgress(mediaId, {
           media_id: mediaId,
-          position: currentTime,
-          duration,
+          position: msToWholeSeconds(currentTime),
+          duration: msToWholeSeconds(duration),
           timestamp: Date.now()
         });
-        console.log('Watch progress saved:', `${(progress * 100).toFixed(1)}%`);
+        if (result.persisted) {
+          console.log('Watch progress saved:', `${(progress * 100).toFixed(1)}%`);
+        } else {
+          console.warn('Watch progress NOT saved:', result.reason ?? 'unknown');
+        }
       } catch (err) {
         console.warn('Failed to save watch progress:', err);
       }

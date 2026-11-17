@@ -234,9 +234,18 @@ class VLCPlayerActivity : ComponentActivity() {
             
             try {
                 val container = com.catalogizer.androidtv.DependencyContainer.getInstance(this)
-                container.mediaRepository.updateWatchProgress(mediaId, progress)
-                lastSavedProgress = progress
-                Log.d(TAG, "Saved watch progress: ${"%.2f".format(progress * 100)}%")
+                val outcome = container.mediaRepository.saveWatchProgress(
+                    mediaId, progress, positionMs = currentPosition, durationMs = duration,
+                )
+                when (outcome) {
+                    is com.catalogizer.androidtv.data.repository.WatchProgressOutcome.Saved -> {
+                        lastSavedProgress = progress
+                        Log.d(TAG, "Saved watch progress: ${"%.2f".format(progress * 100)}%")
+                    }
+                    // not stored: keep lastSavedProgress so the next tick tries again (never claim saved)
+                    is com.catalogizer.androidtv.data.repository.WatchProgressOutcome.NotStored ->
+                        Log.w(TAG, "Watch progress NOT stored by the server: ${outcome.reason}")
+                }
             } catch (e: Exception) {
                 Log.w(TAG, "Failed to save watch progress: ${e.message}")
             }

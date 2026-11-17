@@ -1,0 +1,266 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/home/milosvasic/.cache/claude-tmp/clprog/catalogizer-api-client[39m
+
+ [31m❯[39m src/services/__tests__/MediaService.test.ts [2m([22m[2m29 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 107[2mms[22m[39m
+       [32m✓[39m searches with query parameters[32m 5[2mms[22m[39m
+       [32m✓[39m searches with empty params[32m 1[2mms[22m[39m
+       [32m✓[39m searches with default empty request[32m 2[2mms[22m[39m
+       [32m✓[39m skips undefined and null values in query params[32m 2[2mms[22m[39m
+       [32m✓[39m gets media by ID[32m 1[2mms[22m[39m
+       [32m✓[39m gets media statistics[32m 1[2mms[22m[39m
+       [32m✓[39m gets recently added with default limit[32m 1[2mms[22m[39m
+       [32m✓[39m gets recently added with custom limit[32m 1[2mms[22m[39m
+       [32m✓[39m gets trending media from recommendations endpoint[32m 2[2mms[22m[39m
+       [32m✓[39m gets media filtered by type[32m 1[2mms[22m[39m
+       [32m✓[39m gets user favorites[32m 1[2mms[22m[39m
+       [32m✓[39m adds a favorite[32m 1[2mms[22m[39m
+       [32m✓[39m removes a favorite[32m 1[2mms[22m[39m
+       [32m✓[39m checks favorite status[32m 1[2mms[22m[39m
+       [32m✓[39m sets favorite status via media endpoint (server answers {success,message})[32m 1[2mms[22m[39m
+       [32m✓[39m deprecated toggleFavorite alias still sends the same request[32m 0[2mms[22m[39m
+       [32m✓[39m updates playback progress[32m 4[2mms[22m[39m
+[31m       [31m×[31m marks media as watched[39m[32m 57[2mms[22m[39m
+       [32m✓[39m gets stream URL via entities endpoint[32m 1[2mms[22m[39m
+       [32m✓[39m gets download URL via entities endpoint[32m 1[2mms[22m[39m
+       [32m✓[39m downloads a file by ID[32m 1[2mms[22m[39m
+       [32m✓[39m gets entity asset[32m 1[2mms[22m[39m
+       [32m✓[39m refreshes entity metadata[32m 1[2mms[22m[39m
+       [32m✓[39m updates user metadata for an entity[32m 1[2mms[22m[39m
+       [32m✓[39m gets entity metadata[32m 1[2mms[22m[39m
+       [32m✓[39m gets similar media[32m 1[2mms[22m[39m
+       [32m✓[39m gets personalized recommendations[32m 1[2mms[22m[39m
+       [32m✓[39m gets entity children[32m 1[2mms[22m[39m
+       [32m✓[39m gets entity files[32m 12[2mms[22m[39m
+ [31m❯[39m src/__tests__/index.test.ts [2m([22m[2m83 tests[22m[2m | [22m[31m5 failed[39m[2m)[22m[32m 127[2mms[22m[39m
+       [32m✓[39m creates client with custom config[32m 4[2mms[22m[39m
+         [32m✓[39m searches media successfully[32m 3[2mms[22m[39m
+         [32m✓[39m handles search errors[32m 14[2mms[22m[39m
+         [32m✓[39m searches with empty params[32m 1[2mms[22m[39m
+         [32m✓[39m gets media by id[32m 1[2mms[22m[39m
+         [32m✓[39m gets media statistics[32m 1[2mms[22m[39m
+         [32m✓[39m gets recently added media with default limit[32m 1[2mms[22m[39m
+         [32m✓[39m gets recently added media with custom limit[32m 1[2mms[22m[39m
+         [32m✓[39m gets trending media from recommendations endpoint[32m 1[2mms[22m[39m
+         [32m✓[39m gets media by type[32m 1[2mms[22m[39m
+         [32m✓[39m gets user favorites[32m 1[2mms[22m[39m
+         [32m✓[39m sets favorite status[32m 1[2mms[22m[39m
+[31m         [31m×[31m updates playback progress[39m[32m 19[2mms[22m[39m
+         [32m✓[39m reports persisted:true and the reason of a persisted:false answer[32m 2[2mms[22m[39m
+[31m         [31m×[31m retries a 409 concurrent_update (rejected by the client) and succeeds[39m[32m 1[2mms[22m[39m
+[31m         [31m×[31m gives up after 3 attempts on a persistent 409 and does not claim saved[39m[32m 1[2mms[22m[39m
+         [32m✓[39m does not swallow other errors[32m 5[2mms[22m[39m
+[31m         [31m×[31m marks media as watched[39m[32m 13[2mms[22m[39m
+[31m         [31m×[31m marks media as watched with the real duration in seconds when known[39m[32m 3[2mms[22m[39m
+         [32m✓[39m gets stream URL via entities endpoint[32m 1[2mms[22m[39m
+         [32m✓[39m gets download URL via entities endpoint[32m 1[2mms[22m[39m
+         [32m✓[39m downloads a file by ID[32m 1[2mms[22m[39m
+         [32m✓[39m gets entity asset[32m 1[2mms[22m[39m
+         [32m✓[39m refreshes entity metadata[32m 1[2mms[22m[39m
+         [32m✓[39m gets similar media items[32m 1[2mms[22m[39m
+         [32m✓[39m gets personalized recommendations[32m 0[2mms[22m[39m
+         [32m✓[39m adds a favorite[32m 1[2mms[22m[39m
+         [32m✓[39m removes a favorite[32m 0[2mms[22m[39m
+         [32m✓[39m gets entity children[32m 0[2mms[22m[39m
+         [32m✓[39m gets entity files[32m 0[2mms[22m[39m
+         [32m✓[39m updates user metadata[32m 1[2mms[22m[39m
+         [32m✓[39m logs in successfully[32m 1[2mms[22m[39m
+         [32m✓[39m handles login failure[32m 1[2mms[22m[39m
+         [32m✓[39m refreshes token[32m 1[2mms[22m[39m
+         [32m✓[39m logs out successfully[32m 13[2mms[22m[39m
+         [32m✓[39m gets authentication status[32m 1[2mms[22m[39m
+         [32m✓[39m registers new user[32m 1[2mms[22m[39m
+         [32m✓[39m gets user profile[32m 1[2mms[22m[39m
+         [32m✓[39m updates user profile[32m 1[2mms[22m[39m
+         [32m✓[39m changes user password[32m 1[2mms[22m[39m
+         [32m✓[39m requests password reset[32m 1[2mms[22m[39m
+         [32m✓[39m resets password with token[32m 1[2mms[22m[39m
+         [32m✓[39m verifies email with token[32m 1[2mms[22m[39m
+         [32m✓[39m resends email verification[32m 0[2mms[22m[39m
+         [32m✓[39m checks username availability[32m 0[2mms[22m[39m
+         [32m✓[39m checks email availability[32m 0[2mms[22m[39m
+         [32m✓[39m gets user permissions[32m 0[2mms[22m[39m
+         [32m✓[39m returns true for existing permission[32m 0[2mms[22m[39m
+         [32m✓[39m returns true for system.admin override[32m 0[2mms[22m[39m
+         [32m✓[39m returns false for missing permission[32m 0[2mms[22m[39m
+         [32m✓[39m generates API key[32m 0[2mms[22m[39m
+         [32m✓[39m lists API keys[32m 3[2mms[22m[39m
+         [32m✓[39m revokes API key[32m 0[2mms[22m[39m
+         [32m✓[39m gets SMB configurations[32m 0[2mms[22m[39m
+         [32m✓[39m gets SMB status[32m 0[2mms[22m[39m
+         [32m✓[39m connects to SMB share[32m 0[2mms[22m[39m
+         [32m✓[39m creates SMB configuration[32m 0[2mms[22m[39m
+         [32m✓[39m gets specific SMB configuration[32m 1[2mms[22m[39m
+         [32m✓[39m updates SMB configuration[32m 0[2mms[22m[39m
+         [32m✓[39m deletes SMB configuration[32m 0[2mms[22m[39m
+         [32m✓[39m tests SMB connection[32m 0[2mms[22m[39m
+         [32m✓[39m tests existing SMB configuration[32m 0[2mms[22m[39m
+         [32m✓[39m gets specific config status[32m 0[2mms[22m[39m
+         [32m✓[39m disconnects from SMB share[32m 0[2mms[22m[39m
+         [32m✓[39m reconnects to SMB share[32m 1[2mms[22m[39m
+         [32m✓[39m starts SMB scan[32m 1[2mms[22m[39m
+         [32m✓[39m starts scan with default options[32m 0[2mms[22m[39m
+         [32m✓[39m gets scan job status[32m 0[2mms[22m[39m
+         [32m✓[39m cancels scan job[32m 0[2mms[22m[39m
+         [32m✓[39m gets all scan jobs[32m 0[2mms[22m[39m
+         [32m✓[39m gets scan jobs for specific config[32m 1[2mms[22m[39m
+         [32m✓[39m browses SMB directory[32m 1[2mms[22m[39m
+         [32m✓[39m browses root directory[32m 1[2mms[22m[39m
+         [32m✓[39m toggles config active state[32m 1[2mms[22m[39m
+         [32m✓[39m gets SMB share info[32m 1[2mms[22m[39m
+         [32m✓[39m refreshes all SMB connections[32m 1[2mms[22m[39m
+         [32m✓[39m gets SMB logs[32m 1[2mms[22m[39m
+         [32m✓[39m gets logs for specific config[32m 1[2mms[22m[39m
+       [32m✓[39m handles network errors[32m 1[2mms[22m[39m
+       [32m✓[39m handles HTTP errors[32m 1[2mms[22m[39m
+       [32m✓[39m handles timeout errors[32m 1[2mms[22m[39m
+       [32m✓[39m uses custom timeout[32m 1[2mms[22m[39m
+       [32m✓[39m handles invalid base URL[32m 1[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 6 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/index.test.ts[2m > [22mCatalogizerClient[2m > [22mmedia service[2m > [22mupdateProgress[2m > [22mupdates playback progress
+[31m[1mAssertionError[22m: expected undefined to be false // Object.is equality[39m
+
+[32m- Expected:[39m 
+false
+
+[31m+ Received:[39m 
+undefined
+
+[36m [2m❯[22m src/__tests__/index.test.ts:[2m237:29[22m[39m
+    [90m235| [39m        expect(mockAxiosInstance.put).toHaveBeenCalledWith('/media/1/p…
+    [90m236| [39m        [90m// WPROG3-FU-3: no persisted:true in the answer means NOT saved[39m
+    [90m237| [39m        [34mexpect[39m(r[33m.[39mpersisted)[33m.[39m[34mtoBe[39m([35mfalse[39m)[33m;[39m
+    [90m   | [39m                            [31m^[39m
+    [90m238| [39m      })[33m;[39m
+    [90m239| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/index.test.ts[2m > [22mCatalogizerClient[2m > [22mmedia service[2m > [22mupdateProgress[2m > [22mretries a 409 concurrent_update (rejected by the client) and succeeds
+[31m[1mCatalogizerError[22m: Watch progress not stored[39m
+[36m [2m❯[22m src/__tests__/index.test.ts:[2m251:34[22m[39m
+    [90m249| [39m        [35mconst[39m { [33mCatalogizerError[39m } [33m=[39m [35mawait[39m [35mimport[39m([32m'../types'[39m)[33m;[39m
+    [90m250| [39m        mockAxiosInstance[33m.[39mput
+    [90m251| [39m          .mockRejectedValueOnce(new CatalogizerError('Watch progress …
+    [90m   | [39m                                 [31m^[39m
+    [90m252| [39m          .mockResolvedValueOnce({ data: { success: true, persisted: t…
+    [90m253| [39m        const r = await client.media.updateProgress(1, { media_id: 1, …
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/index.test.ts[2m > [22mCatalogizerClient[2m > [22mmedia service[2m > [22mupdateProgress[2m > [22mgives up after 3 attempts on a persistent 409 and does not claim saved
+[31m[1mCatalogizerError[22m: Watch progress not stored[39m
+[36m [2m❯[22m src/__tests__/index.test.ts:[2m260:49[22m[39m
+    [90m258| [39m      it('gives up after 3 attempts on a persistent 409 and does not c…
+    [90m259| [39m        [35mconst[39m { [33mCatalogizerError[39m } [33m=[39m [35mawait[39m [35mimport[39m([32m'../types'[39m)[33m;[39m
+    [90m260| [39m        mockAxiosInstance.put.mockRejectedValue(new CatalogizerError('…
+    [90m   | [39m                                                [31m^[39m
+    [90m261| [39m        const r = await client.media.updateProgress(1, { media_id: 1, …
+    [90m262| [39m        expect(r).toMatchObject({ persisted: false, reason: 'concurren…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/index.test.ts[2m > [22mCatalogizerClient[2m > [22mmedia service[2m > [22mmarkAsWatched[2m > [22mmarks media as watched
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called with arguments: [ '/media/1/progress', …(2) ][90m
+
+Received: 
+
+[1m  1st vi.fn() call:
+
+[22m[2m  [[22m
+[2m    "/media/1/progress",[22m
+[2m    {[22m
+[32m-     "progress": 1,[90m
+[31m+     "duration": 100,[90m
+[31m+     "media_id": 1,[90m
+[31m+     "position": 100,[90m
+[31m+     "timestamp": 1794925609811,[90m
+[2m    },[22m
+[2m    undefined,[22m
+[2m  ][22m
+[31m[90m
+
+Number of calls: [1m1[22m
+[31m[39m
+[36m [2m❯[22m src/__tests__/index.test.ts:[2m280:39[22m[39m
+    [90m278| [39m
+    [90m279| [39m        // no real duration known: send the fraction 1.0 (the server n…
+    [90m280| [39m        expect(mockAxiosInstance.put).toHaveBeenCalledWith('/media/1/p…
+    [90m   | [39m                                      [31m^[39m
+    [90m281| [39m      })[33m;[39m
+    [90m282| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/__tests__/index.test.ts[2m > [22mCatalogizerClient[2m > [22mmedia service[2m > [22mmarkAsWatched[2m > [22mmarks media as watched with the real duration in seconds when known
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called with arguments: [ '/media/1/progress', …(2) ][90m
+
+Received: 
+
+[1m  1st vi.fn() call:
+
+[22m[2m  [[22m
+[2m    "/media/1/progress",[22m
+[32m-   ObjectContaining {[90m
+[32m-     "duration": 5400,[90m
+[32m-     "position": 5400,[90m
+[31m+   {[90m
+[31m+     "duration": 100,[90m
+[31m+     "media_id": 1,[90m
+[31m+     "position": 100,[90m
+[31m+     "timestamp": 1794925609824,[90m
+[2m    },[22m
+[2m    undefined,[22m
+[2m  ][22m
+[31m[90m
+
+Number of calls: [1m1[22m
+[31m[39m
+[36m [2m❯[22m src/__tests__/index.test.ts:[2m288:39[22m[39m
+    [90m286| [39m        [35mconst[39m r [33m=[39m [35mawait[39m client[33m.[39mmedia[33m.[39m[34mmarkAsWatched[39m([34m1[39m[33m,[39m [34m5400[39m)[33m;[39m
+    [90m287| [39m
+    [90m288| [39m        expect(mockAxiosInstance.put).toHaveBeenCalledWith('/media/1/p…
+    [90m   | [39m                                      [31m^[39m
+    [90m289| [39m          position[33m:[39m [34m5400[39m[33m,[39m
+    [90m290| [39m          duration[33m:[39m [34m5400[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/services/__tests__/MediaService.test.ts[2m > [22mMediaService[2m > [22mplayback progress[2m > [22mmarks media as watched
+[31m[1mAssertionError[22m: expected "vi.fn()" to be called with arguments: [ Array(2) ][90m
+
+Received: 
+
+[1m  1st vi.fn() call:
+
+[22m[2m  [[22m
+[2m    "/media/1/progress",[22m
+[2m    {[22m
+[32m-     "progress": 1,[90m
+[31m+     "duration": 100,[90m
+[31m+     "media_id": 1,[90m
+[31m+     "position": 100,[90m
+[31m+     "timestamp": 1794925609773,[90m
+[2m    },[22m
+[2m  ][22m
+[31m[90m
+
+Number of calls: [1m1[22m
+[31m[39m
+[36m [2m❯[22m src/services/__tests__/MediaService.test.ts:[2m206:28[22m[39m
+    [90m204| [39m      [35mawait[39m mediaService[33m.[39m[34mmarkAsWatched[39m([34m1[39m)[33m;[39m
+    [90m205| [39m
+    [90m206| [39m      expect(mockHttp.put).toHaveBeenCalledWith('/media/1/progress', {…
+    [90m   | [39m                           [31m^[39m
+    [90m207| [39m    })[33m;[39m
+    [90m208| [39m  })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[31m6 failed[39m[22m[2m | [22m[1m[32m106 passed[39m[22m[90m (112)[39m
+[2m   Start at [22m 15:26:47
+[2m   Duration [22m 2.38s[2m (transform 1.18s, setup 0ms, import 1.69s, tests 234ms, environment 10ms)[22m
+

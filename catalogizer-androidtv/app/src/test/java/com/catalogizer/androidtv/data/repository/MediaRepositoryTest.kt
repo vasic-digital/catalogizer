@@ -184,7 +184,9 @@ class MediaRepositoryTest {
         val mediaId = 123L
         val progress = 0.75
 
-        val successResponse = Response.success(Unit)
+        val successResponse = Response.success(
+            kotlinx.serialization.json.buildJsonObject { put("persisted", kotlinx.serialization.json.JsonPrimitive(true)) }
+        )
         coEvery { api.updateWatchProgress(mediaId, any()) } returns successResponse
 
         // Should not throw exception
@@ -196,7 +198,7 @@ class MediaRepositoryTest {
         val mediaId = 123L
         val progress = 0.75
 
-        val errorResponse = Response.error<Unit>(
+        val errorResponse = Response.error<kotlinx.serialization.json.JsonObject>(
             500,
             "Server error".toResponseBody(null)
         )
