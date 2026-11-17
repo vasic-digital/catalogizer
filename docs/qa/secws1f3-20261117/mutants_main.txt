@@ -1,0 +1,17 @@
+package main TestF3_ (HEAD af02b7c35); exact-string replace then reverted
+== mutant M3_admin_always_true
+--- FAIL: TestF3_AdminOnlyEventsReachOnlyAdmins (0.14s)
+--- FAIL: TestF3_ForgedAdminRoleClaimDoesNotGrantAdminEvents (0.06s)
+--- FAIL: TestF3_AdminDemotedAfterConnectStopsReceivingAdminEvents (0.65s)
+--- FAIL: TestF3_AdminLookupErrorDowngradesButKeepsSocketOpen (0.65s)
+--- FAIL: TestF3_BroadcastContextIsAudienceFiltered (0.08s)
+FAIL
+== mutant M4_expiry_dropped_in_authorize
+--- FAIL: TestF3_TokenExpiryClosesSocket (4.75s)
+FAIL
+FAIL	catalogizer	10.264s
+FAIL
+restored
+--- FAIL: TestF3_TokenExpiryClosesSocket (4.70s)
+FAIL (re-run singly with -run TestF3_TokenExpiryClosesSocket after the batch run was interrupted; file restored, cmp identical)
+restored

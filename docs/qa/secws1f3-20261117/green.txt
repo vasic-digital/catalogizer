@@ -1,0 +1,3 @@
+cmd: go test -p 1 -count=1 -run 'TestF3_|TestSEC_WS_1F3FU8' . ; tree=2a547e796f33078c41e73cb5812a2545ea7abf9d HEAD=af02b7c35cdfc0a43d08998f01e1d12da8a6fd0b
+== baseline
+ok  	catalogizer	8.204s

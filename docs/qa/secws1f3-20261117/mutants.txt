@@ -1,0 +1,15 @@
+cmd as green.txt; each mutant applied by exact-string replace then reverted
+== mutant M1_no_session_check
+--- FAIL: TestF3_SessionRevokedAfterConnectClosesSocket (1.64s)
+--- FAIL: TestF3_UserSuspendedAfterConnectClosesSocket (1.70s)
+--- FAIL: TestF3_UserLockedAfterConnectClosesSocket (1.71s)
+--- FAIL: TestF3_RevokedSessionRefusedOnNextInboundMessage (4.26s)
+--- FAIL: TestF3_UnauthorisedAtSeedIsClosedImmediately (2.01s)
+FAIL
+FAIL	catalogizer	17.403s
+FAIL
+== mutant M2_expiry_check_dropped_in_authorizeMessage
+ok  	catalogizer	9.314s
+== mutant M3_admin_check_always_true
+FAIL	catalogizer [build failed]
+FAIL

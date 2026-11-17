@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# LIVE /ws check for rc.1 gate G4 (SEC-WS-1 F3 + SEC-WS-1-F1). PROVISIONAL, NOT RUN by the author.
+# Run by the operator against a RUNNING catalog-api (ideally through the production nginx edge).
+# Needs: curl, jq, websocat. Credentials are read from env by NAME only; never echo them.
+#   BASE=https://host:port   ADMIN_USER ADMIN_PASS   VICTIM_USER VICTIM_PASS (a non-admin test user)
+#   ADMIN_TOKEN_FOR_SUSPEND  (admin bearer used to suspend VICTIM_USER; or suspend it by hand when prompted)
+# Writes a record dir with the target fields required by 11.4.289(D).
+set -u
+: "${BASE:?}" "${ADMIN_USER:?}" "${ADMIN_PASS:?}" "${VICTIM_USER:?}" "${VICTIM_PASS:?}"
+OUT="${OUT:-live_ws_$(date -u +%Y%m%dT%H%M%SZ)}"; mkdir -p "$OUT"
+WS="${BASE/http/ws}"; ORIGIN="${ORIGIN:-$BASE}"
+log(){ printf '%s %s\n' "$(date -u +%T)" "$*" | tee -a "$OUT/run.log"; }
+# --- target fields (11.4.289(D)) ---
+{ echo "base=$BASE"; echo "host_resolved=$(getent hosts "${BASE#*://}" 2>/dev/null | head -1)";
+  curl -sk "$BASE/health" ; echo; curl -skI "$BASE/health" | head -20; } > "$OUT/target.txt" 2>&1
+log "RECORD answering-process identity manually: pid+exe sha256 of catalog-api on the server (ps/sha256sum) into $OUT/process_identity.txt"
+login(){ curl -sk -X POST "$BASE/api/v1/auth/login" -H 'Content-Type: application/json' \
+  -d "{\"username\":\"$1\",\"password\":\"$2\"}" | jq -r '.token // .access_token // .data.token // empty'; }
+ticket(){ curl -sk -X POST "$BASE/api/v1/ws/ticket" -H "Authorization: Bearer $1" | jq -r '.ticket // empty'; }
+# try CODE_EXPECT [websocat args...]: handshake result by HTTP status via curl upgrade probe
+probe(){ # $1 label $2 url $3 origin(optional) -> prints status line
+  curl -sk -o /dev/null -w "%{http_code}" -H 'Connection: Upgrade' -H 'Upgrade: websocket' \
+   -H 'Sec-WebSocket-Version: 13' -H 'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==' ${3:+-H "Origin: $3"} "$2" --max-time 5; }
+VT=$(login "$VICTIM_USER" "$VICTIM_PASS"); AT=$(login "$ADMIN_USER" "$ADMIN_PASS")
+[ -n "$VT" ] && [ -n "$AT" ] || { log "FAIL login (token field name UNCONFIRMED: adjust jq path)"; exit 2; }
+r(){ log "$1 => $2 (expect $3)"; echo "$1 $2 expect=$3" >> "$OUT/results.txt"; }
+r "unauthenticated /ws"            "$(probe x "$WS/ws" "$ORIGIN")" 401
+r "JWT in ?token= (F2: refused)"   "$(probe x "$WS/ws?token=$VT" "$ORIGIN")" 401
+r "bad Origin with valid ticket"   "$(probe x "$WS/ws?ticket=$(ticket "$VT")" https://evil.example)" 403
+r "ticket reuse (single-use)"      "$(T=$(ticket "$VT"); websocat -n1 -q "$WS/ws?ticket=$T" -H "Origin: $ORIGIN" </dev/null >/dev/null 2>&1; probe x "$WS/ws?ticket=$T" "$ORIGIN")" 401
+# F3: connected socket must be closed after the victim is suspended / session revoked
+T=$(ticket "$VT")
+( timeout 120 websocat -t --origin "$ORIGIN" "$WS/ws?ticket=$T" > "$OUT/victim_frames.txt" 2> "$OUT/victim_ws.err"; echo "websocat exit=$? at $(date -u +%T)" >> "$OUT/victim_ws.err" ) &
+WP=$!; sleep 3
+log "SOCKET OPEN. Now SUSPEND (or revoke the session of) $VICTIM_USER, e.g. via the admin UI or your admin API call."
+log "Press Enter right after you suspended it (time of action is recorded)."; read -r _; date -u +%T > "$OUT/suspend_time.txt"
+# generate an event the victim must NOT receive after suspension (admin-only scan event), then wait for recheck (default 15 s)
+sleep 20; kill -0 $WP 2>/dev/null && { log "FAIL F3: victim socket STILL OPEN 20 s after suspension"; echo "F3 FAIL" >> "$OUT/results.txt"; kill $WP; } \
+  || { log "PASS F3: victim socket closed (see $OUT/victim_ws.err for close frame)"; echo "F3 PASS" >> "$OUT/results.txt"; }
+# F3 audience: admin-only event not delivered to a non-admin (trigger a scan as admin and compare frames)
+log "OPTIONAL: trigger a scan as admin with a fresh non-admin socket open and verify no scan_*/notification frames reach it."
+( cd "$OUT" && sha256sum * > SHA256SUMS ); log "record in $OUT"
