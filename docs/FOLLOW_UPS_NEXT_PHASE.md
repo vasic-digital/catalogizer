@@ -3448,6 +3448,9 @@ HAUTHZ-F2 fixed: PUT /media/:id/favorite and GET /media/:id use the new `user_fa
 - G1FIX-R1-F2 (minor, process-doc): G1FIX-2 main claim is WRONG. In gin v1.12.0 `Engine.Use` changes only group handlers and 404/405 chains; route handlers are combined at registration, so moving the hook would not change dumped route chains. Rewrite G1FIX-2. Related lead (separate check): if every route is registered before the late `Use(altSvcMiddleware)`, Alt-Svc is sent only on 404/405 responses.
 - G1FIX-R1-N1 (nit): AnonymousIs401BeforeParse asserts status only, not the message.
 
+### g1fixfu (Sonnet author, 2026-11-17, PROVISIONAL; evidence docs/qa/g1fixfu-20261117/)
+- G1FIX-R1-F1 fixed (refuse registration calls in the sanctioned bodies, single routeDumpHook call site; mutants M2b/M7 + FU1-FU4 RED then GREEN). G1FIX-R1-N1 fixed (message asserted). G1FIX-R1-F2 still open. Review owed.
+
 ### s1g6 (Sonnet author, 2026-11-17, PROVISIONAL; evidence docs/qa/admd1-s1g-round7-20261117/)
 - S1G6-F1 fixed: `preGateMatch` rejects a receiver-less allow entry when the text before the symbol ends with `)` (a method). S1G6-F2 fixed: wording corrected in the codescan comment, round-6b NOTES and the round-6b limits line above. S1G6-F3 fixed: `TestS1G6F3_RealChainCatchesScannerBlindHandlersBeforeTheGate` builds the real binary with a mutated main.go (`go build -overlay`) for three blind shapes and requires the ground truth to report each (still skipped under `-short`: it builds and runs the binary). S1G6-F4 fixed: `TestS1G6F4_AllowListHasNoStaleSymbol` checks per symbol.
 - Open: S1G6-F5 (pre-gate handlers on the wrapped /metrics gate, UNCONFIRMED), S1G6-F6 (callWrapsHandler flags any call with a function-literal argument). Review of this change owed.

@@ -241,6 +241,7 @@ func TestUpdateFavoriteStatus_AnonymousIs401BeforeParse(t *testing.T) {
 			w := httptest.NewRecorder()
 			r.ServeHTTP(w, req)
 			assert.Equal(t, http.StatusUnauthorized, w.Code, "body: %s", w.Body.String())
+			assert.Contains(t, w.Body.String(), "Authentication required", "the 401 must carry the auth message, not another error")
 		})
 	}
 }
