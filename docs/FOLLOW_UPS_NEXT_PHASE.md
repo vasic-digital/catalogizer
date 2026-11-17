@@ -3749,3 +3749,6 @@ Evidence: docs/qa/clfu1-20261117/ (README, SHA256SUMS).
 - FU3-R-M3 (minor): confirm RV3_N1/N5 pos=40/180 semantics in a comment; README claim "R1 killed by N1+N5" not re-run by the reviewer.
 - FU3-R-N1 (nit): `media_watch_progress_pg_test.go:116` comment says session End/transaction; the hook is a plain UPDATE.
 - FU3-R-N2 (nit): `pgrvSeen`/`pgrvHooks` globals never reset; add `t.Cleanup` if a second PG test appears.
+
+## WIZENV-1 (2026-11-17, PROVISIONAL)
+Wizard SystemInfo copied os.Environ() with a password/secret/token deny-list. Reproduced at service layer; HTTP exposure not reproducible (type has no production constructor; routed wizard handlers use ConfigurationService). Fixed with an allow-list (`safeEnvironment`). Evidence: docs/qa/wizenv1-20261117/. Open: Opus review; decide whether the unwired ConfigurationWizardService should be removed (§11.4.124 history check owed, not done).

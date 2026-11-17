@@ -1,0 +1,5 @@
+--- FAIL: TestWIZENV1_CollectSystemInfoDoesNotLeakEnv (0.00s)
+    wizenv1_test.go:21: sentinel env value present in serialized SystemInfo
+FAIL
+FAIL	catalogizer/services	0.148s
+FAIL

@@ -1459,20 +1459,9 @@ func (s *ConfigurationWizardService) collectSystemInfo() SystemInfo {
 	// Detect installed tools
 	info.InstalledTools = s.detectInstalledTools()
 
-	// Get environment variables
-	info.EnvironmentVars = make(map[string]string)
-	for _, env := range os.Environ() {
-		parts := strings.SplitN(env, "=", 2)
-		if len(parts) == 2 {
-			// Only include non-sensitive environment variables
-			key := parts[0]
-			if !strings.Contains(strings.ToLower(key), "password") &&
-				!strings.Contains(strings.ToLower(key), "secret") &&
-				!strings.Contains(strings.ToLower(key), "token") {
-				info.EnvironmentVars[key] = parts[1]
-			}
-		}
-	}
+	// Environment variables: ALLOW-LIST only (WIZENV-1). A deny-list on
+	// password/secret/token let *_API_KEY, DSN and bearer values through.
+	info.EnvironmentVars = safeEnvironment(os.Environ())
 
 	// Generate recommendations
 	info.Recommendations = s.generateSystemRecommendations(info)
@@ -1586,4 +1575,26 @@ func (s *ConfigurationWizardService) GetUserConfigurationProfiles(userID int) ([
 
 func float64Ptr(f float64) *float64 {
 	return &f
+}
+
+// wizardSafeEnvKeys is the closed allow-list of environment variables the
+// wizard may report. Anything not listed is never copied.
+var wizardSafeEnvKeys = map[string]struct{}{
+	"LANG": {}, "LC_ALL": {}, "LC_CTYPE": {}, "TZ": {}, "TERM": {},
+	"SHELL": {}, "GOOS": {}, "GOARCH": {}, "GOMAXPROCS": {}, "GIN_MODE": {},
+}
+
+// safeEnvironment keeps only allow-listed KEY=VALUE pairs.
+func safeEnvironment(environ []string) map[string]string {
+	out := make(map[string]string)
+	for _, kv := range environ {
+		parts := strings.SplitN(kv, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		if _, ok := wizardSafeEnvKeys[parts[0]]; ok {
+			out[parts[0]] = parts[1]
+		}
+	}
+	return out
 }
