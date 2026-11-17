@@ -45,7 +45,7 @@ func NewIGDBResolver(priority int) *IGDBResolver {
 		clientID: strings.TrimSpace(envFirstNonEmpty("IGDB_CLIENT_ID")),
 		token:    strings.TrimSpace(envFirstNonEmpty("IGDB_APP_ACCESS_TOKEN", "IGDB_BEARER_TOKEN")),
 		priority: priority,
-		http:     &http.Client{Timeout: 10 * time.Second},
+		http:     netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 10 * time.Second, Strict: true}),
 		dl:       netguard.StrictClient(10*time.Second, 3, netguard.HTTPOrHTTPS),
 		baseURL:  "https://api.igdb.com/v4",
 	}

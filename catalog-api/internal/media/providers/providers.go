@@ -3,6 +3,7 @@ package providers
 import (
 	"catalogizer/internal/concurrency"
 	"catalogizer/internal/media/models"
+	"catalogizer/internal/netguard"
 	"catalogizer/internal/services"
 	"context"
 	"encoding/json"
@@ -73,17 +74,15 @@ func NewProviderManager(logger *zap.Logger) *ProviderManager {
 
 // NewProviderManagerWithProxy creates a provider manager with proxy support.
 func NewProviderManagerWithProxy(logger *zap.Logger, proxyCfg ProxyConfiger) *ProviderManager {
-	client := &http.Client{
-		Timeout: 30 * time.Second,
-	}
-	// Apply proxy to the shared client if configured.
+	// AZ2-1: the shared provider client dials only checked, pinned addresses and re-validates every redirect hop.
+	// The operator's HTTP proxy (when enabled) is honoured; it resolves the destination itself.
+	var px netguard.ProviderProxy
 	if proxyCfg != nil && proxyCfg.IsEnabled() && proxyCfg.GetHTTPURL() != "" {
-		parsed, err := url.Parse(proxyCfg.GetHTTPURL())
-		if err == nil {
-			transport := &http.Transport{Proxy: http.ProxyURL(parsed)}
-			client = &http.Client{Timeout: 30 * time.Second, Transport: transport}
+		if parsed, err := url.Parse(proxyCfg.GetHTTPURL()); err == nil {
+			px = netguard.ProviderProxy{HTTP: parsed}
 		}
 	}
+	client := netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 30 * time.Second, Proxy: px})
 
 	pm := &ProviderManager{
 		providers:     make(map[string]MetadataProvider),

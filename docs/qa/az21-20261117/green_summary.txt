@@ -1,0 +1,19 @@
+GREEN runs after the fix (GOMAXPROCS=2 nice -n 10 go test -p 1 -buildvcs=false <pkg> -count=1), host load average ~55 (other agents running):
+ok  catalogizer/internal/netguard                (full package)
+ok  catalogizer/internal/services                (full package, 60s)
+ok  catalogizer/internal/media/providers         (full package)
+ok  catalogizer/internal/firebase                (full package)
+ok  catalogizer/services                         (full package, 542s)   [log: green_full_packages_b.txt]
+ok  catalogizer/handlers   -run "AZ21|MediaEntity|Entity|TMDB|SSRF|Enrich|Proxy|Provider"   (targeted, 86s)
+ok  catalogizer (root)     -run "AZ21|ImageProxy|SSRF|ProxyClient|Proxy"                     (targeted, 41s)
+NOT GREEN / NOT RUN: the FULL handlers suite hit the 10 minute go test timeout under host load (first stuck test seen at 100s:
+TestCAT001_F3_ProductionLoginWritesAuthAuditLogAndTheReportCountsIt, unrelated to outbound clients); it was not run to completion, so
+"handlers suite green" is UNCONFIRMED. The full root-package suite and tests/integration were not run.
+
+== Round 2 (after I2/M1-M4/M7 changes) ==
+ok  catalogizer/internal/netguard, internal/media/providers, internal/firebase   (green_round2_a.txt)
+catalogizer/services in green_round2_a.txt: FAIL = the default 10m go test timeout under host load (load ~53; TestCAT002_Start_RealBinary running at the alarm), not an assertion failure; rerun with -timeout 40m:
+ok  catalogizer (root)               1703s  (green_round2_b.txt)
+ok  catalogizer/services              739s  (green_round2_b.txt)
+ok  catalogizer/internal/services      67s  (green_round2_b.txt)
+ok  catalogizer/handlers (-run 'AZ21|TMDB|MediaEntity|Enrich', targeted; the FULL handlers suite is still UNCONFIRMED)  35s

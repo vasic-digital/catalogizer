@@ -1,0 +1,95 @@
+=== RUN   TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass
+=== RUN   TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/lyrics
+    az21_red_test.go:51: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/az21/catalog-api/internal/services/az21_red_test.go:51
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 2
+        	Test:       	TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/lyrics
+        	Messages:   	client followed a redirect to 0.0.0.0 and reached the sink
+=== RUN   TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/translation
+    az21_red_test.go:51: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/az21/catalog-api/internal/services/az21_red_test.go:51
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 2
+        	Test:       	TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/translation
+        	Messages:   	client followed a redirect to 0.0.0.0 and reached the sink
+=== RUN   TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/recommendation
+    az21_red_test.go:51: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/az21/catalog-api/internal/services/az21_red_test.go:51
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 2
+        	Test:       	TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/recommendation
+        	Messages:   	client followed a redirect to 0.0.0.0 and reached the sink
+=== RUN   TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/igdb.http
+    az21_red_test.go:51: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/az21/catalog-api/internal/services/az21_red_test.go:51
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 2
+        	Test:       	TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/igdb.http
+        	Messages:   	client followed a redirect to 0.0.0.0 and reached the sink
+=== RUN   TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/recognition.book
+    az21_red_test.go:51: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/az21/catalog-api/internal/services/az21_red_test.go:51
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 2
+        	Test:       	TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/recognition.book
+        	Messages:   	client followed a redirect to 0.0.0.0 and reached the sink
+=== RUN   TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/llm_image.client
+    az21_red_test.go:51: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/az21/catalog-api/internal/services/az21_red_test.go:51
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 2
+        	Test:       	TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/llm_image.client
+        	Messages:   	client followed a redirect to 0.0.0.0 and reached the sink
+=== RUN   TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/caa.http
+    az21_red_test.go:51: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/az21/catalog-api/internal/services/az21_red_test.go:51
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 2
+        	Test:       	TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/caa.http
+        	Messages:   	client followed a redirect to 0.0.0.0 and reached the sink
+=== RUN   TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/recognition.game
+    az21_red_test.go:51: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/az21/catalog-api/internal/services/az21_red_test.go:51
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 2
+        	Test:       	TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/recognition.game
+        	Messages:   	client followed a redirect to 0.0.0.0 and reached the sink
+=== RUN   TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/recognition.music
+    az21_red_test.go:51: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/az21/catalog-api/internal/services/az21_red_test.go:51
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 2
+        	Test:       	TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/recognition.music
+        	Messages:   	client followed a redirect to 0.0.0.0 and reached the sink
+=== RUN   TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/recognition.movie
+    az21_red_test.go:51: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/az21/catalog-api/internal/services/az21_red_test.go:51
+        	Error:      	Not equal: 
+        	            	expected: 1
+        	            	actual  : 2
+        	Test:       	TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/recognition.movie
+        	Messages:   	client followed a redirect to 0.0.0.0 and reached the sink
+--- FAIL: TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass (0.04s)
+    --- FAIL: TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/lyrics (0.02s)
+    --- FAIL: TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/translation (0.01s)
+    --- FAIL: TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/recommendation (0.00s)
+    --- FAIL: TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/igdb.http (0.00s)
+    --- FAIL: TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/recognition.book (0.00s)
+    --- FAIL: TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/llm_image.client (0.00s)
+    --- FAIL: TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/caa.http (0.00s)
+    --- FAIL: TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/recognition.game (0.00s)
+    --- FAIL: TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/recognition.music (0.00s)
+    --- FAIL: TestAZ21_RED_ProviderClientsFollowRedirectToBlockedClass/recognition.movie (0.00s)
+FAIL
+FAIL	catalogizer/internal/services	0.116s
+FAIL

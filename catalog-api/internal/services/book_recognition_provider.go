@@ -2,6 +2,7 @@ package services
 
 import (
 	"bytes"
+	"catalogizer/internal/netguard"
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
@@ -438,7 +439,7 @@ type IndexEntry struct {
 func NewBookRecognitionProvider(logger *zap.Logger) *BookRecognitionProvider {
 	return &BookRecognitionProvider{
 		logger:     logger,
-		httpClient: &http.Client{Timeout: 30 * time.Second},
+		httpClient: netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 30 * time.Second, Strict: true}),
 		baseURLs: map[string]string{
 			"google_books":  "https://www.googleapis.com/books/v1",
 			"open_library":  "https://openlibrary.org",
