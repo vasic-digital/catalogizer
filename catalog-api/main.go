@@ -1061,6 +1061,9 @@ func main() {
 	api.GET("/media/:id", androidTVMediaHandler.GetMediaByID)
 	api.PUT("/media/:id/progress", androidTVMediaHandler.UpdateWatchProgress)
 	api.PUT("/media/:id/favorite", androidTVMediaHandler.UpdateFavoriteStatus)
+	api.PUT("/media/:id/rating", androidTVMediaHandler.PutMediaRating)
+	api.GET("/media/:id/rating", androidTVMediaHandler.GetMediaRating)
+	api.DELETE("/media/:id/rating", androidTVMediaHandler.DeleteMediaRating)
 	api.POST("/media/:id/refresh", mediaQueryHandler.RefreshMediaMetadata)
 	api.GET("/media/:id/quality", mediaQueryHandler.GetMediaQuality)
 

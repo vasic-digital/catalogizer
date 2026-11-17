@@ -55,9 +55,11 @@ func TestMigrationV30_UserFavorites(t *testing.T) {
 func TestMigrationV30_UpgradeFromV29(t *testing.T) {
 	db, raw := newMigratedDB(t)
 	// Reconstruct a v29 state: v30 table and record gone, populated data present.
-	_, err := raw.Exec(`DROP TABLE user_favorites`)
+	_, err := raw.Exec(`DROP TABLE user_media_ratings`) // v31 (CAT-RATING-1) is newer than v29 too
 	require.NoError(t, err)
-	_, err = raw.Exec(`DELETE FROM migrations WHERE version = 30`)
+	_, err = raw.Exec(`DROP TABLE user_favorites`)
+	require.NoError(t, err)
+	_, err = raw.Exec(`DELETE FROM migrations WHERE version IN (30, 31)`)
 	require.NoError(t, err)
 	var maxV int
 	require.NoError(t, raw.QueryRow(`SELECT MAX(version) FROM migrations`).Scan(&maxV))

@@ -1,0 +1,16 @@
+=== RUN   TestRatingIsPerUser_HorizontalAuthz
+--- PASS: TestRatingIsPerUser_HorizontalAuthz (0.07s)
+=== RUN   TestRatingValidation
+--- PASS: TestRatingValidation (0.06s)
+=== RUN   TestRatingRequiresAuthBeforeParsing
+--- PASS: TestRatingRequiresAuthBeforeParsing (0.08s)
+=== RUN   TestRatingCascadesOnMediaDelete
+--- PASS: TestRatingCascadesOnMediaDelete (0.06s)
+=== RUN   TestRatingErrorOrder
+--- PASS: TestRatingErrorOrder (0.07s)
+PASS
+ok  	catalogizer/handlers	0.707s
+=== RUN   TestMigrationV31_UserMediaRatings
+--- PASS: TestMigrationV31_UserMediaRatings (0.06s)
+PASS
+ok  	catalogizer/database	0.086s

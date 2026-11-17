@@ -1,0 +1,9 @@
+# catalogizer/handlers [catalogizer/handlers.test]
+handlers/media_rating_per_user_test.go:25:38: h.PutMediaRating undefined (type *AndroidTVMediaHandler has no field or method PutMediaRating)
+handlers/media_rating_per_user_test.go:26:38: h.GetMediaRating undefined (type *AndroidTVMediaHandler has no field or method GetMediaRating)
+handlers/media_rating_per_user_test.go:27:41: h.DeleteMediaRating undefined (type *AndroidTVMediaHandler has no field or method DeleteMediaRating)
+FAIL	catalogizer/handlers [build failed]
+# catalogizer/database [catalogizer/database.test]
+database/migrations_v31_test.go:35:24: db.createUserMediaRatingsTable undefined (type *DB has no field or method createUserMediaRatingsTable)
+FAIL	catalogizer/database [build failed]
+FAIL

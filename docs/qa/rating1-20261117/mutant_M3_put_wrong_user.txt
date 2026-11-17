@@ -1,0 +1,15 @@
+--- FAIL: TestRatingIsPerUser_HorizontalAuthz (0.03s)
+    media_rating_per_user_test.go:74: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/rating1/catalog-api/handlers/media_rating_per_user_test.go:74
+        	Error:      	Not equal: 
+        	            	expected: float64(3)
+        	            	actual  : <nil>(<nil>)
+        	Test:       	TestRatingIsPerUser_HorizontalAuthz
+    media_rating_per_user_test.go:86: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/rating1/catalog-api/handlers/media_rating_per_user_test.go:86
+        	Error:      	Expected nil, but got: 3
+        	Test:       	TestRatingIsPerUser_HorizontalAuthz
+FAIL
+FAIL	catalogizer/handlers	0.351s
+FAIL
+exit=1

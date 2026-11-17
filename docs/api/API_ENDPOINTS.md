@@ -121,6 +121,9 @@ All endpoints below require JWT authentication and are rate limited (2000 reques
 | GET | `/api/v1/media/:id` | Get a media item by ID (Android TV compatible) |
 | PUT | `/api/v1/media/:id/progress` | Update playback watch progress for a media item |
 | PUT | `/api/v1/media/:id/favorite` | Toggle favorite status for a media item |
+| PUT | `/api/v1/media/:id/rating` | Set the caller's own 0..10 integer rating of a media item (per user) |
+| GET | `/api/v1/media/:id/rating` | Get the caller's own rating (`rating: null` when unrated) |
+| DELETE | `/api/v1/media/:id/rating` | Remove the caller's own rating (idempotent) |
 
 ---
 

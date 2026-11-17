@@ -42,6 +42,7 @@ func (db *DB) RunMigrations(ctx context.Context) error {
 		{Version: 28, Name: "invalidate_legacy_log_share_tokens", Up: db.invalidateLegacyLogShareTokens},
 		{Version: 29, Name: "create_login_throttle", Up: db.createLoginThrottleTable},
 		{Version: 30, Name: "create_user_favorites", Up: db.createUserFavoritesTable},
+		{Version: 31, Name: "create_user_media_ratings", Up: db.createUserMediaRatingsTable},
 	}
 
 	for _, migration := range migrations {
