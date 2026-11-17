@@ -1,0 +1,23 @@
+1 | api_contract_gate_codescan_test.go | case mountMethods[x.Sel.Name]: | SURVIVED ok  	catalogizer	16.302s
+2 | api_contract_gate_codescan_test.go | case !calledSel[x] && !engineDataFields[x.Sel.Name]: | KILLED --- FAIL: TestADMD1F1S1R3_GroupEscapeIsReported (0.01s)
+3 | api_contract_gate_codescan_test.go | declCount[x.Name] > 0 { // round 5 (A31) | KILLED --- FAIL: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable (0.01s)
+4 | api_contract_gate_codescan_test.go | x.Ellipsis.IsValid() && !spreadWrapper(x) | KILLED --- FAIL: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable (0.02s)
+5 | api_contract_gate_codescan_test.go | execCtx(x) != execDecl[k] | BUILD-ERROR ./api_contract_gate_codescan_test.go:885:10: declared and not used: k
+6 | api_contract_gate_codescan_test.go | if declCount[k] > 1 && (isGrp | SURVIVED ok  	catalogizer	14.680s
+7 | api_contract_gate_codescan_test.go | var gateWrapperFuncs = map[string]bool{"metricsSkipIfScrape" | SURVIVED ok  	catalogizer	14.564s
+8 | api_contract_gate_codescan_test.go | declCount[exprStr(s.X)] == 0: | SURVIVED ok  	catalogizer	12.846s
+9 | api_contract_gate_codescan_test.go | if !isGrp { // a local group may shadow | NOT-APPLICABLE
+10 | api_contract_gate_groundtruth_test.go | if i < len(chain)-1 { | KILLED --- FAIL: TestADMD1F1S1R5_ComparatorDetectsEachDefectClass (0.00s)
+11 | api_contract_gate_groundtruth_test.go | return adminGateClosureRe.MatchString(h.Name) && pathTail | KILLED --- FAIL: TestADMD1F1S1R5_GateIdentityIsByFunctionNotName (0.00s)
+12 | api_contract_gate_groundtruth_test.go | return adminGateClosureRe.MatchString(h.Name) && pathTail(h. | KILLED --- FAIL: TestADMD1F1S1R5_GateIdentityIsByFunctionNotName (0.00s)
+13 | api_contract_gate_groundtruth_test.go | if sg != rg { | KILLED --- FAIL: TestADMD1F1S1R5_ComparatorDetectsEachDefectClass (0.00s)
+14 | api_contract_gate_groundtruth_test.go | out = append(out, "scanner route is not in the real route ta | KILLED --- FAIL: TestADMD1F1S1R5_ComparatorDetectsEachDefectClass (0.00s)
+15 | api_contract_gate_groundtruth_test.go | out = append(out, "real route is not seen by the scanner: "+ | KILLED --- FAIL: TestADMD1F1S1R5_ComparatorDetectsEachDefectClass (0.00s)
+16 | api_contract_gate_groundtruth_test.go | if !adminTable[k] { | KILLED --- FAIL: TestADMD1F1S1R5_ComparatorDetectsEachDefectClass (0.00s)
+17 | api_contract_gate_groundtruth_test.go | if !realGated[k] { | KILLED --- FAIL: TestADMD1F1S1R5_ComparatorDetectsEachDefectClass (0.00s)
+18 | api_contract_gate_groundtruth_test.go | if n >= 2 { | SURVIVED ok  	catalogizer	15.499s
+1 | api_contract_gate_codescan_test.go | var gateWrapperFuncs = map[string]bool{"metricsSkipIfScrape" | KILLED --- FAIL: TestADMD1F1S1R5_WrapperPinsAreExact (0.00s)
+2 | api_contract_gate_groundtruth_test.go | if n >= 2 { | KILLED --- FAIL: TestADMD1F1S1R5_WrapperPinsAreExact (0.00s)
+
+Summary: 18 mutants + 2 pin mutants. KILLED: 2,3,4,10-17 (+ 2 pin mutants after WrapperPinsAreExact) = 13. BUILD-ERROR: 5 (not a result; unused var). NOT-APPLICABLE: 9.
+SURVIVORS (honest): 1 (mountMethods case disabled: the mount call still falls to the generic unmodelled-method report, same fail-closed outcome, equivalent in outcome), 6 (declCount>1 shadow report: other reports still fire on the probes; NOT proven equivalent, UNCONFIRMED), 8 (x.Factory() vs pkg.Factory() guard; NOT proven equivalent, UNCONFIRMED).

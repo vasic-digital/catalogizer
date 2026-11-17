@@ -1,0 +1,189 @@
+--- FAIL: TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead (0.03s)
+    --- FAIL: TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead/P11_Static_on_a_gated_group (0.00s)
+        api_contract_gate_codescan_r4_test.go:21: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g4.SuoFXD/repo/catalog-api/api_contract_gate_codescan_r4_test.go:21
+            	Error:      	elements differ
+            	            	
+            	            	extra elements in list A:
+            	            	([]interface {}) (len=2) {
+            	            	 (string) (len=29) "GET /files/dl/*filepath gated",
+            	            	 (string) (len=30) "HEAD /files/dl/*filepath gated"
+            	            	}
+            	            	
+            	            	
+            	            	listA:
+            	            	([]string) (len=2) {
+            	            	 (string) (len=29) "GET /files/dl/*filepath gated",
+            	            	 (string) (len=30) "HEAD /files/dl/*filepath gated"
+            	            	}
+            	            	
+            	            	
+            	            	listB:
+            	            	([]string) <nil>
+            	Test:       	TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead/P11_Static_on_a_gated_group
+    --- FAIL: TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead/P13_StaticFile_on_the_engine_is_open (0.01s)
+        api_contract_gate_codescan_r4_test.go:26: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g4.SuoFXD/repo/catalog-api/api_contract_gate_codescan_r4_test.go:26
+            	Error:      	elements differ
+            	            	
+            	            	extra elements in list A:
+            	            	([]interface {}) (len=2) {
+            	            	 (string) (len=21) "GET /favicon.ico open",
+            	            	 (string) (len=22) "HEAD /favicon.ico open"
+            	            	}
+            	            	
+            	            	
+            	            	listA:
+            	            	([]string) (len=2) {
+            	            	 (string) (len=21) "GET /favicon.ico open",
+            	            	 (string) (len=22) "HEAD /favicon.ico open"
+            	            	}
+            	            	
+            	            	
+            	            	listB:
+            	            	([]string) <nil>
+            	Test:       	TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead/P13_StaticFile_on_the_engine_is_open
+    --- FAIL: TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead/P14_StaticFS_and_StaticFileFS (0.00s)
+        api_contract_gate_codescan_r4_test.go:31: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g4.SuoFXD/repo/catalog-api/api_contract_gate_codescan_r4_test.go:31
+            	Error:      	elements differ
+            	            	
+            	            	extra elements in list A:
+            	            	([]interface {}) (len=4) {
+            	            	 (string) (len=21) "GET /a/*filepath open",
+            	            	 (string) (len=22) "HEAD /a/*filepath open",
+            	            	 (string) (len=11) "GET /b open",
+            	            	 (string) (len=12) "HEAD /b open"
+            	            	}
+            	            	
+            	            	
+            	            	listA:
+            	            	([]string) (len=4) {
+            	            	 (string) (len=21) "GET /a/*filepath open",
+            	            	 (string) (len=22) "HEAD /a/*filepath open",
+            	            	 (string) (len=11) "GET /b open",
+            	            	 (string) (len=12) "HEAD /b open"
+            	            	}
+            	            	
+            	            	
+            	            	listB:
+            	            	([]string) <nil>
+            	Test:       	TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead/P14_StaticFS_and_StaticFileFS
+    --- FAIL: TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead/P15_Static_under_an_unresolved_prefix_is_reported,_emits_no_route (0.00s)
+        api_contract_gate_codescan_r4_test.go:35: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g4.SuoFXD/repo/catalog-api/api_contract_gate_codescan_r4_test.go:35
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead/P15_Static_under_an_unresolved_prefix_is_reported,_emits_no_route
+    --- FAIL: TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead/Static_method_value_is_reported (0.00s)
+        api_contract_gate_codescan_r4_test.go:40: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g4.SuoFXD/repo/catalog-api/api_contract_gate_codescan_r4_test.go:40
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead/Static_method_value_is_reported
+--- FAIL: TestADMD1F1S1R4_UnmodelledMethodOnGroupIsReported (0.00s)
+    api_contract_gate_codescan_r4_test.go:47: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g4.SuoFXD/repo/catalog-api/api_contract_gate_codescan_r4_test.go:47
+        	Error:      	Should NOT be empty, but was []
+        	Test:       	TestADMD1F1S1R4_UnmodelledMethodOnGroupIsReported
+--- FAIL: TestADMD1F1S1R4_InertMethodListPinned (0.00s)
+    api_contract_gate_codescan_r4_test.go:58: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g4.SuoFXD/repo/catalog-api/api_contract_gate_codescan_r4_test.go:58
+        	Error:      	elements differ
+        	            	
+        	            	extra elements in list A:
+        	            	([]interface {}) (len=18) {
+        	            	 (string) (len=8) "BasePath",
+        	            	 (string) (len=6) "Delims",
+        	            	 (string) (len=13) "HandleContext",
+        	            	 (string) (len=7) "Handler",
+        	            	 (string) (len=10) "LoadHTMLFS",
+        	            	 (string) (len=13) "LoadHTMLFiles",
+        	            	 (string) (len=12) "LoadHTMLGlob",
+        	            	 (string) (len=8) "NoMethod",
+        	            	 (string) (len=6) "Routes",
+        	            	 (string) (len=3) "Run",
+        	            	 (string) (len=5) "RunFd",
+        	            	 (string) (len=11) "RunListener",
+        	            	 (string) (len=6) "RunTLS",
+        	            	 (string) (len=7) "RunUnix",
+        	            	 (string) (len=9) "ServeHTTP",
+        	            	 (string) (len=10) "SetFuncMap",
+        	            	 (string) (len=15) "SetHTMLTemplate",
+        	            	 (string) (len=17) "SetTrustedProxies"
+        	            	}
+        	            	
+        	            	
+        	            	listA:
+        	            	([]string) (len=19) {
+        	            	 (string) (len=8) "BasePath",
+        	            	 (string) (len=6) "Delims",
+        	            	 (string) (len=13) "HandleContext",
+        	            	 (string) (len=7) "Handler",
+        	            	 (string) (len=10) "LoadHTMLFS",
+        	            	 (string) (len=13) "LoadHTMLFiles",
+        	            	 (string) (len=12) "LoadHTMLGlob",
+        	            	 (string) (len=8) "NoMethod",
+        	            	 (string) (len=7) "NoRoute",
+        	            	 (string) (len=6) "Routes",
+        	            	 (string) (len=3) "Run",
+        	            	 (string) (len=5) "RunFd",
+        	            	 (string) (len=11) "RunListener",
+        	            	 (string) (len=6) "RunTLS",
+        	            	 (string) (len=7) "RunUnix",
+        	            	 (string) (len=9) "ServeHTTP",
+        	            	 (string) (len=10) "SetFuncMap",
+        	            	 (string) (len=15) "SetHTMLTemplate",
+        	            	 (string) (len=17) "SetTrustedProxies"
+        	            	}
+        	            	
+        	            	
+        	            	listB:
+        	            	([]string) (len=1) {
+        	            	 (string) (len=7) "NoRoute"
+        	            	}
+        	Test:       	TestADMD1F1S1R4_InertMethodListPinned
+--- FAIL: TestADMD1F1S1R4_EveryFunctionIsWalked (0.03s)
+    --- FAIL: TestADMD1F1S1R4_EveryFunctionIsWalked/Q1_func-typed_parameter:_group_handed_to_it_escapes (0.00s)
+        api_contract_gate_codescan_r4_test.go:68: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g4.SuoFXD/repo/catalog-api/api_contract_gate_codescan_r4_test.go:68
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R4_EveryFunctionIsWalked/Q1_func-typed_parameter:_group_handed_to_it_escapes
+    --- FAIL: TestADMD1F1S1R4_EveryFunctionIsWalked/Q3_alias_and_named_group_types_resolve_(no_false_report,_correct_prefix) (0.01s)
+        api_contract_gate_codescan_r4_test.go:80: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g4.SuoFXD/repo/catalog-api/api_contract_gate_codescan_r4_test.go:80
+            	Error:      	Should be empty, but was [/home/milosvasic/.cache/claude-tmp/TestADMD1F1S1R4_EveryFunctionIsWalkedQ3_alias_and_named_group_t2556424045/001/fa_routes.go: Mount2: g.GET("/y") receiver does not resolve to a known group /home/milosvasic/.cache/claude-tmp/TestADMD1F1S1R4_EveryFunctionIsWalkedQ3_alias_and_named_group_t2556424045/001/fa_routes.go: Mount: g.GET("/x") receiver does not resolve to a known group /home/milosvasic/.cache/claude-tmp/TestADMD1F1S1R4_EveryFunctionIsWalkedQ3_alias_and_named_group_t2556424045/001/fa_routes.go: Run: group value escapes the scanner (passed to Mount, which is not a scanned function with a group parameter at this position): r.Group("/a") /home/milosvasic/.cache/claude-tmp/TestADMD1F1S1R4_EveryFunctionIsWalkedQ3_alias_and_named_group_t2556424045/001/fa_routes.go: Run: group value escapes the scanner (passed to Mount2, which is not a scanned function with a group parameter at this position): r.Group("/b")]
+            	Test:       	TestADMD1F1S1R4_EveryFunctionIsWalked/Q3_alias_and_named_group_types_resolve_(no_false_report,_correct_prefix)
+    --- FAIL: TestADMD1F1S1R4_EveryFunctionIsWalked/Q3b_aliased_gin_import (0.00s)
+        api_contract_gate_codescan_r4_test.go:85: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g4.SuoFXD/repo/catalog-api/api_contract_gate_codescan_r4_test.go:85
+            	Error:      	Should be empty, but was [/home/milosvasic/.cache/claude-tmp/TestADMD1F1S1R4_EveryFunctionIsWalkedQ3b_aliased_gin_import233719768/001/fa_routes.go: Mount: g.GET("/x") full path is unresolved (group prefix unknown)]
+            	Test:       	TestADMD1F1S1R4_EveryFunctionIsWalked/Q3b_aliased_gin_import
+    --- FAIL: TestADMD1F1S1R4_EveryFunctionIsWalked/unseeded_group-parameter_function:_escape_reported_even_with_no_route_in_it (0.00s)
+        api_contract_gate_codescan_r4_test.go:99: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g4.SuoFXD/repo/catalog-api/api_contract_gate_codescan_r4_test.go:99
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R4_EveryFunctionIsWalked/unseeded_group-parameter_function:_escape_reported_even_with_no_route_in_it
+--- FAIL: TestADMD1F1S1R4_ServerExemptionByImportPath (0.01s)
+    --- FAIL: TestADMD1F1S1R4_ServerExemptionByImportPath/P26_foreign_Server{Handler:_g}_is_reported (0.01s)
+        api_contract_gate_codescan_r4_test.go:138: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g4.SuoFXD/repo/catalog-api/api_contract_gate_codescan_r4_test.go:138
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R4_ServerExemptionByImportPath/P26_foreign_Server{Handler:_g}_is_reported
+    --- FAIL: TestADMD1F1S1R4_ServerExemptionByImportPath/local_type_named_Server_with_a_net/http-looking_spelling_is_not_exempt (0.00s)
+        api_contract_gate_codescan_r4_test.go:146: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g4.SuoFXD/repo/catalog-api/api_contract_gate_codescan_r4_test.go:146
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R4_ServerExemptionByImportPath/local_type_named_Server_with_a_net/http-looking_spelling_is_not_exempt
+--- FAIL: TestADMD1F1S1R4_AllowListIsUnqualifiedAndScannedOnly (0.01s)
+    --- FAIL: TestADMD1F1S1R4_AllowListIsUnqualifiedAndScannedOnly/P27_qualified_foreign_verifyAuthRouteTable_/_engineChain (0.00s)
+        api_contract_gate_codescan_r4_test.go:154: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g4.SuoFXD/repo/catalog-api/api_contract_gate_codescan_r4_test.go:154
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R4_AllowListIsUnqualifiedAndScannedOnly/P27_qualified_foreign_verifyAuthRouteTable_/_engineChain
+    --- FAIL: TestADMD1F1S1R4_AllowListIsUnqualifiedAndScannedOnly/unqualified_call_to_a_name_that_is_NOT_declared_in_the_scanned_set (0.00s)
+        api_contract_gate_codescan_r4_test.go:158: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/s1g4.SuoFXD/repo/catalog-api/api_contract_gate_codescan_r4_test.go:158
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestADMD1F1S1R4_AllowListIsUnqualifiedAndScannedOnly/unqualified_call_to_a_name_that_is_NOT_declared_in_the_scanned_set
+FAIL
+FAIL	catalogizer	0.466s
+FAIL

@@ -3235,6 +3235,14 @@ Explicit `x-catalogizer-admin-gated: true` marker (85 ops) + census golden + rou
 - **ADMD1F1-S1-FU-PERM-GATES (minor):** 21-entry permission-gated exception list (18 in-handler permission + 3 configGate) is marked by exception, not by gate kind; track converting to explicit gate-kind data.
 - **ADMD1F1-S1-FU-NONSPEC-ADMIN (minor):** GET /metrics and /debug/pprof/* are admin-gated in code but not in the spec; not covered by the marker sweep.
 
+## ADMD1F1-S1 round 5 (final budgeted round, structural; PROVISIONAL, GO pending Opus verdict)
+
+- **Round-4 verdict: Opus NO-GO** (important I1: scanner silently missed `&g` method expressions, sub-engines mounted by WrapH/WrapF and non-gin routers; important I2: false "gated" for gate-after-handler, reassigned or shadowed gate, goto past Use, gate by bare name, any call receiving a gate). Round 5 replaces the approach: the REAL engine route table (built from the real `main()` with the test-only build tag `routedump`, gin trees read by reflection) is the ground truth, and the AST scanner is secondary and fails closed (every unmodelled use is REPORTED). Gate identity is by `runtime.FuncForPC` symbol plus defining file, never by source spelling. Evidence: docs/qa/admd1-s1g-round5-20261117/.
+- **ADMD1F1-S1-FU-NONSPEC-ADMIN: now covered** by the ground-truth test (GET /metrics via the pinned wrapper `metricsSkipIfScrape`; /debug/pprof/* with `HELIX_PPROF_ENABLED=true`). Still not in the OpenAPI spec (spec/marker side stays tracked).
+- **Round-4 minors:** m1 (shadowed local/const fallback, `x.Name()` taken as the root engine) FIXED; m2 (closure before Use, factory calling Use, aliased group pointer, `hs...` variadic, defer ordering) FIXED or REPORTED; m3 (Any/Match not expanded) FIXED (nine-method expansion, literal Match list); m4 (265 vs 264) EXPLAINED in NOTES.md.
+- **ADMD1F1-S1-R5-FU-1 (minor, test-instrumentation):** the ground truth runs the real binary with one environment (pprof on, default config); routes registered only under other configuration are seen by the scanner but not by the binary. A scanner route absent from the dump fails the test, so a new config-gated route needs its switch added to `realBinaryRoutes`. Non-gin routers are reported, not modelled (two pinned: Prometheus server and the WebDAV mock).
+
+
 ## NFS3W-FU2 test-gap commit review follow-ups (Opus GO-with-follow-ups, 2026-11-16; PROVISIONAL)
 
 - **NFS3FU2-M1 (minor, test-instrumentation):** factory leg of `TestNFS3FloatPortsFromJSONSettings` sends only float64 `port`; a factory-only mishandling of float64 `mount_port`/`portmap_port` survives (mutant G6). Send all three through `CreateClient`, assert NFSPort/MountPort/PortmapPort. **Status: PROVISIONAL-DONE (CAT-NFS3-FU2, branch ssefr; own mutants killed, GREEN x3).**

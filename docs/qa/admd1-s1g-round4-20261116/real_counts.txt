@@ -1,0 +1,2 @@
+REALCOUNT routes= 265 gated= 77 unresolved= 0
+round3 vs round4 scanner route sets on the real tree: identical (diff empty)

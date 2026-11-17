@@ -27,7 +27,7 @@ var adminRoleText = regexp.MustCompile(`(?i)admin\s+role\s+required|administrato
 
 // selfOrAdminWording marks RequireSelfOrAdmin descriptions ("... is not the caller (and the caller is not an admin)"): they mention
 // administrators legitimately and are not admin-only gates, so the secondary wording signal skips them.
-var selfOrAdminWording = regexp.MustCompile(`(?i)not the caller|\bself\b`)
+var selfOrAdminWording = regexp.MustCompile(`(?i)not the caller`)
 
 // adminGatedOp reports whether the operation object carries the marker with the boolean value true (anything else is not gated).
 func adminGatedOp(op map[string]interface{}) bool {
