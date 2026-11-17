@@ -1,0 +1,365 @@
+
+[7m[1m[36m RUN [39m[22m[27m [36mv0.34.6[39m [90m/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard[39m
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ [32m✓[39m src/services/__tests__/tauri.test.ts [2m ([22m[2m10 tests[22m[2m)[22m[90m 106[2mms[22m[39m
+ [32m✓[39m src/types/__tests__/index.test.ts [2m ([22m[2m22 tests[22m[2m)[22m[33m 400[2mms[22m[39m
+[90mstderr[2m | src/services/__tests__/tauri.extended.test.ts[2m > [22m[2mTauriService (extended)[2m > [22m[2mscanSMBShares[2m > [22m[2mthrows descriptive error on failure[22m[39m
+Failed to scan SMB shares: Error: Host unreachable
+    at [90m/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39msrc/services/__tests__/tauri.extended.test.ts:221:43
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:135:14
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:58:26
+    at runTest [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:663:17[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runFiles [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:834:5[90m)[39m
+    at startTests [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:843:3[90m)[39m
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mvitest[24m/dist/entry.js:103:7
+
+[90mstderr[2m | src/services/__tests__/tauri.extended.test.ts[2m > [22m[2mTauriService (extended)[2m > [22m[2mbrowseSMBShare[2m > [22m[2mthrows descriptive error on failure[22m[39m
+Failed to browse SMB share: Error: Access denied
+    at [90m/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39msrc/services/__tests__/tauri.extended.test.ts:259:43
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:135:14
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:58:26
+    at runTest [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:663:17[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runFiles [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:834:5[90m)[39m
+    at startTests [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:843:3[90m)[39m
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mvitest[24m/dist/entry.js:103:7
+
+[90mstderr[2m | src/services/__tests__/tauri.extended.test.ts[2m > [22m[2mTauriService (extended)[2m > [22m[2mtestFTPConnection[2m > [22m[2mthrows descriptive error on failure[22m[39m
+Failed to test FTP connection: Error: Connection refused
+    at [90m/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39msrc/services/__tests__/tauri.extended.test.ts:300:43
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:135:14
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:58:26
+    at runTest [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:663:17[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runFiles [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:834:5[90m)[39m
+    at startTests [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:843:3[90m)[39m
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mvitest[24m/dist/entry.js:103:7
+
+[90mstderr[2m | src/services/__tests__/tauri.extended.test.ts[2m > [22m[2mTauriService (extended)[2m > [22m[2mtestNFSConnection[2m > [22m[2mthrows descriptive error on failure[22m[39m
+Failed to test NFS connection: Error: Mount failed
+    at [90m/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39msrc/services/__tests__/tauri.extended.test.ts:339:43
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:135:14
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:58:26
+    at runTest [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:663:17[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runFiles [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:834:5[90m)[39m
+    at startTests [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:843:3[90m)[39m
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mvitest[24m/dist/entry.js:103:7
+
+[90mstderr[2m | src/services/__tests__/tauri.extended.test.ts[2m > [22m[2mTauriService (extended)[2m > [22m[2mtestWebDAVConnection[2m > [22m[2mthrows descriptive error on failure[22m[39m
+Failed to test WebDAV connection: Error: SSL error
+    at [90m/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39msrc/services/__tests__/tauri.extended.test.ts:378:43
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:135:14
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:58:26
+    at runTest [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:663:17[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runFiles [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:834:5[90m)[39m
+    at startTests [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:843:3[90m)[39m
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mvitest[24m/dist/entry.js:103:7
+
+[90mstderr[2m | src/services/__tests__/tauri.extended.test.ts[2m > [22m[2mTauriService (extended)[2m > [22m[2mtestLocalConnection[2m > [22m[2mthrows descriptive error on failure[22m[39m
+Failed to test local connection: Error: Permission denied
+    at [90m/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39msrc/services/__tests__/tauri.extended.test.ts:407:43
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:135:14
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:58:26
+    at runTest [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:663:17[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runFiles [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:834:5[90m)[39m
+    at startTests [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:843:3[90m)[39m
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mvitest[24m/dist/entry.js:103:7
+
+[90mstderr[2m | src/services/__tests__/tauri.extended.test.ts[2m > [22m[2mTauriService (extended)[2m > [22m[2mgetDefaultConfigPath[2m > [22m[2mthrows descriptive error on failure[22m[39m
+Failed to get default config path: Error: Home dir not found
+    at [90m/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39msrc/services/__tests__/tauri.extended.test.ts:426:43
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:135:14
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:58:26
+    at runTest [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:663:17[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runFiles [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:834:5[90m)[39m
+    at startTests [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:843:3[90m)[39m
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mvitest[24m/dist/entry.js:103:7
+
+[90mstderr[2m | src/services/__tests__/tauri.extended.test.ts[2m > [22m[2mTauriService (extended)[2m > [22m[2mloadConfiguration[2m > [22m[2mthrows descriptive error on failure[22m[39m
+Failed to load configuration: Error: File not found
+    at [90m/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39msrc/services/__tests__/tauri.extended.test.ts:451:43
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:135:14
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:58:26
+    at runTest [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:663:17[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runFiles [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:834:5[90m)[39m
+    at startTests [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:843:3[90m)[39m
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mvitest[24m/dist/entry.js:103:7
+
+[90mstderr[2m | src/services/__tests__/tauri.extended.test.ts[2m > [22m[2mTauriService (extended)[2m > [22m[2msaveConfiguration[2m > [22m[2mthrows descriptive error on failure[22m[39m
+Failed to save configuration: Error: Disk full
+    at [90m/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39msrc/services/__tests__/tauri.extended.test.ts:473:43
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:135:14
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:58:26
+    at runTest [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:663:17[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runSuite [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:782:15[90m)[39m
+    at runFiles [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:834:5[90m)[39m
+    at startTests [90m(file:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@vitest/runner[24m/dist/index.js:843:3[90m)[39m
+    at [90mfile:///home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mvitest[24m/dist/entry.js:103:7
+
+ [32m✓[39m src/services/__tests__/tauri.extended.test.ts [2m ([22m[2m46 tests[22m[2m)[22m[90m 221[2mms[22m[39m
+[90mstderr[2m | src/contexts/__tests__/WizardContext.extended.test.tsx[2m > [22m[2mWizardContext (extended edge cases)[2m > [22m[2museWizard outside provider[2m > [22m[2mthrows when used outside WizardProvider[22m[39m
+Error: Uncaught [Error: useWizard must be used within a WizardProvider]
+    at reportException (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at beginWork$1 (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/react-dom/cjs/react-dom.development.js:27490:7)
+    at performUnitOfWork (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/react-dom/cjs/react-dom.development.js:26599:12) Error: useWizard must be used within a WizardProvider
+    at Module.useWizard [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39msrc/contexts/WizardContext.tsx:108:11[90m)[39m
+    at [90m/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39msrc/contexts/__tests__/WizardContext.extended.test.tsx:298:26
+    at TestComponent [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@testing-library/react[24m/dist/pure.js:309:27[90m)[39m
+    at renderWithHooks [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom.development.js:15486:18[90m)[39m
+    at mountIndeterminateComponent [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom.development.js:20103:13[90m)[39m
+    at beginWork [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom.development.js:21626:16[90m)[39m
+    at HTMLUnknownElement.callCallback [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom.development.js:4164:14[90m)[39m
+    at HTMLUnknownElement.callTheUserObjectsOperation [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/generated/EventListener.js:26:30[90m)[39m
+    at innerInvokeEventListeners [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/events/EventTarget-impl.js:350:25[90m)[39m
+    at invokeEventListeners [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/events/EventTarget-impl.js:286:3[90m)[39m
+Error: Uncaught [Error: useWizard must be used within a WizardProvider]
+    at reportException (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at beginWork$1 (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/react-dom/cjs/react-dom.development.js:27490:7)
+    at performUnitOfWork (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/react-dom/cjs/react-dom.development.js:26599:12) Error: useWizard must be used within a WizardProvider
+    at Module.useWizard [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39msrc/contexts/WizardContext.tsx:108:11[90m)[39m
+    at [90m/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39msrc/contexts/__tests__/WizardContext.extended.test.tsx:298:26
+    at TestComponent [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@testing-library/react[24m/dist/pure.js:309:27[90m)[39m
+    at renderWithHooks [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom.development.js:15486:18[90m)[39m
+    at mountIndeterminateComponent [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom.development.js:20103:13[90m)[39m
+    at beginWork [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom.development.js:21626:16[90m)[39m
+    at HTMLUnknownElement.callCallback [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom.development.js:4164:14[90m)[39m
+    at HTMLUnknownElement.callTheUserObjectsOperation [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/generated/EventListener.js:26:30[90m)[39m
+    at innerInvokeEventListeners [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/events/EventTarget-impl.js:350:25[90m)[39m
+    at invokeEventListeners [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/events/EventTarget-impl.js:286:3[90m)[39m
+The above error occurred in the <TestComponent> component:
+
+    at TestComponent (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/@testing-library/react/dist/pure.js:307:5)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+
+ [32m✓[39m src/contexts/__tests__/WizardContext.extended.test.tsx [2m ([22m[2m21 tests[22m[2m)[22m[33m 361[2mms[22m[39m
+[90mstderr[2m | src/contexts/__tests__/ConfigurationContext.extended.test.tsx[2m > [22m[2mConfigurationContext (extended edge cases)[2m > [22m[2museConfiguration outside provider[2m > [22m[2mthrows when used outside ConfigurationProvider[22m[39m
+Error: Uncaught [Error: useConfiguration must be used within a ConfigurationProvider]
+    at reportException (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at beginWork$1 (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/react-dom/cjs/react-dom.development.js:27490:7)
+    at performUnitOfWork (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/react-dom/cjs/react-dom.development.js:26599:12) Error: useConfiguration must be used within a ConfigurationProvider
+    at Module.useConfiguration [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39msrc/contexts/ConfigurationContext.tsx:303:11[90m)[39m
+    at [90m/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39msrc/contexts/__tests__/ConfigurationContext.extended.test.tsx:25:26
+    at TestComponent [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@testing-library/react[24m/dist/pure.js:309:27[90m)[39m
+    at renderWithHooks [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom.development.js:15486:18[90m)[39m
+    at mountIndeterminateComponent [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom.development.js:20103:13[90m)[39m
+    at beginWork [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom.development.js:21626:16[90m)[39m
+    at HTMLUnknownElement.callCallback [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom.development.js:4164:14[90m)[39m
+    at HTMLUnknownElement.callTheUserObjectsOperation [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/generated/EventListener.js:26:30[90m)[39m
+    at innerInvokeEventListeners [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/events/EventTarget-impl.js:350:25[90m)[39m
+    at invokeEventListeners [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/events/EventTarget-impl.js:286:3[90m)[39m
+Error: Uncaught [Error: useConfiguration must be used within a ConfigurationProvider]
+    at reportException (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/helpers/runtime-script-errors.js:66:24)
+    at innerInvokeEventListeners (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:353:9)
+    at invokeEventListeners (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:286:3)
+    at HTMLUnknownElementImpl._dispatch (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:233:9)
+    at HTMLUnknownElementImpl.dispatchEvent (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/events/EventTarget-impl.js:104:17)
+    at HTMLUnknownElement.dispatchEvent (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/jsdom/lib/jsdom/living/generated/EventTarget.js:241:34)
+    at Object.invokeGuardedCallbackDev (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/react-dom/cjs/react-dom.development.js:4213:16)
+    at invokeGuardedCallback (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/react-dom/cjs/react-dom.development.js:4277:31)
+    at beginWork$1 (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/react-dom/cjs/react-dom.development.js:27490:7)
+    at performUnitOfWork (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/react-dom/cjs/react-dom.development.js:26599:12) Error: useConfiguration must be used within a ConfigurationProvider
+    at Module.useConfiguration [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39msrc/contexts/ConfigurationContext.tsx:303:11[90m)[39m
+    at [90m/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39msrc/contexts/__tests__/ConfigurationContext.extended.test.tsx:25:26
+    at TestComponent [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4m@testing-library/react[24m/dist/pure.js:309:27[90m)[39m
+    at renderWithHooks [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom.development.js:15486:18[90m)[39m
+    at mountIndeterminateComponent [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom.development.js:20103:13[90m)[39m
+    at beginWork [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom.development.js:21626:16[90m)[39m
+    at HTMLUnknownElement.callCallback [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mreact-dom[24m/cjs/react-dom.development.js:4164:14[90m)[39m
+    at HTMLUnknownElement.callTheUserObjectsOperation [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/generated/EventListener.js:26:30[90m)[39m
+    at innerInvokeEventListeners [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/events/EventTarget-impl.js:350:25[90m)[39m
+    at invokeEventListeners [90m(/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/events/EventTarget-impl.js:286:3[90m)[39m
+The above error occurred in the <TestComponent> component:
+
+    at TestComponent (/home/milosvasic/.cache/claude-tmp/g1xKeE/c/installer-wizard/node_modules/@testing-library/react/dist/pure.js:307:5)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+
+ [32m✓[39m src/contexts/__tests__/ConfigurationContext.test.tsx [2m ([22m[2m12 tests[22m[2m)[22m[90m 287[2mms[22m[39m
+ [32m✓[39m src/contexts/__tests__/ConfigurationContext.extended.test.tsx [2m ([22m[2m35 tests[22m[2m)[22m[33m 309[2mms[22m[39m
+[90mstderr[2m | src/components/__tests__/NetworkScanStep.test.tsx[2m > [22m[2mNetworkScanStep[2m > [22m[2mrenders network scan heading[22m[39m
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstderr[2m | src/components/__tests__/ConfigurationManagementStep.test.tsx[2m > [22m[2mConfigurationManagementStep[2m > [22m[2mrenders configuration management heading[22m[39m
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ [32m✓[39m src/components/__tests__/NetworkScanStep.test.tsx [2m ([22m[2m23 tests[22m[2m)[22m[33m 1972[2mms[22m[39m
+[90mstderr[2m | src/components/__tests__/FTPConfigurationStep.test.tsx[2m > [22m[2mFTPConfigurationStep[2m > [22m[2mrenders without crashing[22m[39m
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstderr[2m | src/components/__tests__/SMBConfigurationStep.test.tsx[2m > [22m[2mSMBConfigurationStep[2m > [22m[2mrenders SMB configuration form[22m[39m
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstderr[2m | src/components/__tests__/NFSConfigurationStep.test.tsx[2m > [22m[2mNFSConfigurationStep[2m > [22m[2mrenders NFS configuration form[22m[39m
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstderr[2m | src/components/__tests__/SummaryStep.test.tsx[2m > [22m[2mSummaryStep[2m > [22m[2mrenders setup complete heading[22m[39m
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ [32m✓[39m src/components/__tests__/SummaryStep.test.tsx [2m ([22m[2m18 tests[22m[2m)[22m[33m 1995[2mms[22m[39m
+[90mstderr[2m | src/components/__tests__/WebDAVConfigurationStep.test.tsx[2m > [22m[2mWebDAVConfigurationStep[2m > [22m[2mrenders WebDAV configuration form[22m[39m
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ [32m✓[39m src/components/__tests__/ConfigurationManagementStep.test.tsx [2m ([22m[2m21 tests[22m[2m)[22m[33m 3665[2mms[22m[39m
+[90mstderr[2m | src/components/__tests__/LocalConfigurationStep.test.tsx[2m > [22m[2mLocalConfigurationStep[2m > [22m[2mrenders local configuration form[22m[39m
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+[90mstderr[2m | src/components/__tests__/ProtocolSelectionStep.test.tsx[2m > [22m[2mProtocolSelectionStep[2m > [22m[2mrenders the protocol selection heading[22m[39m
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ [32m✓[39m src/components/__tests__/ProtocolSelectionStep.test.tsx [2m ([22m[2m22 tests[22m[2m)[22m[33m 3537[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/FTPConfigurationStep.test.tsx [2m ([22m[2m21 tests[22m[2m)[22m[33m 3380[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/SMBConfigurationStep.test.tsx [2m ([22m[2m20 tests[22m[2m)[22m[33m 3588[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/NFSConfigurationStep.test.tsx [2m ([22m[2m19 tests[22m[2m)[22m[33m 5574[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/LocalConfigurationStep.test.tsx [2m ([22m[2m17 tests[22m[2m)[22m[33m 5315[2mms[22m[39m
+ [33m❯[39m src/components/__tests__/SplashScreen.test.tsx [2m ([22m[2m13 tests[22m [2m|[22m [31m13 failed[39m[2m)[22m[90m 104[2mms[22m[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the default title[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders a custom title when provided[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the default subtitle[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders a custom subtitle when provided[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the footer text[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the version number[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the app icon image[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the loading spinner[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mfirst launch (5s minimum)[2m > [22mdoes not call onComplete before 5 seconds[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mfirst launch (5s minimum)[2m > [22mcalls onComplete after 5 seconds[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mfirst launch (5s minimum)[2m > [22msets the localStorage flag[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mregular launch (2.5s minimum)[2m > [22mdoes not call onComplete before 2.5 seconds[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mregular launch (2.5s minimum)[2m > [22mcalls onComplete after 2.5 seconds[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+(node:2400570) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [32m✓[39m src/utils/__tests__/cn.test.ts [2m ([22m[2m24 tests[22m[2m)[22m[90m 174[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/WebDAVConfigurationStep.test.tsx [2m ([22m[2m20 tests[22m[2m)[22m[33m 6207[2mms[22m[39m
+ [32m✓[39m src/components/ui/__tests__/Card.test.tsx [2m ([22m[2m22 tests[22m[2m)[22m[33m 449[2mms[22m[39m
+[90mstderr[2m | src/components/__tests__/WelcomeStep.test.tsx[2m > [22m[2mWelcomeStep[2m > [22m[2mrenders welcome message[22m[39m
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ [32m✓[39m src/components/__tests__/WelcomeStep.test.tsx [2m ([22m[2m9 tests[22m[2m)[22m[33m 561[2mms[22m[39m
+ [32m✓[39m src/__tests__/App.test.tsx [2m ([22m[2m6 tests[22m[2m)[22m[33m 1229[2mms[22m[39m
+[90mstderr[2m | src/__tests__/App.test.tsx[2m > [22m[2mApp[2m > [22m[2mrenders the wizard header title[22m[39m
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ [32m✓[39m src/components/ui/__tests__/Input.test.tsx [2m ([22m[2m13 tests[22m[2m)[22m[33m 1005[2mms[22m[39m
+ [32m✓[39m src/contexts/__tests__/WizardContext.test.tsx [2m ([22m[2m8 tests[22m[2m)[22m[33m 627[2mms[22m[39m
+ [32m✓[39m src/components/ui/__tests__/Button.test.tsx [2m ([22m[2m14 tests[22m[2m)[22m[33m 1090[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/cn.test.ts [2m ([22m[2m11 tests[22m[2m)[22m[90m 27[2mms[22m[39m
+[90mstderr[2m | src/components/layout/__tests__/WizardLayout.test.tsx[2m > [22m[2mWizardLayout[2m > [22m[2mrenders the wizard header[22m[39m
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ [32m✓[39m src/components/layout/__tests__/WizardLayout.test.tsx [2m ([22m[2m10 tests[22m[2m)[22m[33m 337[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯[1m[7m Failed Tests 13 [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the default title
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders a custom title when provided
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the default subtitle
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders a custom subtitle when provided
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the footer text
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the version number
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the app icon image
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the loading spinner
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'clear')[39m
+[36m [2m❯[22m src/components/__tests__/SplashScreen.test.tsx:[2m13:18[22m[39m
+    [90m 11| [39m    vi.useFakeTimers()
+    [90m 12| [39m    onComplete = vi.fn()
+    [90m 13| [39m    localStorage.clear()
+    [90m   | [39m                 [31m^[39m
+    [90m 14| [39m  })
+    [90m 15| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯[22m[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mfirst launch (5s minimum)[2m > [22mdoes not call onComplete before 5 seconds
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mfirst launch (5s minimum)[2m > [22mcalls onComplete after 5 seconds
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mfirst launch (5s minimum)[2m > [22msets the localStorage flag
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mregular launch (2.5s minimum)[2m > [22mdoes not call onComplete before 2.5 seconds
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mregular launch (2.5s minimum)[2m > [22mcalls onComplete after 2.5 seconds
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'clear')[39m
+[36m [2m❯[22m src/components/__tests__/SplashScreen.test.tsx:[2m13:18[22m[39m
+    [90m 11| [39m    vi.useFakeTimers()
+    [90m 12| [39m    onComplete = vi.fn()
+    [90m 13| [39m    localStorage.clear()
+    [90m   | [39m                 [31m^[39m
+    [90m 14| [39m  })
+    [90m 15| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m24 passed[39m[22m[90m (25)[39m
+[2m      Tests [22m [1m[31m13 failed[39m[22m[2m | [22m[1m[32m444 passed[39m[22m[90m (457)[39m
+[2m   Start at [22m 09:48:59
+[2m   Duration [22m 19.45s[2m (transform 8.83s, setup 26.29s, collect 34.80s, tests 42.52s, environment 54.28s, prepare 21.52s)[22m
+

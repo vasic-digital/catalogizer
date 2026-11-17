@@ -1,0 +1,2 @@
+ok  	catalogizer/internal/errleak	0.688s
+ok  	catalogizer/internal/nilslice_guard	0.513s

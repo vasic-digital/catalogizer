@@ -1,0 +1,76 @@
+
+[7m[1m[36m RUN [39m[22m[27m [36mv0.34.6[39m [90m/home/milosvasic/.cache/claude-tmp/g1xKeE/base/installer-wizard[39m
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+(node:2467794) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ [33m❯[39m src/components/__tests__/SplashScreen.test.tsx [2m ([22m[2m13 tests[22m [2m|[22m [31m13 failed[39m[2m)[22m[90m 32[2mms[22m[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the default title[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders a custom title when provided[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the default subtitle[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders a custom subtitle when provided[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the footer text[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the version number[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the app icon image[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the loading spinner[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mfirst launch (5s minimum)[2m > [22mdoes not call onComplete before 5 seconds[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mfirst launch (5s minimum)[2m > [22mcalls onComplete after 5 seconds[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mfirst launch (5s minimum)[2m > [22msets the localStorage flag[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mregular launch (2.5s minimum)[2m > [22mdoes not call onComplete before 2.5 seconds[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+[31m   [33m❯[31m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mregular launch (2.5s minimum)[2m > [22mcalls onComplete after 2.5 seconds[39m
+[31m     → Cannot read properties of undefined (reading 'clear')[39m
+
+[31m⎯⎯⎯⎯⎯⎯[1m[7m Failed Tests 13 [27m[22m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the default title
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders a custom title when provided
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the default subtitle
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders a custom subtitle when provided
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the footer text
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the version number
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the app icon image
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mrenders the loading spinner
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'clear')[39m
+[36m [2m❯[22m src/components/__tests__/SplashScreen.test.tsx:[2m13:18[22m[39m
+    [90m 11| [39m    vi.useFakeTimers()
+    [90m 12| [39m    onComplete = vi.fn()
+    [90m 13| [39m    localStorage.clear()
+    [90m   | [39m                 [31m^[39m
+    [90m 14| [39m  })
+    [90m 15| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯[22m[39m
+
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mfirst launch (5s minimum)[2m > [22mdoes not call onComplete before 5 seconds
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mfirst launch (5s minimum)[2m > [22mcalls onComplete after 5 seconds
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mfirst launch (5s minimum)[2m > [22msets the localStorage flag
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mregular launch (2.5s minimum)[2m > [22mdoes not call onComplete before 2.5 seconds
+[31m[1m[7m FAIL [27m[22m[39m src/components/__tests__/SplashScreen.test.tsx[2m > [22mSplashScreen[2m > [22mregular launch (2.5s minimum)[2m > [22mcalls onComplete after 2.5 seconds
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'clear')[39m
+[36m [2m❯[22m src/components/__tests__/SplashScreen.test.tsx:[2m13:18[22m[39m
+    [90m 11| [39m    vi.useFakeTimers()
+    [90m 12| [39m    onComplete = vi.fn()
+    [90m 13| [39m    localStorage.clear()
+    [90m   | [39m                 [31m^[39m
+    [90m 14| [39m  })
+    [90m 15| [39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯[22m[39m
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m13 failed[39m[22m[90m (13)[39m
+[2m   Start at [22m 09:50:02
+[2m   Duration [22m 4.74s[2m (transform 241ms, setup 375ms, collect 126ms, tests 32ms, environment 1.01s, prepare 349ms)[22m
+

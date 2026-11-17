@@ -1,0 +1,19 @@
+G1 retest, host-class unit/integration evidence (NOT live per-product evidence)
+Candidate: main 433cedd942005fac4063b0465e4983a0df694ebc (clone branch g1retest). Base for classification: tag v2.4.3 (worktree, same harness).
+Host: go1.26.8, node v26.8.1, load 9..52 (shared host); submodules symlinked from the working checkout (not committed). Live-tagged tests excluded by default tags. Only one run of go test completed; two earlier launches were killed by me (duplicate launch / output clobber), not counted.
+Commands (cwd catalog-api; GOMAXPROCS=4 GOFLAGS=-buildvcs=false nice -n 10):
+ go test -p 2 ./... -count=1 -timeout 25m  -> exit=1 duration 2296s : 59 pkgs ok 55, FAIL 4, 5 no test files (go_test.txt, go_test_per_package.txt)
+ go vet ./...                              -> exit=0 17s, no output
+ gofmt -l .                                -> 46 files listed (v2.4.3 base: 42) (gofmt.txt)  NOTE: advisory, 4 more than base
+Web (npm ci --prefer-offline, then npx tsc --noEmit, CI=1 npx vitest run):
+ catalog-web         npm ci 0; tsc 0 (41s); vitest exit 1: 186/187 files, 2897 passed, 1 failed, 1 todo (RegisterForm 'username too short' 5000ms timeout; isolated rerun 23/23 pass => load flake)
+ catalogizer-api-client npm ci 0; tsc 0; vitest 0: 10 files, 310 passed
+ catalogizer-desktop npm ci 0; tsc 0; vitest exit 1: 26/27 files, 427 passed, 13 failed (SplashScreen.test.tsx: localStorage undefined) -> PRE-EXISTING: identical 13 fail on v2.4.3
+ installer-wizard    npm ci 0; tsc 0; vitest exit 1: 24/25 files, 444 passed, 13 failed (SplashScreen.test.tsx) -> PRE-EXISTING: identical 13 fail on v2.4.3
+Go failures (all reproduce deterministically in isolation on HEAD; all PASS on v2.4.3 => REGRESSIONS vs v2.4.3, not fixed, filed):
+ 1 catalogizer (root): TestMainPackageAuthSurfaceClosed, TestAuthSurfaceGuard_Mutants (baseline must be clean), TestAuthSurfaceGuard_GoldenFalse (6 subtests): scanner flags main.go:1466 engine value "router" used outside sanctioned receiver, and main_routechains.go:44 gin.Engine mention. Likely from 98cd6f3bc (s1g round 5 scanner) vs main.go.
+ 2 catalogizer/handlers: TestMediaHandlerTestSuite TestUpdateFavoriteStatus_{EmptyBody,InvalidID,InvalidJSON,MissingFavoriteField}: expect 400, get 401 (commit 3b1bae3c1 "401 before body parse" changed handler; test not updated; tests unauthenticated).
+ 3 catalogizer/internal/errleak: TestNoErrorTextReachesAResponse: stale allow-list entry handlers/user_handler.go|CreateUser|=http.Error(w, msg, http.StatusBadRequest).
+ 4 catalogizer/internal/nilslice_guard: TestNoUnnormalisedNilListReturns: internal/services/smb_probe.go:148 var shares unnormalised in ProbeVettedIPsWithIdentities (nil slice -> JSON null), from CPN-1 follow-ups.
+Slow packages (not failures): catalogizer 1040s, handlers 953s, pathguard 233s.
+Caveats: load-sensitive timeouts possible; no live per-product run; PG live runs not attempted (no DB leg requested here; disk 90G free, 95% used, guard not evaluated).
