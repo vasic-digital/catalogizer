@@ -168,14 +168,23 @@ describe('MediaService', () => {
       expect(result).toEqual({ is_favorite: true });
     });
 
-    it('toggles favorite status via media endpoint', async () => {
-      const toggleResult = { is_favorite: true };
-      mockHttp.put.mockResolvedValueOnce(toggleResult);
+    it('sets favorite status via media endpoint (server answers {success,message})', async () => {
+      const serverReply = { success: true, message: 'Favorite status updated successfully' };
+      mockHttp.put.mockResolvedValueOnce(serverReply);
 
-      const result = await mediaService.toggleFavorite(42, true);
+      const result = await mediaService.setFavorite(42, true);
 
       expect(mockHttp.put).toHaveBeenCalledWith('/media/42/favorite', { favorite: true });
-      expect(result).toEqual(toggleResult);
+      expect(result).toEqual(serverReply);
+    });
+
+    it('deprecated toggleFavorite alias still sends the same request', async () => {
+      mockHttp.put.mockResolvedValueOnce({ success: true, message: 'ok' });
+
+      const result = await mediaService.toggleFavorite(42, false);
+
+      expect(mockHttp.put).toHaveBeenCalledWith('/media/42/favorite', { favorite: false });
+      expect(result).toEqual({ success: true, message: 'ok' });
     });
   });
 

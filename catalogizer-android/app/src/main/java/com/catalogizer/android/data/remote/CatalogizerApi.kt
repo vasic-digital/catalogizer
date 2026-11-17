@@ -129,12 +129,8 @@ interface CatalogizerApi {
     suspend fun getDownloadUrl(@Path("mediaId") mediaId: Long): Response<Map<String, String>>
 
     // User preferences
-    @GET("user/favorites")
-    suspend fun getFavorites(
-        @Query("limit") limit: Int = 20,
-        @Query("offset") offset: Int = 0
-    ): Response<MediaSearchResponse>
-
+    // AFAV-2: the Retrofit method for GET user/favorites was removed: the server has no such route
+    // (favorites are listed by GET /favorites with a different shape) and nothing called it.
     @GET("user/watchlist")
     suspend fun getWatchlist(
         @Query("limit") limit: Int = 20,

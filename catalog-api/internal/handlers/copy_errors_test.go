@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -13,7 +14,9 @@ import (
 	"catalogizer/filesystem"
 	"catalogizer/internal/config"
 	"catalogizer/internal/services"
+	"catalogizer/middleware"
 
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
@@ -91,4 +94,51 @@ func TestCopyErrorStatus_UnrelatedErrorNotMapped(t *testing.T) {
 	require.False(t, ok)
 	_, _, ok = copyErrorStatus(nil)
 	require.False(t, ok)
+}
+
+// ECOPY-4: the two 403 bodies on the copy routes must be told apart through the REAL admin gate (middleware.RequireAdmin with a live
+// admin check) in front of the real handlers: a non-admin gets {"success":false,"error":"Admin role required"} and the copy is never
+// attempted; an admin whose destination is read-only gets {"error":"Destination is read-only"}.
+func TestRoutedCopy_AdminGate403VersusReadOnly403(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	build := func(t *testing.T, isAdmin bool, shareErr error) *gin.Engine {
+		h, _ := copyErrRouter(t, shareErr)
+		jwt := middleware.NewJWTMiddleware("unit-test-secret-not-used-for-signing")
+		jwt.SetAdminChecker(func(context.Context, int) (bool, error) { return isAdmin, nil })
+		r := gin.New()
+		r.Use(func(c *gin.Context) { // stands in for RequireAuth only: sets the claims it would set
+			c.Set("user_id", 7)
+			c.Set("role_id", 2)
+			c.Next()
+		})
+		api := r.Group("/api/v1")
+		gate := jwt.RequireAdmin()
+		api.POST("/copy/local", gate, h.CopyToLocal)
+		api.POST("/copy/upload", gate, h.CopyFromLocal)
+		return r
+	}
+	readOnly := fmt.Errorf("%w: secret/path.txt", filesystem.ErrCopyDestReadOnly)
+	do := func(r *gin.Engine, route string) *httptest.ResponseRecorder {
+		if route == "upload" {
+			return uploadErrCase(r, "nas:a/b.txt")
+		}
+		return postJSON(r, "/api/v1/copy/local", map[string]any{"source_path": "nas:a/b.txt", "destination_path": "out/b.txt"})
+	}
+	for _, route := range []string{"local", "upload"} {
+		t.Run(route+"/non-admin", func(t *testing.T) {
+			r := build(t, false, readOnly)
+			w := do(r, route)
+			require.Equal(t, http.StatusForbidden, w.Code, w.Body.String())
+			require.Contains(t, w.Body.String(), "Admin role required")
+			require.NotContains(t, w.Body.String(), "Destination is read-only")
+		})
+		t.Run(route+"/admin-read-only", func(t *testing.T) {
+			r := build(t, true, readOnly)
+			w := do(r, route)
+			require.Equal(t, http.StatusForbidden, w.Code, w.Body.String())
+			require.Contains(t, w.Body.String(), "Destination is read-only")
+			require.NotContains(t, w.Body.String(), "Admin role required")
+			require.NotContains(t, w.Body.String(), "secret/path.txt")
+		})
+	}
 }

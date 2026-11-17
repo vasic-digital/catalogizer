@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"testing"
@@ -750,6 +751,8 @@ func TestErrorReportingHandler_UpdateStatus_ErrorMapping(t *testing.T) {
 					h.UpdateCrashStatus(rr, req)
 				}
 				assert.Equal(t, tc.want, rr.Code)
+				// F3T-1: the body is exactly the fixed status text for the returned code (pins 404 as well as 500).
+				assert.Equal(t, http.StatusText(tc.want)+"\n", rr.Body.String())
 				// The client body is the fixed status text, never the error text.
 				assert.NotContains(t, rr.Body.String(), "database is locked")
 				assert.NotContains(t, rr.Body.String(), "disk I/O")

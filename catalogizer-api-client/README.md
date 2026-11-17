@@ -163,9 +163,10 @@ await client.media.markAsWatched(123);
 ### Favorites and Recommendations
 
 ```typescript
-// Toggle favorite
-const result = await client.media.toggleFavorite(123);
-console.log('Is favorite:', result.is_favorite);
+// Set the favorite flag (per user; the server answers {success, message}).
+// `toggleFavorite` is a deprecated alias of `setFavorite`.
+const result = await client.media.setFavorite(123, true);
+console.log('Saved:', result.success);
 
 // Get favorites
 const favorites = await client.media.getFavorites();
