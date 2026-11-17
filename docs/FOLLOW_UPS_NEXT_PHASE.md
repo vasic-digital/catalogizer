@@ -3371,3 +3371,13 @@ HAUTHZ-F2 fixed: PUT /media/:id/favorite and GET /media/:id use the new `user_fa
 - F3T-2 (minor, test): service log assertion captures only std `log`, has no positive control, and never asserts report id absent (mutants B4/B5 survive); add needle + report-id assertion or narrow the comment.
 - F3T-3 (nit): exp boundary `!Before` vs `After` unpinned (equivalent at ns resolution).
 - F3T-4 (nit, flake risk): SEC-WS token test has only 150 ms margin before expiry; use ~1 s lifetime and sleep past it.
+
+### s1g round-5 review follow-ups (Opus GO-with-follow-ups; PROVISIONAL, 2026-11-17; supersedes "I2 FIXED" overclaim)
+- S1G5-F3 (minor-class but HIGH PRIORITY, test): real route set (265) is never compared with the ROUTE_AUTHZ_TABLE route set; a new route absent from the table passes. Add set-equality check (both directions).
+- S1G5-F1 (test): "gate after handler" closed only when the gate is the LAST handler; `r.GET("/x", h, RequireAdmin(), h)` pinned as gated though first handler runs before the gate. Report non-middleware route-level handler before the gate. I2 status is PARTIAL, not FIXED.
+- S1G5-F2 (test): gate identity uses regex + last two path elements; compare full File path to reject same-named decoy in another middleware/auth.go.
+- S1G5-F4 (test): survivor #8 killable; add shadowed-import-alias probe (local struct `mk` shadowing import alias `mk`).
+- S1G5-F5 (process): evidence files thin (no command line in green_*.txt; vet_live.txt empty without header).
+- S1G5-F6 (nit): /metrics wrapper pin uses strings.Contains on name only.
+- R5-FU-1: routes registered only under other env/config seen by scanner only.
+- Live sweep (TestLiveAPIContract) backstop for F1/decoy UNCONFIRMED.
