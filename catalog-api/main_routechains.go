@@ -1,3 +1,11 @@
+//go:build routedump
+
+// Route-table dump support (ADMD1F1-S1 round 5, G1FIXFU3 structural redesign). This file is compiled ONLY under the test-only build tag
+// routedump, so the shipped (default-tag) binary contains no engine-walking code at all: no routeChainFuncNames, no funcIdentity and
+// no routeChain/routeHandler types. TestShippedBinaryHasNoRouteDumpCode proves that on a real `go build` of the default tag.
+// main_routechains_test.go carries a byte-identical test-build copy (go test never uses -tags routedump); TestRouteChainsLockstep
+// refuses any difference between the two.
+
 package main
 
 import (

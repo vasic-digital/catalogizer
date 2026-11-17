@@ -1,0 +1,276 @@
+=== RUN   TestMainPackageAuthSurfaceClosed
+--- PASS: TestMainPackageAuthSurfaceClosed (0.03s)
+=== RUN   TestAuthSurfaceGuard_Mutants
+=== RUN   TestAuthSurfaceGuard_Mutants/RV1_method_value_router_Use_before_group
+=== RUN   TestAuthSurfaceGuard_Mutants/RV2_method_value_router_Group_auth_route
+=== RUN   TestAuthSurfaceGuard_Mutants/RV3_unclean_path_double_slash
+=== RUN   TestAuthSurfaceGuard_Mutants/RV3b_unclean_path_double_slash_in_main
+=== RUN   TestAuthSurfaceGuard_Mutants/RV4_relative_dot_path_under_api
+=== RUN   TestAuthSurfaceGuard_Mutants/RV5_g_Handlers_append_in_registerAuthRoutes
+=== RUN   TestAuthSurfaceGuard_Mutants/RV6_engine_Handlers_append_in_applyTrustedProxies
+=== RUN   TestAuthSurfaceGuard_Mutants/RV6b_engine_Handlers_write_in_registerWebSocketRoute
+=== RUN   TestAuthSurfaceGuard_Mutants/RV7_unfoldable_PATCH_on_api
+=== RUN   TestAuthSurfaceGuard_Mutants/RV8_method_value_Use_in_ws_helper
+=== RUN   TestAuthSurfaceGuard_Mutants/RV9_RouterGroup_field_Use_in_other_file_value
+=== RUN   TestAuthSurfaceGuard_Mutants/N1_unfoldable_OPTIONS
+=== RUN   TestAuthSurfaceGuard_Mutants/N2_unfoldable_HEAD
+=== RUN   TestAuthSurfaceGuard_Mutants/N3_Handle_unclean_auth_path
+=== RUN   TestAuthSurfaceGuard_Mutants/N4_Match_auth_path
+=== RUN   TestAuthSurfaceGuard_Mutants/N5_StaticFile_auth_path
+=== RUN   TestAuthSurfaceGuard_Mutants/N6_other_file_func_taking_engine
+=== RUN   TestAuthSurfaceGuard_Mutants/N7_deref_copy_of_engine
+=== RUN   TestAuthSurfaceGuard_Mutants/N8_RouterGroup_embedded_Use_call
+=== RUN   TestAuthSurfaceGuard_Mutants/N9_closure_wraps_router_Use
+=== RUN   TestAuthSurfaceGuard_Mutants/N10_router_alias
+=== RUN   TestAuthSurfaceGuard_Mutants/N11_second_group_same_prefix
+=== RUN   TestAuthSurfaceGuard_Mutants/N12_relative_auth_group_under_api
+=== RUN   TestAuthSurfaceGuard_Mutants/N13_prefix_split_across_nested_groups
+=== RUN   TestAuthSurfaceGuard_Mutants/N14_Use_on_g_inside_registerAuthRoutes
+=== RUN   TestAuthSurfaceGuard_Mutants/N15_Use_on_authGroup
+=== RUN   TestAuthSurfaceGuard_Mutants/N16_authGroup_var_form
+=== RUN   TestAuthSurfaceGuard_Mutants/N17_package_level_authGroup
+=== RUN   TestAuthSurfaceGuard_Mutants/G1_other_handout_after_first_verify
+=== RUN   TestAuthSurfaceGuard_Mutants/G2_registration_inside_routeDumpHook
+=== RUN   TestAuthSurfaceGuard_Mutants/M2b_nonauth_registration_inside_routeDumpHook
+=== RUN   TestAuthSurfaceGuard_Mutants/M7_second_routeDumpHook_call_after_alt_svc
+=== RUN   TestAuthSurfaceGuard_Mutants/FU1_Use_inside_routeDumpHook
+=== RUN   TestAuthSurfaceGuard_Mutants/FU2_registration_inside_routeChainFuncNames
+=== RUN   TestAuthSurfaceGuard_Mutants/FU3_hook_call_from_other_function
+=== RUN   TestAuthSurfaceGuard_Mutants/FU4_Group_inside_routeDumpHook
+=== RUN   TestAuthSurfaceGuard_Mutants/F5_capture_directly_under_api_v1
+=== RUN   TestAuthSurfaceGuard_Mutants/R1_NoRoute_in_buildRouter
+=== RUN   TestAuthSurfaceGuard_Mutants/R1b_NoMethod_in_main
+=== RUN   TestAuthSurfaceGuard_Mutants/R8_HandleContext_wrapper
+=== RUN   TestAuthSurfaceGuard_Mutants/R8b_server_Handler_wrapped
+=== RUN   TestAuthSurfaceGuard_Mutants/R8c_engine_dot_Handler
+=== RUN   TestAuthSurfaceGuard_Mutants/R2_same_name_middleware_order_swapped
+=== RUN   TestAuthSurfaceGuard_Mutants/F1a1_capture_v_get
+=== RUN   TestAuthSurfaceGuard_Mutants/F1a2_capture_v_put_login
+=== RUN   TestAuthSurfaceGuard_Mutants/F1a3_root_capture_a
+=== RUN   TestAuthSurfaceGuard_Mutants/F1a4_partial_param_segment
+=== RUN   TestAuthSurfaceGuard_Mutants/F1a5_group_api_capture
+=== RUN   TestAuthSurfaceGuard_Mutants/F1a6_two_captures_delete
+=== RUN   TestAuthSurfaceGuard_Mutants/F1a1b_capture_in_main_go
+=== RUN   TestAuthSurfaceGuard_Mutants/F1b_second_Use_in_main
+=== RUN   TestAuthSurfaceGuard_Mutants/F1b2_main_Use_replaces_altsvc
+=== RUN   TestAuthSurfaceGuard_Mutants/F1b3_main_Use_altsvc_plus_extra_arg
+=== RUN   TestAuthSurfaceGuard_Mutants/F1b4_main_Use_altsvc_twice
+=== RUN   TestAuthSurfaceGuard_Mutants/F1b5_main_Use_spread
+=== RUN   TestAuthSurfaceGuard_Mutants/M1_Any_capture
+=== RUN   TestAuthSurfaceGuard_Mutants/M2_Handle_custom_method_partial
+=== RUN   TestAuthSurfaceGuard_Mutants/M3_catch_all_under_api
+=== RUN   TestAuthSurfaceGuard_Mutants/M4_catch_all_root
+=== RUN   TestAuthSurfaceGuard_Mutants/M5_param_prefix_group_chain
+=== RUN   TestAuthSurfaceGuard_Mutants/M6_trailing_slash_auth
+=== RUN   TestAuthSurfaceGuard_Mutants/M7_capture_under_auth_static
+=== RUN   TestAuthSurfaceGuard_Mutants/M8_upper_case_partial
+=== RUN   TestAuthSurfaceGuard_Mutants/M9_unfoldable_group_prefix_then_route
+=== RUN   TestAuthSurfaceGuard_Mutants/RA_flag_UseEscapedPath_in_main
+=== RUN   TestAuthSurfaceGuard_Mutants/RA2_flag_UseEscapedPath_in_buildRouter
+=== RUN   TestAuthSurfaceGuard_Mutants/X1_empty_param_shift_engine_route_in_buildRouter
+=== RUN   TestAuthSurfaceGuard_Mutants/X2_group_param_any_catchall_in_buildRouter
+=== RUN   TestAuthSurfaceGuard_Mutants/X3_param_between_api_v1_in_main
+=== RUN   TestAuthSurfaceGuard_Mutants/X4_param_between_v1_auth_in_buildRouter
+=== RUN   TestAuthSurfaceGuard_Mutants/X5_two_leading_params_in_buildRouter
+=== RUN   TestAuthSurfaceGuard_Mutants/RB_both_verify_calls_deleted
+=== RUN   TestAuthSurfaceGuard_Mutants/RB1_first_verify_deleted
+=== RUN   TestAuthSurfaceGuard_Mutants/RB2_second_verify_deleted
+=== RUN   TestAuthSurfaceGuard_Mutants/RC_first_Fatal_to_Warn
+=== RUN   TestAuthSurfaceGuard_Mutants/RC2_second_Fatal_to_Warn
+=== RUN   TestAuthSurfaceGuard_Mutants/RD_registration_after_first_verify
+=== RUN   TestAuthSurfaceGuard_Mutants/RE_verify_error_ignored
+=== RUN   TestAuthSurfaceGuard_Mutants/M10_flag_RedirectFixedPath_assignment
+=== RUN   TestAuthSurfaceGuard_Mutants/M11_flag_RedirectTrailingSlash_off
+=== RUN   TestAuthSurfaceGuard_Mutants/M12_flag_HandleMethodNotAllowed_in_main
+=== RUN   TestAuthSurfaceGuard_Mutants/R6_InputValidation_moved_after_group
+=== RUN   TestAuthSurfaceGuard_Mutants/N18_unallowlisted_engine_Use
+=== RUN   TestAuthSurfaceGuard_Mutants/N19_hook_slice_spread_into_engine_Use
+=== RUN   TestAuthSurfaceGuard_Mutants/N20_auth_route_in_other_file_via_const
+=== RUN   TestAuthSurfaceGuard_Mutants/N21_unfoldable_engine_route_in_helper
+--- PASS: TestAuthSurfaceGuard_Mutants (4.28s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/RV1_method_value_router_Use_before_group (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/RV2_method_value_router_Group_auth_route (0.06s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/RV3_unclean_path_double_slash (0.06s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/RV3b_unclean_path_double_slash_in_main (0.26s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/RV4_relative_dot_path_under_api (0.06s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/RV5_g_Handlers_append_in_registerAuthRoutes (0.07s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/RV6_engine_Handlers_append_in_applyTrustedProxies (0.05s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/RV6b_engine_Handlers_write_in_registerWebSocketRoute (0.06s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/RV7_unfoldable_PATCH_on_api (0.08s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/RV8_method_value_Use_in_ws_helper (0.08s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/RV9_RouterGroup_field_Use_in_other_file_value (0.05s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N1_unfoldable_OPTIONS (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N2_unfoldable_HEAD (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N3_Handle_unclean_auth_path (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N4_Match_auth_path (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N5_StaticFile_auth_path (0.05s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N6_other_file_func_taking_engine (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N7_deref_copy_of_engine (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N8_RouterGroup_embedded_Use_call (0.06s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N9_closure_wraps_router_Use (0.05s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N10_router_alias (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N11_second_group_same_prefix (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N12_relative_auth_group_under_api (0.05s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N13_prefix_split_across_nested_groups (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N14_Use_on_g_inside_registerAuthRoutes (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N15_Use_on_authGroup (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N16_authGroup_var_form (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N17_package_level_authGroup (0.05s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/G1_other_handout_after_first_verify (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/G2_registration_inside_routeDumpHook (0.08s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/M2b_nonauth_registration_inside_routeDumpHook (0.05s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/M7_second_routeDumpHook_call_after_alt_svc (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/FU1_Use_inside_routeDumpHook (0.05s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/FU2_registration_inside_routeChainFuncNames (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/FU3_hook_call_from_other_function (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/FU4_Group_inside_routeDumpHook (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/F5_capture_directly_under_api_v1 (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/R1_NoRoute_in_buildRouter (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/R1b_NoMethod_in_main (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/R8_HandleContext_wrapper (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/R8b_server_Handler_wrapped (0.05s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/R8c_engine_dot_Handler (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/R2_same_name_middleware_order_swapped (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/F1a1_capture_v_get (0.07s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/F1a2_capture_v_put_login (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/F1a3_root_capture_a (0.07s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/F1a4_partial_param_segment (0.11s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/F1a5_group_api_capture (0.08s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/F1a6_two_captures_delete (0.05s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/F1a1b_capture_in_main_go (0.06s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/F1b_second_Use_in_main (0.10s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/F1b2_main_Use_replaces_altsvc (0.05s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/F1b3_main_Use_altsvc_plus_extra_arg (0.09s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/F1b4_main_Use_altsvc_twice (0.06s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/F1b5_main_Use_spread (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/M1_Any_capture (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/M2_Handle_custom_method_partial (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/M3_catch_all_under_api (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/M4_catch_all_root (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/M5_param_prefix_group_chain (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/M6_trailing_slash_auth (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/M7_capture_under_auth_static (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/M8_upper_case_partial (0.09s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/M9_unfoldable_group_prefix_then_route (0.05s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/RA_flag_UseEscapedPath_in_main (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/RA2_flag_UseEscapedPath_in_buildRouter (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/X1_empty_param_shift_engine_route_in_buildRouter (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/X2_group_param_any_catchall_in_buildRouter (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/X3_param_between_api_v1_in_main (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/X4_param_between_v1_auth_in_buildRouter (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/X5_two_leading_params_in_buildRouter (0.05s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/RB_both_verify_calls_deleted (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/RB1_first_verify_deleted (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/RB2_second_verify_deleted (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/RC_first_Fatal_to_Warn (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/RC2_second_Fatal_to_Warn (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/RD_registration_after_first_verify (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/RE_verify_error_ignored (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/M10_flag_RedirectFixedPath_assignment (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/M11_flag_RedirectTrailingSlash_off (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/M12_flag_HandleMethodNotAllowed_in_main (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/R6_InputValidation_moved_after_group (0.04s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N18_unallowlisted_engine_Use (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N19_hook_slice_spread_into_engine_Use (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N20_auth_route_in_other_file_via_const (0.03s)
+    --- PASS: TestAuthSurfaceGuard_Mutants/N21_unfoldable_engine_route_in_helper (0.03s)
+=== RUN   TestAuthSurfaceGuard_GoldenFalse
+=== RUN   TestAuthSurfaceGuard_GoldenFalse/harmless_concat_not_a_route
+=== RUN   TestAuthSurfaceGuard_GoldenFalse/sibling_prefix_authors_is_not_auth
+=== RUN   TestAuthSurfaceGuard_GoldenFalse/capture_below_static_segment_not_auth
+=== RUN   TestAuthSurfaceGuard_GoldenFalse/engine_route_api_v2_capture_not_auth
+=== RUN   TestAuthSurfaceGuard_GoldenFalse/engine_route_api_capture_other_static
+=== RUN   TestAuthSurfaceGuard_GoldenFalse/direct_call_on_non_auth_api_group
+--- PASS: TestAuthSurfaceGuard_GoldenFalse (0.27s)
+    --- PASS: TestAuthSurfaceGuard_GoldenFalse/harmless_concat_not_a_route (0.06s)
+    --- PASS: TestAuthSurfaceGuard_GoldenFalse/sibling_prefix_authors_is_not_auth (0.04s)
+    --- PASS: TestAuthSurfaceGuard_GoldenFalse/capture_below_static_segment_not_auth (0.05s)
+    --- PASS: TestAuthSurfaceGuard_GoldenFalse/engine_route_api_v2_capture_not_auth (0.04s)
+    --- PASS: TestAuthSurfaceGuard_GoldenFalse/engine_route_api_capture_other_static (0.04s)
+    --- PASS: TestAuthSurfaceGuard_GoldenFalse/direct_call_on_non_auth_api_group (0.04s)
+=== RUN   TestRouteHelpersNoAuthOrCaptureFirstSegment
+--- PASS: TestRouteHelpersNoAuthOrCaptureFirstSegment (0.00s)
+=== RUN   TestAuthSurfaceDumpIsolation_RealSourcesPass
+--- PASS: TestAuthSurfaceDumpIsolation_RealSourcesPass (0.01s)
+=== RUN   TestRouteChainsLockstep
+--- PASS: TestRouteChainsLockstep (0.00s)
+=== RUN   TestAuthSurfaceBinary_ShippedBinaryHasNoRouteDumpCode
+--- PASS: TestAuthSurfaceBinary_ShippedBinaryHasNoRouteDumpCode (36.87s)
+=== RUN   TestAuthSurfaceBinary_ReviewerMutantsKilled
+=== RUN   TestAuthSurfaceBinary_ReviewerMutantsKilled/X1_index_assign_via_Interface_len_reached_from_hook
+=== RUN   TestAuthSurfaceBinary_ReviewerMutantsKilled/X2X3_off_hook_walks_engine_and_sets
+=== RUN   TestAuthSurfaceBinary_ReviewerMutantsKilled/X5b_method_expression_of_reflect_Value_Call
+=== RUN   TestAuthSurfaceBinary_ReviewerMutantsKilled/X5c_method_expression_in_package_level_var
+=== RUN   TestAuthSurfaceBinary_ReviewerMutantsKilled/X10_funcIdentity_in_default_file_does_reflect_Set_and_is_called_by_hook
+=== RUN   TestAuthSurfaceBinary_ReviewerMutantsKilled/X9h_rebind_walk_moved_to_default_file
+--- PASS: TestAuthSurfaceBinary_ReviewerMutantsKilled (142.60s)
+    --- PASS: TestAuthSurfaceBinary_ReviewerMutantsKilled/X1_index_assign_via_Interface_len_reached_from_hook (18.52s)
+    --- PASS: TestAuthSurfaceBinary_ReviewerMutantsKilled/X2X3_off_hook_walks_engine_and_sets (27.55s)
+    --- PASS: TestAuthSurfaceBinary_ReviewerMutantsKilled/X5b_method_expression_of_reflect_Value_Call (23.56s)
+    --- PASS: TestAuthSurfaceBinary_ReviewerMutantsKilled/X5c_method_expression_in_package_level_var (25.63s)
+    --- PASS: TestAuthSurfaceBinary_ReviewerMutantsKilled/X10_funcIdentity_in_default_file_does_reflect_Set_and_is_called_by_hook (27.07s)
+    --- PASS: TestAuthSurfaceBinary_ReviewerMutantsKilled/X9h_rebind_walk_moved_to_default_file (20.26s)
+=== RUN   TestAuthSurfaceGuard_DumpIsolationMutants
+=== RUN   TestAuthSurfaceGuard_DumpIsolationMutants/X4_go_linkname_in_default_file
+=== RUN   TestAuthSurfaceGuard_DumpIsolationMutants/O1_build_tag_removed_from_routechains
+=== RUN   TestAuthSurfaceGuard_DumpIsolationMutants/O2_off_hook_body_not_empty
+=== RUN   TestAuthSurfaceGuard_DumpIsolationMutants/O3_init_in_off_file
+=== RUN   TestAuthSurfaceGuard_DumpIsolationMutants/O4_off_file_tag_flipped_to_routedump
+=== RUN   TestAuthSurfaceGuard_DumpIsolationMutants/O5_dump_file_constraint_true_in_default_build
+=== RUN   TestAuthSurfaceGuard_DumpIsolationMutants/O6_off_hook_moved_to_other_file
+=== RUN   TestAuthSurfaceGuard_DumpIsolationMutants/O7_off_file_imports_reflect
+=== RUN   TestAuthSurfaceGuard_DumpIsolationMutants/O9_reflect_Set_in_helper_in_default_file
+=== RUN   TestAuthSurfaceGuard_DumpIsolationMutants/O10_reflect_Method_call
+=== RUN   TestAuthSurfaceGuard_DumpIsolationMutants/O11_reflect_Value_Method_expression
+=== RUN   TestAuthSurfaceGuard_DumpIsolationMutants/O8_dump_type_declared_in_default_file
+--- PASS: TestAuthSurfaceGuard_DumpIsolationMutants (0.56s)
+    --- PASS: TestAuthSurfaceGuard_DumpIsolationMutants/X4_go_linkname_in_default_file (0.04s)
+    --- PASS: TestAuthSurfaceGuard_DumpIsolationMutants/O1_build_tag_removed_from_routechains (0.05s)
+    --- PASS: TestAuthSurfaceGuard_DumpIsolationMutants/O2_off_hook_body_not_empty (0.06s)
+    --- PASS: TestAuthSurfaceGuard_DumpIsolationMutants/O3_init_in_off_file (0.03s)
+    --- PASS: TestAuthSurfaceGuard_DumpIsolationMutants/O4_off_file_tag_flipped_to_routedump (0.04s)
+    --- PASS: TestAuthSurfaceGuard_DumpIsolationMutants/O5_dump_file_constraint_true_in_default_build (0.04s)
+    --- PASS: TestAuthSurfaceGuard_DumpIsolationMutants/O6_off_hook_moved_to_other_file (0.04s)
+    --- PASS: TestAuthSurfaceGuard_DumpIsolationMutants/O7_off_file_imports_reflect (0.04s)
+    --- PASS: TestAuthSurfaceGuard_DumpIsolationMutants/O9_reflect_Set_in_helper_in_default_file (0.05s)
+    --- PASS: TestAuthSurfaceGuard_DumpIsolationMutants/O10_reflect_Method_call (0.06s)
+    --- PASS: TestAuthSurfaceGuard_DumpIsolationMutants/O11_reflect_Value_Method_expression (0.04s)
+    --- PASS: TestAuthSurfaceGuard_DumpIsolationMutants/O8_dump_type_declared_in_default_file (0.04s)
+=== RUN   TestAuthSurfaceBinary_RoutedumpFileMutantsDoNotReachShippedBinary
+--- PASS: TestAuthSurfaceBinary_RoutedumpFileMutantsDoNotReachShippedBinary (25.23s)
+=== RUN   TestBuildRouterAuthSurface
+--- PASS: TestBuildRouterAuthSurface (0.01s)
+=== RUN   TestBuildRouterAuthSurface_ComparatorDetects
+=== RUN   TestBuildRouterAuthSurface_ComparatorDetects/upper_case_spelling
+=== RUN   TestBuildRouterAuthSurface_ComparatorDetects/limiter_dropped_from_one_route
+=== RUN   TestBuildRouterAuthSurface_ComparatorDetects/limiters_swapped_login_uses_auth_rate
+=== RUN   TestBuildRouterAuthSurface_ComparatorDetects/route_moved_outside_the_group
+=== RUN   TestBuildRouterAuthSurface_ComparatorDetects/new_unpinned_auth_route
+=== RUN   TestBuildRouterAuthSurface_ComparatorDetects/unclean_path_spelling
+=== RUN   TestBuildRouterAuthSurface_ComparatorDetects/route_removed
+=== RUN   TestBuildRouterAuthSurface_ComparatorDetects/evil_handler_injected_after_engine_level
+=== RUN   TestBuildRouterAuthSurface_ComparatorDetects/evil_engine_level_prefix
+=== RUN   TestBuildRouterAuthSurface_ComparatorDetects/relative_dot_path
+=== RUN   TestBuildRouterAuthSurface_ComparatorDetects/param_segment_capturing_auth
+--- PASS: TestBuildRouterAuthSurface_ComparatorDetects (0.07s)
+    --- PASS: TestBuildRouterAuthSurface_ComparatorDetects/upper_case_spelling (0.00s)
+    --- PASS: TestBuildRouterAuthSurface_ComparatorDetects/limiter_dropped_from_one_route (0.00s)
+    --- PASS: TestBuildRouterAuthSurface_ComparatorDetects/limiters_swapped_login_uses_auth_rate (0.00s)
+    --- PASS: TestBuildRouterAuthSurface_ComparatorDetects/route_moved_outside_the_group (0.00s)
+    --- PASS: TestBuildRouterAuthSurface_ComparatorDetects/new_unpinned_auth_route (0.01s)
+    --- PASS: TestBuildRouterAuthSurface_ComparatorDetects/unclean_path_spelling (0.00s)
+    --- PASS: TestBuildRouterAuthSurface_ComparatorDetects/route_removed (0.01s)
+    --- PASS: TestBuildRouterAuthSurface_ComparatorDetects/evil_handler_injected_after_engine_level (0.02s)
+    --- PASS: TestBuildRouterAuthSurface_ComparatorDetects/evil_engine_level_prefix (0.00s)
+    --- PASS: TestBuildRouterAuthSurface_ComparatorDetects/relative_dot_path (0.00s)
+    --- PASS: TestBuildRouterAuthSurface_ComparatorDetects/param_segment_capturing_auth (0.00s)
+=== RUN   TestBuildRouterAuthSurface_RuntimeMutants
+    main_router_test.go:530: opt-in (compiles the package per mutant): set CHPW_RUNTIME_MUTANTS=1
+--- SKIP: TestBuildRouterAuthSurface_RuntimeMutants (0.00s)
+=== RUN   TestBuildRouterAuthSurface_Trimpath
+    main_router_test.go:591: opt-in (compiles the package): set CHPW_RUNTIME_MUTANTS=1
+--- SKIP: TestBuildRouterAuthSurface_Trimpath (0.00s)
+PASS
+ok  	catalogizer	210.570s
+exit=0
+done

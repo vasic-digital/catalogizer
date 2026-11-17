@@ -50,7 +50,7 @@ import (
 func nonTestFiles(t *testing.T, dir string) (*token.FileSet, map[string]*ast.File) {
 	t.Helper()
 	fset := token.NewFileSet()
-	pkgs, err := parser.ParseDir(fset, dir, func(fi os.FileInfo) bool { return !strings.HasSuffix(fi.Name(), "_test.go") }, 0)
+	pkgs, err := parser.ParseDir(fset, dir, func(fi os.FileInfo) bool { return !strings.HasSuffix(fi.Name(), "_test.go") }, parser.ParseComments)
 	require.NoError(t, err, "parse failure must fail the test")
 	pkg := pkgs["main"]
 	require.NotNil(t, pkg, "package main not found in "+dir)
@@ -563,6 +563,7 @@ func scanAuthSurface(fset *token.FileSet, files map[string]*ast.File) []string {
 	}
 	out = append(out, scanMainVerifySequence(fset, files)...)
 	out = append(out, scanSanctionedHookBodies(fset, files)...)
+	out = append(out, scanDumpIsolation(fset, files)...)
 	return out
 }
 
