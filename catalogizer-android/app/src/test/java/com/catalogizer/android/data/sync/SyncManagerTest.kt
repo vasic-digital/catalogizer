@@ -5,6 +5,7 @@ import com.catalogizer.android.MainDispatcherRule
 import com.catalogizer.android.data.local.CatalogizerDatabase
 import com.catalogizer.android.data.local.MediaDao
 import com.catalogizer.android.data.local.SyncOperationDao
+import com.catalogizer.android.data.models.FavoriteRequest
 import com.catalogizer.android.data.models.MediaItem
 import com.catalogizer.android.data.remote.CatalogizerApi
 import com.catalogizer.android.data.repository.AuthRepository
@@ -74,7 +75,7 @@ class SyncManagerTest {
         coEvery { mockAuthRepository.isTokenValid() } returns false
         coEvery { mockSyncOperationDao.getPendingOperations() } returns emptyList()
         coEvery { mockApi.getUpdatedMedia(any()) } returns Response.success(emptyList())
-        coEvery { mockApi.getUserPreferences() } returns Response.success(emptyMap())
+        coEvery { mockApi.getUserPreferences() } returns Response.success(kotlinx.serialization.json.JsonObject(emptyMap()))
 
         val result = syncManager.performManualSync()
 
@@ -87,7 +88,7 @@ class SyncManagerTest {
         coEvery { mockAuthRepository.isTokenValid() } returns true
         coEvery { mockSyncOperationDao.getPendingOperations() } returns emptyList()
         coEvery { mockApi.getUpdatedMedia(any()) } returns Response.success(emptyList())
-        coEvery { mockApi.getUserPreferences() } returns Response.success(emptyMap())
+        coEvery { mockApi.getUserPreferences() } returns Response.success(kotlinx.serialization.json.JsonObject(emptyMap()))
 
         val result = syncManager.performManualSync()
 
@@ -101,7 +102,7 @@ class SyncManagerTest {
         coEvery { mockAuthRepository.isTokenValid() } returns true
         coEvery { mockSyncOperationDao.getPendingOperations() } returns emptyList()
         coEvery { mockApi.getUpdatedMedia(any()) } returns Response.success(emptyList())
-        coEvery { mockApi.getUserPreferences() } returns Response.success(emptyMap())
+        coEvery { mockApi.getUserPreferences() } returns Response.success(kotlinx.serialization.json.JsonObject(emptyMap()))
 
         syncManager.performManualSync()
 
@@ -155,11 +156,11 @@ class SyncManagerTest {
         coEvery { mockSyncOperationDao.getPendingOperations() } returns listOf(favoriteOp(true))
         coEvery { mockApi.setFavoriteStatus(any(), any()) } returns Response.success(Unit)
         coEvery { mockApi.getUpdatedMedia(any()) } returns Response.success(emptyList())
-        coEvery { mockApi.getUserPreferences() } returns Response.success(emptyMap())
+        coEvery { mockApi.getUserPreferences() } returns Response.success(kotlinx.serialization.json.JsonObject(emptyMap()))
 
         syncManager.performManualSync()
 
-        coVerify { mockApi.setFavoriteStatus(1L, mapOf("favorite" to true)) }
+        coVerify { mockApi.setFavoriteStatus(1L, FavoriteRequest(true)) }
         coVerify { mockSyncOperationDao.deleteOperation(7L) }
     }
 
@@ -170,7 +171,7 @@ class SyncManagerTest {
         coEvery { mockApi.setFavoriteStatus(any(), any()) } returns
             Response.error(400, okhttp3.ResponseBody.create(null, ""))
         coEvery { mockApi.getUpdatedMedia(any()) } returns Response.success(emptyList())
-        coEvery { mockApi.getUserPreferences() } returns Response.success(emptyMap())
+        coEvery { mockApi.getUserPreferences() } returns Response.success(kotlinx.serialization.json.JsonObject(emptyMap()))
 
         syncManager.performManualSync()
 

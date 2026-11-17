@@ -14,6 +14,9 @@ import org.junit.Before
 import org.junit.Test
 import retrofit2.Response
 import retrofit2.Retrofit
+import com.catalogizer.android.data.models.FavoriteRequest
+import com.catalogizer.android.data.models.WatchProgressRequest
+import com.catalogizer.android.data.models.RatingRequest
 
 /**
  * AFAV-6 / FAVC-F2: the former cases of this class stubbed `CatalogizerApi` itself with MockK and asserted
@@ -29,6 +32,7 @@ class CatalogizerApiTest {
 
     private lateinit var mockWebServer: MockWebServer
     private lateinit var api: CatalogizerApi
+    private lateinit var retrofit: Retrofit
 
     @Before
     fun setup() {
@@ -39,11 +43,11 @@ class CatalogizerApiTest {
             coerceInputValues = true
             isLenient = true
         }
-        api = Retrofit.Builder()
+        retrofit = Retrofit.Builder()
             .baseUrl(mockWebServer.url("/"))
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
-            .create(CatalogizerApi::class.java)
+        api = retrofit.create(CatalogizerApi::class.java)
     }
 
     @After
@@ -57,7 +61,7 @@ class CatalogizerApiTest {
     fun `setFavoriteStatus sends PUT media-id-favorite with the favorite flag as JSON`() = runBlocking {
         mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody("""{"success":true,"message":"ok"}"""))
 
-        val result = api.setFavoriteStatus(1L, mapOf<String, Any>("favorite" to true))
+        val result = api.setFavoriteStatus(1L, FavoriteRequest(true))
 
         assertTrue(result.isSuccessful)
         val recorded = mockWebServer.takeRequest()
@@ -71,10 +75,76 @@ class CatalogizerApiTest {
     fun `setFavoriteStatus surfaces a 400 from the server as an unsuccessful response`() = runBlocking {
         mockWebServer.enqueue(MockResponse().setResponseCode(400).setBody("""{"error":"bad"}"""))
 
-        val result = api.setFavoriteStatus(1L, mapOf<String, Any>("favorite" to false))
+        val result = api.setFavoriteStatus(1L, FavoriteRequest(false))
 
         assertFalse(result.isSuccessful)
         assertEquals(400, result.code())
+    }
+
+    // --- Wire tests: other typed @Body endpoints (ANDROID-RETROFIT-MAP-1) ---
+
+    @Test
+    fun `updateWatchProgress sends PUT media-id-progress with progress as JSON`() = runBlocking {
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody("{}"))
+
+        val result = api.updateWatchProgress(7L, WatchProgressRequest(progress = 0.5))
+
+        assertTrue(result.isSuccessful)
+        val recorded = mockWebServer.takeRequest()
+        assertEquals("PUT", recorded.method)
+        assertEquals("/media/7/progress", recorded.path)
+        assertEquals("""{"progress":0.5}""", recorded.body.readUtf8())
+    }
+
+    @Test
+    fun `updateUserWatchProgress sends progress timestamp and position`() = runBlocking {
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody("{}"))
+
+        val result = api.updateUserWatchProgress(3L, WatchProgressRequest(0.25, "1700", 42L))
+
+        assertTrue(result.isSuccessful)
+        val recorded = mockWebServer.takeRequest()
+        assertEquals("/user/progress/3", recorded.path)
+        assertEquals("""{"progress":0.25,"timestamp":"1700","position":42}""", recorded.body.readUtf8())
+    }
+
+    @Test
+    fun `rateMedia sends PUT media-id-rating with rating as JSON`() = runBlocking {
+        mockWebServer.enqueue(MockResponse().setResponseCode(200).setBody("{}"))
+
+        val result = api.rateMedia(9L, RatingRequest(4.5))
+
+        assertTrue(result.isSuccessful)
+        val recorded = mockWebServer.takeRequest()
+        assertEquals("/media/9/rating", recorded.path)
+        assertEquals("""{"rating":4.5}""", recorded.body.readUtf8())
+    }
+
+    // --- Guard: no method of the interface may be un-callable (ANDROID-RETROFIT-MAP-1) ---
+
+    @Test
+    fun `every CatalogizerApi method is accepted by Retrofit (no wildcard, no unserialisable Any)`() {
+        // Retrofit parses a method (parameter types, response type, converters) when it is first used; a
+        // `Map<String, Any>` @Body throws "Parameter type must not include a type variable or wildcard", and a
+        // `Response<Map<String, Any>>` makes the kotlinx converter throw "Serializer for class 'Any' is not found".
+        // Both only surface when the method is called on a device, so each method is loaded here explicitly.
+        val bad = unparseableMethods(retrofit, CatalogizerApi::class.java)
+        assertEquals("methods Retrofit cannot parse: $bad", emptyMap<String, String>(), bad)
+    }
+
+    /** Names of methods of [apiClass] that this Retrofit instance cannot turn into a service method. */
+    private fun unparseableMethods(retrofit: Retrofit, apiClass: Class<*>): Map<String, String> {
+        val load = Retrofit::class.java.getDeclaredMethod("loadServiceMethod", java.lang.reflect.Method::class.java)
+        load.isAccessible = true
+        val bad = sortedMapOf<String, String>()
+        for (m in apiClass.declaredMethods.filter { !it.isSynthetic }) {
+            try {
+                load.invoke(retrofit, m)
+            } catch (e: java.lang.reflect.InvocationTargetException) {
+                bad[m.name] = (e.targetException.cause ?: e.targetException).let { it.javaClass.simpleName + ": " + it.message?.lineSequence()?.firstOrNull() }
+            }
+        }
+        return bad
     }
 
     // --- toApiResult extension ---

@@ -1,5 +1,8 @@
 package com.catalogizer.android.data.sync
 
+import com.catalogizer.android.data.models.FavoriteRequest
+import com.catalogizer.android.data.models.RatingRequest
+import com.catalogizer.android.data.models.WatchProgressRequest
 import android.content.Context
 import androidx.work.*
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -246,9 +249,9 @@ class SyncManager(
 
         api.updateUserWatchProgress(
             progressData.mediaId,
-            mapOf(
-                "progress" to progressData.progress,
-                "timestamp" to progressData.timestamp
+            WatchProgressRequest(
+                progress = progressData.progress,
+                timestamp = progressData.timestamp.toString()
             )
         )
     }
@@ -260,7 +263,7 @@ class SyncManager(
 
         // Server contract: PUT /media/:id/favorite {"favorite": bool}. A non-2xx answer must not be treated as
         // synced: throwing lets the caller keep the operation queued and count a retry.
-        val response = api.setFavoriteStatus(favoriteData.mediaId, mapOf("favorite" to favoriteData.isFavorite))
+        val response = api.setFavoriteStatus(favoriteData.mediaId, FavoriteRequest(favoriteData.isFavorite))
         if (!response.isSuccessful) {
             throw java.io.IOException("Favorite sync failed for media ${favoriteData.mediaId}: HTTP ${response.code()}")
         }
@@ -271,7 +274,7 @@ class SyncManager(
             Json.Default.decodeFromString<RatingData>(it)
         } ?: return
 
-        api.rateMedia(ratingData.mediaId, mapOf("rating" to ratingData.rating))
+        api.rateMedia(ratingData.mediaId, RatingRequest(ratingData.rating))
     }
 
     private suspend fun syncMetadataUpdate(operation: SyncOperation) {
