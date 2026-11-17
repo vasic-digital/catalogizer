@@ -3752,3 +3752,11 @@ Evidence: docs/qa/clfu1-20261117/ (README, SHA256SUMS).
 
 ## WIZENV-1 (2026-11-17, PROVISIONAL)
 Wizard SystemInfo copied os.Environ() with a password/secret/token deny-list. Reproduced at service layer; HTTP exposure not reproducible (type has no production constructor; routed wizard handlers use ConfigurationService). Fixed with an allow-list (`safeEnvironment`). Evidence: docs/qa/wizenv1-20261117/. Open: Opus review; decide whether the unwired ConfigurationWizardService should be removed (§11.4.124 history check owed, not done).
+
+## WIZENV1 review follow-ups (Opus review, GO-with-follow-ups, 2026-11-17)
+
+- WIZENV1-R-M1 (minor, test-instrumentation): pin the allow-list as an exact golden set and assert no allow-listed key matches `(?i)(KEY|SECRET|TOKEN|PASS|DSN|AUTH|CRED|BEARER|URL)`; mutant adding `TMDB_API_KEY` to `wizardSafeEnvKeys` survives (test checks the map against itself).
+- WIZENV1-R-M2 (minor): add a lowercase-key case to `TestWIZENV1_SafeEnvironmentMalformed` (case-insensitive lookup mutant survives).
+- WIZENV1-R-N1 (nit): `wizenv1_test.go:19` discards the `json.Marshal` error.
+- WIZENV1-R-N2 (nit): README "count=3" claim and RED-versus-mutant wording; capture -v with -count=3.
+- WIZENV1-R-D1 (operator decision, §11.4.124): `ConfigurationWizardService` is unwired (never routed per `git log -S`) but actively maintained (16 commits); wire it with this allow-list and a real-router test, or remove with this history as evidence. Not removed.
