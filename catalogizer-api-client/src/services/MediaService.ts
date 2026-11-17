@@ -9,6 +9,15 @@ import {
   DownloadJob,
 } from '../types';
 
+export interface WatchProgressResult {
+  /** true only when the server confirmed persisted:true */
+  persisted: boolean;
+  reason?: string;
+  attempts: number;
+}
+
+export const WATCH_PROGRESS_MAX_ATTEMPTS = 3;
+
 export class MediaService {
   constructor(private http: HttpClient) {}
 
@@ -114,24 +123,45 @@ export class MediaService {
   }
 
   /**
-   * Update playback progress for a media item
-   * Backend: PUT /api/v1/media/:id/progress
+   * Update playback progress for a media item (position and duration in SECONDS).
+   * Backend: PUT /api/v1/media/:id/progress. Only persisted:true is reported as saved; a 200 persisted:false
+   * carries a reason (for example unknown_duration_no_row); a 409 concurrent_update is re-sent up to
+   * WATCH_PROGRESS_MAX_ATTEMPTS times and then reported as not persisted.
    */
-  public async updateProgress(mediaId: number, progress: PlaybackProgress): Promise<void> {
-    return this.http.put<void>(`/media/${mediaId}/progress`, progress);
+  public async updateProgress(mediaId: number, progress: PlaybackProgress | { progress: number }): Promise<WatchProgressResult> {
+    let last: WatchProgressResult = { persisted: false, attempts: 0 };
+    for (let attempt = 1; attempt <= WATCH_PROGRESS_MAX_ATTEMPTS; attempt++) {
+      try {
+        const resp = await this.http.put<{ persisted?: boolean; reason?: string } | undefined>(
+          `/media/${mediaId}/progress`,
+          progress
+        );
+        return { persisted: resp?.persisted === true, reason: resp?.reason, attempts: attempt };
+      } catch (err) {
+        if ((err as { status?: number })?.status !== 409) {
+          throw err;
+        }
+        last = { persisted: false, reason: 'concurrent_update', attempts: attempt };
+      }
+    }
+    return last;
   }
 
   /**
-   * Mark media as watched (100% progress)
+   * Mark media as watched. With the real duration (seconds) the item is stored as position == duration; without
+   * it the fraction 1.0 is sent (the server never invents a duration, so a first watch of an item with no stored
+   * row answers persisted:false).
    */
-  public async markAsWatched(mediaId: number): Promise<void> {
-    const progress: PlaybackProgress = {
-      media_id: mediaId,
-      position: 100,
-      duration: 100,
-      timestamp: Date.now(),
-    };
-    return this.updateProgress(mediaId, progress);
+  public async markAsWatched(mediaId: number, durationSeconds?: number): Promise<WatchProgressResult> {
+    if (durationSeconds !== undefined && durationSeconds > 0) {
+      return this.updateProgress(mediaId, {
+        media_id: mediaId,
+        position: durationSeconds,
+        duration: durationSeconds,
+        timestamp: Date.now(),
+      });
+    }
+    return this.updateProgress(mediaId, { progress: 1 });
   }
 
   /**

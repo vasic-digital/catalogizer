@@ -302,7 +302,7 @@ func (rt *UniversalRenameTracker) createFallbackKey(protocol, storageRoot string
 }
 
 // moveFile updates a single file's path and metadata
-func (rt *UniversalRenameTracker) moveFile(tx *sql.Tx, fileID int64, newPath string) error {
+func (rt *UniversalRenameTracker) moveFile(tx *database.Tx, fileID int64, newPath string) error {
 	newName := filepath.Base(newPath)
 	newDir := filepath.Dir(newPath)
 
@@ -330,7 +330,7 @@ func (rt *UniversalRenameTracker) moveFile(tx *sql.Tx, fileID int64, newPath str
 }
 
 // moveDirectory updates a directory and all its children
-func (rt *UniversalRenameTracker) moveDirectory(tx *sql.Tx, oldPath, newPath, storageRootName string) error {
+func (rt *UniversalRenameTracker) moveDirectory(tx *database.Tx, oldPath, newPath, storageRootName string) error {
 	query := `
 		SELECT id, path, is_directory
 		FROM files
@@ -378,7 +378,7 @@ func (rt *UniversalRenameTracker) moveDirectory(tx *sql.Tx, oldPath, newPath, st
 }
 
 // recordUniversalRenameEvent creates a record of the rename operation
-func (rt *UniversalRenameTracker) recordUniversalRenameEvent(ctx context.Context, tx *sql.Tx, oldMove *UniversalPendingMove, newPath string) (int64, error) {
+func (rt *UniversalRenameTracker) recordUniversalRenameEvent(ctx context.Context, tx *database.Tx, oldMove *UniversalPendingMove, newPath string) (int64, error) {
 	query := `
 		INSERT INTO universal_rename_events (storage_root_id, protocol, old_path, new_path, is_directory, size, file_hash, detected_at, status)
 		VALUES ((SELECT id FROM storage_roots WHERE name = ?), ?, ?, ?, ?, ?, ?, ?, 'pending')`
@@ -392,7 +392,7 @@ func (rt *UniversalRenameTracker) recordUniversalRenameEvent(ctx context.Context
 }
 
 // markRenameEventStatus updates the status of a rename event
-func (rt *UniversalRenameTracker) markRenameEventStatus(tx *sql.Tx, eventID int64, status string) error {
+func (rt *UniversalRenameTracker) markRenameEventStatus(tx *database.Tx, eventID int64, status string) error {
 	query := `UPDATE universal_rename_events SET status = ?, processed_at = CURRENT_TIMESTAMP WHERE id = ?`
 	_, err := tx.Exec(query, status, eventID)
 	return err

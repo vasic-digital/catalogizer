@@ -63,7 +63,6 @@ import (
 	"digital.vasic.discovery/pkg/broadcast"
 	"github.com/gin-gonic/gin"
 	_ "github.com/mutecomm/go-sqlcipher"
-	"github.com/quic-go/quic-go/http3"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
@@ -1061,6 +1060,9 @@ func main() {
 	api.GET("/media/:id", androidTVMediaHandler.GetMediaByID)
 	api.PUT("/media/:id/progress", androidTVMediaHandler.UpdateWatchProgress)
 	api.PUT("/media/:id/favorite", androidTVMediaHandler.UpdateFavoriteStatus)
+	api.PUT("/media/:id/rating", androidTVMediaHandler.PutMediaRating)
+	api.GET("/media/:id/rating", androidTVMediaHandler.GetMediaRating)
+	api.DELETE("/media/:id/rating", androidTVMediaHandler.DeleteMediaRating)
 	api.POST("/media/:id/refresh", mediaQueryHandler.RefreshMediaMetadata)
 	api.GET("/media/:id/quality", mediaQueryHandler.GetMediaQuality)
 
@@ -1493,57 +1495,15 @@ func main() {
 	WriteTimeout:      time.Duration(cfg.Server.WriteTimeout) * time.Second,
 	IdleTimeout:       time.Duration(cfg.Server.IdleTimeout) * time.Second,
 	}
-	// HTTPS server for TLS and HTTP/2 (future HTTP/3)
-	var httpsServer *http.Server
-	var http3Server *http3.Server
+	// HTTPS (HTTP/2 over TLS) and HTTP/3 (QUIC) on 28443. startH3Stack loads the certificate,
+	// confirms the binds and only then advertises HTTP/3 (h3Advertised, read by the Alt-Svc
+	// middleware in buildRouter's chain, CAT-ALTSVC-1). main() never touches h3Advertised.
+	httpsServer, http3Server := startH3Stack(logger, srv.Handler, cfg.Server.Host, h3Port, getOrCreateSelfSignedCert)
 
-	// Load or generate TLS certificate for HTTP/3 (cached across restarts)
-	cert, err := getOrCreateSelfSignedCert()
-	if err != nil {
-	logger.Error("Failed to get TLS certificate for HTTP/3", zap.Error(err))
-	} else {
-	// Create TLS config with the certificate
-	tlsConfig := &tls.Config{
-			Certificates: []tls.Certificate{cert},
-			NextProtos:   []string{"h3", "h2", "http/1.1"},
-	}
-
-	// Start HTTPS server on port 28443 (HTTP/2 with TLS, fallback for HTTP/3)
-	httpsAddr := fmt.Sprintf("%s:%d", cfg.Server.Host, 28443)
-	httpsServer = &http.Server{
-			Addr:              httpsAddr,
-			Handler:           router,
-			TLSConfig:         tlsConfig,
-			ReadHeaderTimeout: 5 * time.Second,
-	}
-	go func() {
-			logger.Info("Starting HTTPS server (HTTP/2 with TLS)", zap.String("address", httpsAddr))
-			if err := httpsServer.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
-				logger.Error("HTTPS server failed", zap.Error(err))
-			}
-	}()
-
-	// Add Alt-Svc header to advertise HTTP/3 support
-	router.Use(altSvcMiddleware)
-
-	// Start HTTP/3 server on UDP port 28443
-	http3Server = &http3.Server{
-			Addr:      httpsAddr,
-			Handler:   router,
-			TLSConfig: tlsConfig,
-	}
-	go func() {
-			logger.Info("Starting HTTP/3 (QUIC) server", zap.String("address", httpsAddr))
-			if err := http3Server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-				logger.Error("HTTP/3 server failed", zap.Error(err))
-			}
-	}()
-	}
-
-	// The one late engine Use (altSvcMiddleware) changed the global chain: verify
-	// again so the pinned chain is checked in its final form too.
+	// Verify again so the pinned chain is checked in its final form too (main() adds no engine Use;
+	// Alt-Svc is in buildRouter's chain, CAT-ALTSVC-1).
 	if err := verifyAuthRouteTable(router); err != nil {
-		logger.Fatal("Auth route table check failed (after the Alt-Svc middleware)", zap.Error(err))
+		logger.Fatal("Auth route table check failed (final form)", zap.Error(err))
 	}
 
 	// Start server in a goroutine

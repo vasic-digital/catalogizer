@@ -1,0 +1,2 @@
+$ GOMAXPROCS=2 nice -n 10 go test -p 1 ./handlers -count=1 -timeout 1500s
+ok  	catalogizer/handlers	997.211s

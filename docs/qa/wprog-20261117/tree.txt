@@ -1,0 +1,2 @@
+catalog-api tree (staged) 5588d1c3df30f8877cb7ae66baf10115a3335b15
+full index tree before evidence-hash commit: d760170b1670690fcd28e5f9dd8ca6c51c998a8c; base af02b7c35cdfc0a43d08998f01e1d12da8a6fd0b

@@ -693,7 +693,7 @@ func (s *PlaylistService) canModifyPlaylist(ctx context.Context, playlistID, use
 	return err == nil && count > 0
 }
 
-func (s *PlaylistService) updatePlaylistStats(ctx context.Context, tx *sql.Tx, playlistID int64) error {
+func (s *PlaylistService) updatePlaylistStats(ctx context.Context, tx *database.Tx, playlistID int64) error {
 	query := `
 		UPDATE playlists
 		SET track_count = (

@@ -40,7 +40,7 @@ import (
 //     first three segments, any case; patternReachesAuthPaths);
 //   - `.Use` on a receiver whose prefix cannot be resolved, on a group under the
 //     auth prefix, on the engine anywhere but the recorded pre-group list in
-//     buildRouter, and in main() anything but exactly one `router.Use(altSvcMiddleware)`.
+//     buildRouter, and in main() any engine Use at all (Alt-Svc is in buildRouter's chain, CAT-ALTSVC-1).
 // The scan is a source-level backstop. The startup verifier (verifyAuthRouteTable)
 // is the check over the engine that really runs: pinned global chain, default
 // path-matching flags, and the set of routes whose pattern can match an auth path.
@@ -50,7 +50,7 @@ import (
 func nonTestFiles(t *testing.T, dir string) (*token.FileSet, map[string]*ast.File) {
 	t.Helper()
 	fset := token.NewFileSet()
-	pkgs, err := parser.ParseDir(fset, dir, func(fi os.FileInfo) bool { return !strings.HasSuffix(fi.Name(), "_test.go") }, 0)
+	pkgs, err := parser.ParseDir(fset, dir, func(fi os.FileInfo) bool { return !strings.HasSuffix(fi.Name(), "_test.go") }, parser.ParseComments)
 	require.NoError(t, err, "parse failure must fail the test")
 	pkg := pkgs["main"]
 	require.NotNil(t, pkg, "package main not found in "+dir)
@@ -91,6 +91,9 @@ func buildBinds(files map[string]*ast.File) map[string]string {
 }
 
 const authPrefix = "api/v1/auth"
+
+// h3Call is the one statement in main() that starts the HTTPS/HTTP3 stack (main_h3.go).
+const h3Call = "httpsServer, http3Server := startH3Stack(logger, srv.Handler, cfg.Server.Host, h3Port, getOrCreateSelfSignedCert)"
 
 func segHasPrefix(q, p string) bool { return q == p || strings.HasPrefix(q, p+"/") }
 func trimSlashes(s string) string   { return strings.Trim(s, "/") }
@@ -161,6 +164,7 @@ var (
 		"root_middleware.RequestID",
 		"root_middleware.InputValidation",
 		"middleware.CompressionMiddleware",
+		"altSvcMiddleware",
 	}
 	// authGroup identifier count per file: definition + registerAuthRoutes arg in
 	// main_router.go; parameter + RegisterChangePassword arg in main_chpw.go.
@@ -432,14 +436,12 @@ func scanAuthSurface(fset *token.FileSet, files map[string]*ast.File) []string {
 								add("%s:%d: router.Use(%s) after the auth group definition (middleware order)", name, line, d)
 							}
 						case base == "" && name == "main.go" && fname == "main":
-							// main() may install exactly one engine Use, after the routes: the
-							// named altSvcMiddleware, whose identity verifyAuthRouteTable pins.
+							// main() installs no engine Use: a Use made after the routes reaches only the
+							// NoRoute chain (CAT-ALTSVC-1); altSvcMiddleware lives in buildRouter's chain.
 							mainUses++
-							if mainUses != 1 || len(v.Args) != 1 || v.Ellipsis.IsValid() || exprText(fset, v.Args[0]) != "altSvcMiddleware" {
-								add("%s:%d: engine .Use in main() other than the single `router.Use(altSvcMiddleware)` (found Use(%s), engine Use number %d in main())", name, line, calleeDescs(fset, v.Args), mainUses)
-							}
+							add("%s:%d: engine .Use in main() (found Use(%s), engine Use number %d in main()); engine Uses belong in buildRouter", name, line, calleeDescs(fset, v.Args), mainUses)
 						case base == "":
-							add("%s:%d: engine .Use outside buildRouter and the single `router.Use(altSvcMiddleware)` of main()", name, line)
+							add("%s:%d: engine .Use outside buildRouter", name, line)
 						case segHasPrefix(base, authPrefix):
 							add("%s:%d: .Use on a group under the auth prefix", name, line)
 						}
@@ -563,6 +565,7 @@ func scanAuthSurface(fset *token.FileSet, files map[string]*ast.File) []string {
 	}
 	out = append(out, scanMainVerifySequence(fset, files)...)
 	out = append(out, scanSanctionedHookBodies(fset, files)...)
+	out = append(out, scanDumpIsolation(fset, files)...)
 	return out
 }
 
@@ -839,17 +842,23 @@ func TestAuthSurfaceGuard_Mutants(t *testing.T) {
 		{"F1b_second_Use_in_main", "engine .Use in main()", func(d string) {
 			edit(t, d, "main.go", "// Fail closed: the auth surface of the finished engine must be exactly the", "router.Use(evilLater())\n\t// Fail closed: the auth surface of the finished engine must be exactly the")
 		}},
-		{"F1b2_main_Use_replaces_altsvc", "engine .Use in main()", func(d string) {
-			edit(t, d, "main.go", "router.Use(altSvcMiddleware)", "router.Use(evilLater())")
+		{"R4_h3Advertised_stored_in_main_before_cert_load", "never mention h3Advertised", func(d string) {
+			edit(t, d, "main.go", h3Call, "h3Advertised.Store(true)\n\t"+h3Call)
 		}},
-		{"F1b3_main_Use_altsvc_plus_extra_arg", "engine .Use in main()", func(d string) {
-			edit(t, d, "main.go", "router.Use(altSvcMiddleware)", "router.Use(altSvcMiddleware, evilLater())")
+		{"R4b_startH3Stack_call_removed", "main() must call exactly once", func(d string) {
+			edit(t, d, "main.go", h3Call, "var httpsServer *http.Server\n\tvar http3Server interface{ Close() error }")
 		}},
-		{"F1b4_main_Use_altsvc_twice", "engine .Use in main()", func(d string) {
-			edit(t, d, "main.go", "router.Use(altSvcMiddleware)", "router.Use(altSvcMiddleware)\n\trouter.Use(altSvcMiddleware)")
+		{"F1b2_main_Use_altsvc_back", "engine .Use in main()", func(d string) {
+			edit(t, d, "main.go", h3Call, h3Call+"\n\trouter.Use(altSvcMiddleware)")
+		}},
+		{"F1b3_main_Use_evil_after_h3", "engine .Use in main()", func(d string) {
+			edit(t, d, "main.go", h3Call, h3Call+"\n\trouter.Use(altSvcMiddleware, evilLater())")
 		}},
 		{"F1b5_main_Use_spread", "engine .Use in main()", func(d string) {
-			edit(t, d, "main.go", "router.Use(altSvcMiddleware)", "router.Use(hooks...)")
+			edit(t, d, "main.go", h3Call, h3Call+"\n\trouter.Use(hooks...)")
+		}},
+		{"AS3_buildRouter_altsvc_Use_removed", "buildRouter's engine Use sequence differs", func(d string) {
+			edit(t, d, "main_router.go", "\trouter.Use(altSvcMiddleware) // CAT-ALTSVC-1: before the routes, or it would reach only the NoRoute chain\n", "")
 		}},
 		{"M1_Any_capture", "can match an /api/v1/auth path", func(d string) {
 			edit(t, d, "main_router.go", defn, defn+"\n\trouter.Any(\"/api/:v/auth/any\", evil)")
@@ -901,19 +910,19 @@ func TestAuthSurfaceGuard_Mutants(t *testing.T) {
 		}},
 		{"RB_both_verify_calls_deleted", "found 0 well-formed, 0 mentions", func(d string) {
 			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed\", zap.Error(err))\n\t}", "")
-			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed (after the Alt-Svc middleware)\", zap.Error(err))\n\t}", "")
+			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed (final form)\", zap.Error(err))\n\t}", "")
 		}},
 		{"RB1_first_verify_deleted", "found 1 well-formed, 1 mentions", func(d string) {
 			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed\", zap.Error(err))\n\t}", "")
 		}},
 		{"RB2_second_verify_deleted", "found 1 well-formed, 1 mentions", func(d string) {
-			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed (after the Alt-Svc middleware)\", zap.Error(err))\n\t}", "")
+			edit(t, d, "main.go", "if err := verifyAuthRouteTable(router); err != nil {\n\t\tlogger.Fatal(\"Auth route table check failed (final form)\", zap.Error(err))\n\t}", "")
 		}},
 		{"RC_first_Fatal_to_Warn", "found 1 well-formed, 2 mentions", func(d string) {
 			edit(t, d, "main.go", "logger.Fatal(\"Auth route table check failed\", zap.Error(err))", "logger.Warn(\"Auth route table check failed\", zap.Error(err))")
 		}},
 		{"RC2_second_Fatal_to_Warn", "found 1 well-formed, 2 mentions", func(d string) {
-			edit(t, d, "main.go", "logger.Fatal(\"Auth route table check failed (after the Alt-Svc middleware)\", zap.Error(err))", "logger.Warn(\"Auth route table check failed (after the Alt-Svc middleware)\", zap.Error(err))")
+			edit(t, d, "main.go", "logger.Fatal(\"Auth route table check failed (final form)\", zap.Error(err))", "logger.Warn(\"Auth route table check failed (final form)\", zap.Error(err))")
 		}},
 		{"RD_registration_after_first_verify", "registers on or hands out the engine", func(d string) {
 			edit(t, d, "main.go", "// Find available port for HTTP server", "router.GET(\"/late\", evil)\n\t// Find available port for HTTP server")
@@ -1089,8 +1098,8 @@ func TestRouteHelpersNoAuthOrCaptureFirstSegment(t *testing.T) {
 //   - exactly two `if err := verifyAuthRouteTable(router); err != nil { logger.Fatal(...) }`
 //     statements at the top level of main(), and no other mention of the verifier;
 //   - the first comes after the last statement that registers on, or hands out, the
-//     engine, and before every ListenAndServe*; the single router.Use(altSvcMiddleware)
-//     follows it, and the second verify follows that Use and precedes srv.ListenAndServe.
+//     engine, and before every ListenAndServe*; the second verify follows it and
+//     precedes srv.ListenAndServe. main() has no router.Use(altSvcMiddleware) (it is in buildRouter).
 func scanMainVerifySequence(fset *token.FileSet, files map[string]*ast.File) []string {
 	var out []string
 	add := func(format string, a ...any) { out = append(out, fmt.Sprintf(format, a...)) }
@@ -1134,11 +1143,9 @@ func scanMainVerifySequence(fset *token.FileSet, files map[string]*ast.File) []s
 		return true
 	})
 	var verifyIdx []int
-	var altPos token.Pos
 	altCount := 0
 	ast.Inspect(mainFn.Body, func(n ast.Node) bool {
 		if ce, ok := n.(*ast.CallExpr); ok && exprText(fset, ce) == "router.Use(altSvcMiddleware)" {
-			altPos = ce.Pos()
 			altCount++
 		}
 		return true
@@ -1152,8 +1159,28 @@ func scanMainVerifySequence(fset *token.FileSet, files map[string]*ast.File) []s
 		add("main.go: main() must contain exactly two top-level `if err := verifyAuthRouteTable(router); err != nil { logger.Fatal(...) }` statements and no other mention of the verifier (found %d well-formed, %d mentions)", len(verifyIdx), mentions)
 		return out
 	}
-	if altCount != 1 || !(mainFn.Body.List[verifyIdx[0]].End() < altPos && altPos < mainFn.Body.List[verifyIdx[1]].Pos()) {
-		add("main.go: the single router.Use(altSvcMiddleware) must sit between the first and the second verifyAuthRouteTable call")
+	// ALTSVC2-F2: the HTTP/3 advertisement is decided inside startH3Stack (certificate loaded,
+	// UDP bind confirmed); main() must call it exactly once, with the certificate loader, and
+	// must never set or read h3Advertised itself (a Store before the cert load, mutant R4).
+	h3Calls, h3Mentions := 0, 0
+	ast.Inspect(mainFn.Body, func(n ast.Node) bool {
+		switch x := n.(type) {
+		case *ast.Ident:
+			if x.Name == "h3Advertised" {
+				h3Mentions++
+			}
+		case *ast.CallExpr:
+			if exprText(fset, x) == strings.TrimPrefix(h3Call, "httpsServer, http3Server := ") {
+				h3Calls++
+			}
+		}
+		return true
+	})
+	if h3Calls != 1 || h3Mentions != 0 {
+		add("main.go: main() must call exactly once `%s` and never mention h3Advertised (found %d calls, %d mentions; the advertisement is set after the confirmed bind inside startH3Stack)", h3Call, h3Calls, h3Mentions)
+	}
+	if altCount != 0 {
+		add("main.go: main() must not contain router.Use(altSvcMiddleware) (found %d; it is installed in buildRouter before the routes, CAT-ALTSVC-1)", altCount)
 	}
 	touchesRouter := func(st ast.Stmt) bool {
 		hit := false

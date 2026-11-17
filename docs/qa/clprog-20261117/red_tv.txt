@@ -1,0 +1,154 @@
+openjdk version "17.0.21" 2026-10-20
+OpenJDK Runtime Environment Temurin-17.0.21+9 (build 17.0.21+9)
+OpenJDK 64-Bit Server VM Temurin-17.0.21+9 (build 17.0.21+9, mixed mode, sharing)
+Downloading https://services.gradle.org/distributions/gradle-8.11.1-bin.zip
+.............10%.............20%.............30%.............40%.............50%.............60%.............70%.............80%.............90%.............100%
+
+Welcome to Gradle 8.11.1!
+
+Here are the highlights of this release:
+ - Parallel load and store for Configuration Cache
+ - Java compilation errors at the end of the build output
+ - Consolidated report for warnings and deprecations
+
+For more details see https://docs.gradle.org/8.11.1/release-notes.html
+
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.11.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :app
+WARNING: The option setting 'android.defaults.buildfeatures.buildconfig=true' is deprecated.
+The current default is 'false'.
+It will be removed in version 9.0 of the Android Gradle plugin.
+You can resolve this warning in Android Studio via `Refactor` > `Migrate BuildConfig to Gradle Build Files`
+Warning: SDK processing. This version only understands SDK XML versions up to 3 but an SDK XML file of version 4 was encountered. This can happen if you use versions of Android Studio and the command-line tools that were released at different times.
+
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugBuildConfig
+> Task :app:checkDebugAarMetadata
+> Task :app:injectCrashlyticsMappingFileIdDebug
+> Task :app:processDebugGoogleServices
+> Task :app:mapDebugSourceSetPaths
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources
+> Task :app:packageDebugResources
+> Task :app:parseDebugLocalResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:processDebugManifestForPackage
+> Task :app:processDebugResources
+> Task :app:kaptGenerateStubsDebugKotlin
+> Task :app:kaptDebugKotlin
+> Task :app:compileDebugKotlin
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/DependencyContainer.kt:61:67 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/data/discovery/NetworkDiscoveryService.kt:180:34 Parameter 'attempt' is never used, could be renamed to _
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/data/sync/SyncService.kt:96:43 Parameter 'container' is never used
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/data/tv/ChannelProgramMapper.kt:96:65 Unnecessary non-null assertion (!!) on a non-null receiver of type Long
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/data/tv/ChannelProgramMapper.kt:98:94 Unnecessary non-null assertion (!!) on a non-null receiver of type Long
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/player/VLCPlayer.kt:434:17 Variable 'videoLayout' is never used
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/components/MediaCarousel.kt:71:42 'TvLazyRow(Modifier = ..., TvLazyListState = ..., PaddingValues = ..., Boolean = ..., Arrangement.Horizontal = ..., Alignment.Vertical = ..., Boolean = ..., PivotOffsets = ..., TvLazyListScope.() -> Unit): Unit' is deprecated. LazyRow will, by default, set the position of focused item while scrolling on Tv. BringIntoViewSpec should be used to control the position.
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/player/VLCPlayerActivity.kt:606:5 Parameter 'volume' is never used
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/player/VLCPlayerActivity.kt:609:5 Parameter 'onVolumeChange' is never used
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/category/CategoryBrowseScreen.kt:107:46 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/home/HomeScreen.kt:269:17 'TvLazyColumn(Modifier = ..., TvLazyListState = ..., PaddingValues = ..., Boolean = ..., Arrangement.Vertical = ..., Alignment.Horizontal = ..., Boolean = ..., PivotOffsets = ..., TvLazyListScope.() -> Unit): Unit' is deprecated. LazyColumn will, by default, set the position of focused item while scrolling on Tv. BringIntoViewSpec should be used to control the position.
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/login/LoginScreen.kt:96:73 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/login/LoginScreen.kt:139:9 Variable 'accentGlow' is never used
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/login/LoginScreen.kt:157:13 Variable 'elevation' is never used
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/login/LoginScreen.kt:525:13 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/login/LoginScreen.kt:819:13 'Divider(Modifier = ..., Dp = ..., Color = ...): Unit' is deprecated. Renamed to HorizontalDivider
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/login/LoginScreen.kt:879:44 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/media/MediaDetailScreen.kt:322:21 Variable 'isBookLeaf' is never used
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/media/MediaDetailScreen.kt:383:58 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/media/MediaDetailScreen.kt:516:82 'MenuBook: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.MenuBook
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/media/MediaDetailScreen.kt:661:70 'TvLazyRow(Modifier = ..., TvLazyListState = ..., PaddingValues = ..., Boolean = ..., Arrangement.Horizontal = ..., Alignment.Vertical = ..., Boolean = ..., PivotOffsets = ..., TvLazyListScope.() -> Unit): Unit' is deprecated. LazyRow will, by default, set the position of focused item while scrolling on Tv. BringIntoViewSpec should be used to control the position.
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/player/MediaPlayerScreen.kt:296:50 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/player/MediaPlayerScreen.kt:359:29 'LinearProgressIndicator(Float, Modifier = ..., Color = ..., Color = ..., StrokeCap = ...): Unit' is deprecated. Use the overload that takes `progress` as a lambda
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/search/SearchScreen.kt:67:5 Parameter 'onNavigateBack' is never used
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/search/SearchScreen.kt:78:9 Variable 'scope' is never used
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/settings/SettingsScreen.kt:220:13 'TvLazyColumn(Modifier = ..., TvLazyListState = ..., PaddingValues = ..., Boolean = ..., Arrangement.Vertical = ..., Alignment.Horizontal = ..., Boolean = ..., PivotOffsets = ..., TvLazyListScope.() -> Unit): Unit' is deprecated. LazyColumn will, by default, set the position of focused item while scrolling on Tv. BringIntoViewSpec should be used to control the position.
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/viewer/BookReaderScreen.kt:388:38 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/viewer/ComicReaderScreen.kt:384:38 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/ui/screens/viewer/ImageViewerScreen.kt:360:38 'ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack
+w: file:///work/catalogizer-androidtv/app/src/main/java/com/catalogizer/androidtv/utils/FormatUtils.kt:84:27 'capitalize(): String' is deprecated. Use replaceFirstChar instead.
+
+> Task :app:javaPreCompileDebug
+> Task :app:compileDebugJavaWithJavac
+> Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:kaptGenerateStubsDebugUnitTestKotlin
+> Task :app:kaptDebugUnitTestKotlin
+
+> Task :app:compileDebugUnitTestKotlin FAILED
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryTest.kt:190:69 Type mismatch: inferred type is Response<JsonObject!>! but Response<Unit> was expected
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryTest.kt:205:69 Type mismatch: inferred type is Response<JsonObject!>! but Response<Unit> was expected
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:58:36 Unresolved reference: buildWatchProgressBody
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:59:9 None of the following functions can be called with the arguments supplied: 
+public open fun assertEquals(p0: Double, p1: Double, p2: Double): Unit defined in org.junit.Assert
+public open fun assertEquals(p0: Float, p1: Float, p2: Float): Unit defined in org.junit.Assert
+public open fun assertEquals(p0: String!, p1: Any!, p2: Any!): Unit defined in org.junit.Assert
+public open fun assertEquals(p0: String!, p1: Array<(out) Any!>!, p2: Array<(out) Any!>!): Unit defined in org.junit.Assert
+public open fun assertEquals(p0: String!, p1: Double, p2: Double): Unit defined in org.junit.Assert
+public open fun assertEquals(p0: String!, p1: Long, p2: Long): Unit defined in org.junit.Assert
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:60:9 None of the following functions can be called with the arguments supplied: 
+public open fun assertEquals(p0: Double, p1: Double, p2: Double): Unit defined in org.junit.Assert
+public open fun assertEquals(p0: Float, p1: Float, p2: Float): Unit defined in org.junit.Assert
+public open fun assertEquals(p0: String!, p1: Any!, p2: Any!): Unit defined in org.junit.Assert
+public open fun assertEquals(p0: String!, p1: Array<(out) Any!>!, p2: Array<(out) Any!>!): Unit defined in org.junit.Assert
+public open fun assertEquals(p0: String!, p1: Double, p2: Double): Unit defined in org.junit.Assert
+public open fun assertEquals(p0: String!, p1: Long, p2: Long): Unit defined in org.junit.Assert
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:61:9 None of the following functions can be called with the arguments supplied: 
+public open fun assertEquals(p0: Double, p1: Double, p2: Double): Unit defined in org.junit.Assert
+public open fun assertEquals(p0: Float, p1: Float, p2: Float): Unit defined in org.junit.Assert
+public open fun assertEquals(p0: String!, p1: Any!, p2: Any!): Unit defined in org.junit.Assert
+public open fun assertEquals(p0: String!, p1: Array<(out) Any!>!, p2: Array<(out) Any!>!): Unit defined in org.junit.Assert
+public open fun assertEquals(p0: String!, p1: Double, p2: Double): Unit defined in org.junit.Assert
+public open fun assertEquals(p0: String!, p1: Long, p2: Long): Unit defined in org.junit.Assert
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:66:36 Unresolved reference: buildWatchProgressBody
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:73:72 Type mismatch: inferred type is Response<JsonObject> but Response<Unit> was expected
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:75:30 Unresolved reference: saveWatchProgress
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:77:22 Unresolved reference: WatchProgressOutcome
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:84:64 Type mismatch: inferred type is Response<JsonObject> but Response<Unit> was expected
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:86:30 Unresolved reference: saveWatchProgress
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:88:22 Unresolved reference: WatchProgressOutcome
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:93:64 Type mismatch: inferred type is Response<JsonObject> but Response<Unit> was expected
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:94:31 Unresolved reference: saveWatchProgress
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:94:61 Unresolved reference: WatchProgressOutcome
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:99:56 None of the following functions can be called with the arguments supplied: 
+public final fun returnsMany(vararg values: Response<Unit>): MockKAdditionalAnswerScope<Response<Unit>, Response<Unit>> defined in io.mockk.MockKStubScope
+public final infix fun returnsMany(values: List<Response<Unit>>): MockKAdditionalAnswerScope<Response<Unit>, Response<Unit>> defined in io.mockk.MockKStubScope
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:101:30 Unresolved reference: saveWatchProgress
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:103:22 Unresolved reference: WatchProgressOutcome
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:109:64 Type mismatch: inferred type is Response<JsonObject> but Response<Unit> was expected
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:111:30 Unresolved reference: saveWatchProgress
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:113:22 Unresolved reference: WatchProgressOutcome
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:122:24 Unresolved reference: saveWatchProgress
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:131:64 Type mismatch: inferred type is Response<JsonObject> but Response<Unit> was expected
+e: file:///work/catalogizer-androidtv/app/src/test/java/com/catalogizer/androidtv/data/repository/MediaRepositoryWatchProgressTest.kt:135:21 Unresolved reference: WatchProgressNotStoredException
+[Incubating] Problems report is available at: file:///work/catalogizer-androidtv/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.11.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+25 actionable tasks: 25 executed
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileDebugUnitTestKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 8m 36s
+rc=1

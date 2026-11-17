@@ -132,6 +132,7 @@ var wantEngineLevel = []string{
 	"middleware/request.go:RequestID",
 	"middleware/input_validation.go:InputValidation",
 	"internal/middleware/compression.go:CompressionMiddleware",
+	"main_router.go:altSvcMiddleware",
 }
 
 // Keys are "<source file relative to the module root>:<identifier>" (production
@@ -434,12 +435,13 @@ func TestVerifyAuthRouteTable_RealEngines(t *testing.T) {
 	e.GET("/api/v1/authors", func(*gin.Context) {})
 	e.GET("/api/v1/catalog/x", func(*gin.Context) {})
 	require.NoError(t, verifyAuthRouteTable(e))
-	// golden-FALSE: main() adds exactly one late global Use, altSvcMiddleware; the
-	// verifier accepts the chain with it appended and nothing else.
+	// altSvcMiddleware is part of the pinned chain (CAT-ALTSVC-1); a late second one
+	// (the old main() shape) or any other late Use is refused.
 	e.Use(altSvcMiddleware)
-	require.NoError(t, verifyAuthRouteTable(e))
-	e.Use(func(c *gin.Context) { c.Next() })
-	require.Error(t, verifyAuthRouteTable(e), "a second late Use is refused")
+	require.Error(t, verifyAuthRouteTable(e), "a late second altSvcMiddleware is refused")
+	e3 := buildRouter(routerTestDeps())
+	e3.Use(func(c *gin.Context) { c.Next() })
+	require.Error(t, verifyAuthRouteTable(e3), "a late Use is refused")
 	// golden-FALSE: other registered shapes that cannot answer an /api/v1/auth path.
 	e2 := buildRouter(routerTestDeps())
 	e2.GET("/api/:v/authors", func(*gin.Context) {})
@@ -451,12 +453,12 @@ func TestVerifyAuthRouteTable_RealEngines(t *testing.T) {
 
 func TestAltSvcMiddleware(t *testing.T) {
 	gin.SetMode(gin.TestMode)
+	setH3Advertised(t, true)
 	e := gin.New()
 	e.Use(altSvcMiddleware)
 	called := false
 	e.GET("/x", func(c *gin.Context) { called = true; c.Status(204) })
-	rec := httptest.NewRecorder()
-	e.ServeHTTP(rec, httptest.NewRequest("GET", "/x", nil))
+	rec := altSvcDo(e, "GET", "/x", true)
 	require.True(t, called, "altSvcMiddleware must call Next")
 	require.Equal(t, `h3=":28443"; ma=86400`, rec.Header().Get("Alt-Svc"))
 	require.Equal(t, altSvcKey, handlerKey(altSvcMiddleware))
@@ -605,12 +607,42 @@ func TestAltSvcAndHandlerKey_RuntimeMutants(t *testing.T) {
 	}
 	// (c.Next() itself is redundant in gin: the dispatch loop continues after a handler
 	// returns. The mutants are the ones that change behaviour: abort, or no header.)
-	hdr := "\tc.Header(\"Alt-Svc\", `h3=\":28443\"; ma=86400`)\n\tc.Next()"
+	hdr := "\t\tc.Header(\"Alt-Svc\", `h3=\":28443\"; ma=86400`)\n\t}\n\tc.Next()"
+	gate := "if h3Advertised.Load() && c.Request.TLS != nil {"
 	t.Run("AS1_altsvc_aborts_the_chain", func(t *testing.T) {
-		runtimeMutantRun(t, map[string][][2]string{"main_router.go": {{hdr, "\tc.Header(\"Alt-Svc\", `h3=\":28443\"; ma=86400`)\n\tc.Abort()"}}}, "TestAltSvcMiddleware")
+		runtimeMutantRun(t, map[string][][2]string{"main_router.go": {{hdr, "\t\tc.Header(\"Alt-Svc\", `h3=\":28443\"; ma=86400`)\n\t}\n\tc.Abort()"}}}, "TestAltSvcMiddleware")
 	})
 	t.Run("AS2_altsvc_header_dropped", func(t *testing.T) {
-		runtimeMutantRun(t, map[string][][2]string{"main_router.go": {{hdr, "\tc.Next()"}}}, "TestAltSvcMiddleware")
+		runtimeMutantRun(t, map[string][][2]string{"main_router.go": {{hdr, "\t}\n\tc.Next()"}}}, "TestAltSvcReachOnRealRouter")
+	})
+	t.Run("AS4_header_on_plain_HTTP", func(t *testing.T) {
+		runtimeMutantRun(t, map[string][][2]string{"main_router.go": {{gate, "if h3Advertised.Load() {"}}}, "TestAltSvcNotAdvertisedOverPlainHTTP")
+	})
+	t.Run("AS5_ma_value_changed", func(t *testing.T) {
+		runtimeMutantRun(t, map[string][][2]string{"main_router.go": {{"ma=86400`)\n\t}", "ma=1`)\n\t}"}}}, "TestAltSvcReachOnRealRouter")
+	})
+	t.Run("AS6_advertised_while_h3_disabled", func(t *testing.T) {
+		runtimeMutantRun(t, map[string][][2]string{"main_router.go": {{gate, "if c.Request.TLS != nil {"}}}, "TestAltSvcNotAdvertisedWhenH3Disabled")
+	})
+	t.Run("AS7_middleware_removed_from_buildRouter", func(t *testing.T) {
+		runtimeMutantRun(t, map[string][][2]string{"main_router.go": {{"\trouter.Use(altSvcMiddleware) // CAT-ALTSVC-1: before the routes, or it would reach only the NoRoute chain\n", ""}}}, "TestAltSvcReachOnRealRouter")
+	})
+	// ALTSVC2 follow-ups: R5 (header set after the body, only a real socket sees it lost), R4-class
+	// (flag set before the certificate load / before the UDP bind), and the real bug signature (routed 200
+	// without the header while the 404 chain still has it: the middleware registered after the routes).
+	t.Run("AS8_R5_header_set_via_defer_after_next", func(t *testing.T) {
+		runtimeMutantRun(t, map[string][][2]string{"main_router.go": {{hdr, "\t\tdefer c.Header(\"Alt-Svc\", `h3=\":28443\"; ma=86400`)\n\t}\n\tc.Next()"}}}, "TestAltSvcRealSocketHTTP2")
+	})
+	t.Run("AS9_flag_set_before_cert_load", func(t *testing.T) {
+		runtimeMutantRun(t, map[string][][2]string{"main_h3.go": {{"\tcert, err := loadCert()", "\th3Advertised.Store(true)\n\tcert, err := loadCert()"}}}, "TestAltSvcStartH3Stack_CertErrorNotAdvertised")
+	})
+	t.Run("AS10_flag_set_before_udp_bind", func(t *testing.T) {
+		runtimeMutantRun(t, map[string][][2]string{"main_h3.go": {{"\tudpConn, err := net.ListenPacket(", "\th3Advertised.Store(true)\n\tudpConn, err := net.ListenPacket("}}}, "TestAltSvcStartH3Stack_UDPBindFailureNotAdvertised")
+	})
+	t.Run("AS11_middleware_registered_after_routes_real_signature", func(t *testing.T) {
+		use := "\trouter.Use(altSvcMiddleware) // CAT-ALTSVC-1: before the routes, or it would reach only the NoRoute chain\n"
+		out := runtimeMutantRun(t, map[string][][2]string{"main_router.go": {{use, ""}, {"\treturn router\n}", "\trouter.Use(altSvcMiddleware)\n\treturn router\n}"}}}, "TestAltSvcReachOnRealRouter")
+		require.Contains(t, out, "routed 200 over TLS must advertise HTTP/3", "RED must show the real bug signature (routed 200 lacks the header; the 404 control passed)")
 	})
 	t.Run("HK1_handlerKey_depends_on_directory_name_under_trimpath", func(t *testing.T) {
 		runtimeMutantRun(t, map[string][][2]string{"main_router.go": {{"\tif root := moduleRootDir(); root != \"\" && strings.HasPrefix(file, root) {\n\t\treturn file[len(root):]", "\tif i := strings.LastIndex(file, \"/catalog-api/\"); i >= 0 {\n\t\treturn file[i+len(\"/catalog-api/\"):]"}}}, "TestHandlerKeyIndependentOfCheckoutPath", "-trimpath")

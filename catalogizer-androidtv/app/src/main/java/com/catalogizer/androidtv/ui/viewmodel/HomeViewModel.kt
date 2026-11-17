@@ -259,6 +259,8 @@ class HomeViewModel(
             try {
                 mediaRepository.updateWatchProgress(mediaId, 1.0)
                 loadHomeData()
+            } catch (e: com.catalogizer.androidtv.data.repository.WatchProgressNotStoredException) {
+                // the server did not store it (no row/duration yet): do not reload as if it had been marked
             } catch (e: Exception) {
                 // Handle error
             }

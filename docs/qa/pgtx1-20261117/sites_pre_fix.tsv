@@ -1,0 +1,70 @@
+database/tx_helpers.go:18	DB.TxInsertReturningID	tx	param:*sql.Tx	QueryRowContext	" RETURNING id"
+database/tx_helpers.go:26	DB.TxInsertReturningID	tx	param:*sql.Tx	ExecContext	" RETURNING id"
+internal/media/database/database.go:110	MediaDatabase.createSchemaFromString	tx	begin:mdb.db	Exec	
+internal/media/database/database.go:165	MediaDatabase.Backup	tx	begin:mdb.db	Exec	fmt.Sprintf("ATTACH DATABASE '%s' AS backup KEY '%s'", backupPath, mdb.password)
+internal/media/database/database.go:173	MediaDatabase.Backup	tx	begin:mdb.db	Exec	copyQuery
+internal/media/database/database.go:179	MediaDatabase.Backup	tx	begin:mdb.db	Exec	"DETACH DATABASE backup"
+internal/services/playlist_service.go:323	PlaylistService.AddToPlaylist	tx	begin:s.db	QueryRowContext	"SELECT COALESCE(MAX(position), 0) + 1 FROM playlist_items WHERE playlist_id = ?"
+internal/services/playlist_service.go:332	PlaylistService.AddToPlaylist	tx	begin:s.db	ExecContext	"UPDATE playlist_items SET position = position + ? WHERE playlist_id = ? AND position >= ?"
+internal/services/playlist_service.go:346	PlaylistService.AddToPlaylist	tx	begin:s.db	ExecContext	` INSERT INTO playlist_items (playlist_id, media_item_id, position, added_by, added_at, custom_title) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, ?) `
+internal/services/playlist_service.go:384	PlaylistService.RemoveFromPlaylist	tx	begin:s.db	QueryRowContext	"SELECT position FROM playlist_items WHERE id = ? AND playlist_id = ?"
+internal/services/playlist_service.go:391	PlaylistService.RemoveFromPlaylist	tx	begin:s.db	ExecContext	"DELETE FROM playlist_items WHERE id = ? AND playlist_id = ?"
+internal/services/playlist_service.go:398	PlaylistService.RemoveFromPlaylist	tx	begin:s.db	ExecContext	"UPDATE playlist_items SET position = position - 1 WHERE playlist_id = ? AND position > ?"
+internal/services/playlist_service.go:433	PlaylistService.ReorderPlaylist	tx	begin:s.db	QueryRowContext	"SELECT position FROM playlist_items WHERE id = ? AND playlist_id = ?"
+internal/services/playlist_service.go:446	PlaylistService.ReorderPlaylist	tx	begin:s.db	ExecContext	"UPDATE playlist_items SET position = -10000 WHERE id = ?"
+internal/services/playlist_service.go:456	PlaylistService.ReorderPlaylist	tx	begin:s.db	ExecContext	` UPDATE playlist_items SET position = position - 1 WHERE playlist_id = ? AND position > ? AND position <= ? `
+internal/services/playlist_service.go:463	PlaylistService.ReorderPlaylist	tx	begin:s.db	ExecContext	` UPDATE playlist_items SET position = position + 1 WHERE playlist_id = ? AND position >= ? AND position < ? `
+internal/services/playlist_service.go:475	PlaylistService.ReorderPlaylist	tx	begin:s.db	ExecContext	"UPDATE playlist_items SET position = ? WHERE id = ?"
+internal/services/playlist_service.go:556	PlaylistService.RefreshSmartPlaylist	tx	begin:s.db	ExecContext	"DELETE FROM playlist_items WHERE playlist_id = ?"
+internal/services/playlist_service.go:561	PlaylistService.RefreshSmartPlaylist	tx	begin:s.db	QueryContext	query
+internal/services/playlist_service.go:575	PlaylistService.RefreshSmartPlaylist	tx	begin:s.db	ExecContext	` INSERT INTO playlist_items (playlist_id, media_item_id, position, added_by, added_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP) `
+internal/services/playlist_service.go:640	PlaylistService.AddToQueue	tx	begin:s.db	QueryRowContext	"SELECT COALESCE(MAX(position), 0) + 1 FROM queue_items WHERE queue_id = ?"
+internal/services/playlist_service.go:648	PlaylistService.AddToQueue	tx	begin:s.db	ExecContext	` INSERT INTO queue_items (queue_id, media_item_id, position, original_position, play_count, added_at) VALUES (?, ?, ?, ?, 0, CURRENT_TIMESTAMP) `
+internal/services/playlist_service.go:712	PlaylistService.updatePlaylistStats	tx	param:*sql.Tx	ExecContext	` UPDATE playlists SET track_count = ( SELECT COUNT(*) FROM playlist_items WHERE playlist_id = ? ), total_duration = ( SELECT COALESCE(SUM(mi.duration), 0) FROM playlist_items pi JOIN media_items mi ON pi.media_item_id = mi.id WHERE pi.playlist_id = ? ), updated_at = CURRENT_TIMESTAMP WHERE id = ? `
+internal/services/playlist_service.go:723	PlaylistService.updatePlaylistTags	tx	begin:s.db	ExecContext	"DELETE FROM playlist_tags WHERE playlist_id = ?"
+internal/services/playlist_service.go:729	PlaylistService.updatePlaylistTags	tx	begin:s.db	ExecContext	"INSERT INTO playlist_tags (playlist_id, tag) VALUES (?, ?)"
+internal/services/playlist_service.go:747	PlaylistService.updatePlaylistCollaborators	tx	begin:s.db	ExecContext	"DELETE FROM playlist_collaborators WHERE playlist_id = ?"
+internal/services/playlist_service.go:753	PlaylistService.updatePlaylistCollaborators	tx	begin:s.db	ExecContext	"INSERT INTO playlist_collaborators (playlist_id, user_id, added_at) VALUES (?, ?, CURRENT_TIMESTAMP)"
+internal/services/rename_tracker.go:207	RenameTracker.moveFile	tx	param:*sql.Tx	QueryRow	`SELECT id FROM files WHERE path = ? AND is_directory = true LIMIT 1`
+internal/services/rename_tracker.go:220	RenameTracker.moveFile	tx	param:*sql.Tx	Exec	` UPDATE files SET path = ?, name = ?, parent_id = ?, updated_at = CURRENT_TIMESTAMP, last_scan_at = CURRENT_TIMESTAMP WHERE id = ?`
+internal/services/rename_tracker.go:239	RenameTracker.moveDirectory	tx	param:*sql.Tx	Query	` SELECT id, path, is_directory FROM files WHERE storage_root_id = (SELECT id FROM storage_roots WHERE name = ?) AND (path = ? OR path LIKE ?) ORDER BY LENGTH(path) ASC`
+internal/services/rename_tracker.go:280	RenameTracker.moveDirectory	tx	param:*sql.Tx	QueryRow	`SELECT id FROM files WHERE path = ? AND is_directory = true LIMIT 1`
+internal/services/rename_tracker.go:292	RenameTracker.moveDirectory	tx	param:*sql.Tx	Exec	` UPDATE files SET path = ?, name = ?, parent_id = ?, updated_at = CURRENT_TIMESTAMP, last_scan_at = CURRENT_TIMESTAMP WHERE id = ?`
+internal/services/rename_tracker.go:323	RenameTracker.markRenameEventStatus	tx	param:*sql.Tx	Exec	`UPDATE rename_events SET status = ?, processed_at = CURRENT_TIMESTAMP WHERE id = ?`
+internal/services/universal_rename_tracker.go:312	UniversalRenameTracker.moveFile	tx	param:*sql.Tx	QueryRow	`SELECT id FROM files WHERE path = ? AND is_directory = true LIMIT 1`
+internal/services/universal_rename_tracker.go:324	UniversalRenameTracker.moveFile	tx	param:*sql.Tx	Exec	` UPDATE files SET path = ?, name = ?, parent_id = ?, modified_at = CURRENT_TIMESTAMP, last_scan_at = CURRENT_TIMESTAMP WHERE id = ?`
+internal/services/universal_rename_tracker.go:342	UniversalRenameTracker.moveDirectory	tx	param:*sql.Tx	Query	` SELECT id, path, is_directory FROM files WHERE storage_root_id = (SELECT id FROM storage_roots WHERE name = ?) AND (path = ? OR path LIKE ?) ORDER BY LENGTH(path) ASC`
+internal/services/universal_rename_tracker.go:397	UniversalRenameTracker.markRenameEventStatus	tx	param:*sql.Tx	Exec	`UPDATE universal_rename_events SET status = ?, processed_at = CURRENT_TIMESTAMP WHERE id = ?`
+internal/services/universal_scanner.go:1017	insertFileRecord	tx	begin:db	ExecContext	"PRAGMA foreign_keys = OFF"
+internal/services/universal_scanner.go:1024	insertFileRecord	tx	begin:db	ExecContext	`UPDATE files SET name = ?, extension = ?, mime_type = ?, file_type = ?, size = ?, is_directory = ?, modified_at = ?, last_scan_at = CURRENT_TIMESTAMP, parent_id = COALESCE(?, parent_id), deleted = 0, deleted_at = NULL WHERE storage_root_id = ? AND path = ?`
+internal/services/universal_scanner.go:1033	insertFileRecord	tx	begin:db	ExecContext	`INSERT INTO files (storage_root_id, path, name, extension, mime_type, file_type, size, is_directory, modified_at, last_scan_at, parent_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)`
+internal/services/universal_scanner.go:1045	insertFileRecord	tx	begin:db	ExecContext	"PRAGMA foreign_keys = ON"
+internal/services/universal_scanner.go:822	ensureDirectoryPathExists	tx	begin:db	ExecContext	"PRAGMA foreign_keys = OFF"
+internal/services/universal_scanner.go:824	ensureDirectoryPathExists	tx	begin:db	ExecContext	`INSERT OR IGNORE INTO files (storage_root_id, path, name, extension, mime_type, file_type, size, is_directory, modified_at, last_scan_at, parent_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?)`
+internal/services/universal_scanner.go:834	ensureDirectoryPathExists	tx	begin:db	QueryRowContext	"SELECT id FROM files WHERE path = ? AND storage_root_id = ?"
+internal/services/universal_scanner.go:842	ensureDirectoryPathExists	tx	begin:db	ExecContext	"PRAGMA foreign_keys = ON"
+repository/login_throttle.go:379	LoginThrottle.lockSlots	tx	param:*sql.Tx	ExecContext	t.db.Rewrite(`INSERT OR IGNORE INTO login_throttle (subject, scope) VALUES (?, ?)`)
+repository/login_throttle.go:382	LoginThrottle.lockSlots	tx	param:*sql.Tx	ExecContext	t.db.Rewrite(`UPDATE login_throttle SET last_failure_ms = ?, version = version + 1 WHERE subject = ? AND scope = ?`)
+repository/login_throttle.go:413	LoginThrottle.takeToken	tx	begin:t.db	QueryRowContext	t.db.Rewrite(`SELECT COUNT(*) FROM login_throttle WHERE subject = ? AND substr(scope, 1, 5) = ? AND last_failure_ms > ?`)
+repository/login_throttle.go:420	LoginThrottle.takeToken	tx	begin:t.db	ExecContext	t.db.Rewrite(`INSERT INTO login_throttle (subject, scope, last_failure_ms) VALUES (?, ?, ?)`)
+repository/playback_session_repository.go:150	PlaybackSessionRepository.End	tx	begin:r.db	ExecContext	`UPDATE playback_sessions SET ended_at = ?, end_position = ?, total_amount = ?, completed = ? WHERE id = ?`
+repository/playback_session_repository.go:164	PlaybackSessionRepository.End	tx	begin:r.db	QueryRowContext	`SELECT user_id, media_item_id, position_unit, COALESCE(end_position, 0), total_amount FROM playback_sessions WHERE id = ?`
+repository/playback_session_repository.go:180	PlaybackSessionRepository.End	tx	begin:r.db	QueryRowContext	`SELECT total_reproductions, aggregate_amount, duration_total FROM media_progress WHERE user_id = ? AND media_item_id = ?`
+repository/playback_session_repository.go:198	PlaybackSessionRepository.End	tx	begin:r.db	ExecContext	`INSERT INTO media_progress (user_id, media_item_id, position_unit, duration_total, last_position, last_session_amount, total_reproductions, aggregate_amount, last_session_ended_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?)`
+repository/playback_session_repository.go:210	PlaybackSessionRepository.End	tx	begin:r.db	ExecContext	`UPDATE media_progress SET position_unit = ?, duration_total = ?, last_position = ?, last_session_amount = ?, total_reproductions = ?, aggregate_amount = ?, last_session_ended_at = ?, updated_at = ? WHERE user_id = ? AND media_item_id = ?`
+repository/user_repository.go:1100	UserRepository.UpdateRole	tx	begin:r.db	Exec	
+repository/user_repository.go:1103	UserRepository.UpdateRole	tx	begin:r.db	Exec	`UPDATE roles SET updated_at = updated_at WHERE id = ?`
+repository/user_repository.go:1130	UserRepository.UpdateRole	tx	begin:r.db	Exec	
+repository/user_repository.go:1168	UserRepository.DeleteRole	tx	begin:r.db	QueryRow	"SELECT COUNT(*) FROM users WHERE role_id = ?"
+repository/user_repository.go:1177	UserRepository.DeleteRole	tx	begin:r.db	Exec	"DELETE FROM roles WHERE id = ? AND is_system = 0"
+repository/user_repository.go:260	UserRepository.UpdateGuarded	tx	begin:r.db	Exec	
+repository/user_repository.go:332	UserRepository.lockAdminWrites	tx	param:*sql.Tx	Exec	
+repository/user_repository.go:335	UserRepository.lockAdminWrites	tx	param:*sql.Tx	Exec	`UPDATE roles SET updated_at = updated_at WHERE id = 0`
+repository/user_repository.go:348	UserRepository.adminRoleIDsTx	tx	param:*sql.Tx	Query	r.db.Rewrite(`SELECT id, permissions FROM roles`)
+repository/user_repository.go:573	UserRepository.LockAccount	tx	begin:r.db	Exec	r.db.Rewrite(query)
+repository/user_repository.go:678	UserRepository.SetSuspended	tx	begin:r.db	Exec	r.db.Rewrite(query)
+repository/user_repository.go:722	UserRepository.Delete	tx	begin:r.db	QueryRow	r.db.Rewrite(`SELECT username FROM users WHERE id = ?`)
+repository/user_repository.go:726	UserRepository.Delete	tx	begin:r.db	Exec	r.db.Rewrite(`UPDATE auth_audit_log SET details = COALESCE(details, '') || ? WHERE user_id = ?`)
+repository/user_repository.go:733	UserRepository.Delete	tx	begin:r.db	Exec	
+repository/user_repository.go:744	UserRepository.Delete	tx	begin:r.db	QueryRow	r.db.Rewrite(`SELECT role_id, is_active FROM users WHERE id = ?`)
+repository/user_repository.go:751	UserRepository.Delete	tx	begin:r.db	Exec	

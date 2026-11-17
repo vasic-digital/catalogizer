@@ -106,9 +106,9 @@ func (r *PlaybackSessionRepository) Start(ctx context.Context, s PlaybackStart) 
 		`INSERT INTO playback_sessions
 		    (user_id, media_item_id, file_id, started_at, position_unit,
 		     start_position, end_position, total_amount, completed)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0)`,
+		 VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)`,
 		s.UserID, s.MediaItemID, s.FileID, s.StartedAt, s.PositionUnit,
-		s.StartPosition, s.StartPosition)
+		s.StartPosition, s.StartPosition, false)
 }
 
 // Progress bumps end_position and total_amount on an open
@@ -142,26 +142,38 @@ func (r *PlaybackSessionRepository) End(ctx context.Context, e PlaybackEnd) erro
 		return fmt.Errorf("begin tx: %w", err)
 	}
 	defer func() { _ = tx.Rollback() }()
+	// Statements on a *sql.Tx bypass the DB wrappers: apply the dialect rewrite (placeholders, boolean literals) explicitly,
+	// otherwise PostgreSQL receives raw `?` markers.
+	exec := func(q string, a ...interface{}) (sql.Result, error) { return tx.ExecContext(ctx, r.db.Rewrite(q), a...) }
+	queryRow := func(q string, a ...interface{}) *sql.Row { return tx.QueryRowContext(ctx, r.db.Rewrite(q), a...) }
 
-	completedInt := 0
-	if e.Completed {
-		completedInt = 1
-	}
-	res, err := tx.ExecContext(ctx,
+	// completed is BOOLEAN on PostgreSQL and a 0/1 BOOLEAN-affinity column on SQLite: bind a Go bool (both drivers accept
+	// it), never an integer (CAT-PG-SESSION-END-1). The ended_at IS NULL guard is a compare-and-set: it takes the row
+	// lock, so concurrent Ends of one session serialise and the loser re-evaluates the predicate under READ COMMITTED and
+	// matches nothing, so a session is counted into media_progress exactly once.
+	res, err := exec(
 		`UPDATE playback_sessions
 		 SET ended_at = ?, end_position = ?, total_amount = ?, completed = ?
-		 WHERE id = ?`,
-		e.EndedAt, e.EndPosition, e.TotalAmount, completedInt, e.SessionID)
+		 WHERE id = ? AND ended_at IS NULL`,
+		e.EndedAt, e.EndPosition, e.TotalAmount, e.Completed, e.SessionID)
 	if err != nil {
 		return fmt.Errorf("end session: %w", err)
 	}
 	if n, rerr := res.RowsAffected(); rerr == nil && n == 0 {
-		return ErrPlaybackSessionNotFound
+		var one int
+		switch qerr := queryRow(`SELECT 1 FROM playback_sessions WHERE id = ?`, e.SessionID).Scan(&one); {
+		case qerr == sql.ErrNoRows:
+			return ErrPlaybackSessionNotFound
+		case qerr != nil:
+			return fmt.Errorf("end session lookup: %w", qerr)
+		}
+		// already ended (a retry or a racing End): idempotent, the first End already counted it.
+		return tx.Commit()
 	}
 
 	var userID, mediaItemID, endPos, totalAmount int64
 	var posUnit string
-	if err := tx.QueryRowContext(ctx,
+	if err := queryRow(
 		`SELECT user_id, media_item_id, position_unit,
 		        COALESCE(end_position, 0), total_amount
 		 FROM playback_sessions WHERE id = ?`, e.SessionID).Scan(
@@ -175,57 +187,43 @@ func (r *PlaybackSessionRepository) End(ctx context.Context, e PlaybackEnd) erro
 	// SQLite that doesn't recognise that syntax. Using the
 	// portable pattern also works unchanged on PostgreSQL, which
 	// is the other dialect we ship.
-	var existingReps, existingAgg int64
-	var existingDuration sql.NullInt64
-	selErr := tx.QueryRowContext(ctx,
-		`SELECT total_reproductions, aggregate_amount, duration_total
-		 FROM media_progress WHERE user_id = ? AND media_item_id = ?`,
-		userID, mediaItemID).Scan(&existingReps, &existingAgg, &existingDuration)
-
-	// Pick the duration to persist: use the caller-provided value
-	// when present, otherwise keep the existing one so a later
-	// session without duration info doesn't wipe a previously-
-	// learned value.
-	var durToStore sql.NullInt64
+	// Duration: the caller's value when present, otherwise keep the stored one (a later session without duration info must
+	// not wipe a learned value). total_reproductions / aggregate_amount are incremented IN SQL so two concurrent Ends of
+	// different sessions of one user/item cannot lose an increment (a read-then-write loses one on READ COMMITTED).
+	var durParam sql.NullInt64
 	if e.DurationTotal != nil {
-		durToStore = sql.NullInt64{Int64: *e.DurationTotal, Valid: true}
-	} else {
-		durToStore = existingDuration
+		durParam = sql.NullInt64{Int64: *e.DurationTotal, Valid: true}
 	}
-
-	switch {
-	case selErr == sql.ErrNoRows:
-		if _, err := tx.ExecContext(ctx,
+	upd, err := exec(
+		`UPDATE media_progress
+		 SET position_unit         = ?,
+		     duration_total        = COALESCE(?, duration_total),
+		     last_position         = ?,
+		     last_session_amount   = ?,
+		     total_reproductions   = total_reproductions + 1,
+		     aggregate_amount      = aggregate_amount + ?,
+		     last_session_ended_at = ?,
+		     updated_at            = ?
+		 WHERE user_id = ? AND media_item_id = ?`,
+		posUnit, durParam, endPos, totalAmount, totalAmount,
+		e.EndedAt, e.EndedAt, userID, mediaItemID)
+	if err != nil {
+		return fmt.Errorf("update media_progress: %w", err)
+	}
+	if n, rerr := upd.RowsAffected(); rerr != nil || n == 0 {
+		// first reproduction for this user/item. (Two first-ever Ends racing here collide on the primary key and the
+		// loser returns an error the caller may retry; documented limit, the portable pattern has no atomic upsert.)
+		if _, err := exec(
 			`INSERT INTO media_progress
 			    (user_id, media_item_id, position_unit, duration_total,
 			     last_position, last_session_amount, total_reproductions,
 			     aggregate_amount, last_session_ended_at, updated_at)
 			 VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?)`,
-			userID, mediaItemID, posUnit, durToStore,
+			userID, mediaItemID, posUnit, durParam,
 			endPos, totalAmount, totalAmount,
 			e.EndedAt, e.EndedAt); err != nil {
 			return fmt.Errorf("insert media_progress: %w", err)
 		}
-	case selErr == nil:
-		if _, err := tx.ExecContext(ctx,
-			`UPDATE media_progress
-			 SET position_unit         = ?,
-			     duration_total        = ?,
-			     last_position         = ?,
-			     last_session_amount   = ?,
-			     total_reproductions   = ?,
-			     aggregate_amount      = ?,
-			     last_session_ended_at = ?,
-			     updated_at            = ?
-			 WHERE user_id = ? AND media_item_id = ?`,
-			posUnit, durToStore, endPos, totalAmount,
-			existingReps+1, existingAgg+totalAmount,
-			e.EndedAt, e.EndedAt,
-			userID, mediaItemID); err != nil {
-			return fmt.Errorf("update media_progress: %w", err)
-		}
-	default:
-		return fmt.Errorf("load media_progress: %w", selErr)
 	}
 
 	return tx.Commit()
@@ -234,7 +232,7 @@ func (r *PlaybackSessionRepository) End(ctx context.Context, e PlaybackEnd) erro
 // Get loads a single playback_sessions row by id.
 func (r *PlaybackSessionRepository) Get(ctx context.Context, id int64) (*PlaybackSession, error) {
 	var s PlaybackSession
-	var completed int
+	var completed bool
 	var fileID sql.NullInt64
 	var endedAt sql.NullTime
 	var endPos sql.NullInt64
@@ -258,7 +256,7 @@ func (r *PlaybackSessionRepository) Get(ctx context.Context, id int64) (*Playbac
 	if endPos.Valid {
 		s.EndPosition = endPos.Int64
 	}
-	s.Completed = completed != 0
+	s.Completed = completed
 	return &s, nil
 }
 
@@ -315,7 +313,7 @@ func (r *PlaybackSessionRepository) ListHistory(ctx context.Context, userID, med
 	out := []PlaybackSession{}
 	for rows.Next() {
 		var s PlaybackSession
-		var completed int
+		var completed bool
 		var fileID sql.NullInt64
 		var endedAt sql.NullTime
 		var endPos sql.NullInt64
@@ -335,7 +333,7 @@ func (r *PlaybackSessionRepository) ListHistory(ctx context.Context, userID, med
 		if endPos.Valid {
 			s.EndPosition = endPos.Int64
 		}
-		s.Completed = completed != 0
+		s.Completed = completed
 		out = append(out, s)
 	}
 	return out, rows.Err()

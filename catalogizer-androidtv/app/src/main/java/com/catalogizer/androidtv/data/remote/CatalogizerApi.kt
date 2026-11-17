@@ -110,7 +110,8 @@ interface CatalogizerApi {
 
     // Media management endpoints
     @PUT("api/v1/media/{id}/progress")
-    suspend fun updateWatchProgress(@Path("id") id: Long, @Body progress: Map<String, Double>): Response<Unit>
+    // WPROG3: the answer body carries persisted (true/false) and a reason; Unit would discard it. 409 = concurrent_update.
+    suspend fun updateWatchProgress(@Path("id") id: Long, @Body progress: Map<String, Double>): Response<kotlinx.serialization.json.JsonObject>
 
     // Favorites endpoints
     @POST("api/v1/favorites")

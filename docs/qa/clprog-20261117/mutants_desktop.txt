@@ -1,0 +1,2 @@
+M5 (save sends currentTime in ms):       Tests  1 failed | 2 passed (3)
+M6 (Ended sends duration in ms):       Tests  1 failed | 2 passed (3)

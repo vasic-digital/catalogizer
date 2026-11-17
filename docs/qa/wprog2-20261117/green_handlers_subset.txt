@@ -1,0 +1,281 @@
+=== RUN   TestADMD1RRRRRRRfu_StorageRoot409BodiesMatchOpenAPIOneOf
+--- PASS: TestADMD1RRRRRRRfu_StorageRoot409BodiesMatchOpenAPIOneOf (2.20s)
+=== RUN   TestADMD1RRRRRRRRfu_OpenAPIHasNoDuplicateKeys
+--- PASS: TestADMD1RRRRRRRRfu_OpenAPIHasNoDuplicateKeys (0.10s)
+=== RUN   TestCAT001_F2_StatsMediaTypesCountsRealRows
+--- PASS: TestCAT001_F2_StatsMediaTypesCountsRealRows (1.96s)
+=== RUN   TestCAT001_R2_FilesForwardingContract
+    alias_routes_cat001_test.go:223: forwarded response: 200 map[data:map[files:[] limit:100 page:1 total_count:0 total_pages:0] success:true]
+--- PASS: TestCAT001_R2_FilesForwardingContract (1.72s)
+=== RUN   TestMediaEntityHandler_WithCoverService_ListEntities
+--- PASS: TestMediaEntityHandler_WithCoverService_ListEntities (1.58s)
+=== RUN   TestMediaEntityHandler_WithCoverService_GetEntity
+--- PASS: TestMediaEntityHandler_WithCoverService_GetEntity (1.75s)
+=== RUN   TestSearchMedia_CarriesLinkedEntityIDAndType
+--- PASS: TestSearchMedia_CarriesLinkedEntityIDAndType (1.70s)
+=== RUN   TestFileToMediaItem_FullFields
+--- PASS: TestFileToMediaItem_FullFields (0.00s)
+=== RUN   TestFileToMediaItem_NilFields
+--- PASS: TestFileToMediaItem_NilFields (0.00s)
+=== RUN   TestFileToMediaItem_JSONShape
+--- PASS: TestFileToMediaItem_JSONShape (0.00s)
+=== RUN   TestMediaBrowseHandlerTestSuite
+=== RUN   TestMediaBrowseHandlerTestSuite/TestGetMediaStats_MethodNotAllowed
+=== RUN   TestMediaBrowseHandlerTestSuite/TestGetMediaStats_WrongPathIs404
+=== RUN   TestMediaBrowseHandlerTestSuite/TestNewMediaBrowseHandler
+=== RUN   TestMediaBrowseHandlerTestSuite/TestNewMediaBrowseHandler_WithDeps
+=== RUN   TestMediaBrowseHandlerTestSuite/TestSearchMedia_MethodNotAllowed
+=== RUN   TestMediaBrowseHandlerTestSuite/TestSearchMedia_WrongPathIs404
+--- PASS: TestMediaBrowseHandlerTestSuite (0.00s)
+    --- PASS: TestMediaBrowseHandlerTestSuite/TestGetMediaStats_MethodNotAllowed (0.00s)
+    --- PASS: TestMediaBrowseHandlerTestSuite/TestGetMediaStats_WrongPathIs404 (0.00s)
+    --- PASS: TestMediaBrowseHandlerTestSuite/TestNewMediaBrowseHandler (0.00s)
+    --- PASS: TestMediaBrowseHandlerTestSuite/TestNewMediaBrowseHandler_WithDeps (0.00s)
+    --- PASS: TestMediaBrowseHandlerTestSuite/TestSearchMedia_MethodNotAllowed (0.00s)
+    --- PASS: TestMediaBrowseHandlerTestSuite/TestSearchMedia_WrongPathIs404 (0.00s)
+=== RUN   TestMediaEntityHandler_GetEntityTypes
+--- PASS: TestMediaEntityHandler_GetEntityTypes (1.78s)
+=== RUN   TestMediaEntityHandler_GetEntityStats
+--- PASS: TestMediaEntityHandler_GetEntityStats (1.58s)
+=== RUN   TestMediaEntityHandler_ListEntities
+--- PASS: TestMediaEntityHandler_ListEntities (1.58s)
+=== RUN   TestMediaEntityHandler_GetEntity
+--- PASS: TestMediaEntityHandler_GetEntity (1.58s)
+=== RUN   TestMediaEntityHandler_EnrichAllEntities_NoEntities
+--- PASS: TestMediaEntityHandler_EnrichAllEntities_NoEntities (1.51s)
+=== RUN   TestMediaEntityHandler_EnrichAllEntities_QueuesBackgroundJob
+--- PASS: TestMediaEntityHandler_EnrichAllEntities_QueuesBackgroundJob (1.94s)
+=== RUN   TestMediaEntityHandler_EnrichAllEntities_RespectsLimitParam
+--- PASS: TestMediaEntityHandler_EnrichAllEntities_RespectsLimitParam (1.65s)
+=== RUN   TestMediaEntityHandler_EnrichAllEntities_LimitBounds
+--- PASS: TestMediaEntityHandler_EnrichAllEntities_LimitBounds (1.53s)
+=== RUN   TestMediaEntityHandler_EnrichAllEntities_NoDB
+--- PASS: TestMediaEntityHandler_EnrichAllEntities_NoDB (1.52s)
+=== RUN   TestMediaEntityHandler_EnrichSelectsItemsWithoutDirectoryAnalyses
+--- PASS: TestMediaEntityHandler_EnrichSelectsItemsWithoutDirectoryAnalyses (1.61s)
+=== RUN   TestMediaEntityHandler_EnrichExcludesItemsWithExternalMetadata
+--- PASS: TestMediaEntityHandler_EnrichExcludesItemsWithExternalMetadata (1.74s)
+=== RUN   TestMediaEntityHandler_MarkEnrichmentAttemptedAdvancesQueue
+--- PASS: TestMediaEntityHandler_MarkEnrichmentAttemptedAdvancesQueue (1.85s)
+=== RUN   TestMediaEntityHandler_EnrichmentAttemptedSentinelHasNoCover
+--- PASS: TestMediaEntityHandler_EnrichmentAttemptedSentinelHasNoCover (1.67s)
+=== RUN   TestMediaEntityHandler_EnrichPrioritizesTMDBMatchableTypesFirst
+--- PASS: TestMediaEntityHandler_EnrichPrioritizesTMDBMatchableTypesFirst (1.76s)
+=== RUN   TestMediaEntityHandler_EnrichOrdersMatchableByRecency
+--- PASS: TestMediaEntityHandler_EnrichOrdersMatchableByRecency (1.80s)
+=== RUN   TestMediaEntityHandler_RefreshEntityMetadata_NoDBIsNotQueued
+--- PASS: TestMediaEntityHandler_RefreshEntityMetadata_NoDBIsNotQueued (1.82s)
+=== RUN   TestMediaEntityHandler_GetEntityTypes_EmptyTableIsEmptyArray
+--- PASS: TestMediaEntityHandler_GetEntityTypes_EmptyTableIsEmptyArray (2.31s)
+=== RUN   TestFavoriteIsPerUser
+--- PASS: TestFavoriteIsPerUser (0.05s)
+=== RUN   TestFavoriteIsPerItem
+--- PASS: TestFavoriteIsPerItem (0.03s)
+=== RUN   TestFavoriteRowsRemovedWithMediaItem
+--- PASS: TestFavoriteRowsRemovedWithMediaItem (0.04s)
+=== RUN   TestFavoriteAnonymousIs401BeforeBodyParsing
+--- PASS: TestFavoriteAnonymousIs401BeforeBodyParsing (0.04s)
+=== RUN   TestDefectD_RED_OldFlatQueryFailsOnRealSchema
+--- PASS: TestDefectD_RED_OldFlatQueryFailsOnRealSchema (0.03s)
+=== RUN   TestDefectD_GetMediaByID_Success
+--- PASS: TestDefectD_GetMediaByID_Success (0.04s)
+=== RUN   TestDefectD_GetMediaByID_NotFound
+--- PASS: TestDefectD_GetMediaByID_NotFound (0.02s)
+=== RUN   TestDefectD_GetMediaByID_InvalidID
+--- PASS: TestDefectD_GetMediaByID_InvalidID (0.02s)
+=== RUN   TestDefectD_RED_OldWatchProgressUpdateFailsOnRealSchema
+--- PASS: TestDefectD_RED_OldWatchProgressUpdateFailsOnRealSchema (0.03s)
+=== RUN   TestDefectD_UpdateWatchProgress_ExistingMedia
+--- PASS: TestDefectD_UpdateWatchProgress_ExistingMedia (0.03s)
+=== RUN   TestDefectD_UpdateWatchProgress_NotFound
+--- PASS: TestDefectD_UpdateWatchProgress_NotFound (0.03s)
+=== RUN   TestUpdateFavoriteStatus_AnonymousIs401BeforeParse
+=== RUN   TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/invalid_id
+=== RUN   TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/invalid_json
+=== RUN   TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/missing_field
+=== RUN   TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/empty_body
+--- PASS: TestUpdateFavoriteStatus_AnonymousIs401BeforeParse (0.00s)
+    --- PASS: TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/invalid_id (0.00s)
+    --- PASS: TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/invalid_json (0.00s)
+    --- PASS: TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/missing_field (0.00s)
+    --- PASS: TestUpdateFavoriteStatus_AnonymousIs401BeforeParse/empty_body (0.00s)
+=== RUN   TestUpdateFavoriteStatus_HappyPath
+--- PASS: TestUpdateFavoriteStatus_HappyPath (0.03s)
+=== RUN   TestUpdateFavoriteStatus_MediaNotFound
+--- PASS: TestUpdateFavoriteStatus_MediaNotFound (0.03s)
+=== RUN   TestMediaHandlerTestSuite
+=== RUN   TestMediaHandlerTestSuite/TestGetMediaByID_EmptyID
+=== RUN   TestMediaHandlerTestSuite/TestGetMediaByID_FloatID
+=== RUN   TestMediaHandlerTestSuite/TestGetMediaByID_InvalidID
+=== RUN   TestMediaHandlerTestSuite/TestGetMediaByID_MethodNotAllowed
+=== RUN   TestMediaHandlerTestSuite/TestGetMediaByID_NegativeID
+=== RUN   TestMediaHandlerTestSuite/TestNewAndroidTVMediaHandler
+=== RUN   TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_EmptyBody
+=== RUN   TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_InvalidID
+=== RUN   TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_InvalidJSON
+=== RUN   TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_MissingFavoriteField
+=== RUN   TestMediaHandlerTestSuite/TestUpdateWatchProgress_EmptyBody
+=== RUN   TestMediaHandlerTestSuite/TestUpdateWatchProgress_InvalidID
+=== RUN   TestMediaHandlerTestSuite/TestUpdateWatchProgress_InvalidJSON
+=== RUN   TestMediaHandlerTestSuite/TestUpdateWatchProgress_MissingProgressField
+=== RUN   TestMediaHandlerTestSuite/TestUpdateWatchProgress_ProgressNegative
+=== RUN   TestMediaHandlerTestSuite/TestUpdateWatchProgress_ProgressTooHigh
+--- PASS: TestMediaHandlerTestSuite (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestGetMediaByID_EmptyID (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestGetMediaByID_FloatID (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestGetMediaByID_InvalidID (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestGetMediaByID_MethodNotAllowed (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestGetMediaByID_NegativeID (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestNewAndroidTVMediaHandler (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_EmptyBody (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_InvalidID (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_InvalidJSON (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestUpdateFavoriteStatus_MissingFavoriteField (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestUpdateWatchProgress_EmptyBody (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestUpdateWatchProgress_InvalidID (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestUpdateWatchProgress_InvalidJSON (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestUpdateWatchProgress_MissingProgressField (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestUpdateWatchProgress_ProgressNegative (0.00s)
+    --- PASS: TestMediaHandlerTestSuite/TestUpdateWatchProgress_ProgressTooHigh (0.00s)
+=== RUN   TestGetRecentMedia
+=== RUN   TestGetRecentMedia/empty_database_returns_empty_items
+=== RUN   TestGetRecentMedia/returns_items_ordered_by_last_updated_desc
+=== RUN   TestGetRecentMedia/respects_limit_parameter
+--- PASS: TestGetRecentMedia (2.12s)
+    --- PASS: TestGetRecentMedia/empty_database_returns_empty_items (0.00s)
+    --- PASS: TestGetRecentMedia/returns_items_ordered_by_last_updated_desc (0.01s)
+    --- PASS: TestGetRecentMedia/respects_limit_parameter (0.00s)
+=== RUN   TestGetPopularMedia
+=== RUN   TestGetPopularMedia/empty_database_returns_empty_items
+=== RUN   TestGetPopularMedia/returns_items_with_favorite_count
+--- PASS: TestGetPopularMedia (2.48s)
+    --- PASS: TestGetPopularMedia/empty_database_returns_empty_items (0.00s)
+    --- PASS: TestGetPopularMedia/returns_items_with_favorite_count (0.03s)
+=== RUN   TestGetMediaByPath
+=== RUN   TestGetMediaByPath/missing_path_returns_400
+=== RUN   TestGetMediaByPath/returns_items_matching_path_prefix
+=== RUN   TestGetMediaByPath/non-matching_path_returns_empty
+--- PASS: TestGetMediaByPath (2.35s)
+    --- PASS: TestGetMediaByPath/missing_path_returns_400 (0.00s)
+    --- PASS: TestGetMediaByPath/returns_items_matching_path_prefix (0.03s)
+    --- PASS: TestGetMediaByPath/non-matching_path_returns_empty (0.00s)
+=== RUN   TestRefreshMediaMetadata
+=== RUN   TestRefreshMediaMetadata/valid_ID_returns_501_(no_refresher_exists;_CAT-001)
+=== RUN   TestRefreshMediaMetadata/non-existent_ID_returns_404
+=== RUN   TestRefreshMediaMetadata/invalid_ID_returns_400
+--- PASS: TestRefreshMediaMetadata (2.47s)
+    --- PASS: TestRefreshMediaMetadata/valid_ID_returns_501_(no_refresher_exists;_CAT-001) (0.00s)
+    --- PASS: TestRefreshMediaMetadata/non-existent_ID_returns_404 (0.00s)
+    --- PASS: TestRefreshMediaMetadata/invalid_ID_returns_400 (0.00s)
+=== RUN   TestGetMediaQuality
+=== RUN   TestGetMediaQuality/returns_quality_with_files_and_total_size
+=== RUN   TestGetMediaQuality/returns_empty_files_array_when_no_files
+=== RUN   TestGetMediaQuality/non-existent_ID_returns_404
+--- PASS: TestGetMediaQuality (1.97s)
+    --- PASS: TestGetMediaQuality/returns_quality_with_files_and_total_size (0.00s)
+    --- PASS: TestGetMediaQuality/returns_empty_files_array_when_no_files (0.00s)
+    --- PASS: TestGetMediaQuality/non-existent_ID_returns_404 (0.00s)
+=== RUN   TestAnalyzeMedia
+=== RUN   TestAnalyzeMedia/analyze_by_ID
+=== RUN   TestAnalyzeMedia/analyze_by_path
+=== RUN   TestAnalyzeMedia/missing_path_and_id_returns_400
+=== RUN   TestAnalyzeMedia/non-existent_ID_returns_404
+=== RUN   TestAnalyzeMedia/non-existent_path_returns_404
+--- PASS: TestAnalyzeMedia (5.43s)
+    --- PASS: TestAnalyzeMedia/analyze_by_ID (0.00s)
+    --- PASS: TestAnalyzeMedia/analyze_by_path (0.00s)
+    --- PASS: TestAnalyzeMedia/missing_path_and_id_returns_400 (0.00s)
+    --- PASS: TestAnalyzeMedia/non-existent_ID_returns_404 (0.00s)
+    --- PASS: TestAnalyzeMedia/non-existent_path_returns_404 (0.00s)
+=== RUN   TestWatchProgress_PutThenSessionEnd_NoPermille
+--- PASS: TestWatchProgress_PutThenSessionEnd_NoPermille (0.05s)
+=== RUN   TestWatchProgress_SessionEndThenPut_KeepsSecondsResumePoint
+--- PASS: TestWatchProgress_SessionEndThenPut_KeepsSecondsResumePoint (0.05s)
+=== RUN   TestWatchProgress_RealClientShapes
+--- PASS: TestWatchProgress_RealClientShapes (0.10s)
+=== RUN   TestWatchProgress_SecondWriteDoesNotTouchOtherUser
+--- PASS: TestWatchProgress_SecondWriteDoesNotTouchOtherUser (0.08s)
+=== RUN   TestWatchProgress_FirstInsertFailureRetried
+--- PASS: TestWatchProgress_FirstInsertFailureRetried (0.09s)
+=== RUN   TestWatchProgress_PersistentInsertFailureIs500
+--- PASS: TestWatchProgress_PersistentInsertFailureIs500 (0.04s)
+=== RUN   TestWatchProgress_PositionWithoutKnownDurationIgnored
+--- PASS: TestWatchProgress_PositionWithoutKnownDurationIgnored (0.04s)
+=== RUN   TestWatchProgress_PersistsPerUser
+--- PASS: TestWatchProgress_PersistsPerUser (0.06s)
+=== RUN   TestWatchProgress_AcceptedBodyShapes
+--- PASS: TestWatchProgress_AcceptedBodyShapes (0.07s)
+=== RUN   TestWatchProgress_StatusCodes
+--- PASS: TestWatchProgress_StatusCodes (0.13s)
+=== RUN   TestWatchProgress_KeepsSecondsRow
+--- PASS: TestWatchProgress_KeepsSecondsRow (0.03s)
+=== RUN   TestPXF23R5b_PlaybackAndScanNeverLeak
+2026/11/17 13:37:19 handlers: POST /pb/start: Invalid request body (not returned to client): json: cannot unmarshal string into Go struct field startPlaybackRequest.media_item_id of type int64
+2026/11/17 13:37:19 handlers: POST /pb/progress: Invalid request body (not returned to client): json: cannot unmarshal string into Go struct field progressPlaybackRequest.session_id of type int64
+2026/11/17 13:37:19 handlers: POST /pb/end: Invalid request body (not returned to client): json: cannot unmarshal string into Go struct field endPlaybackRequest.session_id of type int64
+2026/11/17 13:37:19 handlers: POST /sr: Invalid request body (not returned to client): json: cannot unmarshal number into Go struct field createStorageRootRequest.name of type string
+2026/11/17 13:37:19 handlers: POST /scans: Invalid request body (not returned to client): json: cannot unmarshal string into Go struct field queueScanRequest.storage_root_id of type int64
+2026/11/17 13:37:19 handlers: POST /pb/start: internal error (not returned to client): pq: connection refused host=db
+2026/11/17 13:37:19 handlers: GET /pb/:id/progress: internal error (not returned to client): no such table: media_progress
+2026/11/17 13:37:19 handlers: GET /pb/:id/history: internal error (not returned to client): list history: no such table: playback_sessions
+2026/11/17 13:37:19 handlers: POST /sr: failed to create storage root (not returned to client): pq: connection refused host=db
+2026/11/17 13:37:19 handlers: POST /scans: Storage root not found (not returned to client): sql: no rows in result set
+2026/11/17 13:37:19 handlers: GET /sr: failed to query storage roots (not returned to client): no such table: storage_roots
+--- PASS: TestPXF23R5b_PlaybackAndScanNeverLeak (0.19s)
+=== RUN   TestAnalyticsHandler_LogMediaAccess_InvalidBody
+--- PASS: TestAnalyticsHandler_LogMediaAccess_InvalidBody (0.00s)
+=== RUN   TestAnalyticsHandler_GetMediaAnalytics_InvalidMediaID
+--- PASS: TestAnalyticsHandler_GetMediaAnalytics_InvalidMediaID (0.00s)
+=== RUN   TestFavoritesHandler_ListFavorites_Unauthorized
+--- PASS: TestFavoritesHandler_ListFavorites_Unauthorized (0.00s)
+=== RUN   TestFavoritesHandler_AddFavorite_Unauthorized
+--- PASS: TestFavoritesHandler_AddFavorite_Unauthorized (0.00s)
+=== RUN   TestFavoritesHandler_AddFavorite_InvalidBody
+--- PASS: TestFavoritesHandler_AddFavorite_InvalidBody (0.00s)
+=== RUN   TestFavoritesHandler_RemoveFavorite_InvalidEntityID
+--- PASS: TestFavoritesHandler_RemoveFavorite_InvalidEntityID (0.00s)
+=== RUN   TestFavoritesHandler_CheckFavorite_InvalidEntityID
+--- PASS: TestFavoritesHandler_CheckFavorite_InvalidEntityID (0.00s)
+=== RUN   TestMediaAccessLog_Fields
+--- PASS: TestMediaAccessLog_Fields (0.00s)
+=== RUN   TestFavorite_Struct
+--- PASS: TestFavorite_Struct (0.00s)
+=== RUN   TestFavoritesHandler_AddFavorite_Duplicate_Integration
+--- PASS: TestFavoritesHandler_AddFavorite_Duplicate_Integration (0.05s)
+=== RUN   TestFavoritesHandler_AddFavorite_Duplicate_RaceViaDBConstraint
+--- PASS: TestFavoritesHandler_AddFavorite_Duplicate_RaceViaDBConstraint (0.12s)
+=== RUN   TestMediaQueryHandler_GetRecentMedia_DefaultPagination
+--- PASS: TestMediaQueryHandler_GetRecentMedia_DefaultPagination (0.00s)
+=== RUN   TestMediaQueryHandler_GetPopularMedia_DefaultPagination
+--- PASS: TestMediaQueryHandler_GetPopularMedia_DefaultPagination (0.00s)
+=== RUN   TestMediaQueryHandler_GetMediaByPath_MissingPath
+--- PASS: TestMediaQueryHandler_GetMediaByPath_MissingPath (0.00s)
+=== RUN   TestMediaQueryHandler_GetMediaByPath_ValidPath
+--- PASS: TestMediaQueryHandler_GetMediaByPath_ValidPath (0.00s)
+=== RUN   TestMediaQueryHandler_ChangePassword_Unauthorized_NoUserID
+--- PASS: TestMediaQueryHandler_ChangePassword_Unauthorized_NoUserID (0.00s)
+=== RUN   TestMediaQueryHandler_ChangePassword_NotFound
+--- PASS: TestMediaQueryHandler_ChangePassword_NotFound (0.00s)
+=== RUN   TestMediaQueryHandler_ChangePassword_WrongPassword
+--- PASS: TestMediaQueryHandler_ChangePassword_WrongPassword (0.22s)
+=== RUN   TestMediaQueryHandler_ChangePassword_Success
+2026/11/17 13:37:19 repository: clearing login back-off of user 1 failed: ExecQuery: could not match actual sql: "DELETE FROM login_throttle WHERE subject = ?" with expected regexp "UPDATE user_sessions"
+--- PASS: TestMediaQueryHandler_ChangePassword_Success (0.31s)
+=== RUN   TestMediaQueryHandler_GetInitStatus
+--- PASS: TestMediaQueryHandler_GetInitStatus (0.00s)
+=== RUN   TestNewMediaQueryHandler
+--- PASS: TestNewMediaQueryHandler (0.00s)
+=== RUN   TestSubtitleD5_UndeterminedWhenMediaNotMeasurable
+--- PASS: TestSubtitleD5_UndeterminedWhenMediaNotMeasurable (4.39s)
+=== RUN   TestSubtitleD5_CuesBeyondMediaDurationAreInvalid
+--- PASS: TestSubtitleD5_CuesBeyondMediaDurationAreInvalid (11.15s)
+=== RUN   TestSubtitleD5_ServiceRejectsUnknownMediaDirectly
+--- PASS: TestSubtitleD5_ServiceRejectsUnknownMediaDirectly (5.05s)
+=== RUN   TestFavoritesList_EmptyIsEmptyArrayNotNull
+--- PASS: TestFavoritesList_EmptyIsEmptyArrayNotNull (3.55s)
+=== RUN   TestGetMediaMetadata_SelectsRequestedRowOnly
+--- PASS: TestGetMediaMetadata_SelectsRequestedRowOnly (2.97s)
+=== RUN   TestWF22_H1_LoaderSelectsEveryColumnTheSettingsContractConsumes
+--- PASS: TestWF22_H1_LoaderSelectsEveryColumnTheSettingsContractConsumes (2.51s)
+PASS
+ok  	catalogizer/handlers	89.013s

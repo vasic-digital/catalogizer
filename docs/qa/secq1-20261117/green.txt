@@ -1,0 +1,7 @@
+=== RUN   TestSECQ1_Live_LoopbackRootRefusedByDefault_AllowedWithAllowList
+2026/11/17 15:26:33 handlers: storage root url refused (detail not returned to client): webdav url refused: outbound destination not allowed: 127.0.0.1 is a loopback, link-local, metadata, reserved or own address, or outside the approved class (private)
+--- PASS: TestSECQ1_Live_LoopbackRootRefusedByDefault_AllowedWithAllowList (4.72s)
+=== RUN   TestSECQ1_Live_AllowListedPrivateStillNeedsConfirmation
+--- PASS: TestSECQ1_Live_AllowListedPrivateStillNeedsConfirmation (5.22s)
+PASS
+ok  	catalogizer/handlers	11.077s

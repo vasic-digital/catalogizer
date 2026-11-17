@@ -230,9 +230,43 @@ describe('CatalogizerClient', () => {
         mockAxiosInstance.put.mockResolvedValueOnce({ data: {} });
 
         const progress = { media_id: 1, position: 300, duration: 7200, timestamp: Date.now() };
-        await client.media.updateProgress(1, progress);
+        const r = await client.media.updateProgress(1, progress);
 
         expect(mockAxiosInstance.put).toHaveBeenCalledWith('/media/1/progress', progress, undefined);
+        // WPROG3-FU-3: no persisted:true in the answer means NOT saved
+        expect(r.persisted).toBe(false);
+      });
+
+      it('reports persisted:true and the reason of a persisted:false answer', async () => {
+        mockAxiosInstance.put.mockResolvedValueOnce({ data: { success: true, persisted: true } });
+        expect((await client.media.updateProgress(1, { media_id: 1, position: 3, duration: 9 })).persisted).toBe(true);
+        mockAxiosInstance.put.mockResolvedValueOnce({ data: { success: true, persisted: false, reason: 'unknown_duration_no_row' } });
+        const r = await client.media.updateProgress(1, { media_id: 1, position: 3, duration: 9 });
+        expect(r).toMatchObject({ persisted: false, reason: 'unknown_duration_no_row' });
+      });
+
+      it('retries a 409 concurrent_update (rejected by the client) and succeeds', async () => {
+        const { CatalogizerError } = await import('../types');
+        mockAxiosInstance.put
+          .mockRejectedValueOnce(new CatalogizerError('Watch progress not stored', 409))
+          .mockResolvedValueOnce({ data: { success: true, persisted: true } });
+        const r = await client.media.updateProgress(1, { media_id: 1, position: 3, duration: 9 });
+        expect(r.persisted).toBe(true);
+        expect(mockAxiosInstance.put).toHaveBeenCalledTimes(2);
+      });
+
+      it('gives up after 3 attempts on a persistent 409 and does not claim saved', async () => {
+        const { CatalogizerError } = await import('../types');
+        mockAxiosInstance.put.mockRejectedValue(new CatalogizerError('Watch progress not stored', 409));
+        const r = await client.media.updateProgress(1, { media_id: 1, position: 3, duration: 9 });
+        expect(r).toMatchObject({ persisted: false, reason: 'concurrent_update' });
+        expect(mockAxiosInstance.put).toHaveBeenCalledTimes(3);
+      });
+
+      it('does not swallow other errors', async () => {
+        const { CatalogizerError } = await import('../types');
+        mockAxiosInstance.put.mockRejectedValueOnce(new CatalogizerError('Resource not found', 404, 'NOT_FOUND'));
+        await expect(client.media.updateProgress(1, { media_id: 1, position: 3, duration: 9 })).rejects.toThrow('Resource not found');
       });
     });
 
@@ -242,11 +276,20 @@ describe('CatalogizerClient', () => {
 
         await client.media.markAsWatched(1);
 
+        // no real duration known: send the fraction 1.0 (the server never invents a 100 s duration)
+        expect(mockAxiosInstance.put).toHaveBeenCalledWith('/media/1/progress', { progress: 1 }, undefined);
+      });
+
+      it('marks media as watched with the real duration in seconds when known', async () => {
+        mockAxiosInstance.put.mockResolvedValueOnce({ data: { persisted: true } });
+
+        const r = await client.media.markAsWatched(1, 5400);
+
         expect(mockAxiosInstance.put).toHaveBeenCalledWith('/media/1/progress', expect.objectContaining({
-          media_id: 1,
-          position: 100,
-          duration: 100
+          position: 5400,
+          duration: 5400
         }), undefined);
+        expect(r.persisted).toBe(true);
       });
     });
 

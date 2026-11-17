@@ -108,4 +108,5 @@ var expectedPostgresSchema = map[string][]string{
 	"sync_endpoints":               {"approved_class", "approved_class_source"},                                                           // v27 (CAT-SECQ1-B)
 	"login_throttle":               {"subject", "scope", "failures", "blocked_until_ms", "last_failure_ms", "last_success_ms", "version"}, // v29 (CAT-LOGIN-LOCK-1)
 	"user_favorites":               {"user_id", "media_id", "created_at"},                                                                 // v30 (CAT-HAUTHZ-F2)
+	"user_media_ratings":           {"user_id", "media_id", "rating", "created_at", "updated_at"},                                         // v31 (CAT-RATING-1)
 }

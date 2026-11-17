@@ -1,0 +1,3 @@
+$ GOMAXPROCS=2 nice -n 10 go test -p 1 . -run AuthSurface -count=1
+ok  	catalogizer	5.458s
+exit=0

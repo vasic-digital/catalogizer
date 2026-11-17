@@ -1,0 +1,2 @@
+ok  	catalogizer	34.966s
+rc=0

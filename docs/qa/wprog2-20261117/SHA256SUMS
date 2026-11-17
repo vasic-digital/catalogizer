@@ -1,0 +1,9 @@
+e84e2ecb113b2730176653975537a10478ee78e4a41827f3fe813e7df3aa0e4b  base_head.txt
+275b84b7e61d70ec62c7861d2b28ed8be0d02eb72fb09bcce3a0a5eab825f09f  green_handlers_full.txt
+1dcd0e8774a4a55d5ac5418fde865d7a5ee3478d8d7ec181dde4cc751786a94a  green_handlers_subset.txt
+77aaacef6688450a5e1a4fc58a847e5c35b26ab4c505f464137590f28169e47d  green_root_contract.txt
+5c9ef10cb19e1673c09062e24064ec001abffeec851a7ce24108efdfc42d1490  mutants.txt
+6acc8268b6bfe37330dc2909818bd8f7df0cbc00913c3e18595a134e92d3144e  red_base.txt
+f6bf99344f906cda7375c222ba71892228a1ea4e3f2943cb4c1cb96db8af3af6  ../../../catalog-api/handlers/media_handler.go
+1a08edd49483cd42f4abb8e85dc5346514bf5f8c45bb9474e874fc03e0ec5f89  ../../../catalog-api/handlers/media_watch_progress_integrity_test.go
+c02ab035e98d6fee91916ffe220dcea957137a037a6968ac3c68b10f939f79d4  ../../../catalog-api/handlers/media_watch_progress_test.go

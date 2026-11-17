@@ -1,0 +1,4 @@
+cd catalog-api (submodules/* symlinked to the main checkout's for the build, restored before commit)
+GOMAXPROCS=2 nice -n 10 go test -p 1 -count=1 -timeout 60m -v -run 'AuthSurface|RouteChainsLockstep|RouteHelpers' .   -> green_authsurface.log (exit=0, 133 PASS lines)
+GOMAXPROCS=2 nice -n 10 go test -p 1 -count=1 -timeout 30m -v -run 'ADMD1F1S1|GroundTruth|RealRouteTable' .          -> green_groundtruth.log (PASS; builds the routedump binary)
+RED note: the pre-redesign survivors X1, X2/X3, X4, X5b, X9h, X10 are the Opus reviewer's findings (g1fixfu2 round); the old scanner was not re-run against them here (UNCONFIRMED as a fresh RED).

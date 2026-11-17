@@ -1,0 +1,18 @@
+=== RUN   TestRV2_RaceSessionEndChangesUnitBetweenSelectAndUpdate
+--- PASS: TestRV2_RaceSessionEndChangesUnitBetweenSelectAndUpdate (7.72s)
+=== RUN   TestRV2_RaceSessionEndLearnsDurationBetweenSelectAndUpdate
+--- PASS: TestRV2_RaceSessionEndLearnsDurationBetweenSelectAndUpdate (8.22s)
+=== RUN   TestWatchProgress_ConcurrentUpdateExhaustionIs409NotPersisted
+--- PASS: TestWatchProgress_ConcurrentUpdateExhaustionIs409NotPersisted (6.47s)
+=== RUN   TestWatchProgress_GuardedUpdatePostgresRewrite
+--- PASS: TestWatchProgress_GuardedUpdatePostgresRewrite (7.36s)
+=== RUN   TestWatchProgress_X1_RoundsFractionalSeconds
+--- PASS: TestWatchProgress_X1_RoundsFractionalSeconds (5.63s)
+=== RUN   TestWatchProgress_X2_FractionClamped
+--- PASS: TestWatchProgress_X2_FractionClamped (7.02s)
+=== RUN   TestWatchProgress_X3_NullDurationNonSecondsRowNotTouched
+--- PASS: TestWatchProgress_X3_NullDurationNonSecondsRowNotTouched (8.43s)
+=== RUN   TestWatchProgress_X4_ZeroPositionAccepted
+--- PASS: TestWatchProgress_X4_ZeroPositionAccepted (8.21s)
+PASS
+ok  	catalogizer/handlers	59.236s

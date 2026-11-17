@@ -1,0 +1,92 @@
+
+ RUN  v0.34.6 /home/milosvasic/.cache/claude-tmp/clprog/catalogizer-desktop
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+(node:4086049) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ❯ src/services/__tests__/apiService.watchProgress.test.ts  (6 tests | 4 failed) 19ms
+   ❯ src/services/__tests__/apiService.watchProgress.test.ts > apiService.updateWatchProgress result (WPROG3-FU-3) > does not claim saved when the body carries no persisted flag
+     → expected undefined to be false // Object.is equality
+   ❯ src/services/__tests__/apiService.watchProgress.test.ts > apiService.updateWatchProgress result (WPROG3-FU-3) > retries a 409 concurrent_update and reports the eventual success
+     → expected false to be true // Object.is equality
+   ❯ src/services/__tests__/apiService.watchProgress.test.ts > apiService.updateWatchProgress result (WPROG3-FU-3) > gives up after bounded retries on a persistent 409 and reports not persisted
+     → expected 1 to be 3 // Object.is equality
+   ❯ src/services/__tests__/apiService.watchProgress.test.ts > msToWholeSeconds (VLC ms to server seconds) > converts milliseconds to seconds
+     → msToWholeSeconds is not a function
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/services/__tests__/apiService.watchProgress.test.ts > apiService.updateWatchProgress result (WPROG3-FU-3) > does not claim saved when the body carries no persisted flag
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected: 
+false
+
++ Received: 
+undefined
+
+ ❯ src/services/__tests__/apiService.watchProgress.test.ts:46:71
+     44|   it('does not claim saved when the body carries no persisted flag', a…
+     45|     bodies(['{}'])
+     46|     expect((await apiService.updateWatchProgress(1, body)).persisted).…
+       |                                                                       ^
+     47|   })
+     48| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/services/__tests__/apiService.watchProgress.test.ts > apiService.updateWatchProgress result (WPROG3-FU-3) > retries a 409 concurrent_update and reports the eventual success
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/services/__tests__/apiService.watchProgress.test.ts:55:25
+     53|     ])
+     54|     const r = await apiService.updateWatchProgress(1, body)
+     55|     expect(r.persisted).toBe(true)
+       |                         ^
+     56|     expect(n()).toBe(2)
+     57|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/services/__tests__/apiService.watchProgress.test.ts > apiService.updateWatchProgress result (WPROG3-FU-3) > gives up after bounded retries on a persistent 409 and reports not persisted
+AssertionError: expected 1 to be 3 // Object.is equality
+
+- Expected
++ Received
+
+- 3
++ 1
+
+ ❯ src/services/__tests__/apiService.watchProgress.test.ts:64:17
+     62|     expect(r.persisted).toBe(false)
+     63|     expect(r.reason).toBe('concurrent_update')
+     64|     expect(n()).toBe(3)
+       |                 ^
+     65|   })
+     66| })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/services/__tests__/apiService.watchProgress.test.ts > msToWholeSeconds (VLC ms to server seconds) > converts milliseconds to seconds
+TypeError: msToWholeSeconds is not a function
+ ❯ src/services/__tests__/apiService.watchProgress.test.ts:70:12
+     68| describe('msToWholeSeconds (VLC ms to server seconds)', () => {
+     69|   it('converts milliseconds to seconds', () => {
+     70|     expect(msToWholeSeconds(125000)).toBe(125)
+       |            ^
+     71|     expect(msToWholeSeconds(1500)).toBe(1.5)
+     72|   })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 2 passed (6)
+   Start at  15:24:26
+   Duration  11.16s (transform 1.40s, setup 670ms, collect 156ms, tests 19ms, environment 1.43s, prepare 4.31s)
+

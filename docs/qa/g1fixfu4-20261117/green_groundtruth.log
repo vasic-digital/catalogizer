@@ -1,0 +1,356 @@
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/N7b_call_to_interface_method_outside_scanned_set
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/N7f_defer_of_unscanned_call
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/N7g_go_statement
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/E3_map_literal_element
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/E8_star/address_assignment
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/N19_conditional_Use
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/N2_method_value
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/N2c_Group_method_value
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/E6_channel_send
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/N19d_Use_in_a_switch_case
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/N7e_group_passed_to_a_scanned_func_in_non-group_slot
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/E1_composite_literal_element
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/E5_return_value
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/E7_append
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/E9_group_in_a_non-Handler_key_of_a_Server_literal
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/E5b_returned_group_in_a_walked_(seeded)_function
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/E10_group_in_a_Handler_key_of_a_non-Server_literal
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/N19c_Use_in_a_closure
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/N7_call_to_package_function_outside_scanned_set
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/N7c_resolved_group_var_passed_out
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/N7d_arity_mismatch_with_the_only_scanned_callee
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/N2b_method_value_passed_as_argument
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/E2_slice_literal_element
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/E4_index_assignment
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/N17b_Use_chain_then_escape
+=== RUN   TestADMD1F1S1R3_GroupEscapeIsReported/N19b_Use_in_a_loop
+--- PASS: TestADMD1F1S1R3_GroupEscapeIsReported (0.05s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/N7b_call_to_interface_method_outside_scanned_set (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/N7f_defer_of_unscanned_call (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/N7g_go_statement (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/E3_map_literal_element (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/E8_star/address_assignment (0.01s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/N19_conditional_Use (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/N2_method_value (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/N2c_Group_method_value (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/E6_channel_send (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/N19d_Use_in_a_switch_case (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/N7e_group_passed_to_a_scanned_func_in_non-group_slot (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/E1_composite_literal_element (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/E5_return_value (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/E7_append (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/E9_group_in_a_non-Handler_key_of_a_Server_literal (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/E5b_returned_group_in_a_walked_(seeded)_function (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/E10_group_in_a_Handler_key_of_a_non-Server_literal (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/N19c_Use_in_a_closure (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/N7_call_to_package_function_outside_scanned_set (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/N7c_resolved_group_var_passed_out (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/N7d_arity_mismatch_with_the_only_scanned_callee (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/N2b_method_value_passed_as_argument (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/E2_slice_literal_element (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/E4_index_assignment (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/N17b_Use_chain_then_escape (0.00s)
+    --- PASS: TestADMD1F1S1R3_GroupEscapeIsReported/N19b_Use_in_a_loop (0.00s)
+=== RUN   TestADMD1F1S1R3_UseChainGatesTheRoute
+--- PASS: TestADMD1F1S1R3_UseChainGatesTheRoute (0.00s)
+=== RUN   TestADMD1F1S1R3_RealNamesStillResolve
+--- PASS: TestADMD1F1S1R3_RealNamesStillResolve (0.00s)
+=== RUN   TestADMD1F1S1R3_AllowListPinned
+--- PASS: TestADMD1F1S1R3_AllowListPinned (0.00s)
+=== RUN   TestADMD1F1S1R3_HomonymBindingIsASuperset
+--- PASS: TestADMD1F1S1R3_HomonymBindingIsASuperset (0.00s)
+=== RUN   TestADMD1F1S1R1_FailClosedProbes
+=== RUN   TestADMD1F1S1R1_FailClosedProbes/A_helper_returning_a_gated_group_is_reported
+=== RUN   TestADMD1F1S1R1_FailClosedProbes/B_group_in_a_struct_field_is_reported
+=== RUN   TestADMD1F1S1R1_FailClosedProbes/C_group_param_of_a_func_literal_is_reported
+=== RUN   TestADMD1F1S1R1_FailClosedProbes/D_Handle_and_Any_are_routes
+=== RUN   TestADMD1F1S1R1_FailClosedProbes/F_path_param_resolved_through_the_call_site
+=== RUN   TestADMD1F1S1R1_FailClosedProbes/F2_path_param_that_does_not_resolve_is_reported
+=== RUN   TestADMD1F1S1R1_FailClosedProbes/L_var-declared_group
+=== RUN   TestADMD1F1S1R1_FailClosedProbes/G_two_same-name_methods_are_both_walked
+=== RUN   TestADMD1F1S1R1_FailClosedProbes/E_gate_through_a_struct_field_is_reported
+=== RUN   TestADMD1F1S1R1_FailClosedProbes/M9_unknown_prefix_emits_no_route_but_is_reported
+=== RUN   TestADMD1F1S1R1_FailClosedProbes/F6_M5_Group(path,_gate)_args_gate_the_group
+=== RUN   TestADMD1F1S1R1_FailClosedProbes/F6_M8_child_group_inherits_the_parent_gate
+=== RUN   TestADMD1F1S1R1_FailClosedProbes/F4_path_join_follows_gin
+=== RUN   TestADMD1F1S1R1_FailClosedProbes/redefinition_of_a_group_name_with_a_different_value_is_reported
+--- PASS: TestADMD1F1S1R1_FailClosedProbes (0.01s)
+    --- PASS: TestADMD1F1S1R1_FailClosedProbes/A_helper_returning_a_gated_group_is_reported (0.00s)
+    --- PASS: TestADMD1F1S1R1_FailClosedProbes/B_group_in_a_struct_field_is_reported (0.00s)
+    --- PASS: TestADMD1F1S1R1_FailClosedProbes/C_group_param_of_a_func_literal_is_reported (0.00s)
+    --- PASS: TestADMD1F1S1R1_FailClosedProbes/D_Handle_and_Any_are_routes (0.00s)
+    --- PASS: TestADMD1F1S1R1_FailClosedProbes/F_path_param_resolved_through_the_call_site (0.00s)
+    --- PASS: TestADMD1F1S1R1_FailClosedProbes/F2_path_param_that_does_not_resolve_is_reported (0.00s)
+    --- PASS: TestADMD1F1S1R1_FailClosedProbes/L_var-declared_group (0.00s)
+    --- PASS: TestADMD1F1S1R1_FailClosedProbes/G_two_same-name_methods_are_both_walked (0.00s)
+    --- PASS: TestADMD1F1S1R1_FailClosedProbes/E_gate_through_a_struct_field_is_reported (0.00s)
+    --- PASS: TestADMD1F1S1R1_FailClosedProbes/M9_unknown_prefix_emits_no_route_but_is_reported (0.00s)
+    --- PASS: TestADMD1F1S1R1_FailClosedProbes/F6_M5_Group(path,_gate)_args_gate_the_group (0.00s)
+    --- PASS: TestADMD1F1S1R1_FailClosedProbes/F6_M8_child_group_inherits_the_parent_gate (0.00s)
+    --- PASS: TestADMD1F1S1R1_FailClosedProbes/F4_path_join_follows_gin (0.00s)
+    --- PASS: TestADMD1F1S1R1_FailClosedProbes/redefinition_of_a_group_name_with_a_different_value_is_reported (0.00s)
+=== RUN   TestADMD1F1S1R1_RealChangePasswordRouteIsResolved
+--- PASS: TestADMD1F1S1R1_RealChangePasswordRouteIsResolved (3.65s)
+=== RUN   TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead
+=== RUN   TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead/P11_Static_on_a_gated_group
+=== RUN   TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead/P13_StaticFile_on_the_engine_is_open
+=== RUN   TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead/P14_StaticFS_and_StaticFileFS
+=== RUN   TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead/P15_Static_under_an_unresolved_prefix_is_reported,_emits_no_route
+=== RUN   TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead/Static_method_value_is_reported
+--- PASS: TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead (0.01s)
+    --- PASS: TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead/P11_Static_on_a_gated_group (0.00s)
+    --- PASS: TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead/P13_StaticFile_on_the_engine_is_open (0.00s)
+    --- PASS: TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead/P14_StaticFS_and_StaticFileFS (0.00s)
+    --- PASS: TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead/P15_Static_under_an_unresolved_prefix_is_reported,_emits_no_route (0.00s)
+    --- PASS: TestADMD1F1S1R4_StaticFamilyRegistersGetAndHead/Static_method_value_is_reported (0.00s)
+=== RUN   TestADMD1F1S1R4_UnmodelledMethodOnGroupIsReported
+--- PASS: TestADMD1F1S1R4_UnmodelledMethodOnGroupIsReported (0.01s)
+=== RUN   TestADMD1F1S1R4_InertMethodListPinned
+--- PASS: TestADMD1F1S1R4_InertMethodListPinned (0.00s)
+=== RUN   TestADMD1F1S1R4_EveryFunctionIsWalked
+=== RUN   TestADMD1F1S1R4_EveryFunctionIsWalked/Q1_func-typed_parameter:_group_handed_to_it_escapes
+=== RUN   TestADMD1F1S1R4_EveryFunctionIsWalked/Q2_slice-of-group_parameter:_registration_through_an_element_is_reported
+=== RUN   TestADMD1F1S1R4_EveryFunctionIsWalked/Q2b_map-of-group_parameter
+=== RUN   TestADMD1F1S1R4_EveryFunctionIsWalked/Q3_alias_and_named_group_types_resolve_(no_false_report,_correct_prefix)
+=== RUN   TestADMD1F1S1R4_EveryFunctionIsWalked/Q3b_aliased_gin_import
+=== RUN   TestADMD1F1S1R4_EveryFunctionIsWalked/Q4_a_foreign_type_merely_NAMED_RouterGroup_is_not_a_group_(m3)
+=== RUN   TestADMD1F1S1R4_EveryFunctionIsWalked/Q4b_func-typed_root_parameter_does_not_become_an_unseeded_group_function_(m3)
+=== RUN   TestADMD1F1S1R4_EveryFunctionIsWalked/unseeded_group-parameter_function:_escape_reported_even_with_no_route_in_it
+=== RUN   TestADMD1F1S1R4_EveryFunctionIsWalked/unseeded_group-parameter_function:_unknown_prefix_reported_for_every_route
+=== RUN   TestADMD1F1S1R4_EveryFunctionIsWalked/receiver_that_is_a_group_type_is_unknown
+--- PASS: TestADMD1F1S1R4_EveryFunctionIsWalked (0.06s)
+    --- PASS: TestADMD1F1S1R4_EveryFunctionIsWalked/Q1_func-typed_parameter:_group_handed_to_it_escapes (0.00s)
+    --- PASS: TestADMD1F1S1R4_EveryFunctionIsWalked/Q2_slice-of-group_parameter:_registration_through_an_element_is_reported (0.00s)
+    --- PASS: TestADMD1F1S1R4_EveryFunctionIsWalked/Q2b_map-of-group_parameter (0.00s)
+    --- PASS: TestADMD1F1S1R4_EveryFunctionIsWalked/Q3_alias_and_named_group_types_resolve_(no_false_report,_correct_prefix) (0.00s)
+    --- PASS: TestADMD1F1S1R4_EveryFunctionIsWalked/Q3b_aliased_gin_import (0.00s)
+    --- PASS: TestADMD1F1S1R4_EveryFunctionIsWalked/Q4_a_foreign_type_merely_NAMED_RouterGroup_is_not_a_group_(m3) (0.00s)
+    --- PASS: TestADMD1F1S1R4_EveryFunctionIsWalked/Q4b_func-typed_root_parameter_does_not_become_an_unseeded_group_function_(m3) (0.00s)
+    --- PASS: TestADMD1F1S1R4_EveryFunctionIsWalked/unseeded_group-parameter_function:_escape_reported_even_with_no_route_in_it (0.00s)
+    --- PASS: TestADMD1F1S1R4_EveryFunctionIsWalked/unseeded_group-parameter_function:_unknown_prefix_reported_for_every_route (0.00s)
+    --- PASS: TestADMD1F1S1R4_EveryFunctionIsWalked/receiver_that_is_a_group_type_is_unknown (0.00s)
+=== RUN   TestADMD1F1S1R4_UnknownPrefixIsReported
+=== RUN   TestADMD1F1S1R4_UnknownPrefixIsReported/U1_Group_with_a_non-constant_path_then_a_route
+=== RUN   TestADMD1F1S1R4_UnknownPrefixIsReported/U2_Group(p)_with_a_parameter_nobody_seeds,_inside_a_walked_function
+--- PASS: TestADMD1F1S1R4_UnknownPrefixIsReported (0.01s)
+    --- PASS: TestADMD1F1S1R4_UnknownPrefixIsReported/U1_Group_with_a_non-constant_path_then_a_route (0.01s)
+    --- PASS: TestADMD1F1S1R4_UnknownPrefixIsReported/U2_Group(p)_with_a_parameter_nobody_seeds,_inside_a_walked_function (0.00s)
+=== RUN   TestADMD1F1S1R4_ServerExemptionByImportPath
+=== RUN   TestADMD1F1S1R4_ServerExemptionByImportPath/P26_foreign_Server{Handler:_g}_is_reported
+=== RUN   TestADMD1F1S1R4_ServerExemptionByImportPath/http3_Server_is_exempt
+=== RUN   TestADMD1F1S1R4_ServerExemptionByImportPath/a_net/http_type_that_is_not_Server_is_not_exempt
+=== RUN   TestADMD1F1S1R4_ServerExemptionByImportPath/local_type_named_Server_with_a_net/http-looking_spelling_is_not_exempt
+--- PASS: TestADMD1F1S1R4_ServerExemptionByImportPath (0.02s)
+    --- PASS: TestADMD1F1S1R4_ServerExemptionByImportPath/P26_foreign_Server{Handler:_g}_is_reported (0.01s)
+    --- PASS: TestADMD1F1S1R4_ServerExemptionByImportPath/http3_Server_is_exempt (0.00s)
+    --- PASS: TestADMD1F1S1R4_ServerExemptionByImportPath/a_net/http_type_that_is_not_Server_is_not_exempt (0.00s)
+    --- PASS: TestADMD1F1S1R4_ServerExemptionByImportPath/local_type_named_Server_with_a_net/http-looking_spelling_is_not_exempt (0.00s)
+=== RUN   TestADMD1F1S1R4_AllowListIsUnqualifiedAndScannedOnly
+=== RUN   TestADMD1F1S1R4_AllowListIsUnqualifiedAndScannedOnly/P27_qualified_foreign_verifyAuthRouteTable_/_engineChain
+=== RUN   TestADMD1F1S1R4_AllowListIsUnqualifiedAndScannedOnly/unqualified_call_to_a_name_that_is_NOT_declared_in_the_scanned_set
+=== RUN   TestADMD1F1S1R4_AllowListIsUnqualifiedAndScannedOnly/unqualified_call_to_the_scanned_declaration_is_allowed
+--- PASS: TestADMD1F1S1R4_AllowListIsUnqualifiedAndScannedOnly (0.00s)
+    --- PASS: TestADMD1F1S1R4_AllowListIsUnqualifiedAndScannedOnly/P27_qualified_foreign_verifyAuthRouteTable_/_engineChain (0.00s)
+    --- PASS: TestADMD1F1S1R4_AllowListIsUnqualifiedAndScannedOnly/unqualified_call_to_a_name_that_is_NOT_declared_in_the_scanned_set (0.00s)
+    --- PASS: TestADMD1F1S1R4_AllowListIsUnqualifiedAndScannedOnly/unqualified_call_to_the_scanned_declaration_is_allowed (0.00s)
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A10_method_expression_with_&r.RouterGroup
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A10b_method_expression_Use_then_route
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A20_sub-engine_mounted_through_gin.WrapH(sub.Handler())
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A21_sub-engine_mounted_through_gin.WrapF(sub.ServeHTTP)
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A25_goto_past_the_gate_Use
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A26_gate_after_the_handler
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A26b_gate_after_the_handler_on_a_group_route
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A27_gate_variable_reassigned
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A28_gate_variable_shadowed_in_a_block
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A31_local_variable_shadows_a_package_constant
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A31b_x.Name()_is_not_the_package_engine_factory_Name()
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A32_registration_in_a_closure_that_runs_after_a_later_Use
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A32b_helper_that_calls_Use_on_its_group_parameter
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A32c_aliased_group_pointer_carries_the_Use
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A32d_variadic_handler_list
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A32e_deferred_registration_runs_after_a_later_Use
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A38_Any_is_nine_routes
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A38b_Match_is_the_listed_methods
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A38c_Any_on_a_gated_group
+=== RUN   TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A29_a_call_that_merely_receives_the_gate_is_not_a_gate
+--- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable (0.07s)
+    --- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A10_method_expression_with_&r.RouterGroup (0.01s)
+    --- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A10b_method_expression_Use_then_route (0.00s)
+    --- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A20_sub-engine_mounted_through_gin.WrapH(sub.Handler()) (0.00s)
+    --- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A21_sub-engine_mounted_through_gin.WrapF(sub.ServeHTTP) (0.00s)
+    --- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A25_goto_past_the_gate_Use (0.00s)
+    --- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A26_gate_after_the_handler (0.00s)
+    --- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A26b_gate_after_the_handler_on_a_group_route (0.00s)
+    --- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A27_gate_variable_reassigned (0.00s)
+    --- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A28_gate_variable_shadowed_in_a_block (0.00s)
+    --- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A31_local_variable_shadows_a_package_constant (0.00s)
+    --- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A31b_x.Name()_is_not_the_package_engine_factory_Name() (0.00s)
+    --- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A32_registration_in_a_closure_that_runs_after_a_later_Use (0.00s)
+    --- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A32b_helper_that_calls_Use_on_its_group_parameter (0.00s)
+    --- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A32c_aliased_group_pointer_carries_the_Use (0.00s)
+    --- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A32d_variadic_handler_list (0.00s)
+    --- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A32e_deferred_registration_runs_after_a_later_Use (0.00s)
+    --- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A38_Any_is_nine_routes (0.00s)
+    --- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A38b_Match_is_the_listed_methods (0.01s)
+    --- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A38c_Any_on_a_gated_group (0.00s)
+    --- PASS: TestADMD1F1S1R5_ScannerIsSoundAgainstTheRealRouteTable/A29_a_call_that_merely_receives_the_gate_is_not_a_gate (0.00s)
+=== RUN   TestADMD1F1S1R5_NonGinRoutersAreReported
+=== RUN   TestADMD1F1S1R5_NonGinRoutersAreReported/A22_http.NewServeMux_mounted_under_a_wildcard
+=== RUN   TestADMD1F1S1R5_NonGinRoutersAreReported/A23_http.HandleFunc_on_the_default_mux
+=== RUN   TestADMD1F1S1R5_NonGinRoutersAreReported/A23b_http.Handle_on_the_default_mux
+=== RUN   TestADMD1F1S1R5_NonGinRoutersAreReported/A23c_a_ServeMux_handed_in_as_a_parameter
+=== RUN   TestADMD1F1S1R5_NonGinRoutersAreReported/A23d_http.ListenAndServe_starts_a_second_server
+=== RUN   TestADMD1F1S1R5_NonGinRoutersAreReported/A23e_aliased_net/http_import
+=== RUN   TestADMD1F1S1R5_NonGinRoutersAreReported/a_package_named_http_that_is_not_net/http_is_not_a_router
+--- PASS: TestADMD1F1S1R5_NonGinRoutersAreReported (0.03s)
+    --- PASS: TestADMD1F1S1R5_NonGinRoutersAreReported/A22_http.NewServeMux_mounted_under_a_wildcard (0.00s)
+    --- PASS: TestADMD1F1S1R5_NonGinRoutersAreReported/A23_http.HandleFunc_on_the_default_mux (0.01s)
+    --- PASS: TestADMD1F1S1R5_NonGinRoutersAreReported/A23b_http.Handle_on_the_default_mux (0.00s)
+    --- PASS: TestADMD1F1S1R5_NonGinRoutersAreReported/A23c_a_ServeMux_handed_in_as_a_parameter (0.00s)
+    --- PASS: TestADMD1F1S1R5_NonGinRoutersAreReported/A23d_http.ListenAndServe_starts_a_second_server (0.01s)
+    --- PASS: TestADMD1F1S1R5_NonGinRoutersAreReported/A23e_aliased_net/http_import (0.00s)
+    --- PASS: TestADMD1F1S1R5_NonGinRoutersAreReported/a_package_named_http_that_is_not_net/http_is_not_a_router (0.00s)
+=== RUN   TestADMD1F1S1R5_NonGinAllowListPinned
+--- PASS: TestADMD1F1S1R5_NonGinAllowListPinned (0.02s)
+=== RUN   TestADMD1F1S1R5_EngineDataFieldsPinned
+--- PASS: TestADMD1F1S1R5_EngineDataFieldsPinned (0.01s)
+=== RUN   TestADMD1F1S1R5_GoldenFalseShapes
+=== RUN   TestADMD1F1S1R5_GoldenFalseShapes/gate_before_the_terminal_handler
+=== RUN   TestADMD1F1S1R5_GoldenFalseShapes/middleware_call_then_gate_then_handler
+=== RUN   TestADMD1F1S1R5_GoldenFalseShapes/gate_variable_declared_once,_used_twice
+=== RUN   TestADMD1F1S1R5_GoldenFalseShapes/group_Use_then_route,_registrations_in_the_same_context
+=== RUN   TestADMD1F1S1R5_GoldenFalseShapes/group_compared_with_nil
+=== RUN   TestADMD1F1S1R5_GoldenFalseShapes/registration_in_a_closure_on_a_group_declared_in_the_same_closure
+=== RUN   TestADMD1F1S1R5_GoldenFalseShapes/Match_with_a_literal_method_list
+=== RUN   TestADMD1F1S1R5_GoldenFalseShapes/Server_literal_serving_the_finished_engine
+=== RUN   TestADMD1F1S1R5_GoldenFalseShapes/a_local_string_constant_used_as_a_path
+=== RUN   TestADMD1F1S1R5_GoldenFalseShapes/pinned_wrapper_around_a_gate
+=== RUN   TestADMD1F1S1R5_GoldenFalseShapes/the_http.Handler_type_is_not_a_router
+=== RUN   TestADMD1F1S1R5_GoldenFalseShapes/pkg.Factory()_engine
+--- PASS: TestADMD1F1S1R5_GoldenFalseShapes (0.01s)
+    --- PASS: TestADMD1F1S1R5_GoldenFalseShapes/gate_before_the_terminal_handler (0.00s)
+    --- PASS: TestADMD1F1S1R5_GoldenFalseShapes/middleware_call_then_gate_then_handler (0.00s)
+    --- PASS: TestADMD1F1S1R5_GoldenFalseShapes/gate_variable_declared_once,_used_twice (0.00s)
+    --- PASS: TestADMD1F1S1R5_GoldenFalseShapes/group_Use_then_route,_registrations_in_the_same_context (0.00s)
+    --- PASS: TestADMD1F1S1R5_GoldenFalseShapes/group_compared_with_nil (0.00s)
+    --- PASS: TestADMD1F1S1R5_GoldenFalseShapes/registration_in_a_closure_on_a_group_declared_in_the_same_closure (0.00s)
+    --- PASS: TestADMD1F1S1R5_GoldenFalseShapes/Match_with_a_literal_method_list (0.00s)
+    --- PASS: TestADMD1F1S1R5_GoldenFalseShapes/Server_literal_serving_the_finished_engine (0.00s)
+    --- PASS: TestADMD1F1S1R5_GoldenFalseShapes/a_local_string_constant_used_as_a_path (0.00s)
+    --- PASS: TestADMD1F1S1R5_GoldenFalseShapes/pinned_wrapper_around_a_gate (0.00s)
+    --- PASS: TestADMD1F1S1R5_GoldenFalseShapes/the_http.Handler_type_is_not_a_router (0.00s)
+    --- PASS: TestADMD1F1S1R5_GoldenFalseShapes/pkg.Factory()_engine (0.00s)
+=== RUN   TestADMD1F1S1R5_GateIdentityIsByFunctionNotName
+--- PASS: TestADMD1F1S1R5_GateIdentityIsByFunctionNotName (0.00s)
+=== RUN   TestADMD1F1S1G1_CodeScanEqualsTableBothDirections
+--- PASS: TestADMD1F1S1G1_CodeScanEqualsTableBothDirections (3.02s)
+=== RUN   TestADMD1F1S1G1_CodeScanControlNeedles
+--- PASS: TestADMD1F1S1G1_CodeScanControlNeedles (4.92s)
+=== RUN   TestADMD1F1S1G1_GenericSuffixIsAViolation
+--- PASS: TestADMD1F1S1G1_GenericSuffixIsAViolation (0.00s)
+=== RUN   TestADMD1F1S1G1_CodeScanMutantsAreKilled
+=== RUN   TestADMD1F1S1G1_CodeScanMutantsAreKilled/Q8_subtitle_routes.go_dropped_from_the_scanned_set
+=== RUN   TestADMD1F1S1G1_CodeScanMutantsAreKilled/Q8b_alias_routes.go_dropped_(alias_syncGate_gate_invisible)
+=== RUN   TestADMD1F1S1G1_CodeScanMutantsAreKilled/Q8c_storage_routes.go_dropped
+=== RUN   TestADMD1F1S1G1_CodeScanMutantsAreKilled/Q9_a_route_in_an_unlisted_file_whose_group_param_no_caller_binds_is_reported,_not_skipped
+=== RUN   TestADMD1F1S1G1_CodeScanMutantsAreKilled/Q10_gate_passed_as_a_gin.HandlerFunc_param_at_a_call_site_gates_a_multi-line_registration
+=== RUN   TestADMD1F1S1G1_CodeScanMutantsAreKilled/Q11_group-level_Use_+_multi-line_+_RequireAdmin_call
+=== RUN   TestADMD1F1S1G1_CodeScanMutantsAreKilled/Q12_route_registered_before_the_group_Use_is_not_gated
+=== RUN   TestADMD1F1S1G1_CodeScanMutantsAreKilled/Q13_an_unbound_group_parameter_that_registers_routes_is_reported
+--- PASS: TestADMD1F1S1G1_CodeScanMutantsAreKilled (9.68s)
+    --- PASS: TestADMD1F1S1G1_CodeScanMutantsAreKilled/Q8_subtitle_routes.go_dropped_from_the_scanned_set (3.73s)
+    --- PASS: TestADMD1F1S1G1_CodeScanMutantsAreKilled/Q8b_alias_routes.go_dropped_(alias_syncGate_gate_invisible) (2.68s)
+    --- PASS: TestADMD1F1S1G1_CodeScanMutantsAreKilled/Q8c_storage_routes.go_dropped (3.24s)
+    --- PASS: TestADMD1F1S1G1_CodeScanMutantsAreKilled/Q9_a_route_in_an_unlisted_file_whose_group_param_no_caller_binds_is_reported,_not_skipped (0.00s)
+    --- PASS: TestADMD1F1S1G1_CodeScanMutantsAreKilled/Q10_gate_passed_as_a_gin.HandlerFunc_param_at_a_call_site_gates_a_multi-line_registration (0.00s)
+    --- PASS: TestADMD1F1S1G1_CodeScanMutantsAreKilled/Q11_group-level_Use_+_multi-line_+_RequireAdmin_call (0.00s)
+    --- PASS: TestADMD1F1S1G1_CodeScanMutantsAreKilled/Q12_route_registered_before_the_group_Use_is_not_gated (0.00s)
+    --- PASS: TestADMD1F1S1G1_CodeScanMutantsAreKilled/Q13_an_unbound_group_parameter_that_registers_routes_is_reported (0.00s)
+=== RUN   TestADMD1F1S1G2_LoaderConditionPinnedByAST
+--- PASS: TestADMD1F1S1G2_LoaderConditionPinnedByAST (0.04s)
+=== RUN   TestADMD1F1S1G5_DriftExclusionDoesNotHideAdminOnly403
+--- PASS: TestADMD1F1S1G5_DriftExclusionDoesNotHideAdminOnly403 (0.00s)
+=== RUN   TestADMD1F1S1R5_RealRouteTableMatchesScannerAndTable
+REAL ROUTES 265 SCAN ROUTES 265 REAL GATED 76
+--- PASS: TestADMD1F1S1R5_RealRouteTableMatchesScannerAndTable (31.03s)
+=== RUN   TestADMD1F1S1R5_ComparatorDetectsEachDefectClass
+--- PASS: TestADMD1F1S1R5_ComparatorDetectsEachDefectClass (0.00s)
+=== RUN   TestADMD1F1S1R5_WrapperPinsAreExact
+--- PASS: TestADMD1F1S1R5_WrapperPinsAreExact (0.00s)
+=== RUN   TestADMD1F1S1R6_RouteSetEqualsTableBothDirections
+--- PASS: TestADMD1F1S1R6_RouteSetEqualsTableBothDirections (0.00s)
+=== RUN   TestADMD1F1S1R6_RouteLevelHandlerBeforeGateIsReported
+--- PASS: TestADMD1F1S1R6_RouteLevelHandlerBeforeGateIsReported (0.00s)
+=== RUN   TestADMD1F1S1R6_GateIdentityComparesFullFilePath
+--- PASS: TestADMD1F1S1R6_GateIdentityComparesFullFilePath (0.00s)
+=== RUN   TestADMD1F1S1R6_ShadowedImportAliasIsNotAnEngineFactory
+--- PASS: TestADMD1F1S1R6_ShadowedImportAliasIsNotAnEngineFactory (0.00s)
+=== RUN   TestADMD1F1S1R6_WrapperClosureIsBySymbolAndFile
+--- PASS: TestADMD1F1S1R6_WrapperClosureIsBySymbolAndFile (0.00s)
+=== RUN   TestADMD1F1S1R7_ScannerReportsHandlerWrappingCallBeforeGate
+--- PASS: TestADMD1F1S1R7_ScannerReportsHandlerWrappingCallBeforeGate (0.00s)
+=== RUN   TestADMD1F1S1R7_RealSourceWrapFBeforeRequireAdminIsReported
+--- PASS: TestADMD1F1S1R7_RealSourceWrapFBeforeRequireAdminIsReported (5.78s)
+=== RUN   TestADMD1F1S1R7_RealChainWrapAndTerminalHandlersAreReported
+--- PASS: TestADMD1F1S1R7_RealChainWrapAndTerminalHandlersAreReported (0.00s)
+=== RUN   TestADMD1F1S1R7_ViolationMessageNamesTheRemedy
+--- PASS: TestADMD1F1S1R7_ViolationMessageNamesTheRemedy (0.03s)
+=== RUN   TestADMD1F1S1R7_PreGateAllowListPinsExactlyTheRealChains
+--- PASS: TestADMD1F1S1R7_PreGateAllowListPinsExactlyTheRealChains (0.01s)
+=== RUN   TestADMD1F1S1_MarkersEqualCodeDerivedAdminRoutes
+--- PASS: TestADMD1F1S1_MarkersEqualCodeDerivedAdminRoutes (2.35s)
+=== RUN   TestADMD1F1S1_RouteTableInstrumentControlNeedles
+--- PASS: TestADMD1F1S1_RouteTableInstrumentControlNeedles (2.21s)
+=== RUN   TestADMD1F1S1_RouteTableMutantsAreKilled
+=== RUN   TestADMD1F1S1_RouteTableMutantsAreKilled/N1_a_new_RequireAdmin_row_with_no_spec_marker_(usual_wording,_no_marker)
+=== RUN   TestADMD1F1S1_RouteTableMutantsAreKilled/N2_a_marker_removed_from_a_RequireAdmin_route
+=== RUN   TestADMD1F1S1_RouteTableMutantsAreKilled/N3_a_marker_on_a_plain_user_route
+=== RUN   TestADMD1F1S1_RouteTableMutantsAreKilled/N4_stale_exception
+=== RUN   TestADMD1F1S1_RouteTableMutantsAreKilled/N5_admin_registration_in_code_with_no_table_row
+=== RUN   TestADMD1F1S1_RouteTableMutantsAreKilled/N6_exception_whose_table_gate_is_RequireAdmin-unrelated
+--- PASS: TestADMD1F1S1_RouteTableMutantsAreKilled (1.97s)
+    --- PASS: TestADMD1F1S1_RouteTableMutantsAreKilled/N1_a_new_RequireAdmin_row_with_no_spec_marker_(usual_wording,_no_marker) (0.00s)
+    --- PASS: TestADMD1F1S1_RouteTableMutantsAreKilled/N2_a_marker_removed_from_a_RequireAdmin_route (0.00s)
+    --- PASS: TestADMD1F1S1_RouteTableMutantsAreKilled/N3_a_marker_on_a_plain_user_route (0.00s)
+    --- PASS: TestADMD1F1S1_RouteTableMutantsAreKilled/N4_stale_exception (0.00s)
+    --- PASS: TestADMD1F1S1_RouteTableMutantsAreKilled/N5_admin_registration_in_code_with_no_table_row (1.91s)
+    --- PASS: TestADMD1F1S1_RouteTableMutantsAreKilled/N6_exception_whose_table_gate_is_RequireAdmin-unrelated (0.00s)
+=== RUN   TestADMD1F1S1_LiveSweepGateWiring
+--- PASS: TestADMD1F1S1_LiveSweepGateWiring (0.02s)
+=== RUN   TestADMD1F1S1_RealSpecMarkerCensusEqualsGolden
+--- PASS: TestADMD1F1S1_RealSpecMarkerCensusEqualsGolden (0.04s)
+=== RUN   TestADMD1F1S1_MarkerSemantics
+--- PASS: TestADMD1F1S1_MarkerSemantics (0.00s)
+=== RUN   TestADMD1F1S1_MutantsAreKilled
+=== RUN   TestADMD1F1S1_MutantsAreKilled/M1_marker_removed_from_one_operation
+=== RUN   TestADMD1F1S1_MutantsAreKilled/M2_marker_set_false
+=== RUN   TestADMD1F1S1_MutantsAreKilled/M3_admin_body_text_added_to_an_unmarked_operation
+=== RUN   TestADMD1F1S1_MutantsAreKilled/M4_marker_on_an_operation_without_a_403
+=== RUN   TestADMD1F1S1_MutantsAreKilled/M5_census_off_by_one_(extra_marker,_with_a_403)
+=== RUN   TestADMD1F1S1_MutantsAreKilled/M6_non-boolean_marker
+=== RUN   TestADMD1F1S1_MutantsAreKilled/M7_a_description_reworded_to_hide_the_admin_text_still_gates_when_marked,_and_a_gated_op_loses_nothing
+--- PASS: TestADMD1F1S1_MutantsAreKilled (0.41s)
+    --- PASS: TestADMD1F1S1_MutantsAreKilled/M1_marker_removed_from_one_operation (0.05s)
+    --- PASS: TestADMD1F1S1_MutantsAreKilled/M2_marker_set_false (0.05s)
+    --- PASS: TestADMD1F1S1_MutantsAreKilled/M3_admin_body_text_added_to_an_unmarked_operation (0.05s)
+    --- PASS: TestADMD1F1S1_MutantsAreKilled/M4_marker_on_an_operation_without_a_403 (0.06s)
+    --- PASS: TestADMD1F1S1_MutantsAreKilled/M5_census_off_by_one_(extra_marker,_with_a_403) (0.07s)
+    --- PASS: TestADMD1F1S1_MutantsAreKilled/M6_non-boolean_marker (0.07s)
+    --- PASS: TestADMD1F1S1_MutantsAreKilled/M7_a_description_reworded_to_hide_the_admin_text_still_gates_when_marked,_and_a_gated_op_loses_nothing (0.06s)
+=== RUN   TestADMD1F1S1_NonAdminDescriptionsAreNotDrift
+--- PASS: TestADMD1F1S1_NonAdminDescriptionsAreNotDrift (0.06s)
+=== RUN   TestADMD1F1S1_DriftAllMethodsAndRefs
+=== RUN   TestADMD1F1S1_DriftAllMethodsAndRefs/ref_403_resolved
+=== RUN   TestADMD1F1S1_DriftAllMethodsAndRefs/path-level_marker
+=== RUN   TestADMD1F1S1_DriftAllMethodsAndRefs/loader_rejects_non-boolean
+=== RUN   TestADMD1F1S1_DriftAllMethodsAndRefs/wording_variants_all_flagged_when_unmarked
+--- PASS: TestADMD1F1S1_DriftAllMethodsAndRefs (0.36s)
+    --- PASS: TestADMD1F1S1_DriftAllMethodsAndRefs/ref_403_resolved (0.05s)
+    --- PASS: TestADMD1F1S1_DriftAllMethodsAndRefs/path-level_marker (0.06s)
+    --- PASS: TestADMD1F1S1_DriftAllMethodsAndRefs/loader_rejects_non-boolean (0.00s)
+    --- PASS: TestADMD1F1S1_DriftAllMethodsAndRefs/wording_variants_all_flagged_when_unmarked (0.00s)
+PASS
+ok  	catalogizer	66.487s
+exit=0

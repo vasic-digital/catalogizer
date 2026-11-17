@@ -2,6 +2,7 @@ package com.catalogizer.android.data.playback
 
 import android.util.Log
 import com.catalogizer.android.data.remote.CatalogizerApi
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.jsonArray
@@ -73,7 +74,10 @@ class PlaybackRepository(
             val progEl = body["progress"] ?: return PlaybackLoadResult.Success(null)
             if (progEl.toString() == "null") return PlaybackLoadResult.Success(null)
             PlaybackLoadResult.Success(progEl.jsonObject.toProgress(mediaItemId))
-        } catch (t: Throwable) {
+        } catch (e: CancellationException) {
+            // Cancellation is not a load failure (AFAV7B-R1-F1): never turn it into an Error state.
+            throw e
+        } catch (t: Exception) {
             Log.w(TAG, "loadProgress exception: ${t.message}")
             PlaybackLoadResult.Failure(null, t.message ?: t.javaClass.simpleName)
         }
@@ -88,7 +92,9 @@ class PlaybackRepository(
             val body = resp.body() ?: return PlaybackLoadResult.Success(emptyList())
             val sessionsEl = body["sessions"] ?: return PlaybackLoadResult.Success(emptyList())
             PlaybackLoadResult.Success(sessionsEl.jsonArray.map { it.jsonObject.toSession() })
-        } catch (t: Throwable) {
+        } catch (e: CancellationException) {
+            throw e
+        } catch (t: Exception) {
             Log.w(TAG, "loadHistory exception: ${t.message}")
             PlaybackLoadResult.Failure(null, t.message ?: t.javaClass.simpleName)
         }

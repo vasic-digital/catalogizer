@@ -9,6 +9,11 @@ import com.catalogizer.androidtv.data.remote.CatalogizerApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.first
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.contentOrNull
 
 /**
  * Handles media data operations for the Android TV app via the remote [CatalogizerApi].
@@ -151,16 +156,67 @@ class MediaRepository(
         }
     }
 
-    suspend fun updateWatchProgress(mediaId: Long, progress: Double) {
-        try {
-            val progressBody = mapOf("progress" to progress)
-            val response = api.updateWatchProgress(mediaId, progressBody)
+    /**
+     * PUT /api/v1/media/:id/progress. Sends the fraction and, when the player knows it, position and duration in
+     * seconds (WPROG3-FU-1: without a duration the server answers 200 persisted=false for an item that has no row
+     * yet, so a first watch was silently not stored). Only persisted=true is reported as [WatchProgressOutcome.Saved]
+     * (WPROG3-FU-3); a 409 concurrent_update is re-sent (the server re-reads and re-plans) up to
+     * [WATCH_PROGRESS_MAX_ATTEMPTS] times. Other non-2xx answers and transport errors throw.
+     */
+    suspend fun saveWatchProgress(
+        mediaId: Long,
+        progress: Double,
+        positionMs: Long? = null,
+        durationMs: Long? = null,
+    ): WatchProgressOutcome {
+        val body = buildWatchProgressBody(progress, positionMs, durationMs)
+        var lastReason: String? = null
+        for (attempt in 1..WATCH_PROGRESS_MAX_ATTEMPTS) {
+            val response = api.updateWatchProgress(mediaId, body)
+            if (response.code() == 409) {
+                lastReason = parseReason(response.errorBody()?.string()) ?: "concurrent_update"
+                continue
+            }
             if (!response.isSuccessful) {
                 throw Exception("Failed to update watch progress: ${response.message()}")
             }
-        } catch (e: Exception) {
-            // Handle error
-            throw e
+            val json = response.body()
+            val persisted = (json?.get("persisted") as? JsonPrimitive)?.booleanOrNull == true
+            return if (persisted) {
+                WatchProgressOutcome.Saved
+            } else {
+                WatchProgressOutcome.NotStored((json?.get("reason") as? JsonPrimitive)?.contentOrNull)
+            }
+        }
+        return WatchProgressOutcome.NotStored(lastReason)
+    }
+
+    /** Fraction-only convenience kept for existing callers; throws when the server did not store the progress. */
+    suspend fun updateWatchProgress(mediaId: Long, progress: Double) {
+        val out = saveWatchProgress(mediaId, progress)
+        if (out is WatchProgressOutcome.NotStored) {
+            throw WatchProgressNotStoredException(out.reason)
+        }
+    }
+
+    private fun parseReason(raw: String?): String? = try {
+        if (raw.isNullOrBlank()) null
+        else ((Json.parseToJsonElement(raw) as? JsonObject)?.get("reason") as? JsonPrimitive)?.contentOrNull
+    } catch (_: Exception) {
+        null
+    }
+
+    companion object {
+        const val WATCH_PROGRESS_MAX_ATTEMPTS = 3
+
+        /** Position and duration are sent in SECONDS (player values are milliseconds); omitted when unknown. */
+        fun buildWatchProgressBody(progress: Double, positionMs: Long?, durationMs: Long?): Map<String, Double> {
+            val body = linkedMapOf("progress" to progress)
+            if (durationMs != null && durationMs > 0) {
+                body["duration"] = durationMs / 1000.0
+                if (positionMs != null && positionMs >= 0) body["position"] = positionMs / 1000.0
+            }
+            return body
         }
     }
 
@@ -396,3 +452,14 @@ class MediaRepository(
         }
     }
 }
+/** Result of storing watch progress on the server (WPROG3). */
+sealed class WatchProgressOutcome {
+    /** The server answered persisted=true. */
+    object Saved : WatchProgressOutcome()
+
+    /** The server did not store it (200 persisted=false, or 409 concurrent_update after all attempts). */
+    data class NotStored(val reason: String?) : WatchProgressOutcome()
+}
+
+class WatchProgressNotStoredException(val reason: String?) :
+    Exception("Watch progress not stored: ${reason ?: "unknown"}")

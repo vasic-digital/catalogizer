@@ -1,0 +1,8 @@
+=== RUN   TestTxStatementsAreDialectRewrittenOnPostgres
+=== RUN   TestTxStatementsAreDialectRewrittenOnPostgres/Begin
+=== RUN   TestTxStatementsAreDialectRewrittenOnPostgres/BeginTx
+--- PASS: TestTxStatementsAreDialectRewrittenOnPostgres (8.01s)
+    --- PASS: TestTxStatementsAreDialectRewrittenOnPostgres/Begin (0.03s)
+    --- PASS: TestTxStatementsAreDialectRewrittenOnPostgres/BeginTx (0.01s)
+PASS
+ok  	catalogizer/database	8.045s

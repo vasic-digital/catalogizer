@@ -1,0 +1,47 @@
+=== M1 Tx.ExecContext skips rewrite
+--- FAIL: TestTxStatementsAreDialectRewrittenOnPostgres (8.94s)
+            	Error:      	Received unexpected error:
+            	Messages:   	ExecContext with ? on a PostgreSQL tx
+            	Error:      	Received unexpected error:
+            	Messages:   	ExecContext with ? on a PostgreSQL tx
+FAIL
+=== M2 Tx.PrepareContext skips rewrite
+--- FAIL: TestTxStatementsAreDialectRewrittenOnPostgres (7.48s)
+            	Error:      	Received unexpected error:
+            	Messages:   	PrepareContext with ?
+            	Error:      	Received unexpected error:
+            	Messages:   	PrepareContext with ?
+FAIL
+=== M3 Tx.QueryRow skips rewrite
+--- FAIL: TestTxStatementsAreDialectRewrittenOnPostgres (6.38s)
+            	Error:      	Received unexpected error:
+            	Messages:   	QueryRow with ?
+            	Error:      	Received unexpected error:
+            	Messages:   	QueryRow with ?
+FAIL
+=== M4 BeginTx drops the wrapper's db (rewrite on a zero DB: nil dialect => placeholders untouched)
+--- FAIL: TestTxStatementsAreDialectRewrittenOnPostgres (7.42s)
+            	Error:      	Received unexpected error:
+            	Messages:   	Exec with ? on a PostgreSQL tx
+            	Error:      	Received unexpected error:
+            	Messages:   	Exec with ? on a PostgreSQL tx
+FAIL
+=== M5 guard blind (walks a non-existent subtree)
+--- FAIL: TestNoRawSQLTxOutsideDatabasePackage (0.00s)
+        	Error:      	"0" is not greater than "200"
+        	Messages:   	guard walked too few files: instrument is blind
+FAIL
+FAIL	catalogizer/database	0.035s
+FAIL
+=== M6 guard scanner ignores sql.Tx type
+--- FAIL: TestRawTxSiteScannerFindsPlantedSites (0.00s)
+        	Error:      	"[]" should have 1 item(s), but has 0
+        	Messages:   	param type
+FAIL
+FAIL	catalogizer/database	0.022s
+FAIL
+=== M7 raw *sql.Tx param planted in internal/services
+--- FAIL: TestNoRawSQLTxOutsideDatabasePackage (2.22s)
+        	Error:      	Should be empty, but was [internal/services/rename_tracker.go:321:52: raw sql.Tx type]
+FAIL
+FAIL	catalogizer/database	2.244s

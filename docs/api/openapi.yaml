@@ -3376,6 +3376,17 @@ paths:
     put:
       tags: [media]
       summary: Update watch progress
+      description: >-
+        Stores the CALLER's own watch position for the media item in media_progress (per user; never reads or changes
+        another user's row). Send progress (fraction 0.0-1.0) and/or position+duration (seconds, floats allowed, as the
+        desktop and api-client PlaybackProgress body does: progress is optional when position and duration are both
+        present). A new row is only created, in seconds, when the duration is known from the body. An existing row keeps
+        its unit (seconds/pages/events) and its stored duration; position (seconds) is used only for a seconds row and is
+        clamped to the duration; a seconds row with an unknown duration only learns the duration from the body. The write is a compare-and-set on the row
+        that was read (unit and duration unchanged), re-planned up to 3 times, so it never overwrites a unit or duration
+        that a concurrent playback-session end just wrote. A request
+        that cannot be stored without guessing a unit or duration (for example a fraction with no known duration) answers
+        200 with persisted=false and a reason. media_id and timestamp (string or number) and unknown fields are ignored.
       security:
         - BearerAuth: []
       parameters:
@@ -3389,13 +3400,42 @@ paths:
           application/json:
             schema:
               type: object
+              description: progress, or position and duration, is required
               properties:
                 progress:
                   type: number
                   format: float
+                  minimum: 0
+                  maximum: 1
+                position:
+                  type: number
+                  description: seconds, fractional allowed (rounded)
+                  minimum: 0
+                duration:
+                  type: number
+                  description: seconds, fractional allowed (rounded)
+                  minimum: 0
+                media_id:
+                  type: integer
+                  description: ignored (the id comes from the path)
+                timestamp:
+                  description: ignored; string or number
       responses:
         '200':
-          description: Progress updated
+          description: >-
+            Stored (persisted true), or accepted but not stored (persisted false with a reason, for example
+            unknown_duration)
+        '400':
+          description: Invalid media id or body, progress outside 0..1, negative or out-of-range position or duration, or neither progress nor position+duration
+        '401':
+          description: Not authenticated
+        '404':
+          description: Media not found
+        '409':
+          description: >-
+            The row kept changing under the request (a playback-session end or another PUT committed between the read and
+            the write on each of 3 bounded attempts). Body has persisted=false and reason=concurrent_update; nothing was
+            stored, the client may retry.
 
   /api/v1/media/{id}/favorite:
     put:
@@ -3429,6 +3469,89 @@ paths:
           description: Invalid media id, invalid JSON body, or the `favorite` field is missing
         '401':
           description: Authentication required (checked before the id and body are parsed)
+        '404':
+          description: Media item not found
+
+  /api/v1/media/{id}/rating:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    put:
+      tags: [media]
+      summary: Set the caller's rating
+      description: >-
+        Stores the authenticated user's OWN rating of the media item (user_media_ratings, one row per user and item,
+        CAT-RATING-1). The value is an integer from 0 to 10 (0 is a real rating, distinct from not rated); 7 and 7.0 are
+        accepted, 7.5, strings, null and out-of-range values are 400. It never reads or changes another user's rating.
+        Checks run in the order 401, 400 (id, body), 404.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rating]
+              properties:
+                rating:
+                  type: integer
+                  minimum: 0
+                  maximum: 10
+      responses:
+        '200':
+          description: Rating stored
+        '400':
+          description: Invalid media id, invalid JSON body, or `rating` missing, non-numeric, fractional or outside 0..10
+        '401':
+          description: Authentication required (checked before the id and body are parsed)
+        '404':
+          description: Media item not found
+    get:
+      tags: [media]
+      summary: Get the caller's rating
+      description: >-
+        Returns the authenticated user's OWN rating of the media item, or `rating: null` when the caller has not rated it.
+        Another user's rating is never returned.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: The caller's rating (integer 0..10) or null
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  media_id:
+                    type: integer
+                  rating:
+                    type: integer
+                    nullable: true
+                    minimum: 0
+                    maximum: 10
+        '400':
+          description: Invalid media id
+        '401':
+          description: Authentication required
+        '404':
+          description: Media item not found
+    delete:
+      tags: [media]
+      summary: Remove the caller's rating
+      description: Deletes the authenticated user's OWN rating; idempotent (200 when there was none). Another user's rating is never touched.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Rating removed (or none existed)
+        '400':
+          description: Invalid media id
+        '401':
+          description: Authentication required
         '404':
           description: Media item not found
 

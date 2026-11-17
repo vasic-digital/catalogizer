@@ -1,0 +1,2 @@
+ok  	catalogizer/internal/services	5.120s
+done

@@ -1,0 +1,21 @@
+# RED (F4): mutant = altSvcMiddleware registered AFTER the routes (the CAT-ALTSVC-1 bug: routed responses lack the header, the 404 chain has it)
+$ GOMAXPROCS=2 nice -n 10 go test -p 1 -count=1 -v -run "TestAltSvcReachOnRealRouter" .
+=== RUN   TestAltSvcReachOnRealRouter
+    main_altsvc_reach_test.go:46: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/altsvc3/catalog-api/main_altsvc_reach_test.go:46
+        	Error:      	Not equal: 
+        	            	expected: "h3=\":28443\"; ma=86400"
+        	            	actual  : ""
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1 +1 @@
+        	            	-h3=":28443"; ma=86400
+        	            	+
+        	Test:       	TestAltSvcReachOnRealRouter
+        	Messages:   	routed 200 over TLS must advertise HTTP/3
+--- FAIL: TestAltSvcReachOnRealRouter (0.00s)
+FAIL
+FAIL	catalogizer	0.238s
+FAIL

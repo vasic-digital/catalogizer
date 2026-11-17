@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -8,32 +9,55 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestAltSvcReachOnRealRouter reproduces main()'s order (buildRouter, then the one
-// late router.Use(altSvcMiddleware)) on the real router and records, per response
-// kind, whether Alt-Svc is sent. gin v1.12.0 Engine.Use only affects group handlers
-// and the 404/405 chains; routes already registered keep the chain they were
-// combined with. CAT-ALTSVC-1: a routed 200 carries no Alt-Svc today.
-func TestAltSvcReachOnRealRouter(t *testing.T) {
-	e := buildRouter(routerTestDeps())
-	e.Use(altSvcMiddleware)
+const altSvcWant = `h3=":28443"; ma=86400`
 
-	do := func(method, path string) *httptest.ResponseRecorder {
-		w := httptest.NewRecorder()
-		e.ServeHTTP(w, httptest.NewRequest(method, path, nil))
-		return w
+// altSvcDo serves one request through the real router (buildRouter, exactly the
+// engine main() serves). tlsReq marks the request as received over TLS.
+func altSvcDo(e http.Handler, method, path string, tlsReq bool) *httptest.ResponseRecorder {
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(method, path, nil)
+	if tlsReq {
+		r.TLS = &tls.ConnectionState{}
 	}
-	// Control needle: 404 chain does carry the header (instrument can see it).
-	nf := do(http.MethodGet, "/no-such-route-altsvc")
-	require.Equal(t, http.StatusNotFound, nf.Code)
-	require.Equal(t, `h3=":28443"; ma=86400`, nf.Header().Get("Alt-Svc"), "control: 404 chain")
+	e.ServeHTTP(w, r)
+	return w
+}
 
-	// The question: a normal routed response.
-	ok := do(http.MethodGet, "/health")
+func setH3Advertised(t *testing.T, v bool) {
+	t.Helper()
+	prev := h3Advertised.Load()
+	h3Advertised.Store(v)
+	t.Cleanup(func() { h3Advertised.Store(prev) })
+}
+
+// TestAltSvcReachOnRealRouter is the CAT-ALTSVC-1 reproduction turned guard. RED
+// (before the fix, with main()'s late router.Use): a routed 200 over TLS had no
+// Alt-Svc, only the 404 (NoRoute) chain did. Now it is in buildRouter's chain.
+func TestAltSvcReachOnRealRouter(t *testing.T) {
+	setH3Advertised(t, true)
+	e := buildRouter(routerTestDeps())
+
+	nf := altSvcDo(e, http.MethodGet, "/no-such-route-altsvc", true)
+	require.Equal(t, http.StatusNotFound, nf.Code)
+	require.Equal(t, altSvcWant, nf.Header().Get("Alt-Svc"), "control: 404 chain over TLS")
+
+	ok := altSvcDo(e, http.MethodGet, "/health", true)
 	require.Equal(t, http.StatusOK, ok.Code)
-	// RED (before this file was a characterization): the assertion that a routed
-	// 200 carries the header failed with actual "". Intent (HTTP/3 IS served on
-	// UDP 28443 by main()) says it should; fixing it means changing the pinned
-	// global chain and its AST guards, tracked as CAT-ALTSVC-1, not done here.
-	// When that lands, flip this to require the header.
-	require.Empty(t, ok.Header().Get("Alt-Svc"), "CAT-ALTSVC-1 known gap: routed 200 has no Alt-Svc today")
+	require.Equal(t, altSvcWant, ok.Header().Get("Alt-Svc"), "routed 200 over TLS must advertise HTTP/3")
+}
+
+// golden-FALSE: HTTP/3 listener not enabled (certificate missing): never advertised.
+func TestAltSvcNotAdvertisedWhenH3Disabled(t *testing.T) {
+	setH3Advertised(t, false)
+	e := buildRouter(routerTestDeps())
+	require.Empty(t, altSvcDo(e, http.MethodGet, "/health", true).Header().Get("Alt-Svc"))
+	require.Empty(t, altSvcDo(e, http.MethodGet, "/no-such-route-altsvc", true).Header().Get("Alt-Svc"))
+}
+
+// Plain HTTP (the cleartext listener shares the engine): never advertised.
+func TestAltSvcNotAdvertisedOverPlainHTTP(t *testing.T) {
+	setH3Advertised(t, true)
+	e := buildRouter(routerTestDeps())
+	require.Empty(t, altSvcDo(e, http.MethodGet, "/health", false).Header().Get("Alt-Svc"))
+	require.Empty(t, altSvcDo(e, http.MethodGet, "/no-such-route-altsvc", false).Header().Get("Alt-Svc"))
 }
