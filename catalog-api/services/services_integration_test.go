@@ -3637,6 +3637,10 @@ func TestErrorReportingService_UpdateStatus_ForeignAndMissingIndistinguishable(t
 	var logBuf bytes.Buffer
 	log.SetOutput(&logBuf)
 	defer log.SetOutput(os.Stderr)
+	// F3T-2 positive control: this capture must be able to see a line written through the std logger, otherwise
+	// every NotContains below would pass on a blind instrument.
+	log.Printf("capture-control-needle %d", 424242)
+	require.Contains(t, logBuf.String(), "capture-control-needle 424242", "log capture is blind")
 
 	createdErr, err := service.ReportError(ownerID, &models.ErrorReportRequest{Level: "error", Message: "owned", ErrorCode: "E", Component: "c"})
 	require.NoError(t, err)
@@ -3669,4 +3673,8 @@ func TestErrorReportingService_UpdateStatus_ForeignAndMissingIndistinguishable(t
 		})
 	}
 	assert.NotContains(t, logBuf.String(), strconv.Itoa(ownerID), "logs must not carry the owner id")
+	// F3T-2: the missing-report id (999999, distinctive) must not appear in the captured logs either. Honest scope:
+	// only the std `log` package is captured (a structured logger would not be seen), and the created report ids
+	// are small integers that cannot be searched for without false hits, so only the missing id is asserted.
+	assert.NotContains(t, logBuf.String(), "999999", "logs must not carry the requested report id")
 }
