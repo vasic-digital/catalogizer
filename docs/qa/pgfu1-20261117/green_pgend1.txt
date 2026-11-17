@@ -1,0 +1,9 @@
+=== RUN   TestPlaybackEnd_OtherUsersAndItemsProgressUntouched_SQLite
+--- PASS: TestPlaybackEnd_OtherUsersAndItemsProgressUntouched_SQLite (0.05s)
+=== RUN   TestPlaybackEnd_OtherUsersAndItemsProgressUntouched_Postgres
+--- PASS: TestPlaybackEnd_OtherUsersAndItemsProgressUntouched_Postgres (10.38s)
+=== RUN   TestPlaybackEnd_OnPutCreatedRow_SQLite
+--- PASS: TestPlaybackEnd_OnPutCreatedRow_SQLite (0.15s)
+=== RUN   TestPlaybackEnd_OnPutCreatedRow_Postgres
+--- PASS: TestPlaybackEnd_OnPutCreatedRow_Postgres (11.25s)
+ok  	catalogizer/repository	21.897s

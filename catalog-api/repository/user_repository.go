@@ -257,7 +257,7 @@ func (r *UserRepository) UpdateGuarded(user *models.User, expectedRoleID int, ex
 		var q string
 		var args []interface{}
 		q, args, removesAdmin = build(adminIDs)
-		res, xerr := tx.Exec(r.db.Rewrite(q), args...)
+		res, xerr := tx.Exec(q, args...)
 		if xerr != nil {
 			return false, xerr
 		}
@@ -345,7 +345,7 @@ const pgAdvisoryLockKey = `SELECT pg_advisory_xact_lock(7340001)`
 // administrator-role set must be read AFTER the advisory lock is held, inside the same transaction as the
 // guarded write; a set read before the lock can be made stale by a concurrent UpdateRole / role grant.
 func (r *UserRepository) adminRoleIDsTx(tx *database.Tx) ([]int, error) {
-	rows, err := tx.Query(r.db.Rewrite(`SELECT id, permissions FROM roles`))
+	rows, err := tx.Query(`SELECT id, permissions FROM roles`)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list roles: %w", err)
 	}
@@ -542,11 +542,8 @@ func (r *UserRepository) LockAccount(userID int, lockUntil time.Time) error {
 	type rower interface {
 		QueryRow(query string, args ...interface{}) *sql.Row
 	}
-	refusedByGuard := func(q rower, rewrite bool, adminIDs []int) bool {
+	refusedByGuard := func(q rower, adminIDs []int) bool {
 		sq := `SELECT role_id, COALESCE(is_locked, '0'), locked_until FROM users WHERE id = ?`
-		if rewrite {
-			sq = r.db.Rewrite(sq)
-		}
 		var rid int
 		var locked bool
 		var until *time.Time
@@ -570,13 +567,13 @@ func (r *UserRepository) LockAccount(userID int, lockUntil time.Time) error {
 			return aerr
 		}
 		query, args, guarded := build(adminIDs)
-		res, xerr := tx.Exec(r.db.Rewrite(query), args...)
+		res, xerr := tx.Exec(query, args...)
 		if xerr != nil {
 			return xerr
 		}
 		n, _ = res.RowsAffected()
 		if n == 0 && guarded {
-			refused = refusedByGuard(tx, true, adminIDs)
+			refused = refusedByGuard(tx, adminIDs)
 		}
 		if err = tx.Commit(); err != nil {
 			return err
@@ -593,7 +590,7 @@ func (r *UserRepository) LockAccount(userID int, lockUntil time.Time) error {
 		}
 		n, _ = res.RowsAffected()
 		if n == 0 && guarded && r.db.Dialect().Type != database.DialectPostgres {
-			refused = refusedByGuard(r.db, false, adminIDs)
+			refused = refusedByGuard(r.db, adminIDs)
 		}
 	}
 	if refused {
@@ -675,7 +672,7 @@ func (r *UserRepository) SetSuspended(userID int, suspended bool) error {
 			return aerr
 		}
 		query, args := build(adminIDs)
-		res, xerr := tx.Exec(r.db.Rewrite(query), args...)
+		res, xerr := tx.Exec(query, args...)
 		if xerr != nil {
 			return xerr
 		}
@@ -719,18 +716,18 @@ func (r *UserRepository) Delete(id int) error {
 	}
 	// Detaching the audit rows must not make them anonymous: stamp who they belonged to into details first.
 	var username string
-	if err := tx.QueryRow(r.db.Rewrite(`SELECT username FROM users WHERE id = ?`), id).Scan(&username); err != nil && err != sql.ErrNoRows {
+	if err := tx.QueryRow(`SELECT username FROM users WHERE id = ?`, id).Scan(&username); err != nil && err != sql.ErrNoRows {
 		return fmt.Errorf("failed to read user before delete: %w", err)
 	}
 	stamp := fmt.Sprintf(" [former_user_id=%d username=%s]", id, username)
-	if _, err := tx.Exec(r.db.Rewrite(`UPDATE auth_audit_log SET details = COALESCE(details, '') || ? WHERE user_id = ?`), stamp, id); err != nil {
+	if _, err := tx.Exec(`UPDATE auth_audit_log SET details = COALESCE(details, '') || ? WHERE user_id = ?`, stamp, id); err != nil {
 		return err
 	}
 	for _, q := range []string{
 		`UPDATE auth_audit_log SET user_id = NULL WHERE user_id = ?`,
 		`UPDATE user_permissions SET granted_by = NULL WHERE granted_by = ?`,
 	} {
-		if _, err := tx.Exec(r.db.Rewrite(q), id); err != nil {
+		if _, err := tx.Exec(q, id); err != nil {
 			return err
 		}
 	}
@@ -741,14 +738,14 @@ func (r *UserRepository) Delete(id int) error {
 	var rid int
 	var act bool
 	protected := false
-	if qerr := tx.QueryRow(r.db.Rewrite(`SELECT role_id, is_active FROM users WHERE id = ?`), id).Scan(&rid, &act); qerr == nil &&
+	if qerr := tx.QueryRow(`SELECT role_id, is_active FROM users WHERE id = ?`, id).Scan(&rid, &act); qerr == nil &&
 		act && containsInt(adminIDs, rid) {
 		protected = true
 		clause, cargs := otherActiveAdminsClause(id, adminIDs)
 		del += " AND " + clause
 		delArgs = append(delArgs, cargs...)
 	}
-	res, err := tx.Exec(r.db.Rewrite(del), delArgs...)
+	res, err := tx.Exec(del, delArgs...)
 	if err != nil {
 		return err
 	}
@@ -1065,11 +1062,8 @@ func (r *UserRepository) UpdateRole(role *models.Role) error {
 	// administrator role"; any other scan or JSON error is returned and refuses the write.
 	currentlyAdmin := func(q interface {
 		QueryRow(string, ...interface{}) *sql.Row
-	}, rewrite bool) (bool, error) {
+	}) (bool, error) {
 		sq := `SELECT permissions, is_system FROM roles WHERE id = ?`
-		if rewrite {
-			sq = r.db.Rewrite(sq)
-		}
 		var pj string
 		var sys bool
 		if serr := q.QueryRow(sq, role.ID).Scan(&pj, &sys); serr != nil {
@@ -1115,7 +1109,7 @@ func (r *UserRepository) UpdateRole(role *models.Role) error {
 				return aerr
 			}
 		}
-		wasAdminTx, cerr := currentlyAdmin(tx, isPG)
+		wasAdminTx, cerr := currentlyAdmin(tx)
 		if cerr != nil {
 			return cerr
 		}
@@ -1127,7 +1121,7 @@ func (r *UserRepository) UpdateRole(role *models.Role) error {
 		}
 		q, args, g := build(wasAdminTx, adminIDs)
 		guarded = g
-		res, xerr := tx.Exec(r.db.Rewrite(q), args...)
+		res, xerr := tx.Exec(q, args...)
 		if xerr != nil {
 			return fmt.Errorf("failed to update role: %w", xerr)
 		}

@@ -157,8 +157,10 @@ func (db *DB) rewriteQuery(query string) string {
 	return query
 }
 
-// Rewrite applies the dialect rewriting (placeholders, boolean literals, ...) to a query. Statements run on a *sql.Tx obtained from
-// Begin bypass the DB wrappers, so transactional code must call this itself or a PostgreSQL deployment receives raw `?` markers.
+// Rewrite applies the dialect rewriting (placeholders, boolean literals, ...) to a query. Statements run on the *Tx returned by
+// Begin/BeginTx are already rewritten by that type, so do NOT wrap them in Rewrite (a second pass is not idempotent for a string
+// with two INSERT OR IGNORE). Use Rewrite only to build a query that is run through something that does not rewrite, such as a
+// raw *sql.Conn or a prepared statement obtained from the raw handle.
 func (db *DB) Rewrite(query string) string { return db.rewriteQuery(query) }
 
 // ExecContext executes a query with dialect rewriting.

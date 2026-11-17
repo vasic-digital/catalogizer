@@ -1,0 +1,19 @@
+MUTANT R6 drop media_item_id from UPDATE key: KILLED
+  --- FAIL: TestPlaybackEnd_OtherUsersAndItemsProgressUntouched_SQLite (0.27s) | --- FAIL: TestPlaybackEnd_OtherUsersAndItemsProgressUntouched_Postgres (12.24s) | FAIL | FAIL	catalogizer/repository	12.579s | FAIL
+MUTANT R6b drop user_id from UPDATE key: KILLED
+  --- FAIL: TestPlaybackEnd_OtherUsersAndItemsProgressUntouched_SQLite (0.09s) | --- FAIL: TestPlaybackEnd_OtherUsersAndItemsProgressUntouched_Postgres (11.93s) | FAIL | FAIL	catalogizer/repository	12.159s | FAIL
+MUTANT G1 scanner ignores import alias: KILLED
+  --- FAIL: TestRawTxSiteScannerFindsPlantedSites (0.00s) | FAIL | FAIL	catalogizer/database	0.205s | FAIL
+MUTANT G2 scanner ignores local unwrap tracking: KILLED
+  --- FAIL: TestRawTxSiteScannerFindsPlantedSites (0.00s) | FAIL | FAIL	catalogizer/database	0.010s | FAIL
+MUTANT G3 scanner ignores .Tx.Tx: KILLED
+  --- FAIL: TestRawTxSiteScannerFindsPlantedSites (0.00s) | FAIL | FAIL	catalogizer/database	0.059s | FAIL
+MUTANT G4 scanner ignores *sql.DB declared types: KILLED
+  --- FAIL: TestRawTxSiteScannerFindsPlantedSites (0.00s) | FAIL | FAIL	catalogizer/database	0.013s | FAIL
+MUTANT F2 Transaction.ExecContext back to raw sql.Tx: KILLED
+  --- FAIL: TestTransactionEveryStatementMethodIsRewrittenOnPostgres (5.95s) | FAIL | FAIL	catalogizer/database	5.997s | FAIL
+MUTANT F4 typed-nil treated as present: KILLED
+  --- FAIL: TestSafeFinishersAcceptWrapperTransactions (0.10s) | panic: runtime error: invalid memory address or nil pointer dereference [recovered, repanicked] | panic({0x8f8460?, 0xcf3270?}) | FAIL	catalogizer/database	0.152s | FAIL
+MUTANT F2b Transaction.QueryContext unrewritten: KILLED
+  --- FAIL: TestTransactionEveryStatementMethodIsRewrittenOnPostgres (6.10s) | FAIL | FAIL	catalogizer/database	6.106s | FAIL
+RESTORED
