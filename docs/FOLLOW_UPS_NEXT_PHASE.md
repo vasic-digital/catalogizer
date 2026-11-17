@@ -3737,3 +3737,7 @@ Evidence: docs/qa/clfu1-20261117/ (README, SHA256SUMS).
 - CLFU1-R-4: user_ratings has no user key and is not cleared on logout (UserRatingDao.kt:56, AuthRepository.kt:119); same gap as favorites/sync queue; no UI yet (AFAV-9).
 - CLFU1-R-5 (nit): dead-code candidates flagged only in docs (MediaDao.updateRating, updateUserWatchProgress, getUserRating, UserRatingDao.delete untested); no removal without operator decision (§11.4.122).
 - CLFU1-R-6 (nit): desktop sets a reason on persisted:true (apiService.ts:786, mutant D3 survives); test reason undefined on success.
+
+## ALTSVC5 (shared tls.Config data race in startH3Stack, 2026-11-17) **[ADDRESSED, PROVISIONAL]**
+- Defect: one *tls.Config shared by http.Server (ServeTLS writes it via http2ConfigureServer) and http3.Server (Clone reads it); -race reported DATA RACE in 5 of 6 runs. Fixed by one Clone() per server before start (main_h3.go); tests TestAltSvc5_*; evidence docs/qa/altsvc5-20261117/.
+- Owed: same pattern in the vendored constitution scripts/scheduled-work-engine/cmd/scheduled-work/main.go (upstream report); production impact UNCONFIRMED; full-package -race not run.

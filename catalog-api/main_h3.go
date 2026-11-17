@@ -38,13 +38,18 @@ func startH3Stack(logger *zap.Logger, router http.Handler, host string, port int
 		Certificates: []tls.Certificate{cert},
 		NextProtos:   []string{"h3", "h2", "http/1.1"},
 	}
+	// ALTSVC5: each server gets its OWN clone, taken here before either server starts. The HTTPS
+	// server (ServeTLS -> http2ConfigureServer) writes its config and the HTTP/3 server
+	// (http3.ConfigureTLSConfig -> Clone) reads its config; sharing one pointer was a DATA RACE.
+	httpsTLS := tlsConfig.Clone()
+	h3TLS := tlsConfig.Clone()
 	addr := net.JoinHostPort(host, strconv.Itoa(port))
 
 	var httpsServer *http.Server
 	if tcpLn, err := net.Listen("tcp", addr); err != nil {
 		logger.Error("HTTPS (HTTP/2 with TLS) bind failed", zap.String("address", addr), zap.Error(err))
 	} else {
-		httpsServer = &http.Server{Addr: addr, Handler: router, TLSConfig: tlsConfig, ReadHeaderTimeout: 5 * time.Second}
+		httpsServer = &http.Server{Addr: addr, Handler: router, TLSConfig: httpsTLS, ReadHeaderTimeout: 5 * time.Second}
 		go func() {
 			logger.Info("Starting HTTPS server (HTTP/2 with TLS)", zap.String("address", addr))
 			if err := httpsServer.ServeTLS(tcpLn, "", ""); err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -58,7 +63,7 @@ func startH3Stack(logger *zap.Logger, router http.Handler, host string, port int
 		logger.Error("HTTP/3 (QUIC) bind failed; Alt-Svc is not advertised", zap.String("address", addr), zap.Error(err))
 		return httpsServer, nil
 	}
-	http3Server := &http3.Server{Addr: addr, Handler: router, TLSConfig: tlsConfig}
+	http3Server := &http3.Server{Addr: addr, Handler: router, TLSConfig: h3TLS}
 	h3Advertised.Store(true) // after the bind, before serving; cleared if the server fails
 	go func() {
 		logger.Info("Starting HTTP/3 (QUIC) server", zap.String("address", addr))
