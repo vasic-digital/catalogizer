@@ -83,6 +83,7 @@ var preGateAllowedSymbols = map[string][]string{
 	"middleware/timeout.go":              {"RequestTimeout"},
 	"middleware/security_headers.go":     {"SecurityHeadersWithConfig"},
 	"middleware/cache_headers.go":        {"CacheHeaders"},
+	"main_router.go":                     {"altSvcMiddleware"}, // CAT-ALTSVC-1; its source is content-pinned by TestREDFIX1_AltSvcMiddlewareContentPin
 	"gin:logger.go":                      {"LoggerWithConfig"},
 }
 
