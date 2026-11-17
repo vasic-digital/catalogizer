@@ -1,0 +1,115 @@
+=== RUN   TestWatchProgress_PutThenSessionEnd_NoPermille
+--- PASS: TestWatchProgress_PutThenSessionEnd_NoPermille (0.04s)
+=== RUN   TestWatchProgress_SessionEndThenPut_KeepsSecondsResumePoint
+--- PASS: TestWatchProgress_SessionEndThenPut_KeepsSecondsResumePoint (0.06s)
+=== RUN   TestWatchProgress_RealClientShapes
+--- PASS: TestWatchProgress_RealClientShapes (0.04s)
+=== RUN   TestWatchProgress_SecondWriteDoesNotTouchOtherUser
+--- PASS: TestWatchProgress_SecondWriteDoesNotTouchOtherUser (0.05s)
+=== RUN   TestWatchProgress_FirstInsertFailureRetried
+--- PASS: TestWatchProgress_FirstInsertFailureRetried (0.03s)
+=== RUN   TestWatchProgress_PersistentInsertFailureIs500
+--- PASS: TestWatchProgress_PersistentInsertFailureIs500 (0.03s)
+=== RUN   TestWatchProgress_PositionWithoutKnownDurationIgnored
+--- PASS: TestWatchProgress_PositionWithoutKnownDurationIgnored (0.03s)
+=== RUN   TestWatchProgress_PG_CompareAndSetOnRealPostgres
+    media_watch_progress_pg_test.go:160: PG executed: UPDATE media_progress SET duration_total = $1, last_position = $2, updated_at = $3 WHERE user_id = $4 AND media_item_id = $5 AND position_unit = $6 AND duration_total = $7
+    media_watch_progress_pg_test.go:160: PG executed: UPDATE media_progress SET duration_total = $1, last_position = $2, updated_at = $3 WHERE user_id = $4 AND media_item_id = $5 AND position_unit = $6 AND duration_total IS NULL
+    media_watch_progress_pg_test.go:160: PG executed: UPDATE media_progress SET duration_total = $1, last_position = $2, updated_at = $3 WHERE user_id = $4 AND media_item_id = $5 AND position_unit = $6 AND duration_total IS NULL
+    media_watch_progress_pg_test.go:160: PG executed: UPDATE media_progress SET duration_total = $1, last_position = $2, updated_at = $3 WHERE user_id = $4 AND media_item_id = $5 AND position_unit = $6 AND duration_total = $7
+    media_watch_progress_pg_test.go:160: PG executed: UPDATE media_progress SET duration_total = $1, last_position = $2, updated_at = $3 WHERE user_id = $4 AND media_item_id = $5 AND position_unit = $6 AND duration_total = $7
+    media_watch_progress_pg_test.go:160: PG executed: UPDATE media_progress SET duration_total = $1, last_position = $2, updated_at = $3 WHERE user_id = $4 AND media_item_id = $5 AND position_unit = $6 AND duration_total = $7
+    media_watch_progress_pg_test.go:160: PG executed: UPDATE media_progress SET duration_total = $1, last_position = $2, updated_at = $3 WHERE user_id = $4 AND media_item_id = $5 AND position_unit = $6 AND duration_total = $7
+    media_watch_progress_pg_test.go:160: PG executed: UPDATE media_progress SET duration_total = $1, last_position = $2, updated_at = $3 WHERE user_id = $4 AND media_item_id = $5 AND position_unit = $6 AND duration_total = $7
+    media_watch_progress_pg_test.go:160: PG executed: UPDATE media_progress SET duration_total = $1, last_position = $2, updated_at = $3 WHERE user_id = $4 AND media_item_id = $5 AND position_unit = $6 AND duration_total = $7
+--- PASS: TestWatchProgress_PG_CompareAndSetOnRealPostgres (12.40s)
+=== RUN   TestRV2_RaceSessionEndChangesUnitBetweenSelectAndUpdate
+--- PASS: TestRV2_RaceSessionEndChangesUnitBetweenSelectAndUpdate (12.98s)
+=== RUN   TestRV2_RaceSessionEndLearnsDurationBetweenSelectAndUpdate
+--- PASS: TestRV2_RaceSessionEndLearnsDurationBetweenSelectAndUpdate (13.91s)
+=== RUN   TestWatchProgress_ConcurrentUpdateExhaustionIs409NotPersisted
+--- PASS: TestWatchProgress_ConcurrentUpdateExhaustionIs409NotPersisted (14.43s)
+=== RUN   TestWatchProgress_GuardedUpdatePostgresRewrite
+--- PASS: TestWatchProgress_GuardedUpdatePostgresRewrite (15.23s)
+=== RUN   TestWatchProgress_X1_RoundsFractionalSeconds
+--- PASS: TestWatchProgress_X1_RoundsFractionalSeconds (14.75s)
+=== RUN   TestWatchProgress_X2_FractionClamped
+--- PASS: TestWatchProgress_X2_FractionClamped (12.58s)
+=== RUN   TestWatchProgress_X3_NullDurationNonSecondsRowNotTouched
+--- PASS: TestWatchProgress_X3_NullDurationNonSecondsRowNotTouched (13.40s)
+=== RUN   TestWatchProgress_X4_ZeroPositionAccepted
+--- PASS: TestWatchProgress_X4_ZeroPositionAccepted (11.17s)
+=== RUN   TestWatchProgress_RV3_N1_NullDurationLearnedByEndBetweenSelectAndUpdate
+--- PASS: TestWatchProgress_RV3_N1_NullDurationLearnedByEndBetweenSelectAndUpdate (10.87s)
+=== RUN   TestWatchProgress_RV3_N2_UnitChangeSameDuration
+--- PASS: TestWatchProgress_RV3_N2_UnitChangeSameDuration (9.55s)
+=== RUN   TestWatchProgress_RV3_N5_TwoPutsDurationShrink
+--- PASS: TestWatchProgress_RV3_N5_TwoPutsDurationShrink (9.64s)
+=== RUN   TestWatchProgress_RV3_N10_EndShrinksDurationBetweenSelectAndUpdate
+--- PASS: TestWatchProgress_RV3_N10_EndShrinksDurationBetweenSelectAndUpdate (7.89s)
+=== RUN   TestWatchProgress_PersistsPerUser
+--- PASS: TestWatchProgress_PersistsPerUser (0.12s)
+=== RUN   TestWatchProgress_AcceptedBodyShapes
+--- PASS: TestWatchProgress_AcceptedBodyShapes (0.12s)
+=== RUN   TestWatchProgress_StatusCodes
+--- PASS: TestWatchProgress_StatusCodes (0.04s)
+=== RUN   TestWatchProgress_KeepsSecondsRow
+--- PASS: TestWatchProgress_KeepsSecondsRow (0.06s)
+=== RUN   TestSECQ1CFU_M4_PurgeKeepsInFlightEntries
+--- PASS: TestSECQ1CFU_M4_PurgeKeepsInFlightEntries (0.00s)
+=== RUN   TestSECQ1CFU_M4_FullTableNeverEvictsInFlightEntries
+--- PASS: TestSECQ1CFU_M4_FullTableNeverEvictsInFlightEntries (31.15s)
+=== RUN   TestSECQ1CFU_M4_PanicCountsAsFailureAndReleasesSlot
+--- PASS: TestSECQ1CFU_M4_PanicCountsAsFailureAndReleasesSlot (0.00s)
+=== RUN   TestSECQ1C_R1_ApprovedClassRouteIsAdminOnly
+--- PASS: TestSECQ1C_R1_ApprovedClassRouteIsAdminOnly (2.03s)
+=== RUN   TestSECQ1C_R1_UnresolvableRootNeedsConfirmation
+--- PASS: TestSECQ1C_R1_UnresolvableRootNeedsConfirmation (2.89s)
+=== RUN   TestSECQ1C_R1_RebindingBetweenClassificationsIsRefused
+--- PASS: TestSECQ1C_R1_RebindingBetweenClassificationsIsRefused (5.25s)
+=== RUN   TestSECQ1C_R1_StorageStepUpIsThrottledPerUser
+--- PASS: TestSECQ1C_R1_StorageStepUpIsThrottledPerUser (5.08s)
+=== RUN   TestSECQ1C_R1_ThrottleIsPerUserAndBounded
+--- PASS: TestSECQ1C_R1_ThrottleIsPerUserAndBounded (4.18s)
+=== RUN   TestSECQ1C_R1_SuccessClearsFailuresWithinWindow
+--- PASS: TestSECQ1C_R1_SuccessClearsFailuresWithinWindow (0.00s)
+=== RUN   TestSECQ1C_R1_LimiterReservesInFlightAttempts
+--- PASS: TestSECQ1C_R1_LimiterReservesInFlightAttempts (0.00s)
+=== RUN   TestSECQ1C_R1_FailuresOfOneUserDoNotLockAnother
+--- PASS: TestSECQ1C_R1_FailuresOfOneUserDoNotLockAnother (4.21s)
+=== RUN   TestSECQ1C_R1_StorageConcurrentBurstRunsAtMostLimitChecks
+--- PASS: TestSECQ1C_R1_StorageConcurrentBurstRunsAtMostLimitChecks (3.45s)
+=== RUN   TestSECQ1C_R1_ApproveNewRootRefusesPublicAfterPrivateUnconfirmed
+--- PASS: TestSECQ1C_R1_ApproveNewRootRefusesPublicAfterPrivateUnconfirmed (3.10s)
+=== RUN   TestSECQ1C_CreatePublicRootIsAutoClassifiedPublic
+--- PASS: TestSECQ1C_CreatePublicRootIsAutoClassifiedPublic (2.96s)
+=== RUN   TestSECQ1C_CreatePrivateRootNeedsConfirmation
+--- PASS: TestSECQ1C_CreatePrivateRootNeedsConfirmation (2.71s)
+=== RUN   TestSECQ1C_CreateSMBRootNeedsConfirmation
+--- PASS: TestSECQ1C_CreateSMBRootNeedsConfirmation (3.44s)
+=== RUN   TestSECQ1C_LocalRootNeedsNoConfirmation
+--- PASS: TestSECQ1C_LocalRootNeedsNoConfirmation (3.38s)
+=== RUN   TestSECQ1C_WideningNeedsStepUp
+--- PASS: TestSECQ1C_WideningNeedsStepUp (3.25s)
+=== RUN   TestSECQ1C_StoredClassReachesTheClient
+--- PASS: TestSECQ1C_StoredClassReachesTheClient (3.51s)
+=== RUN   TestSECQ1_Live_RedirectToForbiddenSchemeRefusedByClientRedirectCheck
+--- PASS: TestSECQ1_Live_RedirectToForbiddenSchemeRefusedByClientRedirectCheck (3.63s)
+=== RUN   TestSECQ1_Live_PublicApprovedRootRefusesAllowListedLoopback
+--- PASS: TestSECQ1_Live_PublicApprovedRootRefusesAllowListedLoopback (3.64s)
+=== RUN   TestSECQ1_Live_LoopbackRootRefusedByDefault_AllowedWithAllowList
+2026/11/17 18:26:05 handlers: storage root url refused (detail not returned to client): webdav url refused: outbound destination not allowed: 127.0.0.1 is a loopback, link-local, metadata, reserved or own address, or outside the approved class (private)
+--- PASS: TestSECQ1_Live_LoopbackRootRefusedByDefault_AllowedWithAllowList (2.57s)
+=== RUN   TestSECQ1_Live_AllowListedPrivateStillNeedsConfirmation
+--- PASS: TestSECQ1_Live_AllowListedPrivateStillNeedsConfirmation (3.25s)
+=== RUN   TestSECQ1_StorageRootURLEarlyCheck
+--- PASS: TestSECQ1_StorageRootURLEarlyCheck (0.01s)
+=== RUN   TestSECQ1_F4_CreateStorageRootRefusesMetadataURL
+2026/11/17 18:26:11 handlers: storage root url refused (detail not returned to client): webdav url refused: outbound destination not allowed: 169.254.169.254 is a loopback, link-local, metadata, reserved or own address, or outside the approved class (private)
+2026/11/17 18:26:11 handlers: storage root url refused (detail not returned to client): webdav url refused: outbound destination not allowed: 127.0.0.1 is a loopback, link-local, metadata, reserved or own address, or outside the approved class (private)
+2026/11/17 18:26:11 handlers: storage root url refused (detail not returned to client): webdav url refused: outbound destination not allowed: ::ffff:169.254.169.254 is a loopback, link-local, metadata, reserved or own address, or outside the approved class (private)
+2026/11/17 18:26:11 handlers: storage root url refused (detail not returned to client): webdav url refused: outbound destination not allowed: "0177.0.0.1" is not a canonical IP address or DNS name
+--- PASS: TestSECQ1_F4_CreateStorageRootRefusesMetadataURL (2.52s)
+PASS
+ok  	catalogizer/handlers	255.911s
+exit=0

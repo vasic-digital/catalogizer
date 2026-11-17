@@ -166,6 +166,7 @@ const watchProgressMax = 1e12
 // @Failure 400 {object} utils.SendErrorResponse
 // @Failure 401 {object} utils.SendErrorResponse
 // @Failure 404 {object} utils.SendErrorResponse
+// @Failure 409 {object} utils.SendErrorResponse "persisted=false, reason=concurrent_update: the row kept changing under 3 bounded compare-and-set attempts, nothing stored"
 // @Failure 500 {object} utils.SendErrorResponse
 // @Router /api/v1/media/{id}/progress [put]
 func (h *AndroidTVMediaHandler) UpdateWatchProgress(c *gin.Context) {

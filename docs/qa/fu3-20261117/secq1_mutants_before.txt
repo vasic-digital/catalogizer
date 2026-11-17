@@ -1,0 +1,12 @@
+## mutant A-create-check-disabled
+ok  	catalogizer/handlers	7.460s
+## mutant B-redirect-check-removed
+ok  	catalogizer/handlers	9.693s
+## mutant C-approved-class-ignored
+ok  	catalogizer/handlers	11.916s
+## mutant D-client-unguarded-plain-http
+--- FAIL: TestSECQ1_Live_LoopbackRootRefusedByDefault_AllowedWithAllowList (4.78s)
+FAIL
+FAIL	catalogizer/handlers	9.002s
+FAIL
+done

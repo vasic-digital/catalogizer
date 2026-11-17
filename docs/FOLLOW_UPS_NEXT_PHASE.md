@@ -3701,3 +3701,8 @@ R5-1..R5-8 fixed; gate logic sound; 133/0 reproduced. Blockers:
 - M4 (minor): WP/CP not cleared after reap; EXIT trap may signal reused PIDs.
 - N1/N2 (nit): F3 grep matches the absent-line record; VICTIM_REFUSED_STATUS unvalidated/glob; base=$BASE may log userinfo; san lookalikes.
 - Live-only unknowns: refused status after suspension (probably 401), clock skew, origin allowlist at edge, suspend semantics vs recheck, ticket pending cap, ticket in nginx logs, victim left suspended, SERVER_PID/SERVER_EXE_SHA256 must be supplied.
+
+## FU3 (2026-11-17, PROVISIONAL; evidence docs/qa/fu3-20261117/)
+- WPROG3-R3-F1 ADDRESSED: reviewer tests N1, N2, N5, N10 adopted as `TestWatchProgress_RV3_*` (media_watch_progress_rv3_test.go) plus real-PG `TestWatchProgress_PG_CompareAndSetOnRealPostgres`; R1/R2/R3b survive before and are killed after. F3 ADDRESSED: `@Failure 409` godoc (openapi already had 409). F4 ADDRESSED: README records the -run filter and the list. F2 (nit, N4c) left open.
+- SECQ1-R-m1/m2/m3/n1/n2 ADDRESSED: redirect scenario and public-approved-root scenario added (`storage_root_secq1_fu_test.go`), create-time body message and 202 pinned, test-2 header text and newWebDAVHTTPClient comment corrected; mutants A, B, C survive before and are killed after.
+- Tracked, NOT done here: CAT-LEGACY-MEDIAHANDLER-1 (no removal); CLG-1 (Android/web send year_min/year_max/rating_min/quality to /media/search, ignored), CLG-2 (web/Android call GET /media/{id}/metadata, no route), CLG-3 (web analyzeDirectory posts legacy {directory_path} body) stay open as tracked client-gap items.

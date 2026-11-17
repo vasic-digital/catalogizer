@@ -1,0 +1,9 @@
+applied R1-null-guard-dropped
+ok  	catalogizer/handlers	69.620s
+== R1-null-guard-dropped done
+applied R2-unit-guard-dropped
+ok  	catalogizer/handlers	99.981s
+== R2-unit-guard-dropped done
+applied R3b-value-guard-le
+ok  	catalogizer/handlers	104.516s
+== R3b-value-guard-le done

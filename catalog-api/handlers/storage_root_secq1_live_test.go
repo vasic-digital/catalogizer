@@ -5,6 +5,7 @@ package handlers
 // default and reachable only when CATALOGIZER_OUTBOUND_ALLOW_CIDRS names it; a private-class destination also needs confirm_private_network.
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -21,6 +22,7 @@ func TestSECQ1_Live_LoopbackRootRefusedByDefault_AllowedWithAllowList(t *testing
 	t.Setenv(netguard.AllowCIDRsEnv, "")
 	code, body := h.do("POST", "/storage/roots", map[string]interface{}{"name": "lb", "protocol": "webdav", "url": srv.URL, "username": "alice", "password": "pw", "path": "/"})
 	require.Equal(t, http.StatusBadRequest, code, "%v", body)
+	require.Contains(t, fmt.Sprint(body), "outbound network policy", "the refusal is the netguard create-time one, not an unrelated 400: %v", body)
 	require.Equal(t, 0, rootCount(t, h.db))
 
 	// allow-listed: created (the harness adds confirm_private_network), scanned for real.
@@ -37,16 +39,15 @@ func TestSECQ1_Live_LoopbackRootRefusedByDefault_AllowedWithAllowList(t *testing
 	// the allow-list is withdrawn after the root exists: the CLIENT (not only the create check) refuses the dial, the scan fails.
 	t.Setenv(netguard.AllowCIDRsEnv, "")
 	code, body = h.do("POST", "/scans", map[string]interface{}{"storage_root_id": id})
-	if code == http.StatusAccepted {
-		st = h.waitScan(body["job_id"].(string))
-		require.Equal(t, "failed", st["status"], "client must refuse a loopback destination without the allow-list: %v", st)
-		require.Contains(t, st["reason"], "outbound destination not allowed", "the refusal is the netguard one, not an unrelated failure")
-	} else {
-		require.GreaterOrEqual(t, code, 400, "scan refused up front is also acceptable: %v", body)
-	}
+	require.Equal(t, http.StatusAccepted, code, "the scan is queued; the client refuses at dial time: %v", body)
+	st = h.waitScan(body["job_id"].(string))
+	require.Equal(t, "failed", st["status"], "client must refuse a loopback destination without the allow-list: %v", st)
+	require.Contains(t, st["reason"], "outbound destination not allowed", "the refusal is the netguard one, not an unrelated failure")
 }
 
-// The allow-list alone is not the confirmation: an allow-listed loopback (private class) without confirm_private_network is refused with the code.
+// The allow-list alone is not the confirmation: an allow-listed loopback (private class) without confirm_private_network is refused with the
+// code. Create-time check only: this uses the shared harness with its mock scanner (no scan runs), and overlaps the SECQ1C create tests; it is
+// kept as the request-path statement of the SECQ-1 model.
 func TestSECQ1_Live_AllowListedPrivateStillNeedsConfirmation(t *testing.T) {
 	t.Setenv(netguard.AllowCIDRsEnv, "127.0.0.0/8")
 	srv := davServer(t, "alice", "pw", map[string][]string{"/": {"a.txt"}})

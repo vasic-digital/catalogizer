@@ -56,9 +56,11 @@ var (
 
 // newWebDAVHTTPClient builds the client: connection-phase timeouts on the transport, no whole-request Timeout.
 func newWebDAVHTTPClient(approved netguard.Class) *http.Client {
-	// SECQ-1/W5: operator-class outbound policy. The dial checks the RESOLVED address of every connection (loopback, link-local and
-	// cloud-metadata addresses are refused, RFC 1918 / ULA / public stay reachable; see netguard/operator.go), every redirect hop is
-	// re-checked, and an environment proxy is honoured only after the destination host was checked.
+	// SECQ-1/W5 + CAT-SECQ1-C: operator-class outbound policy pinned to the root's stored approval (approved; unset means private). The dial
+	// checks the RESOLVED address of every connection: loopback, link-local, metadata and reserved addresses are refused unless
+	// CATALOGIZER_OUTBOUND_ALLOW_CIDRS admits them (never the metadata singletons); a private-approved root reaches private and public
+	// addresses, a public-approved root only public ones. Every redirect hop is re-checked against the same ceiling and an environment
+	// proxy is honoured only after the destination host was checked (see netguard/operator.go).
 	return &http.Client{CheckRedirect: netguard.OperatorCheckRedirectFor(effectiveClass(approved)), Transport: operatorStorageTransportFor(approved)}
 }
 

@@ -1,0 +1,19 @@
+applied R1-null-guard-dropped
+--- FAIL: TestWatchProgress_RV3_N1_NullDurationLearnedByEndBetweenSelectAndUpdate (13.05s)
+--- FAIL: TestWatchProgress_RV3_N5_TwoPutsDurationShrink (13.00s)
+FAIL
+FAIL	catalogizer/handlers	132.292s
+FAIL
+== R1-null-guard-dropped done
+applied R2-unit-guard-dropped
+--- FAIL: TestWatchProgress_RV3_N2_UnitChangeSameDuration (17.61s)
+FAIL
+FAIL	catalogizer/handlers	160.632s
+FAIL
+== R2-unit-guard-dropped done
+applied R3b-value-guard-le
+--- FAIL: TestWatchProgress_RV3_N10_EndShrinksDurationBetweenSelectAndUpdate (17.48s)
+FAIL
+FAIL	catalogizer/handlers	179.409s
+FAIL
+== R3b-value-guard-le done
