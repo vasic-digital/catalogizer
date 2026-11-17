@@ -1,0 +1,31 @@
+Unknown input format 'pdf'
+Pandoc can convert to PDF, but not from PDF.
+/usr/lib/libreoffice/program/soffice.bin: error while loading shared libraries: libreglo.so: cannot open shared object file: No such file or directory
+Unknown input format 'pdf'
+Pandoc can convert to PDF, but not from PDF.
+/usr/lib/libreoffice/program/soffice.bin: error while loading shared libraries: libreglo.so: cannot open shared object file: No such file or directory
+--- FAIL: TestLogManagementService_GetLogCollection_AccessDenied (0.01s)
+    services_integration_test.go:927: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/services_integration_test.go:927
+        	Error:      	"failed to get log collection: sql: no rows in result set" does not contain "access denied"
+        	Test:       	TestLogManagementService_GetLogCollection_AccessDenied
+--- FAIL: TestLogManagementService_CreateLogShare_AccessDenied (0.02s)
+    services_integration_test.go:1815: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/services_integration_test.go:1815
+        	Error:      	"failed to get log collection: sql: no rows in result set" does not contain "access denied"
+        	Test:       	TestLogManagementService_CreateLogShare_AccessDenied
+--- FAIL: TestLogManagementService_ExportLogs_AccessDenied (0.02s)
+    services_integration_test.go:1832: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/services_integration_test.go:1832
+        	Error:      	"failed to get log collection: sql: no rows in result set" does not contain "access denied"
+        	Test:       	TestLogManagementService_ExportLogs_AccessDenied
+--- FAIL: TestLogManagementService_AnalyzeLogs_AccessDenied (0.01s)
+    services_integration_test.go:1867: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/services_integration_test.go:1867
+        	Error:      	"failed to get log collection: sql: no rows in result set" does not contain "access denied"
+        	Test:       	TestLogManagementService_AnalyzeLogs_AccessDenied
+FAIL
+FAIL	catalogizer/services	63.858s
+ok  	catalogizer/handlers	246.992s
+FAIL
+DONE

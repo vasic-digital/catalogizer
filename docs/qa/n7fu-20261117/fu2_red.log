@@ -1,0 +1,127 @@
+=== RUN   TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing
+=== RUN   TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/get_collection
+=== RUN   TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/entries
+    log_foreign_missing_n7fu_test.go:98: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/handlers/log_foreign_missing_n7fu_test.go:98
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 403
+        	Test:       	TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/entries
+        	Messages:   	foreign id must answer like a missing one: Access denied
+    log_foreign_missing_n7fu_test.go:99: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/handlers/log_foreign_missing_n7fu_test.go:99
+        	Error:      	Not equal: 
+        	            	expected: "Not found\n"
+        	            	actual  : "Access denied\n"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1,2 +1,2 @@
+        	            	-Not found
+        	            	+Access denied
+        	            	 
+        	Test:       	TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/entries
+        	Messages:   	bodies must be identical
+=== RUN   TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/export
+    log_foreign_missing_n7fu_test.go:98: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/handlers/log_foreign_missing_n7fu_test.go:98
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 403
+        	Test:       	TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/export
+        	Messages:   	foreign id must answer like a missing one: Access denied
+    log_foreign_missing_n7fu_test.go:99: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/handlers/log_foreign_missing_n7fu_test.go:99
+        	Error:      	Not equal: 
+        	            	expected: "Not found\n"
+        	            	actual  : "Access denied\n"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1,2 +1,2 @@
+        	            	-Not found
+        	            	+Access denied
+        	            	 
+        	Test:       	TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/export
+        	Messages:   	bodies must be identical
+=== RUN   TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/analyze
+    log_foreign_missing_n7fu_test.go:98: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/handlers/log_foreign_missing_n7fu_test.go:98
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 403
+        	Test:       	TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/analyze
+        	Messages:   	foreign id must answer like a missing one: Access denied
+    log_foreign_missing_n7fu_test.go:99: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/handlers/log_foreign_missing_n7fu_test.go:99
+        	Error:      	Not equal: 
+        	            	expected: "Not found\n"
+        	            	actual  : "Access denied\n"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1,2 +1,2 @@
+        	            	-Not found
+        	            	+Access denied
+        	            	 
+        	Test:       	TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/analyze
+        	Messages:   	bodies must be identical
+=== RUN   TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/create_share_(collection_id_in_body)
+    log_foreign_missing_n7fu_test.go:98: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/handlers/log_foreign_missing_n7fu_test.go:98
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 403
+        	Test:       	TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/create_share_(collection_id_in_body)
+        	Messages:   	foreign id must answer like a missing one: Access denied
+    log_foreign_missing_n7fu_test.go:99: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/handlers/log_foreign_missing_n7fu_test.go:99
+        	Error:      	Not equal: 
+        	            	expected: "Not found\n"
+        	            	actual  : "Access denied\n"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1,2 +1,2 @@
+        	            	-Not found
+        	            	+Access denied
+        	            	 
+        	Test:       	TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/create_share_(collection_id_in_body)
+        	Messages:   	bodies must be identical
+=== RUN   TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/revoke_share
+    log_foreign_missing_n7fu_test.go:98: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/handlers/log_foreign_missing_n7fu_test.go:98
+        	Error:      	Not equal: 
+        	            	expected: 404
+        	            	actual  : 403
+        	Test:       	TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/revoke_share
+        	Messages:   	foreign id must answer like a missing one: Access denied
+    log_foreign_missing_n7fu_test.go:99: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/handlers/log_foreign_missing_n7fu_test.go:99
+        	Error:      	Not equal: 
+        	            	expected: "Not found\n"
+        	            	actual  : "Access denied\n"
+        	            	
+        	            	Diff:
+        	            	--- Expected
+        	            	+++ Actual
+        	            	@@ -1,2 +1,2 @@
+        	            	-Not found
+        	            	+Access denied
+        	            	 
+        	Test:       	TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/revoke_share
+        	Messages:   	bodies must be identical
+--- FAIL: TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing (0.06s)
+    --- PASS: TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/get_collection (0.00s)
+    --- FAIL: TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/entries (0.00s)
+    --- FAIL: TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/export (0.00s)
+    --- FAIL: TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/analyze (0.00s)
+    --- FAIL: TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/create_share_(collection_id_in_body) (0.00s)
+    --- FAIL: TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/revoke_share (0.00s)
+FAIL
+FAIL	catalogizer/handlers	0.460s
+FAIL

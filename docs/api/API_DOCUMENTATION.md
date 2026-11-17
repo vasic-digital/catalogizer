@@ -2901,7 +2901,7 @@ Download the output file of a completed conversion job.
 
 **Response:** Binary file download with appropriate Content-Type.
 
-**Errors:** 400 (job not completed), 403 (the job's output file lies outside the conversion roots; only the owner or an administrator reaches this check), 404 (not found, or the job belongs to another user)
+**Errors:** 400 (job not completed), 403 (the job's output file lies outside the conversion roots; only the owner or an administrator reaches this check), 404 (not found, or the job belongs to another user; also `{"error":"No output file available"}` for a completed job of the caller that has no target path or whose target is missing or not a regular file; N7-FU3)
 
 ---
 
@@ -3880,7 +3880,7 @@ List log collections.
 
 ### GET /api/v1/logs/collections/:id
 
-Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 collection; 400 non-integer id; 403 without `system.admin`; 404 unknown id (or any service error); 401.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 collection; 400 non-integer id; 403 without `system.admin`; 404 unknown id, another user's collection (identical response: same status, body `Not found` and headers; N7-FU2), or any service error; 401.
 
 
 Get a specific log collection.
@@ -3893,7 +3893,7 @@ Get a specific log collection.
 
 ### GET /api/v1/logs/collections/:id/entries
 
-Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 `{"entries": [...], "filters": {...}}`; 400; 403 without `system.admin`; 500; 401.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 `{"entries": [...], "filters": {...}}`; 400; 403 without `system.admin`; 404 unknown id or another user's collection (identical, N7-FU2); 500; 401.
 
 
 Get log entries for a collection.
@@ -3918,7 +3918,7 @@ Get log entries for a collection.
 
 ### POST /api/v1/logs/collections/:id/export
 
-Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 file download (`?format=json|csv|txt|zip`, default json, other values `application/octet-stream`; the body is not read); 400; 403 without `system.admin`; 500; 401.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 file download (`?format=json|csv|txt|zip`, default json, other values `application/octet-stream`; the body is not read); 400; 403 without `system.admin`; 404 unknown id or another user's collection (identical, N7-FU2); 500; 401.
 
 
 Export log collection data.
@@ -3937,7 +3937,7 @@ Export log collection data.
 
 ### GET /api/v1/logs/collections/:id/analyze
 
-Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 analysis; 400; 403 without `system.admin`; 500; 401.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 200 analysis; 400; 403 without `system.admin`; 404 unknown id or another user's collection (identical, N7-FU2); 500; 401.
 
 
 Analyze a log collection for patterns and insights.
@@ -4001,7 +4001,7 @@ Access a shared log collection via share token.
 
 ### DELETE /api/v1/logs/share/:id
 
-Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 204; 400 non-integer id; 403 without `system.admin`; 500 service error, including an unknown id (measured: 500, not 404); 401.
+Path parameter reaches the handler (gin path params are copied into `mux.Vars` by `handlers/gin_adapter.go`; real-binary test `catalog-api/openapi_contract_binary_test.go`). Responses: 204; 400 non-integer id; 403 without `system.admin`; 404 unknown share id, or a share of another user's collection (identical response, N7-FU2; the earlier "measured 500" for an unknown id was stale: the handler maps `sql.ErrNoRows` to 404); 500 other service error; 401.
 
 
 Revoke a log share.

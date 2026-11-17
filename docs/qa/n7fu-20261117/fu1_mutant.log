@@ -1,0 +1,5 @@
+        	Error:      	Received unexpected error:
+        	Messages:   	a refused (non-owner) cancel must not kill the registered run
+FAIL
+FAIL	catalogizer/services	0.252s
+FAIL

@@ -5050,7 +5050,7 @@ paths:
                 type: string
                 format: binary
         '400':
-          description: Job not completed or file not available
+          description: Job not completed
           content:
             application/json:
               schema:
@@ -5062,7 +5062,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         '404':
-          description: Job not found, or the job belongs to another user (identical response, no existence oracle)
+          description: Job not found, or the job belongs to another user (identical response, no existence oracle); also body `{"error":"No output file available"}` for a completed job of the caller with no target path, or whose target is missing or not a regular file (N7-FU3)
           content:
             application/json:
               schema:
@@ -6106,7 +6106,7 @@ paths:
         '403':
           description: "Caller lacks `system.admin`."
         '404':
-          description: "No such collection, or any other service error (fixed body `Not found`; the service error text is not returned)."
+          description: "No such collection, another user's collection (identical response; N7-FU2), or any other service error (fixed body `Not found`; the service error text is not returned)."
   /api/v1/logs/collections/{id}/entries:
     get:
       x-catalogizer-admin-gated: true
@@ -6130,6 +6130,8 @@ paths:
           description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
         '403':
           description: "Caller lacks `system.admin`."
+        '404':
+          description: "No such collection, or another user's collection (identical response: same status, body `Not found` and headers; N7-FU2)."
         '500':
           description: "Service error."
   /api/v1/logs/collections/{id}/export:
@@ -6162,6 +6164,8 @@ paths:
           description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
         '403':
           description: "Caller lacks `system.admin`."
+        '404':
+          description: "No such collection, or another user's collection (identical response: same status, body `Not found` and headers; N7-FU2)."
         '500':
           description: "Service error while exporting."
   /api/v1/logs/collections/{id}/analyze:
@@ -6187,6 +6191,8 @@ paths:
           description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
         '403':
           description: "Caller lacks `system.admin`."
+        '404':
+          description: "No such collection, or another user's collection (identical response: same status, body `Not found` and headers; N7-FU2)."
         '500':
           description: "Service error while analysing."
   /api/v1/logs/share:
@@ -6228,9 +6234,9 @@ paths:
         '401':
           description: "Unauthenticated (JWT middleware), or no integer user_id in the request context."
         '403':
-          description: "Caller lacks `system.admin`, or does not own the collection."
+          description: "Caller lacks `system.admin`."
         '404':
-          description: "No such collection."
+          description: "No such collection, or another user's collection (identical response: same status, body and headers; N7-FU2)."
 
   /api/v1/logs/share/{token}:
     get:
@@ -6279,7 +6285,7 @@ paths:
         '403':
           description: "Caller lacks `system.admin`."
         '404':
-          description: "Unknown share id (`sql.ErrNoRows` from the lookup is mapped to 404 by the handler)."
+          description: "Unknown share id, or a share of another user's collection (identical response; N7-FU2). `sql.ErrNoRows` from the lookup is mapped to 404 by the handler."
         '500':
           description: "Service error."
   /api/v1/logs/stream:

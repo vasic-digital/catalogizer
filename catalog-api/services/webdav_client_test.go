@@ -577,7 +577,9 @@ func TestWebDAVClient_SyncDirectory_Upload(t *testing.T) {
 		// Check that we got a result with some indication of what happened
 		assert.NotNil(t, result)
 		// Without a real server, files should either fail or be skipped
-		assert.True(t, result.FailedFiles > 0 || result.SkippedFiles > 0 || result.UploadedFiles >= 0)
+		// N7-FU3: the old `|| UploadedFiles >= 0` was always true; the one local file cannot reach an unreachable host
+		assert.Equal(t, 0, result.UploadedFiles, "nothing can be uploaded without a server")
+		assert.True(t, result.FailedFiles > 0 || result.SkippedFiles > 0, "the file must be counted failed or skipped")
 	} else {
 		assert.NotNil(t, result)
 	}

@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -20,7 +21,7 @@ import (
 	"catalogizer/repository"
 )
 
-// ErrLogAccessDenied is returned when the caller does not own the collection or share; handlers map it to 403.
+// ErrLogAccessDenied is no longer returned by the service (N7-FU2: a foreign collection or share reads as not found, 404); the handlers keep the 403 mapping for a service that still returns it.
 var ErrLogAccessDenied = errors.New("access denied")
 
 // ErrUnsupportedLogFormat is returned by ExportLogs for a format it cannot produce; handlers map it to 400.
@@ -212,7 +213,9 @@ func (s *LogManagementService) GetLogCollection(id int, userID int) (*models.Log
 	}
 
 	if collection.UserID != userID {
-		return nil, ErrLogAccessDenied
+		// N7-FU2: a foreign collection reads exactly like a missing one (the same wrapped sql.ErrNoRows the repository
+		// returns for an unknown id, so the same 404 and body): the admin-only routes are no existence oracle.
+		return nil, fmt.Errorf("failed to get log collection: %w", sql.ErrNoRows)
 	}
 
 	return collection, nil

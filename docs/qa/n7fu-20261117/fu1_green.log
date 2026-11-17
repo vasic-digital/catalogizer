@@ -1,0 +1,4 @@
+=== RUN   TestCancelJob_NonOwnerDoesNotKillRegisteredRun
+--- PASS: TestCancelJob_NonOwnerDoesNotKillRegisteredRun (0.01s)
+PASS
+ok  	catalogizer/services	0.276s

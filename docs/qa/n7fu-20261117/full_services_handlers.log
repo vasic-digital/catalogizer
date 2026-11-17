@@ -1,0 +1,687 @@
+golang.org/x/crypto/bcrypt.expensiveBlowfishSetup({0x1262b9fdf2f0, 0x2c, 0x1f?}, 0xa, {0x1262ba1f8e58?, 0x1262b9a6f4f8?, 0xfaf139?})
+	/home/milosvasic/go/pkg/mod/golang.org/x/crypto@v0.54.0/bcrypt/bcrypt.go:236 +0x165
+golang.org/x/crypto/bcrypt.bcrypt({0x1262b9fdf2f0, 0x2c, 0x30}, 0xa, {0x1262ba1f8e58, 0x16, 0x18})
+	/home/milosvasic/go/pkg/mod/golang.org/x/crypto@v0.54.0/bcrypt/bcrypt.go:200 +0x137
+golang.org/x/crypto/bcrypt.CompareHashAndPassword({0x1262babfde05?, 0xe?, 0x1262ba1a9e00?}, {0x1262b9fdf2f0, 0x2c, 0x30})
+	/home/milosvasic/go/pkg/mod/golang.org/x/crypto@v0.54.0/bcrypt/bcrypt.go:114 +0x7b
+catalogizer/services.CheckPassword({0x1262b9f86830?, 0x1262b9f86ac8?}, {0x1262ba1a9e00?, 0x1262b9f86846?}, {0x1262babfde00?, 0x2733340?})
+	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/password.go:61 +0x107
+catalogizer/services.(*AuthService).Login(0x1262b9e6de00, {{0x1262b9f86840, 0x6}, {0x1262b9f86830, 0xe}, {0x0, 0x0, 0x0, 0x0, 0x0, ...}, ...}, ...)
+	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/auth_service.go:241 +0x59c
+catalogizer/handlers.(*AuthHandler).LoginGin(0x1262ba11feb8, 0x1262b9eee700)
+	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/handlers/auth_handler.go:84 +0x1f5
+github.com/gin-gonic/gin.(*Context).Next(0x1262b9eee700)
+	/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 +0x5f
+github.com/gin-gonic/gin.(*Engine).handleHTTPRequest(0x1262b9d1a380, 0x1262b9eee700)
+	/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 +0x45e
+github.com/gin-gonic/gin.(*Engine).ServeHTTP(0x1262b9d1a380, {0x2f1b398, 0x1262ba4e8240}, 0x1262ba346780)
+	/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 +0x1dc
+catalogizer/handlers.(*llEnv).loginHdr(0x1262b9e6ddc0, {0x1262b9f867f0, 0x9}, {0x2d10fed, 0x6}, {0x1262b9f86800, 0xe}, 0x0)
+	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/handlers/login_lock_test.go:101 +0x4bf
+catalogizer/handlers.(*llEnv).loginFrom(...)
+	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/handlers/login_lock_test.go:86
+catalogizer/handlers.TestLoginLock_BackoffDoublesAndIsCappedNeverPermanent(0x1262b9a10b48)
+	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/handlers/login_lock_test.go:155 +0xcc
+testing.tRunner(0x1262b9a10b48, 0x2ec05a0)
+	/usr/lib/go-1.26/src/testing/testing.go:2036 +0xea
+created by testing.(*T).Run in goroutine 1
+	/usr/lib/go-1.26/src/testing/testing.go:2101 +0x4c5
+FAIL	catalogizer/handlers	600.340s
+FAIL
+uest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0x104dc9b)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:283 (0x2045af7)
+	TestPanicRecoveryMiddleware_IntegerPanic: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/testing/testing.go:2036 (0x56e949)
+	tRunner: fn(t)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/17 20:49:56 [Recovery] 2026/11/17 - 20:49:56 panic recovered:
+fatal database error
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:293 (0x20f58ba)
+	TestPanicRecoveryMiddleware_ErrorPanic.func1: panic(errors.New("fatal database error"))
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0x104fe30)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0x104e39d)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0x104dc9b)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:298 (0x2045cb7)
+	TestPanicRecoveryMiddleware_ErrorPanic: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/testing/testing.go:2036 (0x56e949)
+	tRunner: fn(t)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/17 20:49:56 [Recovery] 2026/11/17 - 20:49:56 panic recovered:
+simulated panic under load
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:469 (0x20f584d)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func1: panic("simulated panic under load")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0x104fe30)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0x104e39d)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0x104dc9b)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:489 (0x20477b7)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func2: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/17 20:49:56 [Recovery] 2026/11/17 - 20:49:56 panic recovered:
+simulated panic under load
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:469 (0x20f584d)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func1: panic("simulated panic under load")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0x104fe30)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0x104e39d)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0x104dc9b)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:489 (0x20477b7)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func2: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/17 20:49:56 [Recovery] 2026/11/17 - 20:49:56 panic recovered:
+simulated panic under load
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:469 (0x20f584d)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func1: panic("simulated panic under load")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0x104fe30)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0x104e39d)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0x104dc9b)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:489 (0x20477b7)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func2: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/17 20:49:56 [Recovery] 2026/11/17 - 20:49:56 panic recovered:
+simulated panic under load
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:469 (0x20f584d)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func1: panic("simulated panic under load")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0x104fe30)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0x104e39d)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0x104dc9b)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:489 (0x20477b7)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func2: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/17 20:49:56 [Recovery] 2026/11/17 - 20:49:56 panic recovered:
+simulated panic under load
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:469 (0x20f584d)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func1: panic("simulated panic under load")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0x104fe30)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0x104e39d)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0x104dc9b)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:489 (0x20477b7)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func2: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/17 20:49:56 [Recovery] 2026/11/17 - 20:49:56 panic recovered:
+simulated panic under load
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:469 (0x20f584d)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func1: panic("simulated panic under load")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0x104fe30)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0x104e39d)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0x104dc9b)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:489 (0x20477b7)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func2: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/17 20:49:56 [Recovery] 2026/11/17 - 20:49:56 panic recovered:
+simulated panic under load
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:469 (0x20f584d)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func1: panic("simulated panic under load")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0x104fe30)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0x104e39d)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0x104dc9b)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:489 (0x20477b7)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func2: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/17 20:49:56 [Recovery] 2026/11/17 - 20:49:56 panic recovered:
+simulated panic under load
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:469 (0x20f584d)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func1: panic("simulated panic under load")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0x104fe30)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0x104e39d)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0x104dc9b)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:489 (0x20477b7)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func2: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/17 20:49:56 [Recovery] 2026/11/17 - 20:49:56 panic recovered:
+simulated panic under load
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:469 (0x20f584d)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func1: panic("simulated panic under load")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0x104fe30)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0x104e39d)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0x104dc9b)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:489 (0x20477b7)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func2: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+
+
+[31m2026/11/17 20:49:56 [Recovery] 2026/11/17 - 20:49:56 panic recovered:
+simulated panic under load
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:469 (0x20f584d)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func1: panic("simulated panic under load")
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/recovery.go:90 (0x104fe30)
+	CustomRecoveryWithWriter.func1: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/context.go:192 (0x1040d1e)
+	(*Context).Next: c.handlers[c.index](c)
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:722 (0x104e39d)
+	(*Engine).handleHTTPRequest: c.Next()
+/home/milosvasic/go/pkg/mod/github.com/gin-gonic/gin@v1.12.0/gin.go:672 (0x104dc9b)
+	(*Engine).ServeHTTP: c.Next()
+/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/error_handling_integration_test.go:489 (0x20477b7)
+	TestConcurrentErrorHandling_PanicRecoveryUnderLoad.func2: r.ServeHTTP(w, req)
+/usr/lib/go-1.26/src/runtime/asm_amd64.s:1771 (0x49a840)
+	goexit: BYTE	$0x90	// NOP
+[0m
+2026/11/17 20:49:56 auth: legacy password hash for user 1 changed concurrently; upgrade skipped
+Unknown input format 'pdf'
+Pandoc can convert to PDF, but not from PDF.
+/usr/lib/libreoffice/program/soffice.bin: error while loading shared libraries: libreglo.so: cannot open shared object file: No such file or directory
+panic: test timed out after 10m0s
+	running tests:
+		TestCAT002_Start_RealBinary_HighGOMAXPROCS_851 (1m10s)
+
+goroutine 23703 [running]:
+testing.(*M).startAlarm.func1()
+	/usr/lib/go-1.26/src/testing/testing.go:2802 +0x354
+created by time.goFunc
+	/usr/lib/go-1.26/src/time/sleep.go:215 +0x2d
+
+goroutine 1 [chan receive, 1 minutes]:
+testing.(*T).Run(0x1e431584e248, {0x29b5495?, 0x0?}, 0x2a915b8)
+	/usr/lib/go-1.26/src/testing/testing.go:2109 +0x4e5
+testing.runTests.func1(0x1e431584e248)
+	/usr/lib/go-1.26/src/testing/testing.go:2585 +0x3e
+testing.tRunner(0x1e431584e248, 0x1e43157d7c00)
+	/usr/lib/go-1.26/src/testing/testing.go:2036 +0xea
+testing.runTests({0x292f3a2, 0xb}, {0x295418b, 0x14}, 0x1e431574d068, {0x43dd460, 0x45e, 0x45e}, {0xc2b74a5996257e95, 0x8bbe50cf52, ...})
+	/usr/lib/go-1.26/src/testing/testing.go:2583 +0x505
+testing.(*M).Run(0x1e4315d9ec80)
+	/usr/lib/go-1.26/src/testing/testing.go:2443 +0x6ac
+catalogizer/services.TestMain(0x1e4315d9ec80)
+	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/zz_main_test.go:24 +0xd4
+main.main()
+	_testmain.go:2294 +0xa5
+
+goroutine 18358 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x1e431637a5b0, {0x2aec0a8, 0x1e43161a4280})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 18357
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2802 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e4316239520, {0x2aec0a8, 0x1e4315837630})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2785
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 1493 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e431606aea0, {0x2aec0a8, 0x1e4315908870})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 1492
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 22632 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x1e4315f7a000, {0x2aec0a8, 0x1e4316d691d0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 22631
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2627 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e431611c000, {0x2aec0a8, 0x1e43158360a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2626
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 1136 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e4315f7b380, {0x2aec0a8, 0x1e4315fdda40})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 1135
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 1699 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e4316108340, {0x2aec0a8, 0x1e4315909590})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 1698
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2810 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e4316239790, {0x2aec0a8, 0x1e4315837720})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2809
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2084 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e43160e1520, {0x2aec0a8, 0x1e43161a40a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2083
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 1231 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e43160a1110, {0x2aec0a8, 0x1e4315abce60})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 1230
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2673 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e431611c270, {0x2aec0a8, 0x1e43158365f0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2672
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2032 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e431612dba0, {0x2aec0a8, 0x1e4316162190})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2031
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 1193 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e4315f7b6c0, {0x2aec0a8, 0x1e4315fddc70})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 1192
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 1748 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e431612d520, {0x2aec0a8, 0x1e4315909a40})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 1747
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 1785 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e43160e0a90, {0x2aec0a8, 0x1e4315fdd220})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 1784
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 18475 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x1e4315efcd00, {0x2aec0a8, 0x1e43161a4690})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 18474
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 1991 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e43160e11e0, {0x2aec0a8, 0x1e4315fddbd0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 1990
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 1800 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e431612d930, {0x2aec0a8, 0x1e4315909cc0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 1799
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2088 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e43160e0000, {0x2aec0a8, 0x1e43161a4190})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2087
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 1882 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e43160e0d00, {0x2aec0a8, 0x1e4315fdd720})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 1881
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 1084 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e4315efc4e0, {0x2aec0a8, 0x1e4315fdcbe0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 1083
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2190 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e431612c1a0, {0x2aec0a8, 0x1e4316162500})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2189
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 1949 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e43160e0f70, {0x2aec0a8, 0x1e4315fdd900})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 1948
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2580 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e431611ca90, {0x2aec0a8, 0x1e4315fdc0a0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2579
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 2980 [select, 9 minutes]:
+database/sql.(*DB).connectionOpener(0x1e4316239a00, {0x2aec0a8, 0x1e43158378b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 2979
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 18249 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x1e4315efc0d0, {0x2aec0a8, 0x1e43161a4140})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 18248
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 23658 [syscall]:
+syscall.Syscall6(0xf7, 0x3, 0xd, 0x1e4315b877e0, 0x4, 0x1e43157c6120, 0x0)
+	/usr/lib/go-1.26/src/syscall/syscall_linux.go:96 +0x39
+internal/syscall/unix.Waitid(0x1e4315b87930?, 0x5a554d?, 0x1e4315d6a100?, 0x0?, 0x1e43158f3080?)
+	/usr/lib/go-1.26/src/internal/syscall/unix/waitid_linux.go:18 +0x39
+os.(*Process).pidfdWait.func1(...)
+	/usr/lib/go-1.26/src/os/pidfd_linux.go:108
+os.ignoringEINTR(...)
+	/usr/lib/go-1.26/src/os/file_posix.go:263
+os.(*Process).pidfdWait(0x1e43159e8000)
+	/usr/lib/go-1.26/src/os/pidfd_linux.go:107 +0x1c7
+os.(*Process).wait(0x5a5820?)
+	/usr/lib/go-1.26/src/os/exec_unix.go:25 +0x1a
+os.(*Process).Wait(...)
+	/usr/lib/go-1.26/src/os/exec.go:346
+os/exec.(*Cmd).Wait(0x1e4315c0e4e0)
+	/usr/lib/go-1.26/src/os/exec/exec.go:930 +0x45
+os/exec.(*Cmd).Run(0x1e4315c0e4e0)
+	/usr/lib/go-1.26/src/os/exec/exec.go:632 +0x2d
+catalogizer/services.runLimited({0x2aebe50, 0x47bd480}, {0x1e43157c5040, 0x44}, {0x1e4316d68000, 0x5, 0x1e4315b87bc8?}, {0x0, 0x18000000, 0x14, ...}, ...)
+	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/pdf_text_isolation.go:196 +0x6a5
+catalogizer/services.isolatedExtractor.child({{0x1e43157c5040, 0x44}, {0x0, 0x0, 0x0}}, {0x2aebe50, 0x47bd480}, 0x4001a98, {0x291f951, 0x7}, ...)
+	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/pdf_text_isolation.go:254 +0x30d
+catalogizer/services.isolatedExtractor.ExtractPages({{0x1e43157c5040, 0x44}, {0x0, 0x0, 0x0}}, {0x2aebe50, 0x47bd480}, {0x1e43161580e0, 0x67}, 0x1, ...)
+	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/pdf_text_isolation.go:279 +0x274
+catalogizer/services.runProdChild(0x1e431584e6c8, 0x353, 0xf)
+	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/pdf_text_startup_test.go:101 +0x256
+catalogizer/services.TestCAT002_Start_RealBinary_HighGOMAXPROCS_851(0x1e431584e6c8)
+	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/services/pdf_text_startup_test.go:156 +0xb2
+testing.tRunner(0x1e431584e6c8, 0x2a915b8)
+	/usr/lib/go-1.26/src/testing/testing.go:2036 +0xea
+created by testing.(*T).Run in goroutine 1
+	/usr/lib/go-1.26/src/testing/testing.go:2101 +0x4c5
+
+goroutine 18432 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x1e4315efc820, {0x2aec0a8, 0x1e43161a43c0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 18431
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 23701 [IO wait]:
+internal/poll.runtime_pollWait(0x7f7cdbf66000, 0x72)
+	/usr/lib/go-1.26/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0x1e4316246180?, 0x1e4315e3c000?, 0x1)
+	/usr/lib/go-1.26/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/lib/go-1.26/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Read(0x1e4316246180, {0x1e4315e3c000, 0x8000, 0x8000})
+	/usr/lib/go-1.26/src/internal/poll/fd_unix.go:165 +0x2ae
+os.(*File).read(...)
+	/usr/lib/go-1.26/src/os/file_posix.go:30
+os.(*File).Read(0x1e4316268028, {0x1e4315e3c000?, 0x16?, 0x492801?})
+	/usr/lib/go-1.26/src/os/file.go:144 +0x4f
+io.copyBuffer({0x2ab1c00, 0x1e4315dfe0c0}, {0x2ab1680, 0x1e4316268028}, {0x0, 0x0, 0x0})
+	/usr/lib/go-1.26/src/io/io.go:429 +0x190
+io.Copy(...)
+	/usr/lib/go-1.26/src/io/io.go:388
+os.genericWriteTo(0x1e4316268028?, {0x2ab1c00?, 0x1e4315dfe0c0?})
+	/usr/lib/go-1.26/src/os/file.go:295 +0x35
+os.(*File).WriteTo(0x1e4316268028, {0x2ab1c00, 0x1e4315dfe0c0})
+	/usr/lib/go-1.26/src/os/file.go:273 +0x9c
+io.copyBuffer({0x2ab1c00, 0x1e4315dfe0c0}, {0x2ab1700, 0x1e4316268028}, {0x0, 0x0, 0x0})
+	/usr/lib/go-1.26/src/io/io.go:411 +0x9d
+io.Copy(...)
+	/usr/lib/go-1.26/src/io/io.go:388
+os/exec.(*Cmd).writerDescriptor.func1()
+	/usr/lib/go-1.26/src/os/exec/exec.go:602 +0x34
+os/exec.(*Cmd).Start.func2(0x1e431618caf0?)
+	/usr/lib/go-1.26/src/os/exec/exec.go:757 +0x2c
+created by os/exec.(*Cmd).Start in goroutine 23658
+	/usr/lib/go-1.26/src/os/exec/exec.go:756 +0x92e
+
+goroutine 23702 [select]:
+os/exec.(*Cmd).watchCtx(0x1e4315c0e4e0, 0x1e4315882150)
+	/usr/lib/go-1.26/src/os/exec/exec.go:797 +0xb1
+created by os/exec.(*Cmd).Start in goroutine 23658
+	/usr/lib/go-1.26/src/os/exec/exec.go:783 +0x8f5
+
+goroutine 18530 [select, 8 minutes]:
+database/sql.(*DB).connectionOpener(0x1e4315efdba0, {0x2aec0a8, 0x1e43161a4c80})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 18529
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 23700 [IO wait]:
+internal/poll.runtime_pollWait(0x7f7cdbf65400, 0x72)
+	/usr/lib/go-1.26/src/runtime/netpoll.go:351 +0x85
+internal/poll.(*pollDesc).wait(0x1e43162460c0?, 0x1e4315b60000?, 0x1)
+	/usr/lib/go-1.26/src/internal/poll/fd_poll_runtime.go:84 +0x27
+internal/poll.(*pollDesc).waitRead(...)
+	/usr/lib/go-1.26/src/internal/poll/fd_poll_runtime.go:89
+internal/poll.(*FD).Read(0x1e43162460c0, {0x1e4315b60000, 0x8000, 0x8000})
+	/usr/lib/go-1.26/src/internal/poll/fd_unix.go:165 +0x2ae
+os.(*File).read(...)
+	/usr/lib/go-1.26/src/os/file_posix.go:30
+os.(*File).Read(0x1e4316268008, {0x1e4315b60000?, 0x23b3360?, 0x1?})
+	/usr/lib/go-1.26/src/os/file.go:144 +0x4f
+io.copyBuffer({0x2ab1c00, 0x1e4315dfe080}, {0x2ab1680, 0x1e4316268008}, {0x0, 0x0, 0x0})
+	/usr/lib/go-1.26/src/io/io.go:429 +0x190
+io.Copy(...)
+	/usr/lib/go-1.26/src/io/io.go:388
+os.genericWriteTo(0x1e4316268008?, {0x2ab1c00?, 0x1e4315dfe080?})
+	/usr/lib/go-1.26/src/os/file.go:295 +0x35
+os.(*File).WriteTo(0x1e4316268008, {0x2ab1c00, 0x1e4315dfe080})
+	/usr/lib/go-1.26/src/os/file.go:273 +0x9c
+io.copyBuffer({0x2ab1c00, 0x1e4315dfe080}, {0x2ab1700, 0x1e4316268008}, {0x0, 0x0, 0x0})
+	/usr/lib/go-1.26/src/io/io.go:411 +0x9d
+io.Copy(...)
+	/usr/lib/go-1.26/src/io/io.go:388
+os/exec.(*Cmd).writerDescriptor.func1()
+	/usr/lib/go-1.26/src/os/exec/exec.go:602 +0x34
+os/exec.(*Cmd).Start.func2(0x1e4315882620?)
+	/usr/lib/go-1.26/src/os/exec/exec.go:757 +0x2c
+created by os/exec.(*Cmd).Start in goroutine 23658
+	/usr/lib/go-1.26/src/os/exec/exec.go:756 +0x92e
+FAIL	catalogizer/services	600.265s
+2026/11/17 20:58:53 handlers: POST /api/v1/storage/roots: failed to create storage root (not returned to client): forced non-unique failure
+2026/11/17 21:00:21 handlers: user 2 updated but the post-update session revoke failed: injected revoke failure
+2026/11/17 21:00:55 handlers: POST /api/v1/scans: Invalid request body (not returned to client): EOF
+2026/11/17 21:01:31 handlers: POST /api/v1/assets/request: Invalid request body (not returned to client): Key: 'EntityType' Error:Field validation for 'EntityType' failed on the 'required' tag
+Key: 'EntityID' Error:Field validation for 'EntityID' failed on the 'required' tag
+2026/11/17 21:03:23 handlers: http 404 (error text not returned to client): assert.AnError general error for testing
+2026/11/17 21:03:23 handlers: http 500 (error text not returned to client): assert.AnError general error for testing
+2026/11/17 21:03:23 handlers: http 500 (error text not returned to client): assert.AnError general error for testing
+2026/11/17 21:03:23 handlers: http 404 (error text not returned to client): assert.AnError general error for testing
+2026/11/17 21:03:23 handlers: http 500 (error text not returned to client): assert.AnError general error for testing
+2026/11/17 21:03:23 handlers: http 500 (error text not returned to client): assert.AnError general error for testing
+2026/11/17 21:03:23 handlers: http 500 (error text not returned to client): assert.AnError general error for testing
+2026/11/17 21:05:05 handlers: http 500 (error text not returned to client): service error
+2026/11/17 21:05:05 handlers: http 500 (error text not returned to client): database is locked
+2026/11/17 21:05:05 handlers: http 404 (error text not returned to client): report not found
+2026/11/17 21:05:05 handlers: http 404 (error text not returned to client): lookup: report not found
+2026/11/17 21:05:05 handlers: http 500 (error text not returned to client): lookup: disk I/O error
+2026/11/17 21:05:05 handlers: http 500 (error text not returned to client): database is locked
+2026/11/17 21:05:05 handlers: http 404 (error text not returned to client): report not found
+2026/11/17 21:05:05 handlers: http 404 (error text not returned to client): lookup: report not found
+2026/11/17 21:05:05 handlers: http 500 (error text not returned to client): lookup: disk I/O error
+2026/11/17 21:05:07 handlers: POST /pb/progress: internal error (not returned to client): sql: Scan error on column index 7, name "start_position": converting driver.Value type []uint8 ("unreadable-cell") to a int64: invalid syntax
+2026/11/17 21:05:07 handlers: POST /pb/end: internal error (not returned to client): sql: Scan error on column index 7, name "start_position": converting driver.Value type []uint8 ("unreadable-cell") to a int64: invalid syntax
+2026/11/17 21:08:27 auth: login throttle unavailable: no such table: login_throttle
+panic: test timed out after 10m0s
+	running tests:
+		TestMediaEntityHandler_ListEntities (0s)
+
+goroutine 198101 [running]:
+testing.(*M).startAlarm.func1()
+	/usr/lib/go-1.26/src/testing/testing.go:2802 +0x354
+created by time.goFunc
+	/usr/lib/go-1.26/src/time/sleep.go:215 +0x2d
+
+goroutine 1 [chan receive]:
+testing.(*T).Run(0x3da59d96b8c8, {0x2d8b1b5?, 0x0?}, 0x2ec0750)
+	/usr/lib/go-1.26/src/testing/testing.go:2109 +0x4e5
+testing.runTests.func1(0x3da59d96b8c8)
+	/usr/lib/go-1.26/src/testing/testing.go:2585 +0x3e
+testing.tRunner(0x3da59d96b8c8, 0x3da59d675be0)
+	/usr/lib/go-1.26/src/testing/testing.go:2036 +0xea
+testing.runTests({0x2d215f5, 0xb}, {0x2d48ac6, 0x14}, 0x3da59d5ea198, {0x4a73800, 0x31a, 0x31a}, {0xc2b74af1e0d89364, 0x8bd435e6ab, ...})
+	/usr/lib/go-1.26/src/testing/testing.go:2583 +0x505
+testing.(*M).Run(0x3da59dc885a0)
+	/usr/lib/go-1.26/src/testing/testing.go:2443 +0x6ac
+catalogizer/handlers.TestMain(0x3da59dc885a0)
+	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/handlers/testmain_dbkey_test.go:18 +0xaf
+main.main()
+	_testmain.go:1634 +0xa5
+
+goroutine 198051 [select]:
+database/sql.(*DB).connectionOpener(0x3da59dc3f860, {0x2f20050, 0x3da59e0fc9b0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1261 +0x89
+created by database/sql.OpenDB in goroutine 198050
+	/usr/lib/go-1.26/src/database/sql/sql.go:841 +0x130
+
+goroutine 198053 [select]:
+database/sql.(*DB).connectionCleaner(0x3da59dc3f860, 0x727babe32608?)
+	/usr/lib/go-1.26/src/database/sql/sql.go:1104 +0x9e
+created by database/sql.(*DB).startCleanerLocked in goroutine 198050
+	/usr/lib/go-1.26/src/database/sql/sql.go:1091 +0x105
+
+goroutine 198137 [runnable]:
+github.com/mutecomm/go-sqlcipher.(*SQLiteStmt).exec.func3(0x727babe32608)
+	/home/milosvasic/go/pkg/mod/github.com/mutecomm/go-sqlcipher@v0.0.0-20190227152316-55dbde17881f/sqlite3.go:673 +0x69
+created by github.com/mutecomm/go-sqlcipher.(*SQLiteStmt).exec in goroutine 198050
+	/home/milosvasic/go/pkg/mod/github.com/mutecomm/go-sqlcipher@v0.0.0-20190227152316-55dbde17881f/sqlite3.go:672 +0x185
+
+goroutine 198050 [runnable]:
+github.com/mutecomm/go-sqlcipher.(*SQLiteStmt).Close(0x3da59e133740?)
+	/home/milosvasic/go/pkg/mod/github.com/mutecomm/go-sqlcipher@v0.0.0-20190227152316-55dbde17881f/sqlite3.go:519 +0xfb
+github.com/mutecomm/go-sqlcipher.(*SQLiteConn).exec(0x3da59e1c23e0, {0x2f1fe90, 0x4e52140}, {0x2e8b19c?, 0x2f1fe90?}, {0x4e52140?, 0x0?, 0x3da59e1c23e0?})
+	/home/milosvasic/go/pkg/mod/github.com/mutecomm/go-sqlcipher@v0.0.0-20190227152316-55dbde17881f/sqlite3.go:243 +0x250
+github.com/mutecomm/go-sqlcipher.(*SQLiteConn).Exec(0x3da59e1c23e0, {0x2e8b19c, 0x143d}, {0x4e52140, 0x0, 0x495189?})
+	/home/milosvasic/go/pkg/mod/github.com/mutecomm/go-sqlcipher@v0.0.0-20190227152316-55dbde17881f/sqlite3.go:214 +0x149
+database/sql.ctxDriverExec({0x2f1fe90, 0x4e52140}, {0x0?, 0x3da59e1c23e0?}, {0x727bad21f008, 0x3da59e1c23e0}, {0x2e8b19c, 0x143d}, {0x4e52140, 0x0, ...})
+	/usr/lib/go-1.26/src/database/sql/ctxutil.go:43 +0x21d
+database/sql.(*DB).execDC.func2()
+	/usr/lib/go-1.26/src/database/sql/sql.go:1713 +0x15c
+database/sql.withLock({0x2f0cd90, 0x3da59d6c3e00}, 0x3da59dc75380)
+	/usr/lib/go-1.26/src/database/sql/sql.go:3572 +0x71
+database/sql.(*DB).execDC(0x49a301?, {0x2f1fe90, 0x4e52140}, 0x3da59d6c3e00, 0x0?, {0x2e8b19c, 0x143d}, {0x0, 0x0, 0x0})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1708 +0x1f6
+database/sql.(*DB).exec(0x3da59dc3f860, {0x2f1fe90, 0x4e52140}, {0x2e8b19c, 0x143d}, {0x0, 0x0, 0x0}, 0xf3?)
+	/usr/lib/go-1.26/src/database/sql/sql.go:1693 +0xcf
+database/sql.(*DB).ExecContext.func1(0x10?)
+	/usr/lib/go-1.26/src/database/sql/sql.go:1672 +0x4f
+database/sql.(*DB).retry(0x9dc75568?, 0x3da59dc75570)
+	/usr/lib/go-1.26/src/database/sql/sql.go:1576 +0x42
+database/sql.(*DB).ExecContext(0x3da59e1c24a0?, {0x2f1fe90?, 0x4e52140?}, {0x2e8b19c?, 0x3da59dc75620?}, {0x0?, 0x3da59e0f74a0?, 0x0?})
+	/usr/lib/go-1.26/src/database/sql/sql.go:1671 +0x9b
+catalogizer/database.(*DB).ExecContext(0x3da59e1c24a0, {0x2f1fe90, 0x4e52140}, {0x2e8b19c?, 0x3da59e0f74a0?}, {0x0, 0x0, 0x0})
+	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/database/connection.go:168 +0x7a
+catalogizer/database.(*DB).fixSubtitleForeignKeysSQLite(0x83a820?, {0x2f1fe90?, 0x4e52140?})
+	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/database/migrations_sqlite.go:616 +0x36
+catalogizer/database.(*DB).fixSubtitleForeignKeys(...)
+	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/database/migrations.go:133
+catalogizer/database.(*DB).runMigration(0x3da59e1c24a0, {0x2f1fe90, 0x4e52140}, {0x3da59dc3f880?, {0x2d5e135?, 0xc2b74e75c5185ca8?}, 0x3da59e00e1b0?})
+	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/database/migrations.go:84 +0x135
+catalogizer/database.(*DB).RunMigrations(0x3da59e1c24a0, {0x2f1fe90, 0x4e52140})
+	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/database/migrations.go:49 +0x9fd
+catalogizer/handlers.setupEntityTestDB(0x3da59de62d88)
+	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/handlers/media_entity_handler_test.go:43 +0x14d
+catalogizer/handlers.TestMediaEntityHandler_ListEntities(0x3da59de62d88)
+	/home/milosvasic/.cache/claude-tmp/n7fu/catalog-api/handlers/media_entity_handler_test.go:117 +0x39
+testing.tRunner(0x3da59de62d88, 0x2ec0750)
+	/usr/lib/go-1.26/src/testing/testing.go:2036 +0xea
+created by testing.(*T).Run in goroutine 1
+	/usr/lib/go-1.26/src/testing/testing.go:2101 +0x4c5
+FAIL	catalogizer/handlers	600.669s
+FAIL
+DONE

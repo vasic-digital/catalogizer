@@ -1,0 +1,14 @@
+--- FAIL: TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing (0.07s)
+    --- FAIL: TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/entries (0.00s)
+            	            	--- Expected
+    --- FAIL: TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/export (0.00s)
+            	            	--- Expected
+    --- FAIL: TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/analyze (0.00s)
+            	            	--- Expected
+    --- FAIL: TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/create_share_(collection_id_in_body) (0.00s)
+            	            	--- Expected
+    --- FAIL: TestN7FU2_LogRoutes_ForeignIDIsIndistinguishableFromMissing/revoke_share (0.00s)
+            	            	--- Expected
+FAIL
+FAIL	catalogizer/handlers	0.326s
+FAIL
