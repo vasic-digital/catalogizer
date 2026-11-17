@@ -1,6 +1,7 @@
 package services
 
 import (
+	"catalogizer/internal/netguard"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -121,7 +122,7 @@ func NewLyricsService(db *database.DB, logger *zap.Logger) *LyricsService {
 		db:                 db,
 		logger:             logger,
 		translationService: NewTranslationService(logger),
-		httpClient:         &http.Client{Timeout: 30 * time.Second},
+		httpClient:         netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 30 * time.Second, Strict: true}),
 		apiKeys:            make(map[string]string),
 		cacheDir:           "./cache/lyrics",
 	}

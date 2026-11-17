@@ -51,7 +51,7 @@ func NewLLMImageSearchResolver(priority int) *LLMImageSearchResolver {
 		enabled:      enabled,
 		endpoint:     endpoint,
 		apiKey:       os.Getenv("CATALOGIZER_LLM_IMAGE_SEARCH_API_KEY"),
-		client:       &http.Client{Timeout: 15 * time.Second},
+		client:       netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 15 * time.Second}), // operator endpoint: allow-list honoured,
 		imgs:         netguard.StrictClient(15*time.Second, 3, netguard.HTTPOrHTTPS),
 		lastAttempts: make(map[string]time.Time),
 	}

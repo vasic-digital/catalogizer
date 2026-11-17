@@ -1780,33 +1780,11 @@ func resolveHostDynamic(host string) []string {
 // buildProxyHTTPClient returns a basic http.Client that routes through the
 // configured proxy (SOCKS5 or HTTP) when enabled.
 func buildProxyHTTPClient(proxyCfg root_config.ProxyConfig) *http.Client {
-	transport := &http.Transport{}
-	if proxyCfg.Enabled {
-	if proxyCfg.URL != "" {
-			parsedProxy, err := url.Parse(proxyCfg.URL)
-			if err == nil && parsedProxy.Scheme == "socks5" {
-				var auth *proxy.Auth
-				if proxyCfg.Username != "" || proxyCfg.Password != "" {
-					auth = &proxy.Auth{User: proxyCfg.Username, Password: proxyCfg.Password}
-				}
-				SOCKS5Dialer, err := proxy.SOCKS5("tcp", parsedProxy.Host, auth, proxy.Direct)
-				if err == nil {
-					transport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
-						return SOCKS5Dialer.Dial(network, addr)
-					}
-					return &http.Client{Timeout: 30 * time.Second, Transport: transport}
-				}
-			}
-	}
-	if proxyCfg.HTTPURL != "" {
-			parsedHTTPProxy, err := url.Parse(proxyCfg.HTTPURL)
-			if err == nil {
-				transport.Proxy = http.ProxyURL(parsedHTTPProxy)
-				return &http.Client{Timeout: 30 * time.Second, Transport: transport}
-			}
-	}
-	}
-	return &http.Client{Timeout: 30 * time.Second}
+	// AZ2-1: used for the LLM provider (an operator-configured endpoint, so the allow-list is honoured): dial-time
+	// class check with a pinned address, per-hop redirect validation, response cap. The operator proxy resolves
+	// the destination itself.
+	px := netguard.ProxyFromConfig(proxyCfg.Enabled, proxyCfg.URL, proxyCfg.Username, proxyCfg.Password, proxyCfg.HTTPURL)
+	return netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 30 * time.Second, Proxy: px})
 }
 
 // buildImageProxyClient returns an http.Client for fetching images from external CDNs.

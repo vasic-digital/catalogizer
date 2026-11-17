@@ -1,6 +1,7 @@
 package services
 
 import (
+	"catalogizer/internal/netguard"
 	"context"
 	"errors"
 	"fmt"
@@ -94,7 +95,7 @@ type SupportedLanguage struct {
 func NewTranslationService(logger *zap.Logger) *TranslationService {
 	service := &TranslationService{
 		logger:     logger,
-		httpClient: &http.Client{Timeout: 30 * time.Second},
+		httpClient: netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 30 * time.Second, Strict: true}),
 		providers:  make(map[string]TranslationProvider),
 		cache:      make(map[string]*TranslationResult),
 	}

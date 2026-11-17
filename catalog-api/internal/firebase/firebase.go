@@ -11,6 +11,7 @@
 package firebase
 
 import (
+	"catalogizer/internal/netguard"
 	"bytes"
 	"catalogizer/internal/logredact"
 	"context"
@@ -269,7 +270,7 @@ func New(cfg Config) *App {
 
 	httpClient := cfg.HTTPClient
 	if httpClient == nil {
-		httpClient = &http.Client{Timeout: defaultTimeout}
+		httpClient = netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: defaultTimeout, Strict: true}) // Google APIs: fixed public hosts
 	}
 
 	// Firebase Admin SDK App

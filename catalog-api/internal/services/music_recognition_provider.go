@@ -1,6 +1,7 @@
 package services
 
 import (
+	"catalogizer/internal/netguard"
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
@@ -306,7 +307,7 @@ type RhythmFeatures struct {
 func NewMusicRecognitionProvider(logger *zap.Logger) *MusicRecognitionProvider {
 	return &MusicRecognitionProvider{
 		logger:     logger,
-		httpClient: &http.Client{Timeout: 30 * time.Second},
+		httpClient: netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 30 * time.Second, Strict: true}),
 		baseURLs: map[string]string{
 			"lastfm":      "http://ws.audioscrobbler.com/2.0/",
 			"musicbrainz": "https://musicbrainz.org/ws/2",

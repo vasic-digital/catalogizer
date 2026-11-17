@@ -2,6 +2,7 @@ package services
 
 import (
 	"bytes"
+	"catalogizer/internal/netguard"
 	"context"
 	"errors"
 	"fmt"
@@ -23,10 +24,10 @@ import (
 //
 // Priority 21 — after the existing metadata resolver, before IGDB.
 type CoverArtArchiveResolver struct {
-	priority int
+	priority  int
 	userAgent string
-	http     *http.Client
-	client   *caa.CAAClient
+	http      *http.Client
+	client    *caa.CAAClient
 }
 
 // NewCoverArtArchiveResolver returns a resolver using the shared
@@ -42,7 +43,7 @@ func NewCoverArtArchiveResolver(priority int) *CoverArtArchiveResolver {
 	return &CoverArtArchiveResolver{
 		priority:  priority,
 		userAgent: ua,
-		http:      &http.Client{Timeout: 10 * time.Second},
+		http:      netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 10 * time.Second, Strict: true}),
 		client:    client,
 	}
 }

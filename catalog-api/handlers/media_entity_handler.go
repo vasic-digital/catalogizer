@@ -1,11 +1,11 @@
 package handlers
 
 import (
+	"catalogizer/internal/netguard"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -24,7 +24,6 @@ import (
 	"catalogizer/utils"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/net/proxy"
 )
 
 // SearchEntities handles GET /api/v1/entities/search — entity-
@@ -626,33 +625,13 @@ type tmdbSearchResult struct {
 // buildProxyHTTPClient returns an HTTP client that routes through the
 // configured proxy (SOCKS5 or HTTP) when enabled.
 func (h *MediaEntityHandler) buildProxyHTTPClient(timeout time.Duration) *http.Client {
-	transport := &http.Transport{}
-	if h.proxyCfg != nil && h.proxyCfg.IsEnabled() {
-		if h.proxyCfg.GetURL() != "" {
-			parsedProxy, err := url.Parse(h.proxyCfg.GetURL())
-			if err == nil && parsedProxy.Scheme == "socks5" {
-				var auth *proxy.Auth
-				if h.proxyCfg.GetUsername() != "" || h.proxyCfg.GetPassword() != "" {
-					auth = &proxy.Auth{User: h.proxyCfg.GetUsername(), Password: h.proxyCfg.GetPassword()}
-				}
-				SOCKS5Dialer, err := proxy.SOCKS5("tcp", parsedProxy.Host, auth, proxy.Direct)
-				if err == nil {
-					transport.DialContext = func(ctx context.Context, network, addr string) (net.Conn, error) {
-						return SOCKS5Dialer.Dial(network, addr)
-					}
-					return &http.Client{Timeout: timeout, Transport: transport}
-				}
-			}
-		}
-		if h.proxyCfg.GetHTTPURL() != "" {
-			parsedHTTPProxy, err := url.Parse(h.proxyCfg.GetHTTPURL())
-			if err == nil {
-				transport.Proxy = http.ProxyURL(parsedHTTPProxy)
-				return &http.Client{Timeout: timeout, Transport: transport}
-			}
-		}
+	// AZ2-1: TMDB (a fixed public host) through the shared provider client: dial-time class check with a pinned
+	// address, per-hop redirect validation, response cap. The operator proxy, when enabled, resolves the destination.
+	var px netguard.ProviderProxy
+	if h.proxyCfg != nil {
+		px = netguard.ProxyFromConfig(h.proxyCfg.IsEnabled(), h.proxyCfg.GetURL(), h.proxyCfg.GetUsername(), h.proxyCfg.GetPassword(), h.proxyCfg.GetHTTPURL())
 	}
-	return &http.Client{Timeout: timeout}
+	return netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: timeout, Strict: true, Proxy: px})
 }
 
 // Title-cleaning patterns, compiled once at package load for efficiency.

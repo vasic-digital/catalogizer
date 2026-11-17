@@ -1,11 +1,11 @@
 package services
 
 import (
+	"catalogizer/internal/netguard"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
-	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -725,7 +725,7 @@ func (s *AggregationService) enrichNewEntities(ctx context.Context, storageRootI
 		return
 	}
 
-	client := &http.Client{Timeout: 10 * time.Second}
+	client := netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 10 * time.Second, Strict: true})
 	enriched := 0
 
 	for _, e := range entities {

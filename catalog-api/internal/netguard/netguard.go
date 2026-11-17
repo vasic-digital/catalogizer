@@ -253,11 +253,16 @@ func isBlocked(ip net.IP, honorAllow bool) bool {
 
 // resolve returns the checked addresses of host (an IP literal or a name).
 func resolve(ctx context.Context, host string, honorAllow bool) ([]net.IP, error) {
+	return resolveWith(ctx, host, func(ip net.IP) bool { return isBlocked(ip, honorAllow) })
+}
+
+// resolveWith is resolve with the blocking predicate supplied by the caller.
+func resolveWith(ctx context.Context, host string, blocked func(net.IP) bool) ([]net.IP, error) {
 	if host == "" {
 		return nil, fmt.Errorf("%w: empty host", ErrBlocked)
 	}
 	if ip := net.ParseIP(strings.Trim(host, "[]")); ip != nil {
-		if isBlocked(ip, honorAllow) {
+		if blocked(ip) {
 			return nil, fmt.Errorf("%w: %s is a loopback, private, link-local or reserved address", ErrBlocked, host)
 		}
 		return []net.IP{ip}, nil
@@ -271,7 +276,7 @@ func resolve(ctx context.Context, host string, honorAllow bool) ([]net.IP, error
 	}
 	var ok []net.IP
 	for _, a := range addrs {
-		if isBlocked(a.IP, honorAllow) {
+		if blocked(a.IP) {
 			return nil, fmt.Errorf("%w: %s resolves to %s (loopback, private, link-local or reserved)", ErrBlocked, host, a.IP)
 		}
 		ok = append(ok, a.IP)
