@@ -3402,3 +3402,10 @@ HAUTHZ-F2 fixed: PUT /media/:id/favorite and GET /media/:id use the new `user_fa
 - S1G5-F5 DONE: command lines in the green files, header + exit status in `vet_live.txt`.
 - S1G5-F6 DONE (PROVISIONAL): the `/metrics` wrapper closure is matched by symbol and file (`isWrapperClosure`).
 - R5-FU-1 and the live-sweep backstop stay open (UNCONFIRMED).
+
+### s1g round-6b (Opus round-1 review of s1g5fu; PROVISIONAL, 2026-11-17, scratch clone branch s1g5fu2; evidence `docs/qa/admd1-s1g-round6b-20261117/`)
+- R7 (Important) FIXED (PROVISIONAL): the `/github.com/gin-gonic/gin@` file wildcard is gone. The pre-gate allow-list is now symbol-level (`preGateAllowedSymbols`, file + symbol, closure suffix stripped); the only gin-owned entry is `gin.LoggerWithConfig` (logger.go), read from the real chains of the gated routes. `gin.WrapF` / `gin.WrapH` closures (gin utils.go) in front of the gate are reported. The scanner (`callWrapsHandler`) reports `gin.WrapF` / `gin.WrapH` and any call given a function literal in front of the gate (before, every CallExpr was exempt). Real-source probe: `gin.WrapF(...)` before `RequireAdmin()` in a scratch copy of `main.go` is reported.
+- F-msg DONE: the pre-gate violation says "(if this is new router/group middleware, add its file and symbol to preGateAllowedSymbols)".
+- F-allow DONE (PROVISIONAL): a terminal handler inside an allowed file (`middleware/auth.go` `MintWSTicket`, method value or closure) and an invented symbol in an allowed file fail.
+- Nits DONE: wrapper-closure regexp compiled once; dead `_ = gateH` removed.
+- Limits (UNCONFIRMED / stated): the scanner does not recognise `wrap(namedHandler)` (a non-literal argument) in front of the gate; only the real-chain allow-list catches it. Compiler inlining can change a closure's name prefix (the match is by symbol suffix, so prefixes do not matter, but a renamed symbol needs an allow-list edit). Live sweep (TestLiveAPIContract) backstop and R5-FU-1 stay open.

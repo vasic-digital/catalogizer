@@ -1,0 +1,65 @@
+# round 6b mutants (scratch edits, each restored); tests: -run 'ADMD1F1S1G1_CodeScanEqualsTableBothDirections|ADMD1F1S1R5_RealRouteTableMatchesScannerAndTable|ADMD1F1S1R5_ScannerIsSound'
+## M1 R1 ungated route (RequireAdmin removed) | main.go | expected FAIL | got FAIL | OK
+--- FAIL: TestADMD1F1S1G1_CodeScanEqualsTableBothDirections (3.78s)
+        	Error:      	Should be empty, but was [table RequireAdmin row with no admin-gated code registration: post /api/v1/admin/covers/generate-thumbnails]
+--- FAIL: TestADMD1F1S1R5_RealRouteTableMatchesScannerAndTable (28.27s)
+        	Error:      	Should be empty, but was [authorization table lists a RequireAdmin route that is not gated in the real chain: post /api/v1/admin/covers/generate-thumbnails]
+FAIL
+FAIL	catalogizer	32.576s
+## M2 R2 table row without a route | ../docs/ROUTE_AUTHZ_TABLE.md | expected FAIL | got FAIL | OK
+--- FAIL: TestADMD1F1S1G1_CodeScanEqualsTableBothDirections (2.68s)
+        	Error:      	Should be empty, but was [table RequireAdmin row with no admin-gated code registration: post /api/v1/admin/ghost-route]
+--- FAIL: TestADMD1F1S1R5_RealRouteTableMatchesScannerAndTable (24.59s)
+        	Error:      	Should be empty, but was [authorization table lists a RequireAdmin route that is not gated in the real chain: post /api/v1/admin/ghost-route authorization table row has no real route: post /api/v1/admin/ghost-route]
+FAIL
+FAIL	catalogizer	27.604s
+## M3 R3 route without a table row | ../docs/ROUTE_AUTHZ_TABLE.md | expected FAIL | got FAIL | OK
+--- FAIL: TestADMD1F1S1G1_CodeScanEqualsTableBothDirections (2.61s)
+        	Error:      	Should be empty, but was [code registers an admin route with no RequireAdmin table row: post /api/v1/admin/covers/generate-thumbnails]
+--- FAIL: TestADMD1F1S1R5_RealRouteTableMatchesScannerAndTable (22.42s)
+        	Error:      	Should be empty, but was [real route has no authorization table row: post /api/v1/admin/covers/generate-thumbnails real route is gated by RequireAdmin but the authorization table has no RequireAdmin row: post /api/v1/admin/covers/generate
+FAIL
+FAIL	catalogizer	25.386s
+## M4 R4 factory-call handler (RateLimiter) before the gate | main.go | expected FAIL | got FAIL | OK
+--- FAIL: TestADMD1F1S1R5_RealRouteTableMatchesScannerAndTable (31.69s)
+        	Error:      	Should be empty, but was [route-level handler runs before the gate (catalogizer/middleware.RateLimiter.func3 in /home/milosvasic/.cache/claude-tmp/tmp.0OaIPkqKBa/w/catalog-api/middleware/request.go): POST /api/v1/admin/image-quality/reval
+FAIL
+FAIL	catalogizer	34.771s
+FAIL
+## M5 R5 decoy gate (RequireAuth in place of RequireAdmin) | main.go | expected FAIL | got FAIL | OK
+--- FAIL: TestADMD1F1S1G1_CodeScanEqualsTableBothDirections (2.69s)
+        	Error:      	Should be empty, but was [table RequireAdmin row with no admin-gated code registration: post /api/v1/admin/covers/generate-thumbnails]
+--- FAIL: TestADMD1F1S1R5_RealRouteTableMatchesScannerAndTable (32.01s)
+        	Error:      	Should be empty, but was [authorization table lists a RequireAdmin route that is not gated in the real chain: post /api/v1/admin/covers/generate-thumbnails]
+FAIL
+FAIL	catalogizer	35.122s
+## M6 R6 MintWSTicket method value before the gate | main.go | expected FAIL | got FAIL | OK
+--- FAIL: TestADMD1F1S1G1_CodeScanEqualsTableBothDirections (2.68s)
+        	Error:      	Should be empty, but was [main.go: main: api.POST("/admin/covers/generate-thumbnails") has a route-level handler before the gate: jwtMiddleware.MintWSTicket]
+--- FAIL: TestADMD1F1S1R5_RealRouteTableMatchesScannerAndTable (29.26s)
+        	Error:      	Should be empty, but was [main.go: main: api.POST("/admin/covers/generate-thumbnails") has a route-level handler before the gate: jwtMiddleware.MintWSTicket]
+FAIL
+FAIL	catalogizer	32.410s
+## M7 R7 gin.WrapF before RequireAdmin (real main.go) | main.go | expected FAIL | got FAIL | OK
+--- FAIL: TestADMD1F1S1G1_CodeScanEqualsTableBothDirections (3.85s)
+        	Error:      	Should be empty, but was [main.go: main: api.POST("/admin/covers/generate-thumbnails") has a handler-wrapping call before the gate: gin.WrapF(func(w http.ResponseWriter, r *http.Request) {
+--- FAIL: TestADMD1F1S1R5_RealRouteTableMatchesScannerAndTable (33.82s)
+        	Error:      	Should be empty, but was [main.go: main: api.POST("/admin/covers/generate-thumbnails") has a handler-wrapping call before the gate: gin.WrapF(func(w http.ResponseWriter, r *http.Request) {
+FAIL
+FAIL	catalogizer	38.055s
+## M7b R7 gin.WrapH before RequireAdmin (real main.go) | main.go | expected FAIL | got FAIL | OK
+--- FAIL: TestADMD1F1S1G1_CodeScanEqualsTableBothDirections (3.08s)
+        	Error:      	Should be empty, but was [main.go: main: api.POST("/admin/covers/generate-thumbnails") has a handler-wrapping call before the gate: gin.WrapH(http.NotFoundHandler())]
+--- FAIL: TestADMD1F1S1R5_RealRouteTableMatchesScannerAndTable (40.29s)
+        	Error:      	Should be empty, but was [main.go: main: api.POST("/admin/covers/generate-thumbnails") has a handler-wrapping call before the gate: gin.WrapH(http.NotFoundHandler())]
+FAIL
+FAIL	catalogizer	44.495s
+## M8 golden-FALSE: pinned middleware RequestID() before the gate | main.go | expected PASS | got PASS | OK
+ok  	catalogizer	31.095s
+## M9 new unpinned middleware (RateLimiter) before the gate carries the remedy text | main.go | expected FAIL | got FAIL | OK
+--- FAIL: TestADMD1F1S1R5_RealRouteTableMatchesScannerAndTable (30.67s)
+        	Error:      	Should be empty, but was [route-level handler runs before the gate (catalogizer/middleware.RateLimiter.func3 in /home/milosvasic/.cache/claude-tmp/tmp.0OaIPkqKBa/w/catalog-api/middleware/request.go): POST /api/v1/admin/covers/generate-thu
+FAIL
+FAIL	catalogizer	33.927s
+FAIL
+# end; main.go and table restored: main-identical table-identical

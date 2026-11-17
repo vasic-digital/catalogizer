@@ -63,24 +63,58 @@ func isAdminGateFunc(h routeHandler) bool {
 	return adminGateClosureRe.MatchString(h.Name) && h.File == adminGateIdentity().File
 }
 
-// preGateAllowedFiles: the only files (relative to catalog-api) whose handlers may sit in front of the admin gate in a real chain
-// (S1G5-F1): they are the router-level and group-level middleware of the real tree, read from the real chains of the gated routes.
-// A route-level handler (or any other function) in front of the gate runs before the check, so it is reported.
-var preGateAllowedFiles = map[string]bool{
-	"internal/auth/middleware.go": true, "internal/middleware/middleware.go": true, "internal/middleware/compression.go": true,
-	"internal/middleware/recovery.go": true, "internal/firebase/firebase.go": true, "internal/metrics/middleware.go": true,
-	"middleware/request.go": true, "middleware/auth.go": true, "middleware/concurrency_limiter.go": true,
-	"middleware/input_validation.go": true, "middleware/timeout.go": true, "middleware/security_headers.go": true,
-	"middleware/cache_headers.go": true,
+// preGateAllowedSymbols: the only (file, symbol) pairs whose handlers may sit in front of the admin gate in a real chain (S1G5-F1,
+// R7, F-allow). They are the router-level and group-level middleware of the real tree, read from the real chains of the gated
+// routes. Keys are files relative to catalog-api, or "gin:<file>" for the one gin-owned entry; values are symbols with the closure
+// suffix removed (matched as the whole name or as a ".<symbol>" suffix, so compiler inlining prefixes such as main.buildRouter. do
+// not matter). A terminal handler that lives in an allowed file (middleware/auth.go MintWSTicket) is therefore NOT allowed, and
+// gin.WrapF / gin.WrapH (gin's utils.go) are not allowed either: a wrapped handler runs before the 403.
+var preGateAllowedSymbols = map[string][]string{
+	"internal/auth/middleware.go":        {"(*AuthMiddleware).RateLimitByUser"},
+	"internal/middleware/middleware.go":  {"AccessLogRouteParams", "ErrorHandler", "Logger"},
+	"internal/middleware/compression.go": {"CompressionMiddleware"},
+	"internal/middleware/recovery.go":    {"Recovery"},
+	"internal/firebase/firebase.go":      {"GinMiddleware"},
+	"internal/metrics/middleware.go":     {"GinMiddleware"},
+	"middleware/request.go":              {"CORS", "RequestID"},
+	"middleware/auth.go":                 {"(*JWTMiddleware).RequireAuth"},
+	"middleware/concurrency_limiter.go":  {"ConcurrencyLimiter"},
+	"middleware/input_validation.go":     {"InputValidation"},
+	"middleware/timeout.go":              {"RequestTimeout"},
+	"middleware/security_headers.go":     {"SecurityHeadersWithConfig"},
+	"middleware/cache_headers.go":        {"CacheHeaders"},
+	"gin:logger.go":                      {"LoggerWithConfig"},
+}
+
+var (
+	closureSuffixRe  = regexp.MustCompile(`(\.func\d+(\.\d+)*)+$`)
+	ginFileRe        = regexp.MustCompile(`/github\.com/gin-gonic/gin@[^/]+/(.*)$`)
+	wrapperClosureRe = regexp.MustCompile(`\.` + wrappedGateSymbol + `\.func\d+(\.\d+)*$`)
+)
+
+func preGateKey(file string) string {
+	f := strings.ReplaceAll(file, "\\", "/")
+	if m := ginFileRe.FindStringSubmatch(f); m != nil {
+		return "gin:" + m[1]
+	}
+	if i := strings.LastIndex(f, "/catalog-api/"); i >= 0 {
+		return f[i+len("/catalog-api/"):]
+	}
+	return ""
 }
 
 func preGateAllowed(h routeHandler) bool {
-	f := strings.ReplaceAll(h.File, "\\", "/")
-	if strings.Contains(f, "/github.com/gin-gonic/gin@") {
-		return true
+	syms, ok := preGateAllowedSymbols[preGateKey(h.File)]
+	if !ok {
+		return false
 	}
-	i := strings.LastIndex(f, "/catalog-api/")
-	return i >= 0 && preGateAllowedFiles[f[i+len("/catalog-api/"):]]
+	name := closureSuffixRe.ReplaceAllString(h.Name, "")
+	for _, s := range syms {
+		if name == s || strings.HasSuffix(name, "."+s) {
+			return true
+		}
+	}
+	return false
 }
 
 // handlersBeforeGateViolations lists the handlers in front of the first admin gate of a chain that are not pinned middleware.
@@ -155,7 +189,7 @@ func groundTruthViolations(real []realRoute, scan *routeScan, rows []tableRow) [
 		}
 		rg, after := realGateState(r.chain)
 		for _, p := range handlersBeforeGateViolations(r.chain) {
-			out = append(out, "route-level handler runs before the gate ("+p.Name+" in "+p.File+"): "+k)
+			out = append(out, "route-level handler runs before the gate ("+p.Name+" in "+p.File+"): "+k+" (if this is new router/group middleware, add its file and symbol to preGateAllowedSymbols)")
 		}
 		if after {
 			out = append(out, "gate is the terminal handler (it runs after the handler it should protect, so it protects nothing): "+k)
@@ -225,7 +259,7 @@ const wrappedGateSymbol = "metricsSkipIfScrape"
 
 // isWrapperClosure (S1G5-F6): the wrapper's closure by symbol AND defining file (main_metricsauth.go), not by a substring of the name.
 func isWrapperClosure(h routeHandler) bool {
-	return regexp.MustCompile(`\.`+wrappedGateSymbol+`\.func\d+(\.\d+)*$`).MatchString(h.Name) && filepath.Base(h.File) == "main_metricsauth.go"
+	return wrapperClosureRe.MatchString(h.Name) && filepath.Base(h.File) == "main_metricsauth.go"
 }
 
 func boolStr(b bool) string {

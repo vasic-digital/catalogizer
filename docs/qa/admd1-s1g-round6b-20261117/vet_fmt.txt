@@ -1,0 +1,3 @@
+$ go vet . ; gofmt -l (our files)
+vet exit=0
+gofmt-done

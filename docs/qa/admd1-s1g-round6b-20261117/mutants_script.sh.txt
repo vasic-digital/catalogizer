@@ -1,0 +1,40 @@
+#!/bin/bash
+# round 6b mutants: apply a scratch edit, run the gate tests, record exit, restore.
+W=/home/milosvasic/.cache/claude-tmp/tmp.0OaIPkqKBa/w
+cd "$W/catalog-api" || exit 1
+OUT=$W/docs/qa/admd1-s1g-round6b-20261117/mutants.txt
+TESTS='ADMD1F1S1G1_CodeScanEqualsTableBothDirections|ADMD1F1S1R5_RealRouteTableMatchesScannerAndTable|ADMD1F1S1R5_ScannerIsSound'
+cp main.go /tmp/_unused 2>/dev/null; cp main.go ../../main.go.orig; cp ../docs/ROUTE_AUTHZ_TABLE.md ../../table.orig
+echo "# round 6b mutants (scratch edits, each restored); tests: -run '$TESTS'" > $OUT
+run() { # name expect(FAIL|PASS) file python-replace-old python-replace-new
+  local name=$1 expect=$2 file=$3 old=$4 new=$5
+  python3 - "$file" "$old" "$new" <<'PY'
+import sys
+f,o,n=sys.argv[1:4]
+s=open(f).read()
+assert o in s, "pattern missing"
+open(f,'w').write(s.replace(o,n,1))
+PY
+  local rc=$?
+  if [ $rc -ne 0 ]; then echo "$name: MUTATION NOT APPLIED" >> $OUT; return; fi
+  local res; res=$(GOMAXPROCS=2 nice -n 10 go test -vet=off -p 1 -count=1 -run "$TESTS" . 2>&1 | grep -v '^\[GIN')
+  local code=0; echo "$res" | grep -q '^FAIL' && code=1
+  local verdict=$([ $code -eq 1 ] && echo FAIL || echo PASS)
+  local ok=$([ "$verdict" = "$expect" ] && echo OK || echo "UNEXPECTED")
+  { echo "## $name | $file | expected $expect | got $verdict | $ok"; echo "$res" | grep -E 'Error:|route-level|handler-wrapping|has no|not gated|differs|--- FAIL|^ok|^FAIL' | cut -c1-260 | head -6; } >> $OUT
+  cp ../../main.go.orig main.go; cp ../../table.orig ../docs/ROUTE_AUTHZ_TABLE.md
+}
+G='api.POST("/admin/covers/generate-thumbnails", jwtMiddleware.RequireAdmin(), '
+run "M1 R1 ungated route (RequireAdmin removed)" FAIL main.go "$G" 'api.POST("/admin/covers/generate-thumbnails", '
+run "M2 R2 table row without a route" FAIL ../docs/ROUTE_AUTHZ_TABLE.md '| POST | `/api/v1/admin/covers/generate-thumbnails` | RequireAdmin (route) | 401 | 403 | skip |' '| POST | `/api/v1/admin/covers/generate-thumbnails` | RequireAdmin (route) | 401 | 403 | skip |
+| POST | `/api/v1/admin/ghost-route` | RequireAdmin (route) | 401 | 403 | skip |'
+run "M3 R3 route without a table row" FAIL ../docs/ROUTE_AUTHZ_TABLE.md '| POST | `/api/v1/admin/covers/generate-thumbnails` | RequireAdmin (route) | 401 | 403 | skip |' ''
+run "M4 R4 factory-call handler (RateLimiter) before the gate" FAIL main.go 'api.POST("/admin/image-quality/revalidate", jwtMiddleware.RequireAdmin(), root_middleware.RateLimiter(6), ' 'api.POST("/admin/image-quality/revalidate", root_middleware.RateLimiter(6), jwtMiddleware.RequireAdmin(), '
+run "M5 R5 decoy gate (RequireAuth in place of RequireAdmin)" FAIL main.go "$G" 'api.POST("/admin/covers/generate-thumbnails", jwtMiddleware.RequireAuth(), '
+run "M6 R6 MintWSTicket method value before the gate" FAIL main.go "$G" 'api.POST("/admin/covers/generate-thumbnails", jwtMiddleware.MintWSTicket, jwtMiddleware.RequireAdmin(), '
+run "M7 R7 gin.WrapF before RequireAdmin (real main.go)" FAIL main.go "$G" 'api.POST("/admin/covers/generate-thumbnails", gin.WrapF(func(w http.ResponseWriter, r *http.Request) {}), jwtMiddleware.RequireAdmin(), '
+run "M7b R7 gin.WrapH before RequireAdmin (real main.go)" FAIL main.go "$G" 'api.POST("/admin/covers/generate-thumbnails", gin.WrapH(http.NotFoundHandler()), jwtMiddleware.RequireAdmin(), '
+run "M8 golden-FALSE: pinned middleware RequestID() before the gate" PASS main.go "$G" 'api.POST("/admin/covers/generate-thumbnails", root_middleware.RequestID(), jwtMiddleware.RequireAdmin(), '
+run "M9 new unpinned middleware (RateLimiter) before the gate carries the remedy text" FAIL main.go "$G" 'api.POST("/admin/covers/generate-thumbnails", root_middleware.RateLimiter(5), jwtMiddleware.RequireAdmin(), '
+echo "# end; main.go and table restored: $(cmp main.go ../../main.go.orig && echo main-identical) $(cmp ../docs/ROUTE_AUTHZ_TABLE.md ../../table.orig && echo table-identical)" >> $OUT
+echo done > ../../mut.done

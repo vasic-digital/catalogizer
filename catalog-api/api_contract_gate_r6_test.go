@@ -84,12 +84,10 @@ func TestADMD1F1S1R6_GateIdentityComparesFullFilePath(t *testing.T) {
 	decoy := routeHandler{Name: id.Name, File: "/elsewhere/middleware/auth.go", Line: id.Line}
 	require.False(t, isAdminGateFunc(decoy), "same symbol, same last two path elements, different directory")
 	require.True(t, isAdminGateFunc(routeHandler{Name: id.Name, File: id.File, Line: id.Line}), "golden-TRUE: the real file")
-	gateH := funcIdentity(root_middleware.NewJWTMiddleware("r6").RequireAdmin())
 	plain := funcIdentity(probeH)
 	sc := scanSrc(t, fcHeader+`func Run(m mw) { r := gin.New(); r.GET("/x", m.RequireAdmin(), h) }`+"\n")
 	fakeChain := []realRoute{{"GET", "/x", []routeHandler{decoy, plain}}}
 	require.Contains(t, strings.Join(groundTruthViolations(fakeChain, sc, nil), "\n"), "gate state differs")
-	_ = gateH
 }
 
 func TestADMD1F1S1R6_ShadowedImportAliasIsNotAnEngineFactory(t *testing.T) {
