@@ -1,0 +1,11 @@
+--- FAIL: TestWatchProgress_CLFU_InsertLostRaceAfterAFailedUpdateIsRetried (11.94s)
+    media_watch_progress_rv3_test.go:202: 
+        	Error Trace:	/home/milosvasic/.cache/claude-tmp/clfu/catalog-api/handlers/media_watch_progress_rv3_test.go:202
+        	Error:      	Not equal: 
+        	            	expected: 200
+        	            	actual  : 500
+        	Test:       	TestWatchProgress_CLFU_InsertLostRaceAfterAFailedUpdateIsRetried
+        	Messages:   	an INSERT that lost a race to a concurrent writer must be retried: map[error:Failed to update watch progress success:false]
+FAIL
+FAIL	catalogizer/handlers	12.115s
+FAIL

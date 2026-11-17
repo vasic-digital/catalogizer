@@ -216,20 +216,16 @@ class VLCPlayerActivity : ComponentActivity() {
         }
     }
     
-    /** [final] = the save at destroy: it must complete even though the activity's lifecycle scope is cancelled. */
-    private suspend fun saveWatchProgress(final: Boolean = false) {
+    private suspend fun saveWatchProgress() {
         if (mediaId <= 0) return
 
         val currentPosition = vlcPlayer.currentPosition.value
         val duration = vlcPlayer.duration.value
 
         val repository = com.catalogizer.androidtv.DependencyContainer.getInstance(this).mediaRepository
-        val tick = com.catalogizer.androidtv.data.playback.WatchProgressTick
-        lastSavedProgress = if (final) {
-            tick.finalSave(repository, mediaId, lastSavedProgress, currentPosition, duration)
-        } else {
-            tick.runWith(repository, mediaId, lastSavedProgress, currentPosition, duration)
-        }
+        lastSavedProgress = com.catalogizer.androidtv.data.playback.WatchProgressTick.runWith(
+            repository, mediaId, lastSavedProgress, currentPosition, duration,
+        )
     }
 
     private fun showErrorAndFinish(message: String) {
@@ -253,32 +249,43 @@ class VLCPlayerActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // Save final progress before destroying
         progressTrackingJob?.cancel()
 
-        // Finalise the backend playback session so the rolled
-        // up media_progress row reflects the last-known
-        // position and increments total_reproductions.
-        val finalPositionSec = vlcPlayer.currentPosition.value / 1000L
-        val durationSec = vlcPlayer.duration.value / 1000L
-        val completed = durationSec > 0 &&
-            finalPositionSec >= (durationSec - 5L) // within 5s of end
-
-        // lifecycleScope is cancelled by the time onDestroy runs, so the final save, the tracker end and the player
-        // release run in their own scope and are not cancellable (CLPROG-R2-n1).
-        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Main)
+        // lifecycleScope is cancelled by the time onDestroy runs, so the shutdown runs in its own scope. Main.immediate
+        // runs the read and the player release right here, inside onDestroy; only the network calls (session end, final
+        // save) come after the release and are not cancellable (CLPROG-R2-n1, CLFU-R-3).
+        val id = mediaId
+        val last = lastSavedProgress
+        val tracker = if (::playbackTracker.isInitialized && playbackTracker.isActive()) playbackTracker else null
+        val repository = com.catalogizer.androidtv.DependencyContainer.getInstance(this).mediaRepository
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.Main.immediate)
             .launch {
-                kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
-                    if (::playbackTracker.isInitialized && playbackTracker.isActive()) {
-                        playbackTracker.end(
-                            endPosition = finalPositionSec,
-                            totalAmount = finalPositionSec,
-                            completed = completed,
+                com.catalogizer.androidtv.data.playback.PlayerShutdown.run(
+                    read = {
+                        com.catalogizer.androidtv.data.playback.PlayerShutdown.Snapshot(
+                            vlcPlayer.currentPosition.value, vlcPlayer.duration.value,
                         )
-                    }
-                    saveWatchProgress(final = true)
-                    vlcPlayer.release()
-                }
+                    },
+                    release = { vlcPlayer.release() },
+                    endSession = { s ->
+                        // finalise the backend playback session so the rolled-up media_progress row reflects the
+                        // last-known position and increments total_reproductions
+                        val posSec = s.positionMs / 1000L
+                        val durSec = s.durationMs / 1000L
+                        tracker?.end(
+                            endPosition = posSec,
+                            totalAmount = posSec,
+                            completed = durSec > 0 && posSec >= (durSec - 5L), // within 5s of end
+                        )
+                    },
+                    save = { s ->
+                        if (id > 0) {
+                            lastSavedProgress = com.catalogizer.androidtv.data.playback.WatchProgressTick.finalSave(
+                                repository, id, last, s.positionMs, s.durationMs,
+                            )
+                        }
+                    },
+                )
             }
     }
 

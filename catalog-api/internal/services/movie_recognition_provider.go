@@ -1,6 +1,7 @@
 package services
 
 import (
+	"catalogizer/internal/netguard"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -219,7 +220,7 @@ type OMDbRating struct {
 func NewMovieRecognitionProvider(logger *zap.Logger) *MovieRecognitionProvider {
 	return &MovieRecognitionProvider{
 		logger:     logger,
-		httpClient: &http.Client{Timeout: 30 * time.Second},
+		httpClient: netguard.NewProviderClient(netguard.ProviderClientConfig{Timeout: 30 * time.Second, Strict: true}),
 		baseURLs: map[string]string{
 			"tmdb": "https://api.themoviedb.org/3",
 			"omdb": "http://www.omdbapi.com",

@@ -288,7 +288,9 @@ func (h *AndroidTVMediaHandler) UpdateWatchProgress(c *gin.Context) {
 			`INSERT INTO media_progress (user_id, media_item_id, position_unit, duration_total, last_position, updated_at)
 			 VALUES (?, ?, 'seconds', ?, ?, ?)`,
 			callerID, id, dur, pos, now); err != nil {
-			if attempt == 0 {
+			if attempt < maxAttempts-1 {
+				// a lost insert race (a competing writer created the row): re-read and re-plan; a persistent
+				// error still ends in the 500 below on the last attempt (CLFU / WPROG3-R3-F2)
 				continue
 			}
 			utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to update watch progress", err)

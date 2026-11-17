@@ -1,0 +1,9 @@
+ok  	catalogizer	1703.107s
+root rc=0
+ok  	catalogizer/services	738.820s
+services rc=0
+ok  	catalogizer/internal/services	67.031s
+internal/services rc=0
+ok  	catalogizer/handlers	35.504s
+handlers rc=0
+done

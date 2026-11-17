@@ -1,0 +1,24 @@
+== mutant D1 vs old tests
+ ✓ src/services/__tests__/apiService.watchProgress.test.ts  (10 tests) 10ms
+      Tests  10 passed (10)
+== mutant D1 vs new tests
+ ❯ src/services/__tests__/apiService.watchProgress.test.ts  (15 tests | 4 failed) 155ms
+   ❯ src/services/__tests__/apiService.watchProgress.test.ts > apiService.updateWatchProgress with the real server body shape (CLFU-R-1, CLFU-R-6) > reports the reason field, not the generic message, for a 200 persisted:false
+   ❯ src/services/__tests__/apiService.watchProgress.test.ts > apiService.updateWatchProgress with the real server body shape (CLFU-R-1, CLFU-R-6) > treats the real 409 body as concurrent_update: retries 3 times and keeps that reason
+   ❯ src/services/__tests__/apiService.watchProgress.test.ts > apiService.updateWatchProgress with the real server body shape (CLFU-R-1, CLFU-R-6) > retries the real 409 body once and reports the real stored body as saved, with no reason
+   ❯ src/services/__tests__/apiService.watchProgress.test.ts > apiService.updateWatchProgress with the real server body shape (CLFU-R-1, CLFU-R-6) > prefers reason over error over message when all are present
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  src/services/__tests__/apiService.watchProgress.test.ts > apiService.updateWatchProgress with the real server body shape (CLFU-R-1, CLFU-R-6) > reports the reason field, not the generic message, for a 200 persisted:false
+ ❯ src/services/__tests__/apiService.watchProgress.test.ts:111:22
+== mutant D3 vs old tests
+ ✓ src/services/__tests__/apiService.watchProgress.test.ts  (10 tests) 22ms
+      Tests  10 passed (10)
+== mutant D3 vs new tests
+ ❯ src/services/__tests__/apiService.watchProgress.test.ts  (15 tests | 2 failed) 28ms
+   ❯ src/services/__tests__/apiService.watchProgress.test.ts > apiService.updateWatchProgress with the real server body shape (CLFU-R-1, CLFU-R-6) > retries the real 409 body once and reports the real stored body as saved, with no reason
+   ❯ src/services/__tests__/apiService.watchProgress.test.ts > apiService.updateWatchProgress with the real server body shape (CLFU-R-1, CLFU-R-6) > sets no reason at all on success, even when the body carries a message (mutant D3)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  src/services/__tests__/apiService.watchProgress.test.ts > apiService.updateWatchProgress with the real server body shape (CLFU-R-1, CLFU-R-6) > retries the real 409 body once and reports the real stored body as saved, with no reason
+ ❯ src/services/__tests__/apiService.watchProgress.test.ts:128:22
+ FAIL  src/services/__tests__/apiService.watchProgress.test.ts > apiService.updateWatchProgress with the real server body shape (CLFU-R-1, CLFU-R-6) > sets no reason at all on success, even when the body carries a message (mutant D3)
+ ❯ src/services/__tests__/apiService.watchProgress.test.ts:137:50

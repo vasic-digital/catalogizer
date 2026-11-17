@@ -1,0 +1,10 @@
+== ./handlers
+panic: test timed out after 10m0s
+FAIL	catalogizer/handlers	600.207s
+FAIL
+== ./services
+ok  	catalogizer/services	542.372s
+== ./internal/firebase
+ok  	catalogizer/internal/firebase	0.024s
+== ./internal/media/providers
+ok  	catalogizer/internal/media/providers	4.286s

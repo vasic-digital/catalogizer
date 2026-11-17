@@ -1,0 +1,217 @@
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+
+ RUN  v0.34.6 /home/milosvasic/.cache/claude-tmp/clfu/catalogizer-desktop
+
+(node:793044) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ src/services/__tests__/apiService.watchProgress.test.ts  (15 tests) 10ms
+stderr | src/pages/__tests__/SearchPage.test.tsx > SearchPage > renders the page title and description
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ src/pages/__tests__/SearchPage.test.tsx  (13 tests) 5710ms
+ ✓ src/pages/__tests__/SettingsPage.test.tsx  (19 tests) 986ms
+ ✓ src/pages/__tests__/LoginPage.test.tsx  (12 tests) 1156ms
+ ✓ src/pages/__tests__/LibraryPage.test.tsx  (10 tests) 735ms
+stderr | src/pages/__tests__/HomePage.test.tsx > HomePage > displays recently added section when items exist
+TypeError: __vite_ssr_import_5__.apiService.getEntityProgress is not a function
+    at [90m/home/milosvasic/.cache/claude-tmp/clfu/catalogizer-desktop/[39msrc/pages/HomePage.tsx:75:38
+    at Array.map (<anonymous>)
+    at Object.queryFn [90m(/home/milosvasic/.cache/claude-tmp/clfu/catalogizer-desktop/[39msrc/pages/HomePage.tsx:74:25[90m)[39m
+    at Object.fn (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@tanstack/query-core[24m/src/query.ts:400:27)
+    at run (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@tanstack/query-core[24m/src/retryer.ts:147:31)
+    at createRetryer (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@tanstack/query-core[24m/src/retryer.ts:204:5)
+    at Query.fetch (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@tanstack/query-core[24m/src/query.ts:458:20)
+    at QueryObserver.executeFetch (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@tanstack/query-core[24m/src/queryObserver.ts:350:70)
+    at QueryObserver.observer [as setOptions] (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@tanstack/query-core[24m/src/queryObserver.ts:203:12)
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@tanstack/react-query[24m/src/useBaseQuery.ts:100:5
+
+ ✓ src/pages/__tests__/HomePage.test.tsx  (8 tests) 151ms
+ ✓ src/pages/__tests__/MediaDetailPage.test.tsx  (10 tests) 161ms
+stderr | src/__tests__/App.test.tsx > App > handles initialization errors gracefully
+Failed to initialize app: Error: Config load failed
+    at [90m/home/milosvasic/.cache/claude-tmp/clfu/catalogizer-desktop/[39msrc/__tests__/App.test.tsx:184:38
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:135:14
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:58:26
+    at runTest (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:663:17)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runFiles (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:834:5)
+    at startTests (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:843:3)
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4mvitest[24m/dist/entry.js:103:7
+    at withEnv (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4mvitest[24m/dist/entry.js:73:5)
+
+ ✓ src/__tests__/App.test.tsx  (8 tests) 92ms
+ ✓ src/components/__tests__/SplashScreen.test.tsx  (13 tests) 48ms
+ ✓ src/components/__tests__/Layout.test.tsx  (10 tests) 73ms
+ ✓ src/__tests__/exampleComponent.test.tsx  (3 tests) 11ms
+ ✓ src/test-utils/__tests__/testRender.test.tsx  (13 tests) 37ms
+ ✓ src/services/__tests__/apiService.test.ts  (32 tests) 26ms
+stdout | src/hooks/__tests__/useVLCPlayer.watchProgress.test.tsx > desktop watch progress call sites (seconds, not ms) > useVLCPlayer.saveProgress sends position and duration in seconds
+Watch progress saved: 8.3%
+
+ ✓ src/hooks/__tests__/useVLCPlayer.watchProgress.test.tsx  (3 tests) 127ms
+ ✓ src/hooks/__tests__/useCoverQuality.test.tsx  (7 tests) 181ms
+ ✓ src/styles/tokens.test.ts  (37 tests) 25ms
+ ✓ src/__tests__/tauriCommands.extended.test.ts  (20 tests) 9ms
+ ✓ src/services/__tests__/apiService.extended.test.ts  (19 tests) 13ms
+stderr | src/stores/__tests__/configStore.extended.test.ts > configStore (extended edge cases) > loadConfig edge cases > sets isLoading to false even when invoke returns unexpected data
+Failed to load config: TypeError: Cannot read properties of null (reading 'theme')
+    at Object.loadConfig [90m(/home/milosvasic/.cache/claude-tmp/clfu/catalogizer-desktop/[39msrc/stores/configStore.ts:80:29[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+    at [90m/home/milosvasic/.cache/claude-tmp/clfu/catalogizer-desktop/[39msrc/stores/__tests__/configStore.extended.test.ts:60:9
+    at runTest (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:663:11)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runFiles (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:834:5)
+    at startTests (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:843:3)
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4mvitest[24m/dist/entry.js:103:7
+
+stderr | src/stores/__tests__/configStore.extended.test.ts > configStore (extended edge cases) > setServerUrl edge cases > does not update state if invoke fails
+Failed to set server URL: Error: Write failed
+    at [90m/home/milosvasic/.cache/claude-tmp/clfu/catalogizer-desktop/[39msrc/stores/__tests__/configStore.extended.test.ts:90:36
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:135:14
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:58:26
+    at runTest (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:663:17)
+[90m    at processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runFiles (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:834:5)
+    at startTests (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:843:3)
+
+stderr | src/stores/__tests__/configStore.extended.test.ts > configStore (extended edge cases) > setAutoStart edge cases > does not update state on failure
+Failed to set auto start: Error: Permission denied
+    at [90m/home/milosvasic/.cache/claude-tmp/clfu/catalogizer-desktop/[39msrc/stores/__tests__/configStore.extended.test.ts:176:36
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:135:14
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:58:26
+    at runTest (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:663:17)
+[90m    at processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runFiles (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:834:5)
+    at startTests (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:843:3)
+
+stderr | src/stores/__tests__/configStore.extended.test.ts > configStore (extended edge cases) > resetConfig edge cases > preserves state on reset failure
+Failed to reset config: Error: Storage error
+    at [90m/home/milosvasic/.cache/claude-tmp/clfu/catalogizer-desktop/[39msrc/stores/__tests__/configStore.extended.test.ts:236:36
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:135:14
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:58:26
+    at runTest (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:663:17)
+[90m    at processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runFiles (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:834:5)
+    at startTests (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:843:3)
+
+ ✓ src/stores/__tests__/configStore.extended.test.ts  (18 tests) 49ms
+stderr | src/stores/__tests__/authStore.test.ts > authStore > logout > does not throw when clear_auth_token fails
+Logout error: Error: Storage error
+    at [90m/home/milosvasic/.cache/claude-tmp/clfu/catalogizer-desktop/[39msrc/stores/__tests__/authStore.test.ts:319:36
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:135:14
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:58:26
+    at runTest (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:663:17)
+[90m    at processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runFiles (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:834:5)
+    at startTests (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:843:3)
+
+ ✓ src/stores/__tests__/authStore.test.ts  (29 tests) 20ms
+stderr | src/stores/__tests__/configStore.test.ts > configStore > loadConfig > sets isLoading to false on error
+Failed to load config: Error: Storage error
+    at [90m/home/milosvasic/.cache/claude-tmp/clfu/catalogizer-desktop/[39msrc/stores/__tests__/configStore.test.ts:115:36
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:135:14
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:58:26
+    at runTest (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:663:17)
+[90m    at processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runFiles (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:834:5)
+    at startTests (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:843:3)
+
+stderr | src/stores/__tests__/configStore.test.ts > configStore > loadConfig > does not change other state on error
+Failed to load config: Error: Storage error
+    at [90m/home/milosvasic/.cache/claude-tmp/clfu/catalogizer-desktop/[39msrc/stores/__tests__/configStore.test.ts:124:36
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:135:14
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:58:26
+    at runTest (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:663:17)
+[90m    at processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runFiles (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:834:5)
+    at startTests (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:843:3)
+
+stderr | src/stores/__tests__/configStore.test.ts > configStore > setServerUrl > throws and does not update state on error
+Failed to set server URL: Error: Permission denied
+    at [90m/home/milosvasic/.cache/claude-tmp/clfu/catalogizer-desktop/[39msrc/stores/__tests__/configStore.test.ts:151:36
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:135:14
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:58:26
+    at runTest (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:663:17)
+[90m    at processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runFiles (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:834:5)
+    at startTests (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:843:3)
+
+stderr | src/stores/__tests__/configStore.test.ts > configStore > setTheme > throws on error and does not update state
+Failed to set theme: Error: Write error
+    at [90m/home/milosvasic/.cache/claude-tmp/clfu/catalogizer-desktop/[39msrc/stores/__tests__/configStore.test.ts:217:36
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:135:14
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:58:26
+    at runTest (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:663:17)
+[90m    at processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runFiles (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:834:5)
+    at startTests (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:843:3)
+
+stderr | src/stores/__tests__/configStore.test.ts > configStore > setAutoStart > throws on error and does not update state
+Failed to set auto start: Error: Write error
+    at [90m/home/milosvasic/.cache/claude-tmp/clfu/catalogizer-desktop/[39msrc/stores/__tests__/configStore.test.ts:259:36
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:135:14
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:58:26
+    at runTest (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:663:17)
+[90m    at processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runFiles (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:834:5)
+    at startTests (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:843:3)
+
+stderr | src/stores/__tests__/configStore.test.ts > configStore > resetConfig > throws on error and does not reset state
+Failed to reset config: Error: Write error
+    at [90m/home/milosvasic/.cache/claude-tmp/clfu/catalogizer-desktop/[39msrc/stores/__tests__/configStore.test.ts:318:36
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:135:14
+    at file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:58:26
+    at runTest (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:663:17)
+[90m    at processTicksAndRejections (node:internal/process/task_queues:104:5)[39m
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runSuite (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:782:15)
+    at runFiles (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:834:5)
+    at startTests (file:///home/milosvasic/.cache/claude-tmp/clfu1/catalogizer-desktop/node_modules/[4m@vitest/runner[24m/dist/index.js:843:3)
+
+ ✓ src/stores/__tests__/configStore.test.ts  (24 tests) 22ms
+ ✓ src/utils/__tests__/cn.test.ts  (21 tests) 6ms
+ ✓ src/test-utils/__tests__/testData.test.ts  (28 tests) 19ms
+ ✓ src/lib/__tests__/cn.test.ts  (9 tests) 3ms
+ ✓ src/utils/__tests__/playbackFormatter.test.ts  (8 tests) 3ms
+ ✓ src/stores/__tests__/authStore.extended.test.ts  (20 tests) 9ms
+ ✓ src/__tests__/tauriCommands.test.ts  (3 tests) 4ms
+ ✓ src/types/__tests__/index.test.ts  (27 tests) 54ms
+ ✓ src/styles/wcag_contrast.test.ts  (19 tests) 11ms
+
+ Test Files  29 passed (29)
+      Tests  458 passed (458)
+   Start at  20:53:03
+   Duration  29.56s (transform 2.17s, setup 2.43s, collect 9.25s, tests 9.75s, environment 5.52s, prepare 1.02s)
+
