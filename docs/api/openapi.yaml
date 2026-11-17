@@ -3376,6 +3376,11 @@ paths:
     put:
       tags: [media]
       summary: Update watch progress
+      description: >-
+        Stores the CALLER's own watch position for the media item in media_progress (per user, upsert; never reads or
+        changes another user's row). progress is a fraction 0.0-1.0 (required). position (optional, seconds) is used only
+        when the stored row is in seconds, clamped to its duration. timestamp (string or number) and unknown fields are
+        ignored. A row without a known duration is stored as permille (duration_total 1000).
       security:
         - BearerAuth: []
       parameters:
@@ -3389,13 +3394,26 @@ paths:
           application/json:
             schema:
               type: object
+              required: [progress]
               properties:
                 progress:
                   type: number
                   format: float
+                  minimum: 0
+                  maximum: 1
+                position:
+                  type: integer
+                  format: int64
+                  minimum: 0
       responses:
         '200':
-          description: Progress updated
+          description: Progress stored (persisted true)
+        '400':
+          description: Invalid media id, body, progress outside 0..1, or negative position
+        '401':
+          description: Not authenticated
+        '404':
+          description: Media not found
 
   /api/v1/media/{id}/favorite:
     put:

@@ -2,9 +2,12 @@ package handlers
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
+	"math"
 	"net/http"
 	"strconv"
+	"time"
 
 	"catalogizer/database"
 	"catalogizer/models"
@@ -131,81 +134,75 @@ func (h *AndroidTVMediaHandler) GetMediaByID(c *gin.Context) {
 	c.JSON(http.StatusOK, mediaItem)
 }
 
+// watchProgressRequest is the body of PUT /media/:id/progress. `progress` is a fraction 0.0-1.0 (all shipped clients send
+// it). `timestamp` is accepted as a string (Android sends epoch millis as a string) or a number and is otherwise ignored:
+// the server stamps updated_at itself. `position` is an absolute position in seconds; it is used only when the caller's
+// stored row is in seconds. Unknown fields (the TS client also sends media_id, duration) are ignored.
+type watchProgressRequest struct {
+	Progress  *float64        `json:"progress"`
+	Position  *int64          `json:"position"`
+	Timestamp json.RawMessage `json:"timestamp"`
+}
+
+// Watch progress without a known duration is stored as a fraction in permille (0..1000) against a fixed duration_total
+// of 1000, so media_progress readers (last_position / duration_total) still compute the right fraction.
+const (
+	progressUnitPermille = "permille"
+	progressPermilleBase = 1000
+)
+
 // UpdateWatchProgress godoc
 // @Summary Update watch progress
-// @Description Update the watch progress for a media item
+// @Description Store the authenticated user's watch progress for a media item (per user, in media_progress)
 // @Tags media
 // @Accept json
 // @Produce json
 // @Param id path int true "Media ID"
-// @Param body body map[string]float64 true "Progress value (0.0 to 1.0)"
+// @Param body body watchProgressRequest true "progress 0.0-1.0 (required), optional position in seconds"
 // @Success 200 {object} utils.SuccessResponse
 // @Failure 400 {object} utils.SendErrorResponse
+// @Failure 401 {object} utils.SendErrorResponse
 // @Failure 404 {object} utils.SendErrorResponse
 // @Failure 500 {object} utils.SendErrorResponse
 // @Router /api/v1/media/{id}/progress [put]
 func (h *AndroidTVMediaHandler) UpdateWatchProgress(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	// Parse media ID from path
-	idStr := c.Param("id")
-	id, err := strconv.ParseInt(idStr, 10, 64)
+	// Authentication is checked first, before any input is parsed (an anonymous caller gets 401, never 400).
+	callerID, _ := callerUserID(c)
+	if callerID == 0 {
+		utils.SendErrorResponse(c, http.StatusUnauthorized, "Authentication required", nil)
+		return
+	}
+
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid media ID", err)
 		return
 	}
 
-	// Parse request body
-	var requestBody map[string]float64
-	if err := c.ShouldBindJSON(&requestBody); err != nil {
+	var req watchProgressRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Invalid request body", err)
 		return
 	}
-
-	progress, exists := requestBody["progress"]
-	if !exists {
+	if req.Progress == nil {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Progress field is required", nil)
 		return
 	}
-
-	// Validate progress value
-	if progress < 0.0 || progress > 1.0 {
+	progress := *req.Progress
+	if !(progress >= 0.0 && progress <= 1.0) {
 		utils.SendErrorResponse(c, http.StatusBadRequest, "Progress must be between 0.0 and 1.0", nil)
 		return
 	}
+	if req.Position != nil && *req.Position < 0 {
+		utils.SendErrorResponse(c, http.StatusBadRequest, "Position must not be negative", nil)
+		return
+	}
 
-	// DEFECT-D (2026-06-25): the prior query did
-	// `UPDATE media_items SET watch_progress=?, last_watched=..., updated_at=...`
-	// but the real normalized media_items table has NO watch_progress and
-	// NO last_watched column (they only existed in the flat test-helper
-	// schema), so every call returned HTTP 500 `no such column: watch_progress`.
-	//
-	// The genuine progress store is `media_progress` (migration v15),
-	// keyed PRIMARY KEY (user_id, media_item_id) and tracking absolute
-	// position (last_position / duration_total / position_unit) — the
-	// SAME store the canonical authenticated path reads via
-	// PlaybackHandler.GetProgressForEntity / ProgressSession
-	// (GET /api/v1/entities/:id/progress), which derives user_id from the
-	// auth context (c.Get("user_id")).
-	//
-	// HONEST AMBIGUITY (§11.4.6): this AndroidTV route
-	// (PUT /api/v1/media/:id/progress) IS authenticated: it is registered in
-	// the `api` group after api.Use(RequireAuth()) (main.go), which sets
-	// "user_id" in the context. This handler, however, never reads user_id,
-	// and it accepts a fractional 0.0-1.0 progress whereas media_progress
-	// stores absolute position units. Writing a row with that value would
-	// persist WRONG data and would NOT agree with the authenticated
-	// GetProgressForEntity reader. Per the no-phantom-column rule, we
-	// therefore validate the media item exists against the REAL schema
-	// (correct 404/200) and do NOT write to any phantom or mis-keyed
-	// column. Genuine per-user persistence needs this handler to read
-	// user_id and write media_progress once the unit mismatch is resolved
-	// (tracked follow-up AFAV-8 / RFM-R1-1); until then it is a validated
-	// no-op write (persisted:false), reported honestly to the caller.
-	var existsRow int
-	err = h.db.QueryRowContext(ctx, `SELECT 1 FROM media_items WHERE id = ?`, id).Scan(&existsRow)
-	if err != nil {
-		if err.Error() == "sql: no rows in result set" {
+	var one int
+	if err := h.db.QueryRowContext(ctx, `SELECT 1 FROM media_items WHERE id = ?`, id).Scan(&one); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
 			utils.SendErrorResponse(c, http.StatusNotFound, "Media not found", nil)
 		} else {
 			utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to update watch progress", err)
@@ -213,12 +210,66 @@ func (h *AndroidTVMediaHandler) UpdateWatchProgress(c *gin.Context) {
 		return
 	}
 
+	// Portable SELECT / UPDATE / INSERT upsert (same pattern as PlaybackSessionRepository: the SQLCipher build predates
+	// ON CONFLICT DO UPDATE). A concurrent first insert that loses the primary-key race is retried once as an update.
+	for attempt := 0; attempt < 2; attempt++ {
+		var unit string
+		var duration sql.NullInt64
+		selErr := h.db.QueryRowContext(ctx,
+			`SELECT position_unit, duration_total FROM media_progress WHERE user_id = ? AND media_item_id = ?`,
+			callerID, id).Scan(&unit, &duration)
+		if selErr != nil && !errors.Is(selErr, sql.ErrNoRows) {
+			utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to update watch progress", selErr)
+			return
+		}
+		now := time.Now().UTC()
+		if selErr == nil {
+			newUnit, pos, dur := progressToPosition(progress, req.Position, unit, duration)
+			if _, err := h.db.ExecContext(ctx,
+				`UPDATE media_progress SET position_unit = ?, duration_total = ?, last_position = ?, updated_at = ?
+				 WHERE user_id = ? AND media_item_id = ?`,
+				newUnit, dur, pos, now, callerID, id); err != nil {
+				utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to update watch progress", err)
+				return
+			}
+			break
+		}
+		newUnit, pos, dur := progressToPosition(progress, req.Position, progressUnitPermille, sql.NullInt64{})
+		if _, err := h.db.ExecContext(ctx,
+			`INSERT INTO media_progress (user_id, media_item_id, position_unit, duration_total, last_position, updated_at)
+			 VALUES (?, ?, ?, ?, ?, ?)`,
+			callerID, id, newUnit, dur, pos, now); err != nil {
+			if attempt == 0 {
+				continue
+			}
+			utils.SendErrorResponse(c, http.StatusInternalServerError, "Failed to update watch progress", err)
+			return
+		}
+		break
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success":   true,
-		"message":   "Watch progress accepted",
-		"persisted": false,
-		"reason":    "per-user progress store (media_progress) requires an authenticated user; this public route has none",
+		"message":   "Watch progress updated",
+		"persisted": true,
 	})
+}
+
+// progressToPosition converts the client's fraction into the unit of the stored row and returns (unit, last_position,
+// duration_total). A row with a known duration keeps its unit; an explicit position wins when the unit is seconds
+// (clamped to the duration). A row with an unknown duration, or a new row, is stored as permille of 1000.
+func progressToPosition(progress float64, position *int64, unit string, duration sql.NullInt64) (string, int64, int64) {
+	if duration.Valid && duration.Int64 > 0 {
+		if unit == "seconds" && position != nil {
+			p := *position
+			if p > duration.Int64 {
+				p = duration.Int64
+			}
+			return unit, p, duration.Int64
+		}
+		return unit, int64(math.Round(progress * float64(duration.Int64))), duration.Int64
+	}
+	return progressUnitPermille, int64(math.Round(progress * progressPermilleBase)), progressPermilleBase
 }
 
 // UpdateFavoriteStatus godoc
