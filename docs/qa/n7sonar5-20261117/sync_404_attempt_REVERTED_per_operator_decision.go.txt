@@ -1,0 +1,80 @@
+package handlers
+
+// CAT-SYNC-404-1 (operator decision 2026-11-17, FOLLOW_UPS R2-N7 / F4, class member after CAT-JOB-404-1): a non-owner without the
+// share permission asking for another user's sync endpoint or session id gets the SAME 404 as a nonexistent id (no existence oracle).
+// Real gin routes, real SyncService / SyncRepository / AuthService, real SQLite; the owner and the administrator keep the real answer.
+
+import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"time"
+
+	"github.com/stretchr/testify/require"
+)
+
+// addUser inserts a user with the given role and returns a token for a fresh active session.
+func (s *SyncHandlerTestSuite) addUser(id, roleID int, perms string) string {
+	_, err := s.db.Exec(`INSERT OR IGNORE INTO roles (id, name, description, permissions, is_system) VALUES (?, ?, ?, ?, 0)`,
+		roleID, fmt.Sprintf("r%d", roleID), "test", perms)
+	require.NoError(s.T(), err)
+	_, err = s.db.Exec(`INSERT INTO users (id, username, email, password_hash, salt, role_id, is_active) VALUES (?, ?, ?, ?, ?, ?, 1)`,
+		id, fmt.Sprintf("u%d", id), fmt.Sprintf("u%d@example.com", id), "$2a$10$fakehashfortest", "fakesalt", roleID)
+	require.NoError(s.T(), err)
+	_, err = s.db.Exec(`INSERT INTO user_sessions (id, user_id, session_token, refresh_token, device_info, is_active, expires_at)
+		VALUES (?, ?, ?, ?, '{}', 1, ?)`, id, id, fmt.Sprintf("t%d", id), fmt.Sprintf("r%d", id), time.Now().Add(time.Hour))
+	require.NoError(s.T(), err)
+	return s.generateTestToken(id, fmt.Sprintf("u%d", id), roleID, fmt.Sprintf("%d", id))
+}
+
+func (s *SyncHandlerTestSuite) doAs(token, method, path string, body interface{}) *httptest.ResponseRecorder {
+	saved := s.authToken
+	s.authToken = token
+	defer func() { s.authToken = saved }()
+	return s.doRequest(method, path, body, true)
+}
+
+func (s *SyncHandlerTestSuite) TestSync404_ForeignIDIsIndistinguishableFromMissing() {
+	owner := s.addUser(11, 12, `["share.view","share.edit","share.delete"]`)
+	stranger := s.addUser(12, 13, `[]`)
+	ep := s.createTestEndpointInDB(11, "mine", "webdav", "active")
+	sess := s.createTestSessionInDB(ep, 11, "completed")
+	missingEp, missingSess := ep+1000, sess+1000
+
+	type probe struct {
+		name, method string
+		foreign      string
+		missing      string
+		body         func(id int) interface{}
+	}
+	sched := func(id int) interface{} { return map[string]interface{}{"endpoint_id": id, "frequency": "daily"} }
+	probes := []probe{
+		{"GetEndpoint", "GET", fmt.Sprintf("/sync/endpoints/%d", ep), fmt.Sprintf("/sync/endpoints/%d", missingEp), nil},
+		{"UpdateEndpoint", "PUT", fmt.Sprintf("/sync/endpoints/%d", ep), fmt.Sprintf("/sync/endpoints/%d", missingEp), func(int) interface{} { return map[string]interface{}{"name": "x"} }},
+		{"DeleteEndpoint", "DELETE", fmt.Sprintf("/sync/endpoints/%d", ep), fmt.Sprintf("/sync/endpoints/%d", missingEp), nil},
+		{"StartSync", "POST", fmt.Sprintf("/sync/endpoints/%d/sync", ep), fmt.Sprintf("/sync/endpoints/%d/sync", missingEp), nil},
+		{"GetSession", "GET", fmt.Sprintf("/sync/sessions/%d", sess), fmt.Sprintf("/sync/sessions/%d", missingSess), nil},
+		{"ScheduleSync", "POST", "/sync/schedules", "/sync/schedules", sched},
+	}
+	for _, p := range probes {
+		var fb, mb interface{}
+		if p.body != nil {
+			fb, mb = p.body(ep), p.body(missingEp)
+		}
+		foreign := s.doAs(stranger, p.method, p.foreign, fb)
+		missing := s.doAs(stranger, p.method, p.missing, mb)
+		require.Equal(s.T(), http.StatusNotFound, missing.Code, "%s missing: %s", p.name, missing.Body.String())
+		require.Equal(s.T(), missing.Code, foreign.Code, "%s: foreign id must answer like a missing one (%s)", p.name, foreign.Body.String())
+		require.JSONEq(s.T(), missing.Body.String(), foreign.Body.String(), "%s: bodies must be identical", p.name)
+	}
+
+	// control needle: the owner and the administrator still get the real answer (not 404)
+	for _, tok := range []string{owner, s.authToken} {
+		require.Equal(s.T(), http.StatusOK, s.doAs(tok, "GET", fmt.Sprintf("/sync/endpoints/%d", ep), nil).Code)
+		require.Equal(s.T(), http.StatusOK, s.doAs(tok, "GET", fmt.Sprintf("/sync/sessions/%d", sess), nil).Code)
+	}
+	// the foreign endpoint was neither deleted nor changed by the stranger
+	var n int
+	require.NoError(s.T(), s.db.QueryRow(`SELECT COUNT(*) FROM sync_endpoints WHERE id = ? AND name = 'mine'`, ep).Scan(&n))
+	require.Equal(s.T(), 1, n)
+}

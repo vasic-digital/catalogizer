@@ -1,0 +1,68 @@
+2026/11/17 19:15:32 handlers: sync GET /sync/endpoints/:id: Failed to get sync endpoint (not returned to client): unauthorized to view this endpoint
+2026/11/17 19:15:32 handlers: sync GET /sync/sessions/:id: Failed to get sync session (not returned to client): unauthorized to view this session
+2026/11/17 19:15:32 handlers: sync POST /sync/endpoints: Failed to create sync endpoint (not returned to client): invalid sync endpoint: URL is required
+2026/11/17 19:15:32 handlers: sync POST /sync/endpoints: Failed to create sync endpoint (not returned to client): invalid sync endpoint: name is required
+2026/11/17 19:15:32 handlers: sync POST /sync/endpoints: Failed to create sync endpoint (not returned to client): invalid sync endpoint: name is required
+2026/11/17 19:15:32 handlers: sync POST /sync/endpoints: Failed to create sync endpoint (not returned to client): invalid sync endpoint: type is required
+2026/11/17 19:15:32 handlers: sync POST /sync/endpoints: Failed to create sync endpoint (not returned to client): invalid sync endpoint: URL is required
+2026/11/17 19:15:32 handlers: sync POST /sync/endpoints: Invalid request body (not returned to client): invalid character 'o' in literal null (expecting 'u')
+2026/11/17 19:15:32 handlers: sync POST /sync/endpoints: Failed to create sync endpoint (not returned to client): invalid sync endpoint: invalid sync direction: sideways
+2026/11/17 19:15:32 handlers: sync POST /sync/endpoints: Failed to create sync endpoint (not returned to client): invalid sync endpoint: invalid sync type: unsupported_type
+2026/11/17 19:15:32 handlers: sync DELETE /sync/endpoints/:id: Failed to delete sync endpoint (not returned to client): endpoint not found
+2026/11/17 19:15:32 handlers: sync GET /sync/endpoints/:id: Failed to get sync endpoint (not returned to client): endpoint not found
+2026/11/17 19:15:32 handlers: sync GET /sync/endpoints/:id: Failed to get sync endpoint (not returned to client): endpoint not found
+2026/11/17 19:15:32 handlers: sync GET /sync/sessions/:id: Failed to get sync session (not returned to client): session not found
+2026/11/17 19:15:32 handlers: sync POST /sync/endpoints: Failed to create sync endpoint (not returned to client): invalid sync endpoint: invalid local path: local path "/etc" rejected: path is outside the allowed roots
+2026/11/17 19:15:32 handlers: sync POST /sync/endpoints: Failed to create sync endpoint (not returned to client): invalid sync endpoint: invalid local path: destination_directory "/home/milosvasic/.cache/claude-tmp/TestSyncHandlerTestSuiteTestPathConfine_LocalSyncCannotTouchOut3243835709/002" rejected: path is outside the allowed roots
+2026/11/17 19:15:33 handlers: sync POST /sync/endpoints: Failed to create sync endpoint (not returned to client): connection test failed: WebDAV connection test failed: PROPFIND /: 405
+2026/11/17 19:15:33 handlers: sync POST /sync/endpoints: Failed to create sync endpoint (not returned to client): invalid sync endpoint: invalid local path: local path "/home/milosvasic/.cache/claude-tmp/TestSyncHandlerTestSuiteTestPathConfine_UploadFromMediaRootAcce2529347100/001/movies" rejected: path is outside the allowed roots
+2026/11/17 19:15:33 handlers: sync PUT /sync/endpoints/:id: Failed to update sync endpoint (not returned to client): unauthorized to update this endpoint
+2026/11/17 19:15:34 handlers: sync PUT /sync/endpoints/:id: Failed to update sync endpoint (not returned to client): endpoint not found
+2026/11/17 19:15:34 handlers: sync PUT /sync/endpoints/:id: Failed to update sync endpoint (not returned to client): endpoint not found
+2026/11/17 19:15:34 handlers: sync PUT /sync/endpoints/:id: Failed to update sync endpoint (not returned to client): endpoint not found
+2026/11/17 19:15:34 handlers: sync PUT /sync/endpoints/:id: Failed to update sync endpoint (not returned to client): endpoint not found
+2026/11/17 19:15:34 handlers: sync PUT /sync/endpoints/:id: Failed to update sync endpoint (not returned to client): endpoint not found
+2026/11/17 19:15:34 handlers: sync PUT /sync/endpoints/:id: Failed to update sync endpoint (not returned to client): endpoint not found
+2026/11/17 19:15:34 handlers: sync PUT /sync/endpoints/:id: Failed to update sync endpoint (not returned to client): endpoint not found
+2026/11/17 19:15:34 handlers: sync PUT /sync/endpoints/:id: Failed to update sync endpoint (not returned to client): endpoint not found
+2026/11/17 19:15:34 handlers: sync POST /sync/schedules: Failed to schedule sync (not returned to client): endpoint not found
+2026/11/17 19:15:34 handlers: sync POST /sync/schedules: Invalid request body (not returned to client): invalid character 'o' in literal null (expecting 'u')
+2026/11/17 19:15:34 handlers: sync POST /sync/schedules: Invalid request body (not returned to client): Key: 'EndpointID' Error:Field validation for 'EndpointID' failed on the 'required' tag
+2026/11/17 19:15:34 handlers: sync POST /sync/schedules: Invalid request body (not returned to client): Key: 'Frequency' Error:Field validation for 'Frequency' failed on the 'required' tag
+2026/11/17 19:15:34 handlers: sync POST /sync/endpoints/:id/sync: Failed to start sync (not returned to client): endpoint is not active
+2026/11/17 19:15:34 handlers: sync POST /sync/endpoints/:id/sync: Failed to start sync (not returned to client): endpoint not found
+2026/11/17 19:15:34 handlers: sync GET /sync/endpoints/:id: Failed to get sync endpoint (not returned to client): unauthorized to view this endpoint
+2026/11/17 19:15:34 handlers: sync GET /sync/endpoints/:id: Failed to get sync endpoint (not returned to client): endpoint not found
+2026/11/17 19:15:34 handlers: sync PUT /sync/endpoints/:id: Failed to update sync endpoint (not returned to client): unauthorized to update this endpoint
+2026/11/17 19:15:34 handlers: sync PUT /sync/endpoints/:id: Failed to update sync endpoint (not returned to client): endpoint not found
+2026/11/17 19:15:34 handlers: sync DELETE /sync/endpoints/:id: Failed to delete sync endpoint (not returned to client): unauthorized to delete this endpoint
+2026/11/17 19:15:34 handlers: sync DELETE /sync/endpoints/:id: Failed to delete sync endpoint (not returned to client): endpoint not found
+2026/11/17 19:15:34 handlers: sync POST /sync/endpoints/:id/sync: Failed to start sync (not returned to client): unauthorized to sync this endpoint
+2026/11/17 19:15:34 handlers: sync POST /sync/endpoints/:id/sync: Failed to start sync (not returned to client): endpoint not found
+2026/11/17 19:15:34 handlers: sync GET /sync/sessions/:id: Failed to get sync session (not returned to client): unauthorized to view this session
+2026/11/17 19:15:34 handlers: sync GET /sync/sessions/:id: Failed to get sync session (not returned to client): session not found
+2026/11/17 19:15:34 handlers: sync POST /sync/schedules: Failed to schedule sync (not returned to client): unauthorized to schedule sync for this endpoint
+2026/11/17 19:15:34 handlers: sync POST /sync/schedules: Failed to schedule sync (not returned to client): endpoint not found
+2026/11/17 19:15:34 handlers: sync PUT /sync/endpoints/:id: Invalid request body (not returned to client): invalid character 'o' in literal null (expecting 'u')
+2026/11/17 19:15:34 handlers: sync PUT /sync/endpoints/:id: Failed to update sync endpoint (not returned to client): endpoint not found
+2026/11/17 19:15:34 handlers: sync GET /sync/endpoints/:id: Failed to get sync endpoint (not returned to client): endpoint not found
+--- FAIL: TestSyncHandlerTestSuite (2.87s)
+    --- FAIL: TestSyncHandlerTestSuite/TestADMD1RRRRRRRRRR_SyncMerged403ContentPinnedToRealBodies (0.18s)
+        admd1rrrrrrrrrr_fu_test.go:96: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/n7sonar5/catalog-api/handlers/admd1rrrrrrrrrr_fu_test.go:96
+            	Error:      	Not equal: 
+            	            	expected: 403
+            	            	actual  : 404
+            	Test:       	TestSyncHandlerTestSuite/TestADMD1RRRRRRRRRR_SyncMerged403ContentPinnedToRealBodies
+            	Messages:   	/api/v1/sync/endpoints/{id}: map[details:not found error:Failed to get sync endpoint success:false]
+    --- FAIL: TestSyncHandlerTestSuite/TestSECQ1CFU_M1_ForeignEndpointCostsNoPasswordCheck (0.01s)
+        secq1c_fu_test.go:53: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/n7sonar5/catalog-api/handlers/secq1c_fu_test.go:53
+            	Error:      	Not equal: 
+            	            	expected: 403
+            	            	actual  : 404
+            	Test:       	TestSyncHandlerTestSuite/TestSECQ1CFU_M1_ForeignEndpointCostsNoPasswordCheck
+            	Messages:   	{"details":"not found","error":"Failed to update sync endpoint","success":false}
+FAIL
+FAIL	catalogizer/handlers	3.238s
+FAIL

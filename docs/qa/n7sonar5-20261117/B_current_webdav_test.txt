@@ -1,0 +1,13 @@
+
+	tmpDir := t.TempDir()
+
+	// Test sync directory download - will have failures without real server
+	result, err := client.SyncDirectory(tmpDir, "/remote/dir", "download")
+	// Listing the remote directory fails without a server; the error must be
+	// surfaced (wrapped) and a non-nil result returned.
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to list remote files")
+	assert.NotNil(t, result)
+}
+
+func TestWebDAVClient_SyncDirectory_Bidirectional(t *testing.T) {

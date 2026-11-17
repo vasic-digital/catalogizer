@@ -1,0 +1,14 @@
+2026/11/17 19:14:57 handlers: sync GET /sync/endpoints/:id: Failed to get sync endpoint (not returned to client): unauthorized to view this endpoint
+2026/11/17 19:14:57 handlers: sync GET /sync/endpoints/:id: Failed to get sync endpoint (not returned to client): endpoint not found
+--- FAIL: TestSyncHandlerTestSuite (0.02s)
+    --- FAIL: TestSyncHandlerTestSuite/TestSync404_ForeignIDIsIndistinguishableFromMissing (0.02s)
+        sync_foreign_id404_test.go:67: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/n7sonar5/catalog-api/handlers/sync_foreign_id404_test.go:67
+            	Error:      	Not equal: 
+            	            	expected: 404
+            	            	actual  : 403
+            	Test:       	TestSyncHandlerTestSuite/TestSync404_ForeignIDIsIndistinguishableFromMissing
+            	Messages:   	GetEndpoint: foreign id must answer like a missing one ({"details":"not permitted","error":"Failed to get sync endpoint","success":false})
+FAIL
+FAIL	catalogizer/handlers	0.200s
+FAIL
