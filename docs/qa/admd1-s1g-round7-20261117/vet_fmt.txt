@@ -1,0 +1,2 @@
+vet exit=0
+gofmt done

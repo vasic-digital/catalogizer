@@ -1,0 +1,53 @@
+# round 7 mutants (scratch edits, each restored)
+## MS1 real main.go: RequireAdmin removed | main.go | tests=ADMD1F1S1R5_RealRoute | expected FAIL | got FAIL | OK
+--- FAIL: TestADMD1F1S1R5_RealRouteTableMatchesScannerAndTable (30.31s)
+        	Error:      	Should be empty, but was [authorization table lists a RequireAdmin route that is not gated in the real chain: post /api/v1/admin/covers/generate-thumbnails]
+FAIL
+FAIL	catalogizer	30.657s
+FAIL
+## MS2 real main.go: MintWSTicket method value before the gate | main.go | tests=ADMD1F1S1R5_RealRoute | expected FAIL | got FAIL | OK
+--- FAIL: TestADMD1F1S1R5_RealRouteTableMatchesScannerAndTable (29.19s)
+        	Error:      	Should be empty, but was [main.go: main: api.POST("/admin/covers/generate-thumbnails") has a route-level handler before the gate: jwtMiddleware.MintWSTicket]
+FAIL
+FAIL	catalogizer	29.562s
+FAIL
+## MS3 real main.go: gin.WrapF(func literal) before the gate (scanner-visible) | main.go | tests=ADMD1F1S1R5_RealRoute | expected FAIL | got FAIL | OK
+--- FAIL: TestADMD1F1S1R5_RealRouteTableMatchesScannerAndTable (32.71s)
+        	Error:      	Should be empty, but was [main.go: main: api.POST("/admin/covers/generate-thumbnails") has a handler-wrapping call before the gate: gin.WrapF(func(w http.ResponseWriter, r *http.Request) {
+FAIL
+FAIL	catalogizer	33.102s
+FAIL
+## MS4 groundtruth: F1 receiver check reverted (prefix != empty) | api_contract_gate_groundtruth_test.go | tests=S1G6F1 | expected FAIL | got FAIL | OK
+--- FAIL: TestS1G6F1_ReceiverlessAllowEntryDoesNotMatchAMethodOfTheSameName (0.00s)
+        	Error:      	"" does not contain "route-level handler runs before the gate"
+FAIL
+FAIL	catalogizer	0.392s
+FAIL
+## MS5 groundtruth: handlersBeforeGateViolations returns no violations | api_contract_gate_groundtruth_test.go | tests=S1G6F1|ADMD1F1S1R7_RealChain | expected FAIL | got FAIL | OK
+--- FAIL: TestADMD1F1S1R7_RealChainWrapAndTerminalHandlersAreReported (0.00s)
+        	Error:      	"" does not contain "route-level handler runs before the gate"
+--- FAIL: TestS1G6F1_ReceiverlessAllowEntryDoesNotMatchAMethodOfTheSameName (0.00s)
+        	Error:      	"" does not contain "route-level handler runs before the gate"
+FAIL
+FAIL	catalogizer	0.260s
+## MS6 groundtruth: stale symbol added to allow-list | api_contract_gate_groundtruth_test.go | tests=S1G6F4 | expected FAIL | got FAIL | OK
+--- FAIL: TestS1G6F4_AllowListHasNoStaleSymbol (26.76s)
+        	Error:      	Should be true
+        	Messages:   	allow-list symbol GhostSymbol in internal/middleware/middleware.go is not used by any real gated chain (remove it)
+FAIL
+FAIL	catalogizer	27.227s
+FAIL
+## MS7 groundtruth: allow-list gains the method name (RateLimitByUser -> any Logger method via bare Logger kept; add bare MintWSTicket) | api_contract_gate_groundtruth_test.go | tests=ADMD1F1S1R7_RealChain | expected FAIL | got PASS | UNEXPECTED
+ok  	catalogizer	0.279s
+## MS8 golden-FALSE: pinned RequestID() before the gate | main.go | tests=ADMD1F1S1R5_RealRoute | expected PASS | got PASS | OK
+ok  	catalogizer	29.244s
+# end; restored: main-identical gt-identical
+## MS9 groundtruth: handlersBeforeGateViolations disabled | tests=S1G6F3 (real-binary overlay mutants) | expected FAIL | got FAIL
+--- FAIL: TestS1G6F3_RealChainCatchesScannerBlindHandlersBeforeTheGate (23.31s)
+        	Error:      	"" does not contain "route-level handler runs before the gate"
+        	Messages:   	aliased WrapF before RequireAdmin
+FAIL
+FAIL	catalogizer	23.587s
+FAIL
+# restored: gt-identical
+# MS7 note: PASS is an equivalent mutant: after F1 a name whose text before the symbol ends with ')' is rejected even if a bare symbol is allow-listed, so adding bare MintWSTicket changes nothing.
