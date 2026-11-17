@@ -1,0 +1,6 @@
+[tree base 8eb1cd9fa368e0731f2d638ce2ecfe104170cbd2, see commands.txt for diff sha256]
+GREEN android: tree 8eb1cd9fa368e0731f2d638ce2ecfe104170cbd2 + working-tree fix (uncommitted at run time), filters *CatalogizerApiTest *PlaybackRepository*
+BUILD SUCCESSFUL in 1m 23s
+<testsuite name="com.catalogizer.android.data.playback.PlaybackRepositoryTest" tests="18" skipped="0" failures="0" errors="0"
+<testsuite name="com.catalogizer.android.CatalogizerApplicationTest" tests="0" skipped="0" failures="0" errors="0"
+<testsuite name="com.catalogizer.android.data.remote.CatalogizerApiTest" tests="11" skipped="0" failures="0" errors="0"

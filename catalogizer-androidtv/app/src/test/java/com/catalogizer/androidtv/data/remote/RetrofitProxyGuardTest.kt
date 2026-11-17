@@ -12,7 +12,8 @@ import retrofit2.Retrofit
 
 /**
  * ANDROID-RETROFIT-MAP-1 guard for the TV client: every method must be accepted by a real Retrofit proxy
- * (a `Map<String, Any>` @Body without @JvmSuppressWildcards throws at call time), and 
+ * (a `Map<String, Any>` @Body without @JvmSuppressWildcards throws at call time), and no new un-parseable method may appear beyond the tracked ratchet list below
+ * (RFM-R1-4: this sentence was truncated before).
  */
 class RetrofitProxyGuardTest {
     private lateinit var server: MockWebServer
@@ -57,6 +58,18 @@ class RetrofitProxyGuardTest {
     fun `no TV CatalogizerApi method is un-parseable except the tracked ones`() {
         val bad = unparseableMethods(retrofit, CatalogizerApi::class.java)
         assertEquals("un-parseable methods: $bad", knownBroken.toSortedSet(), bad.keys.toSortedSet())
+    }
+
+    /** AFAV-7 control: the TV base is `<server>/` and its paths carry `api/v1/`, so they must resolve exactly once. */
+    @Test
+    fun `TV entity progress and history resolve to api-v1 exactly once`() = kotlinx.coroutines.runBlocking {
+        val api = retrofit.create(CatalogizerApi::class.java)
+        server.enqueue(okhttp3.mockwebserver.MockResponse().setResponseCode(200).setBody("{}"))
+        server.enqueue(okhttp3.mockwebserver.MockResponse().setResponseCode(200).setBody("{}"))
+        api.getEntityProgress(5L)
+        api.getEntityHistory(5L)
+        assertEquals("/api/v1/entities/5/progress", server.takeRequest().path)
+        assertEquals("/api/v1/entities/5/history?limit=50", server.takeRequest().path)
     }
 
     /** Names of methods of [apiClass] that this Retrofit instance cannot turn into a service method. */
