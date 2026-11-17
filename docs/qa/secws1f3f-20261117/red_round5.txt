@@ -1,0 +1,17 @@
+=== R5-1: ROUND5_SUPERSEDED_LIVE_WS_CHECK.sh.txt with F3_BOUND=20.5 (mock good) ===
+rc=0
+15:50:04 PASS ticket reuse refused (single-use) (observed=401 expect=401)
+ROUND5_SUPERSEDED_LIVE_WS_CHECK.sh.txt: line 177: 20.5: arithmetic syntax error: invalid arithmetic operator (error token is ".5")
+live_proven=NO (answering-process identity: MISSING, UNCONFIRMED)
+summary: PASS=4 FAIL=0 INCONCLUSIVE=0
+F3 lines: 0
+=== R5-2: ROUND5_SUPERSEDED_LIVE_WS_CHECK.sh.txt on a pty, SUSPEND_CMD='test -t 0 && exit 7; touch TRIG' (mock good, F3_BOUND=6) ===
+elapsed=15.5 rc=3
+INCONCLUSIVE | F3 socket closed because of suspension (close code none, reason='none') | suspension not proven effective (suspension step did not complete (exit/read stat
+=== R5-1: LIVE_WS_CHECK.sh.txt with F3_BOUND=20.5 (mock good) ===
+rc=2
+usage: F3_BOUND must match ^[0-9]+$ (got '20.5')
+F3 lines: 
+=== R5-2: LIVE_WS_CHECK.sh.txt on a pty, SUSPEND_CMD='test -t 0 && exit 7; touch TRIG' (mock good, F3_BOUND=6) ===
+elapsed=11.5 rc=3
+PASS | F3 socket closed because of suspension (close code 1008, reason='authorization ended') | close 1008 1.38s after suspension (bound 6s)

@@ -1,0 +1,12 @@
+parse-clean
+      1 SC1090 (warning)
+      1 SC1091 (info)
+      6 SC2015 (info)
+      7 SC2016 (info)
+      3 SC2034 (warning)
+      4 SC2086 (info)
+      1 SC2317 (info)
+      1 SC2329 (info)
+run1: 133 UNIT-PASS, gate-logic failures: 0, real	11m45.319s
+run2: 133 UNIT-PASS, gate-logic failures: 0, real	11m19.357s
+run3: 133 UNIT-PASS, gate-logic failures: 0, real	11m13.556s

@@ -1,0 +1,85 @@
+# SEC-WS-1 F3F / rc.1 gate G4 (tracked item SECWS1F3F, round 6 = fresh budget round 1, structural; fixes R5-1..R5-8 of the round-5 review; earlier: secws1f3, round 5 fixes N1..N7 on top of R3-1..R3-6 and R2-1..R2-5) - PROVISIONAL, UNREPRODUCED-as-open-defect
+
+Base HEAD af02b7c35cdfc0a43d08998f01e1d12da8a6fd0b (tree 2a547e796f33078c41e73cb5812a2545ea7abf9d), original branch secws1f3; rounds 2/3/4/5 are on branches secws1f3b / secws1f3c / secws1f3d / secws1f3e (merged with local main). Docs/scripts only: no source change.
+
+## Round 6 (SECWS1F3F; fixes of the round-5 review R5-1..R5-8) - DO NOT USE for the live G4 run until independently reviewed
+Branch secws1f3f (from secws1f3e commit eb48960a9). Files in this directory are the round-6 copies; ROUND5_SUPERSEDED_LIVE_WS_CHECK.sh.txt is the round-5 script kept only to reproduce RED.
+- R5-1: F3_BOUND, F3_EXP_MARGIN, SUSPEND_TIMEOUT must be plain integers (1-9 digits; leading zeros read as decimal), else exit 2 at startup. RED: round-5 script with F3_BOUND=20.5 printed a bash arithmetic error, ran no F3 leg, and exited 0 with 4 PASS and no F3 line (red_round5.txt). At the end the script asserts that BOTH expected F3 result lines (socket closed because of suspension; audience filter) exist, else it adds INCONCLUSIVE `expected F3 result line absent`.
+- R5-2: SUSPEND_CMD runs with stdin from /dev/null under `timeout --foreground --kill-after=5` (in the background, awaited with `wait` so a signal reaches the trap). It is NON-INTERACTIVE: it cannot prompt, a tty read gets EOF. RED: pty scenario (`test -t 0 && exit 7; touch TRIG` run on a pty) read INCONCLUSIVE with the round-5 script, PASS now.
+- R5-3: do not put secrets in SUSPEND_CMD arguments (it is readable via /proc/<pid>/environ and the command text is `eval`ed); have the command read a 0600 file or use an env var already present.
+- R5-4: new scenario n1-only (mock expiry-race, SUSPEND_CMD='touch TRIG', F3_BOUND=20, F3_EXP_MARGIN=5 -> INCONCLUSIVE) and named mutant M-N1-only (rem=9999) which reads PASS: N1 IS now independently discriminated. CORRECTION of the round-5 README claim "N1 alone is not independently killed by any scenario": that was true only for margin/bound combinations where the close at expiry is also > F3_BOUND after the command start; with F3_BOUND=20 the N2 check does not fire and only N1 prevents the PASS.
+- R5-5: san() now removes Unicode categories Cc (C0, DEL, C1 including U+0085), Cf, Zl (U+2028), Zp (U+2029), replaces `|`, decodes invalid UTF-8 as U+FFFD, and truncates by CHARACTER to 200 (never splits a multibyte character). Unit tests plus mutant M-R55-oldsan (a C1-blind filter lets U+0085 through).
+- R5-6: harness waits for the mock's /health (up to 10 s, up to 3 port retries), keeps mock stderr (mock_<scenario>.err), and asserts the mock is alive at the end of each scenario.
+- R5-7: usage / unwritable-OUT tests run `$SCRIPT` (not a hard-coded path), so SCRIPT=<round-5 script> exercises them.
+- R5-8: MANUAL MODE (Enter prompt, no SUSPEND_CMD) limits: needs a tty / open stdin; the marker is when the operator presses Enter, so human latency counts against F3_BOUND (a slow operator can never produce PASS: close later than F3_BOUND after the prompt is INCONCLUSIVE); the script cannot observe what the operator did, only that new victim logins / ticket mints are afterwards refused; manual mode is not exercised by the mock suite. A trap on EXIT/INT/TERM kills the probes and SUSPEND_CMD and removes the ready files (scenario: SIGTERM during SUSPEND_CMD exits 143 and leaves no ws_probe process).
+- Mutant files: M-N1-only, M-R51-novalidate, M-R51-noendcheck, M-R55-oldsan, M-N3 (new sanitizer), plus the earlier M-N4 / M-N1N2 / M-N2.
+- Results: three consecutive full-suite runs (nice -n 10, one at a time, green_run1..3.txt = full logs) each 133 UNIT-PASS, 0 UNIT-FAIL, ~11.5-13 min on a loaded host (static_checks.txt). An EARLIER set of three runs had flaky/failing items and was FIXED, not hidden: M-N1N2 timing (mock token 16 s then 22 s, bound 6 vs 9; run 3 of that set gave FAIL) and mutant constructions that did not mutate what they claimed (M-R51 mutants lacked PROBE, M-N3 kept the `|` replacement, `F3_BOUND=` fell back to the default); flaky_earlier_run_M-N1N2_timing.txt is the log of that failing run. RED vs round 5: red_round5.txt (R5-1 round-5 rc 0 / 4 PASS / no F3 line vs rc 2; R5-2 pty scenario INCONCLUSIVE vs PASS).
+- Honest limits: gate-logic against a mock only, NOT live evidence; the script has not run against a real catalog-api; clock-skew, token field name, refused statuses remain UNCONFIRMED as before; the pty test needs a working pty on the host; timing scenarios depend on host load (suite run 3 times with nice -n 10 on a loaded host, see green_run*.txt).
+
+## What F3 requires
+docs/FOLLOW_UPS_NEXT_PHASE.md L2104 (SEC-WS-1-F3): a connected /ws socket must be re-checked after upgrade (revoked session / suspended user stops
+receiving) and BroadcastToClients must filter by audience. Gate G4 (docs/release/V2_5_0_GATE_CHECKLIST.md) records the F3 part as already on main
+(merge a9a43b9ce, hermetic-real tests) and the OPEN part as the LIVE /ws run.
+
+## Finding: F3 is already fixed on main - no new source change made
+Commits 94936f3d2, 234f8da71, 59201f0e1 (websocket_handler.go authorize/authorizeMessage/recheckLoop, audience-filtered broadcast). No RED was
+reproduced: there is no open defect to reproduce (11.4.292 gives no basis for a fix without an observed symptom).
+
+## Evidence (host-fixture class: real DB, real middleware, real HTTP server, gorilla clients; NOT live)
+- green.txt + green_run1.txt / green_run2.txt / green_run3.txt (round 4, R3-3): `cd catalog-api && go test -p 1 -count=1 -v -run 'TestF3_|TestWSRoute_|TestSEC_WS_1F3FU8' .`
+  run three times (package main), each -v log stored: every run rc=0, 20 top-level `--- PASS` lines (28 `--- PASS` lines counting subtests, i.e. 8 subtests), 0 `--- FAIL` (round 5, N7: the earlier text said "20 PASS" for the -v count, which only counted top-level tests). TestSEC_WS_1F3FU8 matches no test in package main:
+  it lives in package handlers and is covered by green_handlers.txt (`-run 'TestSEC_WS_1F3FU8|TestWS|TestWebSocket' ./handlers`, earlier round at
+  HEAD af02b7c35, NOT re-run this round).
+- mutants_rerun.txt: four mutants re-run this round with the exact old/new strings recorded, both packages each, restore verified by cmp
+  (driver: mutants_driver.py.txt). The earlier files (mutants.txt, mutants_main.txt, mutants_handlers.txt) are the first-round record:
+  mutants_main.txt / mutants_handlers.txt came from an interrupted batch (M4 was re-run singly), and mutants.txt holds a wrong-package / build-broken
+  first attempt. They did not record the old/new strings; mutants_rerun.txt supersedes them.
+
+## Live part (still OPEN): LIVE_WS_CHECK.sh.txt + ws_probe.py.txt
+SCOPE, stated plainly: the script is a SERVER-SIDE check using raw clients (curl + a stdlib python probe; websocat is no longer needed). It does NOT
+satisfy gate G4's requirement of a live run from catalog-web AND Android through the production nginx edge, and it does NOT cover SEC-WS-1-F1.
+The audience-filter leg is NOT covered (manual / uncovered; the script reports it INCONCLUSIVE).
+It was NOT run against a real catalog-api by the author. The token field name of /auth/login and the suspension action are UNCONFIRMED; adjust.
+- Verdicts: every check is PASS / FAIL / INCONCLUSIVE from comparing observed vs expected; INCONCLUSIVE is never PASS. Exit 0 / 1 / 3 (2 = prerequisite).
+- F3 check (round 3, R2-1): a 1008 alone proves nothing (authorize() also closes 1008 on token expiry). PASS now needs ALL of: victim socket and a
+  CONTROL socket (admin, never suspended) alive by ping/pong before the suspension; victim JWT exp (decoded, never printed) beyond the window;
+  SUSPEND_CMD exit 0 (a failed/absent suspension is INCONCLUSIVE, never FAIL; closed stdin on the manual prompt likewise); the suspension PROVEN
+  effective (a new victim login / ticket mint refused with a status in VICTIM_REFUSED_STATUS, default "401 403", real value UNCONFIRMED; any 2xx
+  = suspension had no effect = INCONCLUSIVE); close code 1008 after the suspension marker and within F3_BOUND; and the control socket still open
+  answering a final ping at the end (a server that closes everything is INCONCLUSIVE). Anything unprovable is INCONCLUSIVE.
+- Round 4 (R3-1): after the victim socket closes, the control socket is kept open for a further F3_BOUND seconds (one re-check interval plus margin)
+  before its final ping, so "control survived" spans a full re-check cycle (mock scenario control-later: victim 1008 at +1 s, control 1008 at +5 s = INCONCLUSIVE).
+- Round 4 (R3-2): an empty / unparseable victim probe result (probe SIGKILLed, OOM) is INCONCLUSIVE (end=noprobe), never "socket still open" FAIL.
+- Round 4 (R3-4): a missing / empty BASE, ADMIN_USER, ADMIN_PASS, VICTIM_USER or VICTIM_PASS exits 2 (usage) with a message; an uncreatable or unwritable OUT exits 2 with a message.
+- Round 4 (R3-5): the F3 record label shows the observed close code (`close code <n|none>`), not a fixed 1008.
+- Round 4 (R3-6): ONE refused leg (new victim login OR ticket mint with a status in VICTIM_REFUSED_STATUS, the other not 2xx) is enough to prove the suspension
+  effective. The JWT exp check uses the LOCAL clock: clock skew between this host and the server beyond the 75 s margin is NOT covered.
+- Timing: marker = epoch when SUSPEND_CMD returns (or on Enter); elapsed = probe close_epoch (time of receipt in the probe) - marker, same host clock.
+  A close in the ms between the command's effect and its return reads as "before suspension" = INCONCLUSIVE, never PASS.
+- F3_BOUND must track the deployment's re-check interval (RecheckInterval, default 15 s) plus margin; default 20 s assumes the default interval.
+- Probe: validates Sec-WebSocket-Accept (mismatch = no observation), tolerates masked server frames, ticket passed by env (not argv).
+- Process identity (11.4.289(D)): recorded when SERVER_PID / SERVER_EXE_SHA256 are supplied, else the run prints `live_proven=NO (UNCONFIRMED)`.
+
+## Round 5 (N1..N7, final round of the budget)
+- N1: JWT lifetime is re-computed AT the suspension marker (not before the probes) and must exceed F3_BOUND + F3_EXP_MARGIN (default 75 s, env-tunable for tests); SUSPEND_CMD and the manual Enter prompt are bounded by SUSPEND_TIMEOUT (default 120 s; overrun or closed stdin = INCONCLUSIVE).
+- N2: SUSPEND_CMD START and RETURN epochs are both recorded (suspend_epoch.txt: start / return / rc); PASS also needs close-minus-START <= F3_BOUND; close-return <= bound < close-start is INCONCLUSIVE (effect time inside the command unknown). f3_verdict takes the start-based elapsed as an optional 8th argument.
+- N3: every results line passes through san(): control characters (including newline) removed, `|` replaced, 200-char cap, so a server close reason cannot forge a verdict line.
+- N5: SUSPEND_CMD runs as `timeout N bash -c 'eval "$SUSPEND_CMD"'` with the text in the ENVIRONMENT (not argv); its output is discarded unless SUSPEND_KEEP_OUTPUT=1 (then suspend_cmd.out may hold secrets, do not publish); the command text is never written to evidence. WARNING: a secret inside SUSPEND_CMD is still readable by the same uid via /proc/<pid>/environ. strace check: a needle in SUSPEND_CMD = 0 argv hits with the round-5 script, 1 hit with the round-4 script (ROUND4_SUPERSEDED_LIVE_WS_CHECK.sh.txt, kept only to reproduce RED).
+- N6: the label prints `none` (not `null`) when no close code was observed.
+- N4: scenario probe-killed2 (mock never-close, victim hold probe killed at 2 s, control probe exec'd directly) and a NAMED MUTANT M-N4 (the round-3 `[ -z "$END" ] && END=timeout` instead of the noprobe branch) which the suite shows to give FAIL where the script gives INCONCLUSIVE, i.e. the suite now discriminates R3-2.
+- New scenarios: expiry-race (margin 5 / token 16 s), expiry-race-long (RUN_SLOW=1, the reviewer's 90 s repro at default margin 75), late-return (`touch TRIG; sleep 5`), suspend-timeout, inject (forged PASS in the close reason; asserts exactly one F3 line and no `^PASS | F3` line). Named mutants: M-N4, M-N1N2 (N1 and N2 are redundant for an expiry close, since elapsed-from-start is also > bound, so the mutant disables BOTH; N1 alone is not independently killed by any scenario, honest), M-N2, M-N3.
+- RED against the round-4 script (ROUND4_SUPERSEDED_LIVE_WS_CHECK.sh.txt, run by the same suite with SCRIPT=...): late-return reads F3 PASS (N2), inject yields 2 F3 lines and a `^PASS | F3` line (N3), expiry-race-long reads F3 PASS (N1, see red_vs_round4.txt); the N4 mutant and N1/N2 mutants are the discrimination evidence for those. expiry-race (short margin) and suspend-timeout / probe-killed2 are NOT red against round-4: the old script ignores F3_EXP_MARGIN (its fixed 81 s margin makes expiry-race INCONCLUSIVE for another reason) and already had the noprobe branch.
+- UNCONFIRMED: the first full-suite run of this round had one `short-exp` scenario fail at login (mock not yet listening, cause not investigated; 3 later full runs passed it). Not run against any real server.
+
+## Gate-logic unit test of the script (NOT live evidence, 11.4.289(C))
+GATE_LOGIC_TEST_run.sh.txt + GATE_LOGIC_TEST_mock_server.py.txt: a local MOCK server (python stdlib) exercises the script's verdict logic only. Each
+scenario asserts the overall exit code AND the F3 verdict: good (F3 PASS, exit 3 only because the audience leg is uncovered); wrong close code (FAIL);
+never closes (FAIL); closes 1008 8 s after suspension with bound 3 (FAIL); refused ws, drop right after 101, close 1008 before the suspension marker,
+never answers ping, SUSPEND_CMD=false, close 1008 3 s after connect while the suspension has no effect, control socket closed too, control closes
+later than the victim (control-later), short-lived token, victim probe SIGKILLed with no JSON (probe-killed2, mock never-close) (all INCONCLUSIVE), plus exit-2 usage /
+unwritable-OUT cases. Mutation check (round 4): the round-3 script (HEAD 90e041a69) run against mock mode control-later gives F3 PASS (the defect R3-1); the round-4 script gives INCONCLUSIVE. Full suite re-run after the last edit: see GATE_LOGIC_TEST_output.txt (round 5 final run: 64 UNIT-PASS, 0 failures, with RUN_SLOW=1 (62 without the slow expiry-race-long scenario pair)) (mock output = gate-logic only, not live evidence). Plus helper-level f3_verdict cases. Output: GATE_LOGIC_TEST_output.txt. It proves the script decides correctly given inputs and says
+nothing about the real server.
+Credential argv check (round 5): strace_argv_check.txt + strace_check.sh.txt (`strace -f -e trace=execve` over a run against the mock with needle passwords and a needle in SUSPEND_CMD; 0 argv hits, 0 output
+hits; positive controls: base URL in argv, a deliberate `bash -c 'true <needle>'`; negative control: fabricated needle 0 hits; contrast: the round-4 script leaks the SUSPEND_CMD needle, 1 hit).
+Static checks: `bash -n` clean on both; `shellcheck -s bash LIVE_WS_CHECK.sh.txt` reports only SC2317 (info, unreachable-code note on the sourced-only `return`
+guard) and SC2016 (info, the single-quoted `eval "$SUSPEND_CMD"` is intentional so the text stays out of argv); nothing suppressed; python parse clean. (Earlier SC2034/SC2015/SC2086/SC1091 findings no longer apply: the script was rewritten; none was suppressed.)
