@@ -247,13 +247,18 @@ class SyncManager(
             Json.Default.decodeFromString<WatchProgressData>(it)
         } ?: return
 
-        api.updateUserWatchProgress(
+        // A non-2xx answer must not be treated as synced (RFM-R1-7): throwing lets the caller keep the
+        // operation queued and count a retry; after MAX_RETRY_ATTEMPTS it is dropped (existing policy).
+        val response = api.updateUserWatchProgress(
             progressData.mediaId,
             WatchProgressRequest(
                 progress = progressData.progress,
                 timestamp = progressData.timestamp.toString()
             )
         )
+        if (!response.isSuccessful) {
+            throw java.io.IOException("Watch progress sync failed for media ${progressData.mediaId}: HTTP ${response.code()}")
+        }
     }
 
     private suspend fun syncFavoriteStatus(operation: SyncOperation) {
@@ -274,7 +279,11 @@ class SyncManager(
             Json.Default.decodeFromString<RatingData>(it)
         } ?: return
 
-        api.rateMedia(ratingData.mediaId, RatingRequest(ratingData.rating))
+        // Same contract as syncFavoriteStatus (RFM-R1-7): non-2xx throws so the operation stays queued.
+        val response = api.rateMedia(ratingData.mediaId, RatingRequest(ratingData.rating))
+        if (!response.isSuccessful) {
+            throw java.io.IOException("Rating sync failed for media ${ratingData.mediaId}: HTTP ${response.code()}")
+        }
     }
 
     private suspend fun syncMetadataUpdate(operation: SyncOperation) {

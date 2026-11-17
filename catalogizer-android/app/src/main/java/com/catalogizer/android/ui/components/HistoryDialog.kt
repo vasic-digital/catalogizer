@@ -27,7 +27,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.catalogizer.android.data.playback.HistoryUiState
 import com.catalogizer.android.data.playback.PlaybackFormatter
+import com.catalogizer.android.data.playback.loadHistoryUiState
 import com.catalogizer.android.data.playback.PlaybackRepository
 import com.catalogizer.android.data.playback.UiPlaybackProgress
 import com.catalogizer.android.data.playback.UiPlaybackSession
@@ -48,14 +50,10 @@ fun HistoryDialog(
     repository: PlaybackRepository,
     onDismiss: () -> Unit,
 ) {
-    var progress by remember { mutableStateOf<UiPlaybackProgress?>(null) }
-    var sessions by remember { mutableStateOf<List<UiPlaybackSession>>(emptyList()) }
-    var loaded by remember { mutableStateOf(false) }
+    var state by remember { mutableStateOf<HistoryUiState>(HistoryUiState.Loading) }
 
     LaunchedEffect(mediaItemId) {
-        progress = repository.getProgress(mediaItemId)
-        sessions = repository.listHistory(mediaItemId, limit = 100)
-        loaded = true
+        state = loadHistoryUiState(repository, mediaItemId, limit = 100)
     }
 
     AlertDialog(
@@ -78,8 +76,22 @@ fun HistoryDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.heightIn(max = 480.dp),
             ) {
-                HistorySummary(progress)
-                HistorySessionList(sessions, loaded)
+                when (val st = state) {
+                    is HistoryUiState.Loading -> Text(
+                        "Loading…",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    is HistoryUiState.Error -> Text(
+                        "Could not load history (${st.message}). Close and try again.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                    is HistoryUiState.Loaded -> {
+                        HistorySummary(st.progress)
+                        HistorySessionList(st.sessions, true)
+                    }
+                }
             }
         },
     )

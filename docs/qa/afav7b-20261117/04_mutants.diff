@@ -1,0 +1,35 @@
+diff --git a/catalogizer-android/app/src/main/java/com/catalogizer/android/data/playback/PlaybackRepository.kt b/catalogizer-android/app/src/main/java/com/catalogizer/android/data/playback/PlaybackRepository.kt
+index d66e332c8..531f9e6cf 100644
+--- a/catalogizer-android/app/src/main/java/com/catalogizer/android/data/playback/PlaybackRepository.kt
++++ b/catalogizer-android/app/src/main/java/com/catalogizer/android/data/playback/PlaybackRepository.kt
+@@ -83,7 +83,7 @@ class PlaybackRepository(
+         return try {
+             val resp = api.getEntityHistory(mediaItemId, limit)
+             if (!resp.isSuccessful) {
+-                return PlaybackLoadResult.Failure(resp.code(), "HTTP ${resp.code()}")
++                return PlaybackLoadResult.Success(emptyList())
+             }
+             val body = resp.body() ?: return PlaybackLoadResult.Success(emptyList())
+             val sessionsEl = body["sessions"] ?: return PlaybackLoadResult.Success(emptyList())
+diff --git a/catalogizer-android/app/src/main/java/com/catalogizer/android/data/sync/SyncManager.kt b/catalogizer-android/app/src/main/java/com/catalogizer/android/data/sync/SyncManager.kt
+index 7ee302303..95b2967aa 100644
+--- a/catalogizer-android/app/src/main/java/com/catalogizer/android/data/sync/SyncManager.kt
++++ b/catalogizer-android/app/src/main/java/com/catalogizer/android/data/sync/SyncManager.kt
+@@ -256,7 +256,7 @@ class SyncManager(
+                 timestamp = progressData.timestamp.toString()
+             )
+         )
+-        if (!response.isSuccessful) {
++        if (false) {
+             throw java.io.IOException("Watch progress sync failed for media ${progressData.mediaId}: HTTP ${response.code()}")
+         }
+     }
+@@ -281,7 +281,7 @@ class SyncManager(
+ 
+         // Same contract as syncFavoriteStatus (RFM-R1-7): non-2xx throws so the operation stays queued.
+         val response = api.rateMedia(ratingData.mediaId, RatingRequest(ratingData.rating))
+-        if (!response.isSuccessful) {
++        if (false) {
+             throw java.io.IOException("Rating sync failed for media ${ratingData.mediaId}: HTTP ${response.code()}")
+         }
+     }

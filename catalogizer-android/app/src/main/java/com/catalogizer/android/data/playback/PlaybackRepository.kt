@@ -58,6 +58,53 @@ class PlaybackRepository(
         }
     }
 
+    /**
+     * Strict variants used by screens that must tell "nothing recorded" from "the request failed"
+     * (AFAV-7b). [getProgress]/[listHistory] stay lenient on purpose for the Home cards, which
+     * simply omit a progress bar when the lookup fails.
+     */
+    suspend fun loadProgress(mediaItemId: Long): PlaybackLoadResult<UiPlaybackProgress?> {
+        return try {
+            val resp = api.getEntityProgress(mediaItemId)
+            if (!resp.isSuccessful) {
+                return PlaybackLoadResult.Failure(resp.code(), "HTTP ${resp.code()}")
+            }
+            val body = resp.body() ?: return PlaybackLoadResult.Success(null)
+            val progEl = body["progress"] ?: return PlaybackLoadResult.Success(null)
+            if (progEl.toString() == "null") return PlaybackLoadResult.Success(null)
+            PlaybackLoadResult.Success(progEl.jsonObject.toProgress(mediaItemId))
+        } catch (t: Throwable) {
+            Log.w(TAG, "loadProgress exception: ${t.message}")
+            PlaybackLoadResult.Failure(null, t.message ?: t.javaClass.simpleName)
+        }
+    }
+
+    suspend fun loadHistory(mediaItemId: Long, limit: Int = 50): PlaybackLoadResult<List<UiPlaybackSession>> {
+        return try {
+            val resp = api.getEntityHistory(mediaItemId, limit)
+            if (!resp.isSuccessful) {
+                return PlaybackLoadResult.Failure(resp.code(), "HTTP ${resp.code()}")
+            }
+            val body = resp.body() ?: return PlaybackLoadResult.Success(emptyList())
+            val sessionsEl = body["sessions"] ?: return PlaybackLoadResult.Success(emptyList())
+            PlaybackLoadResult.Success(sessionsEl.jsonArray.map { it.jsonObject.toSession() })
+        } catch (t: Throwable) {
+            Log.w(TAG, "loadHistory exception: ${t.message}")
+            PlaybackLoadResult.Failure(null, t.message ?: t.javaClass.simpleName)
+        }
+    }
+
+    private fun JsonObject.toProgress(mediaItemId: Long): UiPlaybackProgress = UiPlaybackProgress(
+        mediaItemId = mediaItemId,
+        positionUnit = this["position_unit"]?.jsonPrimitive?.content ?: "seconds",
+        durationTotal = this["duration_total"]?.jsonPrimitive?.longOrNull,
+        lastPosition = this["last_position"]?.jsonPrimitive?.longOrNull ?: 0L,
+        lastSessionAmount = this["last_session_amount"]?.jsonPrimitive?.longOrNull ?: 0L,
+        totalReproductions = this["total_reproductions"]?.jsonPrimitive?.longOrNull ?: 0L,
+        aggregateAmount = this["aggregate_amount"]?.jsonPrimitive?.longOrNull ?: 0L,
+        lastSessionEndedAtMs = parseIso8601(this["last_session_ended_at"]?.jsonPrimitive?.content),
+    )
+
     private fun JsonObject.toSession(): UiPlaybackSession = UiPlaybackSession(
         id = this["id"]?.jsonPrimitive?.longOrNull ?: 0L,
         positionUnit = this["position_unit"]?.jsonPrimitive?.content ?: "seconds",
@@ -81,4 +128,10 @@ class PlaybackRepository(
     companion object {
         private const val TAG = "PlaybackRepository"
     }
+}
+
+/** Outcome of a strict playback load: data (possibly genuinely empty) or a failure that is not empty data. */
+sealed class PlaybackLoadResult<out T> {
+    data class Success<T>(val value: T) : PlaybackLoadResult<T>()
+    data class Failure(val httpCode: Int?, val message: String) : PlaybackLoadResult<Nothing>()
 }
