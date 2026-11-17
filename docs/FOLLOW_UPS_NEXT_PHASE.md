@@ -3737,3 +3737,15 @@ Evidence: docs/qa/clfu1-20261117/ (README, SHA256SUMS).
 - CLFU1-R-4: user_ratings has no user key and is not cleared on logout (UserRatingDao.kt:56, AuthRepository.kt:119); same gap as favorites/sync queue; no UI yet (AFAV-9).
 - CLFU1-R-5 (nit): dead-code candidates flagged only in docs (MediaDao.updateRating, updateUserWatchProgress, getUserRating, UserRatingDao.delete untested); no removal without operator decision (§11.4.122).
 - CLFU1-R-6 (nit): desktop sets a reason on persisted:true (apiService.ts:786, mutant D3 survives); test reason undefined on success.
+## FU3 (2026-11-17, PROVISIONAL; evidence docs/qa/fu3-20261117/)
+- WPROG3-R3-F1 ADDRESSED: reviewer tests N1, N2, N5, N10 adopted as `TestWatchProgress_RV3_*` (media_watch_progress_rv3_test.go) plus real-PG `TestWatchProgress_PG_CompareAndSetOnRealPostgres`; R1/R2/R3b survive before and are killed after. F3 ADDRESSED: `@Failure 409` godoc (openapi already had 409). F4 ADDRESSED: README records the -run filter and the list. F2 (nit, N4c) left open.
+- SECQ1-R-m1/m2/m3/n1/n2 ADDRESSED: redirect scenario and public-approved-root scenario added (`storage_root_secq1_fu_test.go`), create-time body message and 202 pinned, test-2 header text and newWebDAVHTTPClient comment corrected; mutants A, B, C survive before and are killed after.
+- Tracked, NOT done here: CAT-LEGACY-MEDIAHANDLER-1 (no removal); CLG-1 (Android/web send year_min/year_max/rating_min/quality to /media/search, ignored), CLG-2 (web/Android call GET /media/{id}/metadata, no route), CLG-3 (web analyzeDirectory posts legacy {directory_path} body) stay open as tracked client-gap items.
+
+## FU3 review follow-ups (Opus review, GO-with-follow-ups, 2026-11-17)
+
+- FU3-R-M1 (minor, test-instrumentation): the redirect check is pinned only for a single hop (`storage_root_secq1_fu_test.go:23-38`, `netguard/class_test.go:338-341`); a mutant that returns early after the first hop survives. Add a 2-hop chain test (allowed 307 then 307 to a forbidden scheme or blocked class).
+- FU3-R-M2 (minor, evidence): `docs/qa/fu3-20261117/mutant_run.sh` does not run as recorded (`python3 mutate_wprog3.py` path, unset `$TMPDIR_FU3` under `set -u`, /tmp copy). Fix paths.
+- FU3-R-M3 (minor): confirm RV3_N1/N5 pos=40/180 semantics in a comment; README claim "R1 killed by N1+N5" not re-run by the reviewer.
+- FU3-R-N1 (nit): `media_watch_progress_pg_test.go:116` comment says session End/transaction; the hook is a plain UPDATE.
+- FU3-R-N2 (nit): `pgrvSeen`/`pgrvHooks` globals never reset; add `t.Cleanup` if a second PG test appears.

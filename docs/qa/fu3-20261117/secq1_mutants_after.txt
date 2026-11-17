@@ -1,0 +1,23 @@
+## mutant A-create-check-disabled
+--- FAIL: TestSECQ1_Live_LoopbackRootRefusedByDefault_AllowedWithAllowList (4.93s)
+FAIL
+FAIL	catalogizer/handlers	20.756s
+FAIL
+## mutant B-redirect-check-removed
+--- FAIL: TestSECQ1_Live_RedirectToForbiddenSchemeRefusedByClientRedirectCheck (5.35s)
+FAIL
+FAIL	catalogizer/handlers	18.438s
+FAIL
+## mutant C-approved-class-ignored
+--- FAIL: TestSECQ1_Live_PublicApprovedRootRefusesAllowListedLoopback (3.36s)
+FAIL
+FAIL	catalogizer/handlers	13.868s
+FAIL
+## mutant D-client-unguarded-plain-http
+--- FAIL: TestSECQ1_Live_RedirectToForbiddenSchemeRefusedByClientRedirectCheck (6.70s)
+--- FAIL: TestSECQ1_Live_PublicApprovedRootRefusesAllowListedLoopback (3.89s)
+--- FAIL: TestSECQ1_Live_LoopbackRootRefusedByDefault_AllowedWithAllowList (3.83s)
+FAIL
+FAIL	catalogizer/handlers	18.133s
+FAIL
+done
