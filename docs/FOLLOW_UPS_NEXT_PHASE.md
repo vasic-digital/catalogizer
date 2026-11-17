@@ -3471,3 +3471,11 @@ HAUTHZ-F2 fixed: PUT /media/:id/favorite and GET /media/:id use the new `user_fa
 - SPLASH-R1-F1 (minor, process-doc): catalogizer-desktop and installer-wizard declare no Node version (`engines`/`.nvmrc`); document that the Storage helper is only active on Node versions with the native webstorage global (observed Node 26.8.1).
 - SPLASH-R1-F2 (minor, test-instrumentation): fallback Storage is not `instanceof Storage` and `sessionStorage` stays Node-native; consider `--no-experimental-webstorage` in test execArgv instead (restores jsdom Storage). No current use of either.
 - SPLASH-R1-F3 (nit): helper duplicated in two setup files; README wording "invert first-launch test" should say the component condition was inverted; mutant-desktop.txt lacks the mutant diff.
+
+## g1fixfu review round 1 (Opus, GO-with-follow-ups, PROVISIONAL)
+- G1FIXFU-R1-F1 (important, test-instrumentation): registration class not closed: engine local `e` in routeChainFuncNames is not an engine identifier, so passing it to a helper (RVW1/RVW6) is not flagged; reflect MethodByName/Call outside the sanctioned bodies is not banned. Fix: treat values derived from the engine as engine identifiers, or ban non-stdlib helper calls from sanctioned bodies, or ban reflect Method*/Call package-wide.
+- G1FIXFU-R1-F2 (important, test-instrumentation): one-call-site pin bypass: call in a package-level var initializer (RVW2) is not counted; call inside `go func(){}` in main (RVW5) passes. Fix: count GenDecl initializers; require the call to be a direct ExprStmt of main (not in FuncLit/go/defer).
+- G1FIXFU-R1-F3 (minor, test-instrumentation): reflective writes (Set/SetLen/NewAt, RVW3) and falsifying the dump data (RVW4) not detected; ban reflect write methods in the two bodies or record as honest boundary.
+- G1FIXFU-R1-F4 (minor, process-doc): evidence logs were gitignored (*.log); force-added at landing (done).
+- G1FIXFU-R1-F5 (nit): name-based ban refuses `filepath.Match` in sanctioned bodies (fails closed; known limit).
+- Adopt reviewer mutants RVW1, RVW2, RVW3, RVW5 verbatim into TestAuthSurfaceGuard_Mutants. N1 validated (changed 401 message makes test fail).

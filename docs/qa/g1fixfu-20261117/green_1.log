@@ -1,0 +1,2 @@
+ok  	catalogizer	5.222s
+base 738ee310137b8e27997e9d3d35e4faaf0ac69c20; working-tree diff sha256 prefix a7d83717fdac0984; test files catalog-api/main_chpw_authsurface_test.go, catalog-api/handlers/media_handler_test.go

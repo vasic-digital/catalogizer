@@ -1,0 +1,41 @@
+--- FAIL: TestAuthSurfaceGuard_Mutants (5.60s)
+    --- FAIL: TestAuthSurfaceGuard_Mutants/M2b_nonauth_registration_inside_routeDumpHook (0.11s)
+        main_chpw_authsurface_test.go:900: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/g1fixfu-clone/catalog-api/main_chpw_authsurface_test.go:900
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestAuthSurfaceGuard_Mutants/M2b_nonauth_registration_inside_routeDumpHook
+            	Messages:   	mutant SURVIVED: guard did not fail
+    --- FAIL: TestAuthSurfaceGuard_Mutants/M7_second_routeDumpHook_call_after_alt_svc (0.04s)
+        main_chpw_authsurface_test.go:900: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/g1fixfu-clone/catalog-api/main_chpw_authsurface_test.go:900
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestAuthSurfaceGuard_Mutants/M7_second_routeDumpHook_call_after_alt_svc
+            	Messages:   	mutant SURVIVED: guard did not fail
+    --- FAIL: TestAuthSurfaceGuard_Mutants/FU1_Use_inside_routeDumpHook (0.04s)
+        main_chpw_authsurface_test.go:901: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/g1fixfu-clone/catalog-api/main_chpw_authsurface_test.go:901
+            	Error:      	"main_routedump_on.go:17: e.Use on a receiver whose group prefix cannot be resolved (could be the auth group)" does not contain "sanctioned read-only function routeDumpHook calls"
+            	Test:       	TestAuthSurfaceGuard_Mutants/FU1_Use_inside_routeDumpHook
+            	Messages:   	mutant killed, but not by the expected rule
+    --- FAIL: TestAuthSurfaceGuard_Mutants/FU2_registration_inside_routeChainFuncNames (0.04s)
+        main_chpw_authsurface_test.go:900: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/g1fixfu-clone/catalog-api/main_chpw_authsurface_test.go:900
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestAuthSurfaceGuard_Mutants/FU2_registration_inside_routeChainFuncNames
+            	Messages:   	mutant SURVIVED: guard did not fail
+    --- FAIL: TestAuthSurfaceGuard_Mutants/FU3_hook_call_from_other_function (0.05s)
+        main_chpw_authsurface_test.go:901: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/g1fixfu-clone/catalog-api/main_chpw_authsurface_test.go:901
+            	Error:      	"zz_fu3.go:2: gin.Engine in the signature of fu3, outside the sanctioned helpers" does not contain "routeDumpHook may only be called from main() in main.go"
+            	Test:       	TestAuthSurfaceGuard_Mutants/FU3_hook_call_from_other_function
+            	Messages:   	mutant killed, but not by the expected rule
+    --- FAIL: TestAuthSurfaceGuard_Mutants/FU4_Group_inside_routeDumpHook (0.04s)
+        main_chpw_authsurface_test.go:900: 
+            	Error Trace:	/home/milosvasic/.cache/claude-tmp/g1fixfu-clone/catalog-api/main_chpw_authsurface_test.go:900
+            	Error:      	Should NOT be empty, but was []
+            	Test:       	TestAuthSurfaceGuard_Mutants/FU4_Group_inside_routeDumpHook
+            	Messages:   	mutant SURVIVED: guard did not fail
+FAIL
+FAIL	catalogizer	6.404s
+FAIL
+base 738ee310137b8e27997e9d3d35e4faaf0ac69c20; working-tree diff sha256 prefix a7d83717fdac0984; test files catalog-api/main_chpw_authsurface_test.go, catalog-api/handlers/media_handler_test.go
