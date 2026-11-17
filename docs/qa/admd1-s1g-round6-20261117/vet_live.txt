@@ -1,0 +1,2 @@
+# cmd: GOMAXPROCS=4 nice -n 10 go vet -tags live . (scratch clone s1g5fu); empty output below = no findings
+# exit: 0

@@ -3405,3 +3405,24 @@ HAUTHZ-F2 fixed: PUT /media/:id/favorite and GET /media/:id use the new `user_fa
 - RFM-R1-3 (minor): evidence logs carry no commit/tree line binding them to 2bb1e5902.
 - RFM-R1-4 (nit): `RetrofitProxyGuardTest` KDoc truncated mid-sentence. RFM-R1-5 (nit): FOLLOW_UPS cites `red_android.txt`, actual `01_red_android_original_fix_absent.txt`. RFM-R1-6 (nit): TV ratchet keyed by method name (overloads would collapse).
 - RFM-R1-7 (nit, pre-existing): SyncManager.syncWatchProgress/syncRating ignore non-2xx like the pre-fix favorite sync.
+### s1g round-6 status of the round-5 follow-ups (PROVISIONAL, 2026-11-17, scratch clone branch s1g5fu; evidence `docs/qa/admd1-s1g-round6-20261117/`)
+- S1G5-F3 DONE (PROVISIONAL): `groundTruthViolations` now also compares the real route set with the `docs/ROUTE_AUTHZ_TABLE.md` route set in both directions (`routeSetViolations`). Real: 265 = 265.
+- S1G5-F1 DONE (PROVISIONAL): a route-level handler in front of the gate is reported by the scanner (a handler value, not a middleware factory call) and by the real-chain check (pinned middleware file allow-list `preGateAllowedFiles`, read from the real chains of the 76 gated routes). I2 is now closed for the `h, RequireAdmin(), h` shape; the former golden-FALSE pin is replaced. Limit: the allow-list is a pinned list of files, a new middleware file in front of a gate must be added to it on purpose.
+- S1G5-F2 DONE (PROVISIONAL): gate identity compares the full defining file path.
+- S1G5-F4 DONE (PROVISIONAL): shadowed import alias probe added; old survivor #8 is now killed.
+- S1G5-F5 DONE: command lines in the green files, header + exit status in `vet_live.txt`.
+- S1G5-F6 DONE (PROVISIONAL): the `/metrics` wrapper closure is matched by symbol and file (`isWrapperClosure`).
+- R5-FU-1 and the live-sweep backstop stay open (UNCONFIRMED).
+
+### s1g round-6b (Opus round-1 review of s1g5fu; PROVISIONAL, 2026-11-17, scratch clone branch s1g5fu2; evidence `docs/qa/admd1-s1g-round6b-20261117/`)
+- R7 (Important) FIXED (PROVISIONAL): the `/github.com/gin-gonic/gin@` file wildcard is gone. The pre-gate allow-list is now symbol-level (`preGateAllowedSymbols`, file + symbol, closure suffix stripped); the only gin-owned entry is `gin.LoggerWithConfig` (logger.go), read from the real chains of the gated routes. `gin.WrapF` / `gin.WrapH` closures (gin utils.go) in front of the gate are reported. The scanner (`callWrapsHandler`) reports `gin.WrapF` / `gin.WrapH` and any call given a function literal in front of the gate (before, every CallExpr was exempt). Real-source probe: `gin.WrapF(...)` before `RequireAdmin()` in a scratch copy of `main.go` is reported.
+- F-msg DONE: the pre-gate violation says "(if this is new router/group middleware, add its file and symbol to preGateAllowedSymbols)".
+- F-allow DONE (PROVISIONAL): a terminal handler inside an allowed file (`middleware/auth.go` `MintWSTicket`, method value or closure) and an invented symbol in an allowed file fail.
+- Nits DONE: wrapper-closure regexp compiled once; dead `_ = gateH` removed.
+- Limits (UNCONFIRMED / stated): the scanner does not recognise `wrap(namedHandler)` (a non-literal argument) in front of the gate; only the real-chain allow-list catches it. Compiler inlining can change a closure's name prefix (the match is by symbol suffix, so prefixes do not matter, but a renamed symbol needs an allow-list edit). Live sweep (TestLiveAPIContract) backstop and R5-FU-1 stay open.
+
+### s1g5fu2 review round 2 (Opus, GO-with-follow-ups, 2026-11-17, PROVISIONAL)
+- S1G6-F1 (minor, test-instrumentation): `preGateAllowed` matches by file + last path element, so a new method `(*T).Logger` in an allowed middleware file passes (mutant RV5 survived). Fix: reject receiver-qualified names for receiver-less entries / match package-qualified symbol; add synthetic regression.
+- S1G6-F2 (minor, process-doc): scanner-blind set is wider than NOTES says: `gin.HandlerFunc(named)`, aliased WrapF, group-level `Use(gin.WrapF(..))` before a group gate (ground truth catches all, mutants RV1/2/4/7).
+- S1G6-F3 (minor, test-instrumentation): no standing real-chain test pins the ground-truth backstop for the scanner-blind class; ground-truth checks skip under -short.
+- S1G6-F4 (nit): stale-symbol check is file-level only. S1G6-F5 (nit, UNCONFIRMED): pre-gate handlers on the wrapped /metrics gate (`metricsSkipIfScrape`) unchecked. S1G6-F6 (nit): callWrapsHandler flags any call with a function-literal argument.

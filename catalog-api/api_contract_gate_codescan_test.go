@@ -988,6 +988,22 @@ func scanRouteSources(t *testing.T, files []string) *routeScan {
 										report(j.fi.file, fname, call+" has the gate as its LAST handler (it protects nothing): "+exprStr(a))
 									} else {
 										gated = true
+										// S1G5-F1: a handler VALUE (identifier, selector or literal, not a middleware factory call) in front of the gate runs first
+										for _, pre := range handlers[:i] {
+											if isGate(pre) {
+												continue
+											}
+											switch pc := ast.Unparen(pre).(type) {
+											case *ast.CallExpr:
+												// R7: a call that wraps a handler (gin.WrapF / gin.WrapH, or any call taking a function literal)
+												// runs a terminal handler before the 403; a plain middleware factory call does not.
+												if callWrapsHandler(pc) {
+													report(j.fi.file, fname, call+" has a handler-wrapping call before the gate: "+exprStr(pre))
+												}
+											default:
+												report(j.fi.file, fname, call+" has a route-level handler before the gate: "+exprStr(pre))
+											}
+										}
 									}
 								} else if _, isLit := a.(*ast.FuncLit); !isLit && i < len(handlers)-1 && strings.Contains(strings.ToLower(exprStr(a)), "admin") && !strings.Contains(exprStr(a), "RequireSelfOrAdmin") {
 									report(j.fi.file, fname, call+" has an admin-looking middleware the scanner cannot model: "+exprStr(a))
@@ -1402,4 +1418,26 @@ func TestADMD1F1S1G5_DriftExclusionDoesNotHideAdminOnly403(t *testing.T) {
 	require.NotEmpty(t, adminGateSpecViolations(mk("Admin role required (not for self service)")))
 	// the real self-or-admin wording stays excluded
 	require.Empty(t, adminGateSpecViolations(mk("Forbidden; the target user is not the caller (and the caller is not an administrator)")))
+}
+
+// callWrapsHandler (R7): true for gin.WrapF / gin.WrapH (any package alias) and for any call that is given a function literal
+// (a literal is a handler body that would run in front of the gate). Limit stated: a call such as wrap(namedHandler) is not
+// recognised by the scanner; the real-chain check (preGateAllowedSymbols) is the backstop for it.
+func callWrapsHandler(c *ast.CallExpr) bool {
+	switch f := ast.Unparen(c.Fun).(type) {
+	case *ast.SelectorExpr:
+		if f.Sel.Name == "WrapF" || f.Sel.Name == "WrapH" {
+			return true
+		}
+	case *ast.Ident:
+		if f.Name == "WrapF" || f.Name == "WrapH" {
+			return true
+		}
+	}
+	for _, a := range c.Args {
+		if _, ok := ast.Unparen(a).(*ast.FuncLit); ok {
+			return true
+		}
+	}
+	return false
 }

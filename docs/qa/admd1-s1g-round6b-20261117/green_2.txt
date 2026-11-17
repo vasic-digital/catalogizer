@@ -1,0 +1,4 @@
+# GREEN run 2
+$ GOMAXPROCS=2 nice -n 10 go test -p 1 -count=1 -run 'ADMD1|Admin403|ContractGate|OpenAPI|R6' .
+ok  	catalogizer	94.577s
+exit=0

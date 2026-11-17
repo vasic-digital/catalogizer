@@ -1,0 +1,3 @@
+# cmd: GOMAXPROCS=4 nice -n 10 go vet . ; gofmt -l on the 4 changed gate files
+vet exit: 0
+gofmt done
