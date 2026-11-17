@@ -9,6 +9,7 @@
 #        ignore-suspension | control-closes-too | control-later (victim 1008 at +1s, control 1008 at +5s) | short-exp |
 #        expiry-race (victim JWT exp = +22 s, the victim socket gets 1008 at exp, suspension never closes it) |
 #        expiry-race-long (same with exp = +90 s; slow, RUN_SLOW=1 only: the reviewer's round-4 repro, default margin 75) |
+#        susp-500 (suspended user gets HTTP 500 on login and ticket mint) | noexp (JWT without exp) | legacy-token (login returns {token} only, the pre-round-7 guess)
 #        inject (victim closed 1000 at +1 s after suspension with a reason carrying a newline and a forged PASS line)
 import http.server, socketserver, struct, sys, os, time, threading, hashlib, base64, json
 
@@ -18,7 +19,7 @@ USED = set(); EXPS = {}; LOCK = threading.Lock(); TKUSER = {}
 def b64(d): return base64.urlsafe_b64encode(json.dumps(d).encode()).decode().rstrip("=")
 def jwt(user):
     exp = int(time.time()) + (12 if MODE == "short-exp" else (22 if (MODE == "expiry-race" and user == "c") else (90 if (MODE == "expiry-race-long" and user == "c") else 36000))); EXPS[user] = exp
-    return b64({"alg": "none"}) + "." + b64({"sub": user, "exp": exp}) + ".sig"
+    return b64({"alg": "none"}) + "." + b64(({"sub": user} if MODE == "noexp" else {"sub": user, "exp": exp})) + ".sig"
 def frame(op, payload=b""): return bytes([0x80 | op, len(payload)]) + payload
 def suspended(user): return user == "c" and os.path.exists(TRIG) and MODE != "ignore-suspension"
 
@@ -35,13 +36,17 @@ class H(http.server.BaseHTTPRequestHandler):
         n = int(self.headers.get("Content-Length") or 0); body = self.rfile.read(n)
         if self.path.endswith("/auth/login"):
             u = json.loads(body or b"{}").get("username", "")
-            if suspended(u): return self._json('{"error":"suspended"}', 403)
-            self._json(json.dumps({"token": jwt(u)}))
+            if suspended(u): return self._json('{"error":"suspended"}', 500 if MODE == "susp-500" else 403)
+            tk = jwt(u)
+            # I2 (round 7): the REAL contract (services/auth_service.go AuthResult, handlers/auth_handler.go LoginGin): {user, session_token, refresh_token, expires_at}.
+            # MODE legacy-token returns the old guessed shape {"token": ...} to test the script's fallback.
+            self._json(json.dumps({"token": tk} if MODE == "legacy-token" else
+                {"user": {"username": u}, "session_token": tk, "refresh_token": "r_" + u, "expires_at": "2099-01-01T00:00:00Z"}))
         elif self.path.endswith("/ws/ticket"):
             tok = (self.headers.get("Authorization") or "").replace("Bearer ", "")
             try: p = tok.split(".")[1]; u = json.loads(base64.urlsafe_b64decode(p + "=" * (-len(p) % 4)))["sub"]
             except Exception: return self._json("{}", 401)
-            if suspended(u): return self._json('{"error":"suspended"}', 403)
+            if suspended(u): return self._json('{"error":"suspended"}', 500 if MODE == "susp-500" else 403)
             t = "t%s_%d" % (u, int(time.time() * 1e6)); TKUSER[t] = u; self._json('{"ticket":"%s"}' % t)
         else: self._json("{}", 404)
     def do_GET(self):
@@ -75,7 +80,7 @@ class H(http.server.BaseHTTPRequestHandler):
             if user == "c":
                 if MODE == "early-close" and time.time() - t0 > 0.6: return close(1008)
                 if MODE == "ignore-suspension" and time.time() - t0 > 3: return close(1008)
-                if trig_seen is not None and MODE in ("good", "short-exp", "control-closes-too", "control-later") and time.time() - trig_seen > 1.0: return close(1008)
+                if trig_seen is not None and MODE in ("good", "noexp", "susp-500", "legacy-token", "short-exp", "control-closes-too", "control-later") and time.time() - trig_seen > 1.0: return close(1008)
                 if trig_seen is not None and MODE == "wrong-code" and time.time() - trig_seen > 1.0: return close(1000)
                 if trig_seen is not None and MODE == "late-close" and time.time() - trig_seen > 8.0: return close(1008)
             if user == "c" and MODE in ("expiry-race", "expiry-race-long") and time.time() > EXPS.get("c", 1e12): return close(1008)

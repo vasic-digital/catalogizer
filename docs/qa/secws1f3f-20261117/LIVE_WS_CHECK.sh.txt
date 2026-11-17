@@ -41,6 +41,14 @@
 #   MANUAL MODE (no SUSPEND_CMD; Enter prompt) limits: it needs a tty / open stdin on this script (closed stdin = INCONCLUSIVE); the marker is when YOU press
 #   Enter, so human latency counts against F3_BOUND (a slow operator gets FAIL/INCONCLUSIVE, never PASS); the script cannot see WHAT you did, only that new
 #   logins / ticket mints for the victim are refused afterwards; the start epoch is the PROMPT time, so a close later than F3_BOUND after the prompt (even if within it after Enter) is INCONCLUSIVE.
+# Round 7 (R6-I1/I2/M1-M4/N1/N2): (I1) TLS verification is ON for every curl call; -k (curl and the python probe) only with INSECURE=1; a BASE that is not https is refused
+#   (exit 2) unless the host is loopback (localhost, 127.x.x.x, [::1], exact match on the host part after stripping userinfo/port) or INSECURE=1. A userinfo part in BASE would
+#   travel in curl's argv (do not use it); it is stripped from every evidence line. (I2) login reads .session_token first (the real contract:
+#   catalog-api services/auth_service.go AuthResult {user, session_token, refresh_token, expires_at}, handlers/auth_handler.go LoginGin), then .token / .access_token / .data.token.
+#   (M2) SUSPEND_CMD runs under `setsid timeout --kill-after=5 ...`: its own session and process group, no controlling terminal (so /dev/tty cannot be opened and nothing can prompt),
+#   and the WHOLE group is SIGKILLed after it returns / on timeout / on exit-INT-TERM, so grandchildren do not survive. (M3) F3_BOUND and SUSPEND_TIMEOUT must be >= 1;
+#   F3_EXP_MARGIN may be 0 EXPLICITLY (no extra lifetime margin beyond F3_BOUND). (M4) WP / CP / SP are cleared after the reap, the EXIT trap signals nothing stale.
+#   (N2) VICTIM_REFUSED_STATUS is a space-separated list of 4xx/5xx codes (read into an array, never glob-expanded), anything else exits 2.
 #   STATUS: DO NOT USE for the live G4 run until independently reviewed.
 # Exit 2 = usage / prerequisite / output-directory error (missing BASE or credential variable, unwritable OUT).
 # Verdict per check: PASS | FAIL | INCONCLUSIVE (INCONCLUSIVE = could not observe; never counted as PASS).
@@ -78,22 +86,29 @@ check(){ # label observed expected : compares observed vs expected
     record "$1" FAIL "observed=$obs expect=$exp"
   fi
 }
-hostonly(){ local h="${1#*://}"; h="${h%%/*}"; h="${h%%:*}"; printf '%s' "$h"; }
+# R6-I1 (round 7): TLS verification is ON for every curl call unless INSECURE=1 (then -k for curl AND the python probe). Passwords and JWTs are sent only over a verified channel.
+CURLK=(); [ "${INSECURE:-0}" = 1 ] && CURLK=(-k)
+cu(){ curl -s ${CURLK[@]+"${CURLK[@]}"} "$@"; }
+hostonly(){ local h="${1#*://}"; h="${h%%[/?#]*}"; h="${h##*@}"; case "$h" in \[*\]*) h="${h%%]*}]";; *) h="${h%%:*}";; esac; printf '%s' "$h"; }
+loopback_host(){ case "$1" in localhost|"[::1]") return 0;; esac; [[ "$1" =~ ^127(\.[0-9]{1,3}){3}$ ]]; }
+base_acceptable(){ # https always; http only to a loopback host or with INSECURE=1; any other scheme never
+  case "$1" in https://*) return 0;; http://*) [ "${INSECURE:-0}" = 1 ] && return 0; loopback_host "$(hostonly "$1")"; return;; esac; return 1; }
+strip_userinfo(){ local sch="${1%%://*}" rest="${1#*://}"; local auth="${rest%%[/?#]*}"; printf '%s://%s%s' "$sch" "${auth##*@}" "${rest#"$auth"}"; }
 probe_status(){ # url origin [ticket] -> HTTP handshake status or empty (ticket via env, never argv)
   WS_TICKET="${3:-}" python3 -I "$PROBE" "$1" ${2:+--origin "$2"} ${3:+--ticket-env WS_TICKET} --mode handshake 2>/dev/null | tail -1 | jq -r '.handshake // empty' 2>/dev/null
 }
 login_body(){ U="$1" P="$2" jq -n '{username:env.U,password:env.P}'; }
 login(){
   login_body "$1" "$2" | \
-    curl -sk --max-time 10 -X POST "$BASE/api/v1/auth/login" -H 'Content-Type: application/json' --data @- | \
-    jq -r '.token // .access_token // .data.token // empty' 2>/dev/null
+    cu --max-time 10 -X POST "$BASE/api/v1/auth/login" -H 'Content-Type: application/json' --data @- | \
+    jq -r '.session_token // .token // .access_token // .data.token // empty' 2>/dev/null
 }
 login_status(){ # user pass -> HTTP status of a login attempt
-  login_body "$1" "$2" | curl -sk -o /dev/null -w '%{http_code}' --max-time 10 -X POST "$BASE/api/v1/auth/login" -H 'Content-Type: application/json' --data @-
+  login_body "$1" "$2" | cu -o /dev/null -w '%{http_code}' --max-time 10 -X POST "$BASE/api/v1/auth/login" -H 'Content-Type: application/json' --data @-
 }
 # bearer header goes via curl config on stdin (-K -), so the token is not in argv
-ticket(){ printf 'header = "Authorization: Bearer %s"\n' "$1" | curl -sk --max-time 10 -X POST "$BASE/api/v1/ws/ticket" -K - | jq -r '.ticket // empty' 2>/dev/null; }
-ticket_status(){ printf 'header = "Authorization: Bearer %s"\n' "$1" | curl -sk -o /dev/null -w '%{http_code}' --max-time 10 -X POST "$BASE/api/v1/ws/ticket" -K -; }
+ticket(){ printf 'header = "Authorization: Bearer %s"\n' "$1" | cu --max-time 10 -X POST "$BASE/api/v1/ws/ticket" -K - | jq -r '.ticket // empty' 2>/dev/null; }
+ticket_status(){ printf 'header = "Authorization: Bearer %s"\n' "$1" | cu -o /dev/null -w '%{http_code}' --max-time 10 -X POST "$BASE/api/v1/ws/ticket" -K -; }
 # jwt_exp_remaining token -> seconds until exp (integer), or "none" if unreadable / no exp. Token passed by env; never printed.
 jwt_exp_remaining(){
   JWT="$1" python3 -I -c '
@@ -133,15 +148,23 @@ f3_verdict(){
 if [ "${LIVE_WS_CHECK_SOURCE_ONLY:-0}" = 1 ]; then return 0 2>/dev/null || exit 0; fi
 
 # R5-1: numeric settings must be plain non-negative integers (1-9 digits), else exit 2 at startup (never silently skip the F3 leg)
+# R6-M3 (round 7): F3_BOUND and SUSPEND_TIMEOUT must be >= 1 (0 makes every close 'late' / the command time out at once); F3_EXP_MARGIN 0 is allowed EXPLICITLY (it means no extra lifetime margin beyond F3_BOUND).
 for v in F3_BOUND F3_EXP_MARGIN SUSPEND_TIMEOUT; do
   case "${!v}" in ''|*[!0-9]*) echo "usage: $v must match ^[0-9]+\$ (got '$(san "${!v}")')" >&2; exit 2;; esac
   val="${!v}"; [ "${#val}" -le 9 ] || { echo "usage: $v is too long (max 9 digits)" >&2; exit 2; }
   printf -v "$v" '%s' "$((10#$val))"
+  case "$v" in F3_BOUND|SUSPEND_TIMEOUT) [ "${!v}" -ge 1 ] || { echo "usage: $v must be >= 1 (got ${!v})" >&2; exit 2; };; esac
 done
+# R6-N2 (round 7): VICTIM_REFUSED_STATUS = space-separated 4xx/5xx codes; read into an array (never glob-expanded); anything else exits 2
+read -ra RST <<< "${VICTIM_REFUSED_STATUS-401 403}"
+[ "${#RST[@]}" -ge 1 ] || { echo "usage: VICTIM_REFUSED_STATUS is empty" >&2; exit 2; }
+for st in "${RST[@]}"; do [[ "$st" =~ ^[45][0-9][0-9]$ ]] || { echo "usage: VICTIM_REFUSED_STATUS entry '$(san "$st")' is not a 4xx/5xx status code" >&2; exit 2; }; done
 for v in BASE ADMIN_USER ADMIN_PASS VICTIM_USER VICTIM_PASS; do
   [ -n "${!v:-}" ] || { echo "usage: required variable $v is unset or empty (names: BASE ADMIN_USER ADMIN_PASS VICTIM_USER VICTIM_PASS)" >&2; exit 2; }
 done
-for t in curl jq python3; do
+# R6-I1: refuse a plain-http non-loopback BASE (credentials + JWTs would travel in clear) unless INSECURE=1
+base_acceptable "$BASE" || { echo "usage: BASE must be https://... (plain http only to a loopback host, or with INSECURE=1 for a test host); got '$(san "$(strip_userinfo "$BASE")")'" >&2; exit 2; }
+for t in curl jq python3 setsid timeout; do
   command -v "$t" >/dev/null || { echo "prereq missing: $t (INCONCLUSIVE)"; exit 2; }
 done
 [ -f "$PROBE" ] || { echo "probe missing: $PROBE"; exit 2; }
@@ -153,9 +176,9 @@ WS="${BASE/http/ws}"; ORIGIN="${ORIGIN:-$BASE}"
 # ---- target fields (11.4.289(D)) ----
 H="$(hostonly "$BASE")"
 {
-  echo "base=$BASE"; echo "host_resolved=$(getent hosts "$H" 2>/dev/null | head -1)"; echo "start=$(date -u +%FT%TZ)"
-  echo "health_body:"; curl -sk --max-time 10 "$BASE/health"; echo
-  echo "health_headers:"; curl -skI --max-time 10 "$BASE/health" | head -20
+  echo "base=$(strip_userinfo "$BASE")"; echo "tls_verify=$([ "${INSECURE:-0}" = 1 ] && echo OFF-INSECURE=1 || echo on)"; echo "host_resolved=$(getent hosts "$H" 2>/dev/null | head -1)"; echo "start=$(date -u +%FT%TZ)"
+  echo "health_body:"; cu --max-time 10 "$BASE/health"; echo
+  echo "health_headers:"; cu -I --max-time 10 "$BASE/health" | head -20
 } > "$OUT/target.txt" 2>&1
 if [ -n "${SERVER_PID:-}" ] && [ -n "${SERVER_EXE_SHA256:-}" ]; then
   printf 'pid=%s\nexe_sha256=%s\n' "$SERVER_PID" "$SERVER_EXE_SHA256" > "$OUT/process_identity.txt"; LIVE=yes
@@ -193,7 +216,10 @@ else
   F3L="F3 socket closed because of suspension"
   T=$(ticket "$VT"); CT=$(ticket "$AT")
   VREADY="$OUT/vready.$$"; CREADY="$OUT/cready.$$"; WP=""; CP=""; SP=""
-  f3_cleanup(){ [ -n "$WP$CP$SP" ] && kill $WP $CP $SP 2>/dev/null; rm -f "$VREADY" "$CREADY"; }  # R5-8: probes / SUSPEND_CMD never outlive the script
+  # R5-8: probes / SUSPEND_CMD never outlive the script. R6-M2: SUSPEND_CMD runs in its OWN session (setsid), so the whole process group is killed (grandchildren too).
+  # R6-M4: WP / CP / SP are cleared after the reap so the EXIT trap never signals a stale (possibly reused) pid.
+  kill_group(){ case "$1" in ''|*[!0-9]*) return 0;; esac; [ "$1" -gt 1 ] || return 0; kill -KILL -- "-$1" 2>/dev/null; return 0; }
+  f3_cleanup(){ [ -n "$WP$CP" ] && kill $WP $CP 2>/dev/null; [ -n "$SP" ] && { kill_group "$SP"; kill "$SP" 2>/dev/null; }; rm -f "$VREADY" "$CREADY"; }
   need=$((F3_BOUND+F3_EXP_MARGIN))
   if [ -z "$T" ] || [ -z "$CT" ]; then
     record "$F3L" INCONCLUSIVE "no ticket minted (victim='${T:+ok}' control='${CT:+ok}')"
@@ -208,10 +234,10 @@ else
     for _ in $(seq 1 20); do [ -f "$VREADY" ] && [ -f "$CREADY" ] && break; sleep 0.5; done
     if [ ! -f "$VREADY" ] || ! kill -0 "$WP" 2>/dev/null; then
       record "$F3L" INCONCLUSIVE "victim socket not proven alive before suspension (no pong / handshake failed)"
-      kill "$WP" "$CP" 2>/dev/null
+      kill "$WP" "$CP" 2>/dev/null; WP=""; CP=""
     elif [ ! -f "$CREADY" ] || ! kill -0 "$CP" 2>/dev/null; then
       record "$F3L" INCONCLUSIVE "control socket not proven alive before suspension"
-      kill "$WP" "$CP" 2>/dev/null
+      kill "$WP" "$CP" 2>/dev/null; WP=""; CP=""
     else
       echo "victim and control sockets alive (pong received). Suspend (or revoke the session of) the victim user now."
       SUSP_RC=0
@@ -219,8 +245,8 @@ else
       if [ -n "${SUSPEND_CMD:-}" ]; then
         # N5: command text via ENVIRONMENT (not argv); output discarded unless SUSPEND_KEEP_OUTPUT=1; text never written to evidence
         SUSP_SINK=/dev/null; [ "${SUSPEND_KEEP_OUTPUT:-0}" = 1 ] && SUSP_SINK="$OUT/suspend_cmd.out"
-        SUSPEND_CMD="$SUSPEND_CMD" timeout --foreground --kill-after=5 "$SUSPEND_TIMEOUT" bash -c 'eval "$SUSPEND_CMD"' < /dev/null > "$SUSP_SINK" 2>&1 &
-        SP=$!; wait "$SP"; SUSP_RC=$?; SP=""; SUSP_EPOCH=$(date +%s.%N)
+        SUSPEND_CMD="$SUSPEND_CMD" setsid timeout --kill-after=5 "$SUSPEND_TIMEOUT" bash -c 'eval "$SUSPEND_CMD"' < /dev/null > "$SUSP_SINK" 2>&1 &
+        SP=$!; wait "$SP"; SUSP_RC=$?; kill_group "$SP"; SP=""; SUSP_EPOCH=$(date +%s.%N)
       else
         printf 'Press Enter right after you suspended the victim (within %ss): ' "$SUSPEND_TIMEOUT"
         if read -r -t "$SUSPEND_TIMEOUT" _; then SUSP_EPOCH=$(date +%s.%N); else SUSP_RC=99; SUSP_EPOCH=$(date +%s.%N); fi
@@ -237,8 +263,8 @@ else
           case "$st" in 2??) susp="victim still able to log in / mint a ticket after SUSPEND_CMD (login=$LS ticket=$TS): suspension had no effect";; esac
         done
         if [ "$susp" = ok ]; then
-          okset=0; for st in ${VICTIM_REFUSED_STATUS:-401 403}; do if [ "$LS" = "$st" ] || [ "$TS" = "$st" ]; then okset=1; fi; done
-          [ "$okset" = 1 ] || susp="post-suspension statuses login=$LS ticket=$TS match none of '${VICTIM_REFUSED_STATUS:-401 403}'"
+          okset=0; for st in "${RST[@]}"; do if [ "$LS" = "$st" ] || [ "$TS" = "$st" ]; then okset=1; fi; done
+          [ "$okset" = 1 ] || susp="post-suspension statuses login=$LS ticket=$TS match none of '${RST[*]}'"
         fi
       fi
       expc=ok
@@ -247,7 +273,7 @@ else
       for _ in $(seq 1 $(( (F3_BOUND+5)*2 ))); do kill -0 "$WP" 2>/dev/null || break; sleep 0.5; done
       # R3-1: keep the control socket held for a full F3_BOUND after the victim is gone, then stop it (it sends the final ping)
       if ! kill -0 "$WP" 2>/dev/null; then sleep "$F3_BOUND"; fi
-      kill "$WP" "$CP" 2>/dev/null; wait "$WP" 2>/dev/null; wait "$CP" 2>/dev/null
+      kill "$WP" "$CP" 2>/dev/null; wait "$WP" 2>/dev/null; wait "$CP" 2>/dev/null; WP=""; CP=""
       CC=$(jq -r '.close_code // empty' "$OUT/f3_probe.json" 2>/dev/null); END=$(jq -r '.end // empty' "$OUT/f3_probe.json" 2>/dev/null)
       CE=$(jq -r '.close_epoch // empty' "$OUT/f3_probe.json" 2>/dev/null); RS=$(jq -r '.close_reason // "none"' "$OUT/f3_probe.json" 2>/dev/null)
       CEND=$(jq -r '.end' "$OUT/f3_control.json" 2>/dev/null); CFP=$(jq -r '.final_pong' "$OUT/f3_control.json" 2>/dev/null)
@@ -265,7 +291,7 @@ else
 fi
 # R5-1: both F3 result lines must exist, else the run cannot be green (a skipped F3 leg is INCONCLUSIVE, never silent)
 for pat in 'F3 socket closed because of suspension' 'F3 audience filter'; do
-  grep -q "^[A-Z]* | $pat" "$OUT/results.txt" || record "expected F3 result line absent" INCONCLUSIVE "no result line was recorded for: $pat"
+  grep -q "^[A-Z]* | $pat" "$OUT/results.txt" || record "expected F3 result line absent" INCONCLUSIVE "missing: $pat (expected set: 'F3 socket closed because of suspension' and 'F3 audience filter')"
 done
 echo "live_proven=$LIVE (answering-process identity: $([ "$LIVE" = yes ] && echo recorded || echo 'MISSING, UNCONFIRMED'))" | tee -a "$OUT/results.txt"
 echo "summary: PASS=$PASSN FAIL=$FAILN INCONCLUSIVE=$INCN" | tee -a "$OUT/results.txt"

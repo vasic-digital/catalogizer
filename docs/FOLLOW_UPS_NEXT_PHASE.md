@@ -3704,3 +3704,6 @@ R5-1..R5-8 fixed; gate logic sound; 133/0 reproduced. Blockers:
 - M4 (minor): WP/CP not cleared after reap; EXIT trap may signal reused PIDs.
 - N1/N2 (nit): F3 grep matches the absent-line record; VICTIM_REFUSED_STATUS unvalidated/glob; base=$BASE may log userinfo; san lookalikes.
 - Live-only unknowns: refused status after suspension (probably 401), clock skew, origin allowlist at edge, suspend semantics vs recheck, ticket pending cap, ticket in nginx logs, victim left suspended, SERVER_PID/SERVER_EXE_SHA256 must be supplied.
+
+## SECWS1F3F round 7 (2026-11-17) — fixes of the round-6 review (PROVISIONAL; awaiting independent review round 2)
+I1 (no -k unless INSECURE=1, non-https non-loopback BASE refused), I2 (.session_token first, mock returns the real AuthResult shape), M1 (RV1-RV6/RV8 adopted, all killed; mock modes susp-500/noexp/legacy-token), M2 (setsid + process-group kill, /dev/tty unreachable), M3 (>=1 for F3_BOUND/SUSPEND_TIMEOUT, F3_EXP_MARGIN 0 explicit), M4 (WP/CP/SP cleared), N1 (anchored F3 grep), N2 (VICTIM_REFUSED_STATUS validated, userinfo stripped from evidence). Not addressed: san lookalike (confusables). Evidence docs/qa/secws1f3f-20261117/ (green_run1..3 251/0 each). Script stays DO-NOT-USE for live G4 until reviewed; live-only unknowns unchanged.
