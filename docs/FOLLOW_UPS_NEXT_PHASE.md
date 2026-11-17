@@ -3491,3 +3491,13 @@ HAUTHZ-F2 fixed: PUT /media/:id/favorite and GET /media/:id use the new `user_fa
 - TVANY-R1-F3 (nit): wire tests use their own Json{ignoreUnknownKeys}, not the DependencyContainer configuration (coerceInputValues).
 - TVANY-R1-F4 (nit): author mutant set covers only the guard; reviewer M1/M4/M5 show wire tests kill field-name/default/path mutants but commands.txt does not record them.
 - Reviewer full TV run (forced rerun): 1290 tests, 0 failures/errors/skipped.
+
+## afav7b review round 1 (Opus, GO-with-follow-ups, PROVISIONAL)
+- AFAV7B-R1-F1 (minor, source-defect): loadProgress/loadHistory `catch (t: Throwable)` converts CancellationException/Error to Failure; rethrow CancellationException, catch Exception.
+- AFAV7B-R1-F2 (minor, test-instrumentation): history-failure branch of loadHistoryUiState untested (mutant M2 survived); add progress 200 + history 500 -> Error.
+- AFAV7B-R1-F3 (minor, test-instrumentation): no test for loadProgress on exception (M5 survived), malformed JSON, 204.
+- AFAV7B-R1-F4 (minor, process-doc): "RED 5 of 7" overstates: only 2 were AssertionErrors, 3 were RuntimeException (android.util.Log not mocked); test file changed between RED and GREEN. Correct the evidence text.
+- AFAV7B-R1-F5 (minor, process-doc): RFM-R1-7 entry must state both sync targets (PUT user/progress/{id}, PUT media/{id}/rating) have no server route (RFM-R1-1/AFAV-8/9): ops 404, retry 3x, drop; permanent 4xx could be dropped at once.
+- AFAV7B-R1-F6 (nit): AFAV-7b register row says "2 mutants killed", evidence holds 1 playback + 2 sync mutants.
+- AFAV7B-R1-F7 (nit): error line shows raw exception text/"HTTP 401" without login hint; client rejects `"sessions":null` (server never sends it).
+- Reviewer full android run: 1070 tests, 0 failures/errors/skipped.
