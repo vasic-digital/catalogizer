@@ -3381,3 +3381,7 @@ HAUTHZ-F2 fixed: PUT /media/:id/favorite and GET /media/:id use the new `user_fa
 - S1G5-F6 (nit): /metrics wrapper pin uses strings.Contains on name only.
 - R5-FU-1: routes registered only under other env/config seen by scanner only.
 - Live sweep (TestLiveAPIContract) backstop for F1/decoy UNCONFIRMED.
+
+### androidut finding (2026-11-17, PROVISIONAL)
+- ANDROID-RETROFIT-MAP-1 (REAL BUG, Important, found by fubundle wire tests): `CatalogizerApi.setFavoriteStatus(@Body Map<String, Any>)` (CatalogizerApi.kt:89) and `updateWatchProgress` (line 86) cannot be invoked: Retrofit throws "Parameter type must not include a type variable or wildcard: Map<String, ?>". Favorite sync and watch-progress sync therefore never send anything on device; existing tests never go through a Retrofit proxy so main stayed green. Fix: `Map<String, @JvmSuppressWildcards Any>` or typed @Serializable request bodies; add wire tests through real Retrofit (MockWebServer). Check every other `Map<String, Any>` @Body in the Android/TV APIs.
+- Android Gradle ran in plain podman on eclipse-temurin:17-jdk, not via the Containers submodule distribution; §11.4.173/.76 compliance UNCONFIRMED (deviation recorded in docs/qa/android-unit-20261117 evidence).
