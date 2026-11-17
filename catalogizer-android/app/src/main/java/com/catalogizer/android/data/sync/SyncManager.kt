@@ -4,6 +4,7 @@ import com.catalogizer.android.data.models.FavoriteRequest
 import com.catalogizer.android.data.models.RatingRequest
 import com.catalogizer.android.data.models.WatchProgressRequest
 import android.content.Context
+import android.util.Log
 import androidx.work.*
 import androidx.work.ExistingPeriodicWorkPolicy
 import com.catalogizer.android.data.local.CatalogizerDatabase
@@ -64,6 +65,7 @@ class SyncManager(
     private var manualSyncJob: Job? = null
 
     companion object {
+        private const val TAG = "SyncManager"
         private const val SYNC_WORK_NAME = "catalogizer_sync"
         private const val BACKGROUND_SYNC_INTERVAL_HOURS = 6L
         private const val MAX_RETRY_ATTEMPTS = 3
@@ -279,8 +281,20 @@ class SyncManager(
             Json.Default.decodeFromString<RatingData>(it)
         } ?: return
 
+        // The server takes an integer 0..10 only. An older queued operation can hold 4.5 or an out-of-range value;
+        // it can never be accepted, so it is dropped with a logged reason instead of retried (RATING1-R-F3).
+        val asInt = ratingData.rating.toInt()
+        if (asInt.toDouble() != ratingData.rating || asInt !in 0..10) {
+            Log.w(TAG, "Dropping rating sync for media ${ratingData.mediaId}: ${ratingData.rating} is not an integer 0..10")
+            return
+        }
         // Same contract as syncFavoriteStatus (RFM-R1-7): non-2xx throws so the operation stays queued.
-        val response = api.rateMedia(ratingData.mediaId, RatingRequest(ratingData.rating))
+        val response = api.rateMedia(ratingData.mediaId, RatingRequest(asInt))
+        if (response.code() == 400) {
+            // The server rejected the value itself; resending the same body can never succeed.
+            Log.w(TAG, "Dropping rating sync for media ${ratingData.mediaId}: server answered HTTP 400 (invalid rating)")
+            return
+        }
         if (!response.isSuccessful) {
             throw java.io.IOException("Rating sync failed for media ${ratingData.mediaId}: HTTP ${response.code()}")
         }
@@ -379,8 +393,9 @@ class SyncManager(
         updatePendingOperationsCount()
     }
 
-    suspend fun queueRatingUpdate(mediaId: Long, rating: Double) {
-        val data = RatingData(mediaId, rating)
+    suspend fun queueRatingUpdate(mediaId: Long, rating: Int) {
+        require(rating in 0..10) { "rating must be an integer 0..10, got $rating" }
+        val data = RatingData(mediaId, rating.toDouble())
         val operation = SyncOperation(
             type = SyncOperationType.UPLOAD_RATING,
             mediaId = mediaId,

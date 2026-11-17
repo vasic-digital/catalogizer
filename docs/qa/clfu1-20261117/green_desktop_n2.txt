@@ -1,0 +1,9 @@
+
+ ✓ src/hooks/__tests__/useVLCPlayer.watchProgress.test.tsx  (3 tests) 469ms
+
+ Test Files  4 passed (4)
+      Tests  64 passed (64)
+   Start at  17:39:30
+   Duration  8.72s (transform 835ms, setup 3.58s, collect 3.53s, tests 622ms, environment 5.88s, prepare 1.82s)
+
+tsc=0

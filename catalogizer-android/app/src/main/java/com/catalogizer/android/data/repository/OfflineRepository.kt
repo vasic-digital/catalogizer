@@ -154,6 +154,8 @@ class OfflineRepository(
         // syncManager.queueWatchProgressUpdate(mediaId, progress, System.currentTimeMillis())
     }
 
+    suspend fun getUserRating(mediaId: Long): Int? = database.userRatingDao().get(mediaId)?.rating
+
     suspend fun toggleFavoriteOffline(mediaId: Long): Boolean {
         // Get current favorite status and toggle it
         val currentItem = database.mediaDao().getById(mediaId)
@@ -168,9 +170,14 @@ class OfflineRepository(
         return newFavoriteStatus
     }
 
-    suspend fun rateMediaOffline(mediaId: Long, rating: Double) {
+    /**
+     * The user's own rating, integer 0..10 (server contract CAT-RATING-1). It is stored in the per-user
+     * user_ratings table, NOT in media_items.rating (the community rating shown to everyone) (RATING1-R-F3).
+     */
+    suspend fun rateMediaOffline(mediaId: Long, rating: Int) {
+        require(rating in 0..10) { "rating must be an integer 0..10, got $rating" }
         // Update local database immediately
-        database.mediaDao().updateRating(mediaId, rating)
+        database.userRatingDao().upsert(com.catalogizer.android.data.local.UserRating(mediaId, rating))
 
         // Queue for sync when online
         syncManager.queueRatingUpdate(mediaId, rating)

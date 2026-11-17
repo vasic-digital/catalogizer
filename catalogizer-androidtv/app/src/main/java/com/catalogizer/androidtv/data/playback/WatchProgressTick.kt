@@ -1,6 +1,11 @@
 package com.catalogizer.androidtv.data.playback
 
+import android.util.Log
+import com.catalogizer.androidtv.data.repository.MediaRepository
 import com.catalogizer.androidtv.data.repository.WatchProgressOutcome
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 
 /**
  * One tick of the player's periodic watch-progress save (extracted from VLCPlayerActivity so it is testable).
@@ -28,8 +33,37 @@ object WatchProgressTick {
                 is WatchProgressOutcome.Saved -> progress
                 is WatchProgressOutcome.NotStored -> lastSaved
             }
+        } catch (e: CancellationException) {
+            throw e // never swallow cancellation (CLPROG-R2-n1)
         } catch (e: Exception) {
             lastSaved
         }
     }
+
+    /**
+     * The tick wired to the repository: this call, not a lambda in the activity, passes position and duration to
+     * [MediaRepository.saveWatchProgress] (CLPROG-R2-m1), so a swap of the two is caught by the unit test.
+     */
+    suspend fun runWith(
+        repository: MediaRepository,
+        mediaId: Long,
+        lastSaved: Double,
+        positionMs: Long,
+        durationMs: Long,
+    ): Double = run(lastSaved, positionMs, durationMs) { progress, posMs, durMs ->
+        val outcome = repository.saveWatchProgress(mediaId, progress, positionMs = posMs, durationMs = durMs)
+        if (outcome is WatchProgressOutcome.NotStored) {
+            Log.w("WatchProgressTick", "Watch progress NOT stored by the server: ${outcome.reason}")
+        }
+        outcome
+    }
+
+    /** Final save at destroy: runs to completion even when the caller's scope is already cancelled (CLPROG-R2-n1). */
+    suspend fun finalSave(
+        repository: MediaRepository,
+        mediaId: Long,
+        lastSaved: Double,
+        positionMs: Long,
+        durationMs: Long,
+    ): Double = withContext(NonCancellable) { runWith(repository, mediaId, lastSaved, positionMs, durationMs) }
 }

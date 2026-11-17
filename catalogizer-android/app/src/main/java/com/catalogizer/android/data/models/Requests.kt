@@ -25,4 +25,8 @@ data class WatchProgressRequest(
 )
 
 @Serializable
-data class RatingRequest(val rating: Double)
+/**
+ * Server contract (CAT-RATING-1): PUT /api/v1/media/:id/rating {"rating": N}, N an integer 0..10; a non-integral
+ * or out-of-range value is a 400. Kept as Int so 4.5 cannot be built (RATING1-R-F3).
+ */
+data class RatingRequest(val rating: Int)

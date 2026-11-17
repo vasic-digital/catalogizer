@@ -1,0 +1,8 @@
+ ✓ src/pages/__tests__/SearchPage.test.tsx  (13 tests) 8098ms
+
+ Test Files  29 passed (29)
+      Tests  453 passed (453)
+   Start at  18:13:39
+   Duration  25.57s (transform 7.35s, setup 46.45s, collect 34.21s, tests 30.07s, environment 85.59s, prepare 22.73s)
+
+tsc=0

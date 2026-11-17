@@ -282,6 +282,17 @@ class MediaRepositoryTest {
     }
 
     @Test
+    fun `updateWatchProgress does not claim saved when the 200 answer has no persisted flag (K6)`() = runTest {
+        coEvery { mockMediaDao.updateWatchProgress(any(), any(), any()) } just Runs
+        coEvery { mockApi.updateWatchProgress(any(), any()) } returns persistedResponse(null)
+
+        val result = repository.updateWatchProgress(1L, 0.5, durationSeconds = 60.0)
+
+        assertFalse(result.isSuccess)
+        assertTrue(result.error!!.contains("not stored"))
+    }
+
+    @Test
     fun `updateWatchProgress retries a 409 concurrent_update and then succeeds`() = runTest {
         coEvery { mockMediaDao.updateWatchProgress(any(), any(), any()) } just Runs
         coEvery { mockApi.updateWatchProgress(any(), any()) } returnsMany listOf(conflictResponse(), persistedResponse(true))
