@@ -1,0 +1,64 @@
+== mutant M1_session_check_removed_in_authorize
+   old: '\tif sc != nil {\n\t\tif !wc.hasIdent'
+   new: '\tif false {\n\t\tif !wc.hasIdent'
+   [package main] -run 'TestF3_|TestWSRoute_' => rc=1
+     --- FAIL: TestF3_SessionRevokedAfterConnectClosesSocket (1.65s)
+     --- FAIL: TestF3_UserSuspendedAfterConnectClosesSocket (1.68s)
+     --- FAIL: TestF3_UserLockedAfterConnectClosesSocket (1.63s)
+     --- FAIL: TestF3_RevokedSessionRefusedOnNextInboundMessage (4.26s)
+     --- FAIL: TestF3_UnauthorisedAtSeedIsClosedImmediately (2.00s)
+     FAIL
+     FAIL	catalogizer	17.699s
+     FAIL
+   [package handlers] -run 'TestSEC_WS_1F3FU8|TestWS|TestWebSocket' => rc=0
+     ok  	catalogizer/handlers	1.608s
+   restored; cmp identical: True
+== mutant M2_expiry_check_dropped_in_authorizeMessage
+   old: 'so it is never throttled: a frame is not accepted past exp.\n\tif !wc.tokenExp.IsZero() && !time.Now().Before(wc.tokenExp) {'
+   new: 'so it is never throttled: a frame is not accepted past exp.\n\tif false && !wc.tokenExp.IsZero() && !time.Now().Before(wc.tokenExp) {'
+   [package main] -run 'TestF3_|TestWSRoute_' => rc=0
+     ok  	catalogizer	7.875s
+   [package handlers] -run 'TestSEC_WS_1F3FU8|TestWS|TestWebSocket' => rc=1
+     --- FAIL: TestSEC_WS_1F3FU8_ExpiredTokenRefusedInsideThrottleWindow (1.30s)
+     FAIL
+     FAIL	catalogizer/handlers	1.712s
+     FAIL
+   restored; cmp identical: True
+== (superseded first M3 attempt: new string 'wc.isAdmin.Store(true)' left 'aerr' unused => build failed in both packages, not a valid mutant; kept for honesty)
+   | == mutant M3_admin_flag_always_true
+   |    old: 'wc.isAdmin.Store(aerr == nil && admin)'
+   |    new: 'wc.isAdmin.Store(true)'
+   |    [package main] -run 'TestF3_|TestWSRoute_' => rc=1
+   |      FAIL	catalogizer [build failed]
+   |      FAIL
+   |    [package handlers] -run 'TestSEC_WS_1F3FU8|TestWS|TestWebSocket' => rc=1
+   |      FAIL	catalogizer/handlers [build failed]
+   |      FAIL
+   |    restored; cmp identical: True
+== re-run of M3 with a compiling mutant (driver ONLY=M3 run)
+== mutant M3_admin_flag_always_true
+   old: 'wc.isAdmin.Store(aerr == nil && admin)'
+   new: 'wc.isAdmin.Store(aerr == nil || admin || true)'
+   [package main] -run 'TestF3_|TestWSRoute_' => rc=1
+     --- FAIL: TestF3_AdminOnlyEventsReachOnlyAdmins (0.05s)
+     --- FAIL: TestF3_ForgedAdminRoleClaimDoesNotGrantAdminEvents (0.06s)
+     --- FAIL: TestF3_AdminDemotedAfterConnectStopsReceivingAdminEvents (0.64s)
+     --- FAIL: TestF3_AdminLookupErrorDowngradesButKeepsSocketOpen (0.65s)
+     --- FAIL: TestF3_BroadcastContextIsAudienceFiltered (0.03s)
+     FAIL
+     FAIL	catalogizer	7.723s
+     FAIL
+   [package handlers] -run 'TestSEC_WS_1F3FU8|TestWS|TestWebSocket' => rc=0
+     ok  	catalogizer/handlers	1.543s
+   restored; cmp identical: True
+== mutant M4_expiry_check_dropped_in_authorize
+   old: 'h.mu.RUnlock()\n\tif !wc.tokenExp.IsZero() && !time.Now().Before(wc.tokenExp) {'
+   new: 'h.mu.RUnlock()\n\tif false && !wc.tokenExp.IsZero() && !time.Now().Before(wc.tokenExp) {'
+   [package main] -run 'TestF3_|TestWSRoute_' => rc=1
+     --- FAIL: TestF3_TokenExpiryClosesSocket (4.72s)
+     FAIL
+     FAIL	catalogizer	11.527s
+     FAIL
+   [package handlers] -run 'TestSEC_WS_1F3FU8|TestWS|TestWebSocket' => rc=0
+     ok  	catalogizer/handlers	2.027s
+   restored; cmp identical: True

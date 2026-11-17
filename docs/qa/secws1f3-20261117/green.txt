@@ -1,3 +1,24 @@
-cmd: go test -p 1 -count=1 -run 'TestF3_|TestSEC_WS_1F3FU8' . ; tree=2a547e796f33078c41e73cb5812a2545ea7abf9d HEAD=af02b7c35cdfc0a43d08998f01e1d12da8a6fd0b
-== baseline
-ok  	catalogizer	8.204s
+cmd: cd catalog-api && go test -p 1 -count=1 -run 'TestF3_|TestWSRoute_|TestSEC_WS_1F3FU8' .  (package main; submodules temporarily symlinked); HEAD=b7b30263c7e8b65180de5b71a8a1b402e1292683 tree=4eb029974f04520def511fb2c43a52b93cc2194f
+--- PASS: TestF3_SessionRevokedAfterConnectClosesSocket (0.22s)
+--- PASS: TestF3_UserSuspendedAfterConnectClosesSocket (0.19s)
+--- PASS: TestF3_UserLockedAfterConnectClosesSocket (0.21s)
+--- PASS: TestF3_TokenExpiryClosesSocket (2.45s)
+--- PASS: TestF3_RevokedSessionRefusedOnNextInboundMessage (1.26s)
+--- PASS: TestF3_AdminOnlyEventsReachOnlyAdmins (0.05s)
+--- PASS: TestF3_LibraryEventsReachEveryAuthenticatedUser (0.06s)
+--- PASS: TestF3_ForgedAdminRoleClaimDoesNotGrantAdminEvents (0.31s)
+--- PASS: TestF3_AdminDemotedAfterConnectStopsReceivingAdminEvents (0.90s)
+--- PASS: TestF3_AdminLookupErrorDowngradesButKeepsSocketOpen (0.65s)
+--- PASS: TestF3_BroadcastContextIsAudienceFiltered (0.05s)
+--- PASS: TestF3_InboundFloodIsBoundedToFewDBChecks (1.01s)
+--- PASS: TestF3_UnauthorisedAtSeedIsClosedImmediately (0.00s)
+--- PASS: TestWSRoute_UnauthenticatedRefused (0.10s)
+--- PASS: TestWSRoute_BadTokenRefused (0.05s)
+--- PASS: TestWSRoute_ValidTokenConnectsAndReceives (0.04s)
+--- PASS: TestWSRoute_RevokedSessionRefused (0.03s)
+--- PASS: TestWSRoute_SuspendedUserRefused (0.05s)
+--- PASS: TestWSRoute_OriginPolicy (0.04s)
+--- PASS: TestWSRoute_BehindReverseProxyHostForwarding (0.05s)
+PASS
+ok  	catalogizer	8.036s
+note: TestSEC_WS_1F3FU8 matches no test in package main (it lives in package handlers, see green_handlers.txt); run once, -v filtered to result lines; host-fixture class, not live

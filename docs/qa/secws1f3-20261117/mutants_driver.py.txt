@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+# Re-run of the F3 mutants with the EXACT old/new strings recorded in the output (host-fixture class evidence).
+# Each mutant: exact unique-string replace in catalog-api/handlers/websocket_handler.go, run both packages, restore
+# from a byte copy, verify cmp-identical. usage: mutants_driver.py <repo-root>
+import subprocess, sys, shutil, filecmp, os
+root = sys.argv[1]; api = os.path.join(root, "catalog-api"); f = os.path.join(api, "handlers/websocket_handler.go")
+bak = f + ".mutbak"; shutil.copyfile(f, bak)
+EXP = "if !wc.tokenExp.IsZero() && !time.Now().Before(wc.tokenExp) {"
+MUT = [
+ ("M1_session_check_removed_in_authorize", "\tif sc != nil {\n\t\tif !wc.hasIdent", "\tif false {\n\t\tif !wc.hasIdent"),
+ ("M2_expiry_check_dropped_in_authorizeMessage",
+  "so it is never throttled: a frame is not accepted past exp.\n\t" + EXP,
+  "so it is never throttled: a frame is not accepted past exp.\n\tif false && !wc.tokenExp.IsZero() && !time.Now().Before(wc.tokenExp) {"),
+ ("M3_admin_flag_always_true", "wc.isAdmin.Store(aerr == nil && admin)", "wc.isAdmin.Store(aerr == nil || admin || true)"),
+ ("M4_expiry_check_dropped_in_authorize", "h.mu.RUnlock()\n\t" + EXP, "h.mu.RUnlock()\n\tif false && !wc.tokenExp.IsZero() && !time.Now().Before(wc.tokenExp) {"),
+]
+PK = [("package main", ".", "TestF3_|TestWSRoute_"), ("package handlers", "./handlers", "TestSEC_WS_1F3FU8|TestWS|TestWebSocket")]
+src = open(bak).read()
+try:
+    for name, old, new in MUT:
+        if os.environ.get("ONLY") and not name.startswith(os.environ["ONLY"]): continue
+        print("== mutant %s" % name); print("   old: %r" % old); print("   new: %r" % new)
+        if src.count(old) != 1: print("   NOT UNIQUE/ABSENT count=%d: mutant not applied" % src.count(old)); continue
+        open(f, "w").write(src.replace(old, new))
+        for label, pkg, run in PK:
+            r = subprocess.run(["go", "test", "-p", "1", "-count=1", "-run", run, pkg], cwd=api, capture_output=True, text=True, timeout=600)
+            lines = [l for l in (r.stdout + r.stderr).splitlines() if l.startswith(("--- FAIL", "ok", "FAIL", "panic"))]
+            print("   [%s] -run '%s' => rc=%d" % (label, run, r.returncode)); [print("     " + l) for l in lines[:12]]
+        shutil.copyfile(bak, f); print("   restored; cmp identical: %s" % filecmp.cmp(bak, f, shallow=False))
+finally:
+    shutil.copyfile(bak, f); os.remove(bak)
