@@ -3704,3 +3704,10 @@ R5-1..R5-8 fixed; gate logic sound; 133/0 reproduced. Blockers:
 - M4 (minor): WP/CP not cleared after reap; EXIT trap may signal reused PIDs.
 - N1/N2 (nit): F3 grep matches the absent-line record; VICTIM_REFUSED_STATUS unvalidated/glob; base=$BASE may log userinfo; san lookalikes.
 - Live-only unknowns: refused status after suspension (probably 401), clock skew, origin allowlist at edge, suspend semantics vs recheck, ticket pending cap, ticket in nginx logs, victim left suspended, SERVER_PID/SERVER_EXE_SHA256 must be supplied.
+
+## PGFU1 review follow-ups (Opus, GO-with-follow-ups, 2026-11-17)
+- PGFU1-R-1: pgend1 SHA256SUMS SUMMARY.md hash regenerated at landing (done).
+- PGFU1-R-2: "rewritten exactly once" is overstated: `TxInsertReturningID` (database/tx_helpers.go:21) still rewrites and a `*Tx` caller rewrites again (tx.go:42/58; callers rename_tracker.go:312, universal_rename_tracker.go:386). Harmless for the single-statement INSERT; either skip the rewrite for `*Tx`/`*Transaction` or state the exception.
+- PGFU1-R-3: scan guard blind spots undocumented: anonymous embedded `*sql.DB`, `db.DB.Conn(ctx)` raw connection, function returning `*sql.DB`; conservative false positives (`h.DB.Begin()` on `*database.DB` field, name declared `*sql.DB` in another function).
+- PGFU1-R-4: no repository-level real-PG test for the tx QueryRow paths whose explicit Rewrite was removed (UserRepository.Delete user_repository.go:719/:741, LockAccount refusedByGuard :576); reviewer mutant OWN-TXQR survived the repository PG subset, killed only by database TestTxStatementsAreDialectRewrittenOnPostgres.
+- PGFU1-R-5..7 (optional): evidence files lack producing commands (§11.4.273(e)); guard against explicit Rewrite passed into a tx method; txPresent handles only typed-nil pointers.
