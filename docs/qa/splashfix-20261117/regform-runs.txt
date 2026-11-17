@@ -1,0 +1,18 @@
+[2m      Tests [22m [1m[32m1 passed[39m[22m[2m | [22m[33m22 skipped[39m[90m (23)[39m
+[2m   Duration [22m 13.05s[2m (transform 1.23s, setup 1.32s, import 5.88s, tests 1.70s, environment 3.46s)[22m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[2m | [22m[33m22 skipped[39m[90m (23)[39m
+[2m   Duration [22m 6.64s[2m (transform 847ms, setup 326ms, import 2.51s, tests 1.17s, environment 2.16s)[22m
+[2m      Tests [22m [1m[32m1 passed[39m[22m[2m | [22m[33m22 skipped[39m[90m (23)[39m
+[2m   Duration [22m 4.54s[2m (transform 392ms, setup 220ms, import 1.28s, tests 1.24s, environment 891ms)[22m
+
+ [32m✓[39m src/components/auth/__tests__/RegisterForm.test.tsx [2m([22m[2m23 tests[22m[2m)[22m[33m 13993[2mms[22m[39m
+       [33m[2m✓[22m[39m renders the registration form with all elements [33m 740[2mms[22m[39m
+       [33m[2m✓[22m[39m shows error when username is empty on submit [33m 590[2mms[22m[39m
+       [33m[2m✓[22m[39m shows error when username is too short [33m 925[2mms[22m[39m
+       [33m[2m✓[22m[39m shows error when email is invalid [33m 963[2mms[22m[39m
+       [33m[2m✓[22m[39m shows error when password is too short [33m 820[2mms[22m[39m
+       [33m[2m✓[22m[39m shows error when passwords do not match [33m 1814[2mms[22m[39m
+       [33m[2m✓[22m[39m shows error when first name is empty [33m 735[2mms[22m[39m
+       [33m[2m✓[22m[39m shows error when last name is empty [33m 696[2mms[22m[39m
+       [33m[2m✓[22m[39m clears error when field is corrected [33m 823[2mms[22m[39m
+ 12:26:29 up 2 days, 23:54,  1 user,  load average: 42.64, 37.03, 34.62
