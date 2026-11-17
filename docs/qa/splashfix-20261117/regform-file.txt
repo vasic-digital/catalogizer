@@ -1,0 +1,27 @@
+failed to load config from /home/milosvasic/.cache/claude-tmp/splashfix/catalog-web/vite.config.ts
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Startup Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯⎯[39m
+Error: catalog-web: 9 @vasic-digital/* submodule(s) are not initialised:
+  @vasic-digital/auth-context -> /home/milosvasic/.cache/claude-tmp/splashfix/submodules/auth_context_react (empty or not a package)
+  @vasic-digital/catalogizer-api-client -> /home/milosvasic/.cache/claude-tmp/splashfix/submodules/catalogizer_api_client_ts (empty or not a package)
+  @vasic-digital/collection-manager -> /home/milosvasic/.cache/claude-tmp/splashfix/submodules/collection_manager_react (empty or not a package)
+  @vasic-digital/dashboard-analytics -> /home/milosvasic/.cache/claude-tmp/splashfix/submodules/dashboard_analytics_react (empty or not a package)
+  @vasic-digital/media-browser -> /home/milosvasic/.cache/claude-tmp/splashfix/submodules/media_browser_react (empty or not a package)
+  @vasic-digital/media-player -> /home/milosvasic/.cache/claude-tmp/splashfix/submodules/media_player_react (empty or not a package)
+  @vasic-digital/media-types -> /home/milosvasic/.cache/claude-tmp/splashfix/submodules/media_types_ts (empty or not a package)
+  @vasic-digital/ui-components -> /home/milosvasic/.cache/claude-tmp/splashfix/submodules/ui_components_react (empty or not a package)
+  @vasic-digital/websocket-client -> /home/milosvasic/.cache/claude-tmp/splashfix/submodules/websocket_client_ts (empty or not a package)
+Run: git submodule update --init (from the repository root)
+    at assertSubmodulesPopulated (/home/milosvasic/.cache/claude-tmp/splashfix/catalog-web/vite.config.ts:53:11)
+    at submoduleSourceFallbacks (/home/milosvasic/.cache/claude-tmp/splashfix/catalog-web/vite.config.ts:87:3)
+    at Object.<anonymous> (/home/milosvasic/.cache/claude-tmp/splashfix/catalog-web/vite.config.ts:102:12)
+    at Module._compile (node:internal/modules/cjs/loader:1934:14)
+    at _require.extensions.<computed> [as .js] (file:///home/milosvasic/.cache/claude-tmp/splashfix/catalog-web/node_modules/vitest/node_modules/vite/dist/node/chunks/config.js:35919:44)
+    at Module.load (node:internal/modules/cjs/loader:1656:32)
+    at Module._load (node:internal/modules/cjs/loader:1448:12)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:261:19)
+    at Module.require (node:internal/modules/cjs/loader:1679:12)
+    at require (node:internal/modules/helpers:196:16)
+
+
+
