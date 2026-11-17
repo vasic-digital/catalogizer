@@ -1,0 +1,58 @@
+=== RUN   TestF3_SessionRevokedAfterConnectClosesSocket
+--- PASS: TestF3_SessionRevokedAfterConnectClosesSocket (0.19s)
+=== RUN   TestF3_UserSuspendedAfterConnectClosesSocket
+--- PASS: TestF3_UserSuspendedAfterConnectClosesSocket (0.18s)
+=== RUN   TestF3_UserLockedAfterConnectClosesSocket
+--- PASS: TestF3_UserLockedAfterConnectClosesSocket (0.18s)
+=== RUN   TestF3_TokenExpiryClosesSocket
+--- PASS: TestF3_TokenExpiryClosesSocket (2.88s)
+=== RUN   TestF3_RevokedSessionRefusedOnNextInboundMessage
+--- PASS: TestF3_RevokedSessionRefusedOnNextInboundMessage (1.26s)
+=== RUN   TestF3_AdminOnlyEventsReachOnlyAdmins
+--- PASS: TestF3_AdminOnlyEventsReachOnlyAdmins (0.05s)
+=== RUN   TestF3_LibraryEventsReachEveryAuthenticatedUser
+--- PASS: TestF3_LibraryEventsReachEveryAuthenticatedUser (0.04s)
+=== RUN   TestF3_ForgedAdminRoleClaimDoesNotGrantAdminEvents
+--- PASS: TestF3_ForgedAdminRoleClaimDoesNotGrantAdminEvents (0.31s)
+=== RUN   TestF3_AdminDemotedAfterConnectStopsReceivingAdminEvents
+--- PASS: TestF3_AdminDemotedAfterConnectStopsReceivingAdminEvents (0.92s)
+=== RUN   TestF3_AdminLookupErrorDowngradesButKeepsSocketOpen
+--- PASS: TestF3_AdminLookupErrorDowngradesButKeepsSocketOpen (0.68s)
+=== RUN   TestF3_BroadcastContextIsAudienceFiltered
+--- PASS: TestF3_BroadcastContextIsAudienceFiltered (0.06s)
+=== RUN   TestF3_InboundFloodIsBoundedToFewDBChecks
+--- PASS: TestF3_InboundFloodIsBoundedToFewDBChecks (1.00s)
+=== RUN   TestF3_UnauthorisedAtSeedIsClosedImmediately
+--- PASS: TestF3_UnauthorisedAtSeedIsClosedImmediately (0.00s)
+=== RUN   TestWSRoute_UnauthenticatedRefused
+--- PASS: TestWSRoute_UnauthenticatedRefused (0.05s)
+=== RUN   TestWSRoute_BadTokenRefused
+--- PASS: TestWSRoute_BadTokenRefused (0.03s)
+=== RUN   TestWSRoute_ValidTokenConnectsAndReceives
+=== RUN   TestWSRoute_ValidTokenConnectsAndReceives/bearer_header
+--- PASS: TestWSRoute_ValidTokenConnectsAndReceives (0.03s)
+    --- PASS: TestWSRoute_ValidTokenConnectsAndReceives/bearer_header (0.00s)
+=== RUN   TestWSRoute_RevokedSessionRefused
+--- PASS: TestWSRoute_RevokedSessionRefused (0.06s)
+=== RUN   TestWSRoute_SuspendedUserRefused
+--- PASS: TestWSRoute_SuspendedUserRefused (0.06s)
+=== RUN   TestWSRoute_OriginPolicy
+=== RUN   TestWSRoute_OriginPolicy/no_Origin_(native_clients:_Android_OkHttp)
+=== RUN   TestWSRoute_OriginPolicy/same_origin_as_the_Host_header
+=== RUN   TestWSRoute_OriginPolicy/configured_allow-list_origin
+=== RUN   TestWSRoute_OriginPolicy/foreign_browser_origin
+=== RUN   TestWSRoute_OriginPolicy/foreign_origin_with_allow-listed_substring
+--- PASS: TestWSRoute_OriginPolicy (0.05s)
+    --- PASS: TestWSRoute_OriginPolicy/no_Origin_(native_clients:_Android_OkHttp) (0.00s)
+    --- PASS: TestWSRoute_OriginPolicy/same_origin_as_the_Host_header (0.00s)
+    --- PASS: TestWSRoute_OriginPolicy/configured_allow-list_origin (0.00s)
+    --- PASS: TestWSRoute_OriginPolicy/foreign_browser_origin (0.00s)
+    --- PASS: TestWSRoute_OriginPolicy/foreign_origin_with_allow-listed_substring (0.00s)
+=== RUN   TestWSRoute_BehindReverseProxyHostForwarding
+=== RUN   TestWSRoute_BehindReverseProxyHostForwarding/Host_$http_host_(port_kept)
+=== RUN   TestWSRoute_BehindReverseProxyHostForwarding/Host_$host_(port_dropped)
+--- PASS: TestWSRoute_BehindReverseProxyHostForwarding (0.04s)
+    --- PASS: TestWSRoute_BehindReverseProxyHostForwarding/Host_$http_host_(port_kept) (0.00s)
+    --- PASS: TestWSRoute_BehindReverseProxyHostForwarding/Host_$host_(port_dropped) (0.00s)
+PASS
+ok  	catalogizer	8.312s

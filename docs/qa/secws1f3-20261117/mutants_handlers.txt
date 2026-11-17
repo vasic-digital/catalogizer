@@ -1,0 +1,10 @@
+package handlers; mutants applied by exact-string replace then reverted
+== mutant M2_expiry_dropped_in_authorizeMessage
+--- FAIL: TestSEC_WS_1F3FU8_ExpiredTokenRefusedInsideThrottleWindow (1.30s)
+FAIL
+FAIL	catalogizer/handlers	2.030s
+FAIL
+== mutant M3_admin_always_true
+ok  	catalogizer/handlers	1.991s
+== mutant M4_expiry_dropped_in_authorize
+ok  	catalogizer/handlers	1.765s

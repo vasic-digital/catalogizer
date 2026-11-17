@@ -1,0 +1,8 @@
+cmd (run 3 times, N=3, each -v log stored as green_run1.txt, green_run2.txt, green_run3.txt):
+  cd catalog-api && go test -p 1 -count=1 -v -run 'TestF3_|TestWSRoute_|TestSEC_WS_1F3FU8' .   (package main)
+tree: clone of main-equivalent source (HEAD 90e041a6934994f55d287ed8cd4555fac1e59133, catalog-api tree == main's; docs-only changes on top); the 69 empty submodule
+  directories were temporarily replaced by symlinks to the main checkout's submodules (read only) for the build and restored afterwards (git status clean of them).
+result per run: rc=0, 20 "--- PASS" lines, 0 "--- FAIL" (counted with grep from each -v log). Final lines: "ok  	catalogizer	~8s".
+note: TestSEC_WS_1F3FU8 matches no test in package main (0 hits in the -v logs); it lives in package handlers and is covered by green_handlers.txt
+  (`-run 'TestSEC_WS_1F3FU8|TestWS|TestWebSocket' ./handlers`, earlier round, HEAD af02b7c35; NOT re-run this round).
+class: host-fixture (real DB, real middleware, real HTTP server, gorilla clients), NOT live.
